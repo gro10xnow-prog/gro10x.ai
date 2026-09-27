@@ -2,7 +2,8 @@ const express = require('express');
 const { randomUUID } = require('crypto');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireManager } = require('../middleware/rbac');
+const { requireManager, requireAdmin, requireSeniority } = require('../middleware/rbac');
+const { normalizeEngineId } = require('../utils/engine-scope');
 const { supabase } = require('../services/supabase');
 const { broadcast, broadcastToEmployee } = require('../services/sse');
 const { uploadFile } = require('../services/storage');
@@ -20,6 +21,8 @@ function mapExpense(e) {
     submittedById: e.submitted_by_id || e.employee_id || null,
     receiptUrl: e.receipt_url,
     description: e.description,
+    engineTag: e.engine_tag || e.engineTag || 'engine2',
+    engineId: e.engine_tag || e.engineTag || 'engine2',
     status: e.status || (e.tier2_approved ? 'Approved' : (e.tier1_approved ? 'Tier 2 Pending' : 'Tier 1 Pending')),
     tier1: {
       approved: !!e.tier1_approved,
@@ -66,6 +69,15 @@ router.get('/', requireAuth, async (req, res) => {
     if (empId) {
       expenses = expenses.filter(e => e.submittedById === empId || e.submittedBy === empId);
     }
+
+    const engineFilter = normalizeEngineId(req.query.engineId || req.query.engine || req.headers['x-gro10x-engine']);
+    if (engineFilter && engineFilter !== 'all') {
+      expenses = expenses.filter(e => {
+        const tag = (e.engineTag || e.engine_tag || '').toLowerCase();
+        return tag === engineFilter;
+      });
+    }
+
     return res.json(expenses);
   } catch (err) {
     console.error('Expenses GET error:', err.message);
@@ -189,8 +201,8 @@ router.put('/:id/approve', requireAuth, requireManager, async (req, res) => {
   }
 });
 
-// POST /api/expenses/:id/approve-tier1 (Manager Portal endpoint)
-router.post('/:id/approve-tier1', requireAuth, requireManager, async (req, res) => {
+// POST /api/expenses/:id/approve-tier1 (Manager Portal endpoint - Seniority Tier 2+)
+router.post('/:id/approve-tier1', requireAuth, requireSeniority(2), async (req, res) => {
   try {
     const { id } = req.params;
     const approver = req.body.approvedBy || req.user.name || 'Line Manager';
@@ -230,8 +242,8 @@ router.post('/:id/approve-tier1', requireAuth, requireManager, async (req, res) 
   }
 });
 
-// POST /api/expenses/:id/approve-tier2 (Manager Portal endpoint)
-router.post('/:id/approve-tier2', requireAuth, requireManager, async (req, res) => {
+// POST /api/expenses/:id/approve-tier2 (Executive & Finance Command - Seniority Tier 3)
+router.post('/:id/approve-tier2', requireAuth, requireSeniority(3), async (req, res) => {
   try {
     const { id } = req.params;
     const approver = req.body.approvedBy || req.user.name || 'Finance Lead';

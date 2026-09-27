@@ -4,9 +4,9 @@
  */
 window.CREW_MODULES = window.CREW_MODULES || {};
 
-let currentCalYear = new Date().getFullYear();
-let currentCalMonth = new Date().getMonth(); // 0-indexed
-let selectedCalDate = new Date().toISOString().split('T')[0];
+var currentCalYear = window.currentCalYear || new Date().getFullYear();
+var currentCalMonth = window.currentCalMonth !== undefined ? window.currentCalMonth : new Date().getMonth(); // 0-indexed
+var selectedCalDate = window.selectedCalDate || new Date().toISOString().split('T')[0];
 
 window.changeCrewCalMonth = function(delta) {
   currentCalMonth += delta;
@@ -117,9 +117,9 @@ window.CREW_MODULES.calendar = async function(container) {
 
       <!-- Month Switcher Controls -->
       <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.05); padding:0.3rem 0.6rem; border-radius:10px; border:1px solid var(--border-subtle);">
-        <button onclick="changeCrewCalMonth(-1)" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.85rem; border-radius:6px; cursor:pointer;">◀</button>
+        <button id="crewCalPrevMonthBtn" onclick="changeCrewCalMonth(-1)" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.85rem; border-radius:6px; cursor:pointer;" aria-label="Previous Month">◀</button>
         <span style="font-weight:700; font-size:0.95rem; color:#fff; min-width:130px; text-align:center;">${monthNames[currentCalMonth]} ${currentCalYear}</span>
-        <button onclick="changeCrewCalMonth(1)" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.85rem; border-radius:6px; cursor:pointer;">▶</button>
+        <button id="crewCalNextMonthBtn" onclick="changeCrewCalMonth(1)" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.85rem; border-radius:6px; cursor:pointer;" aria-label="Next Month">▶</button>
       </div>
     </div>
 

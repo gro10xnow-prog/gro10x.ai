@@ -1297,7 +1297,9 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
       success: true,
       reconciledCount,
       totalLiveOnEtsy: liveListings.length,
-      matchedProducts: matched
+      matchedProducts: matched,
+      catalog,
+      brand
     });
   } catch (err) {
     return fail(res, `Failed to reconcile Etsy catalog: ${err.message}`, 500);

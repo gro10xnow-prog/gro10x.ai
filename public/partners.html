@@ -72,6 +72,15 @@
   <!-- MAIN PORTAL WRAPPER -->
   <main style="max-width:1240px; margin:2rem auto; padding:0 1.5rem;">
 
+    <!-- NAVIGATION MODE TABS -->
+    <div style="display:flex; gap:0.6rem; margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.75rem;">
+      <button id="tabBtnDeliverables" class="btn-purple" style="padding:0.5rem 1rem; font-size:0.85rem;" onclick="switchPartnerTab('deliverables')">🎬 Client Deliverables & Review</button>
+      <button id="tabBtnAffiliate" class="btn-secondary" style="padding:0.5rem 1rem; font-size:0.85rem;" onclick="switchPartnerTab('affiliate')">🤝 Partner & Affiliate Growth Cockpit</button>
+    </div>
+
+    <!-- CLIENT DELIVERABLES VIEW WRAPPER -->
+    <div id="partnerDeliverablesView">
+
     <!-- CLIENT WELCOME STRIP -->
     <div class="glass-panel" style="margin-bottom:2rem; background:linear-gradient(135deg, rgba(0,223,137,0.12), rgba(6,182,212,0.08)); border:1px solid rgba(0,223,137,0.25);">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
@@ -178,6 +187,162 @@
       </table>
     </section>
 
+    </div> <!-- /partnerDeliverablesView -->
+
+    <!-- AFFILIATE & PARTNER GROWTH COCKPIT VIEW -->
+    <div id="partnerAffiliateView" style="display:none;">
+
+      <!-- AFFILIATE HEADER & REFERRAL LINK STRIP -->
+      <div class="glass-panel" style="margin-bottom:2rem; background:linear-gradient(135deg, rgba(168,85,247,0.14), rgba(6,182,212,0.08)); border:1px solid rgba(168,85,247,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.2rem;">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <span class="badge" style="background:rgba(168,85,247,0.2); color:#c084fc; font-weight:800;" id="affiliateStatusBadge">Verified B2B Partner</span>
+              <span class="badge" style="background:rgba(234,179,8,0.2); color:#facc15; font-weight:800;" id="affiliateTierBadge">🥈 Silver Growth Partner</span>
+            </div>
+            <h2 style="font-size:1.6rem; color:#fff; margin:0.4rem 0 0.2rem; font-family:var(--font-heading);" id="affiliatePartnerTitle">Tanvir Ahmed (AFF-TANVIR)</h2>
+            <p style="color:var(--text-muted); margin:0; font-size:0.88rem;" id="affiliateCommissionRates">Earn 10% on closed solution sprints + 15% on recurring enterprise retainers</p>
+          </div>
+          <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+            <a href="/api/affiliates/payouts/export-brac" download="brac_bank_disbursement_schedule.csv" class="btn-secondary" style="font-size:0.82rem; padding:0.5rem 0.9rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">📥 Export BRAC Bank CSV</a>
+            <button class="pb-btn-primary" style="background:linear-gradient(135deg, #10b981, #059669); border:none;" onclick="openAffiliatePayoutModal()">💰 Request Commission Payout</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Link Copy Box -->
+        <div style="margin-top:1.25rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.85rem 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.6rem; flex:1; min-width:280px;">
+            <span style="font-size:1.1rem;">🔗</span>
+            <div style="flex:1;">
+              <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Your Unique Referral Link (30-Day Attribution Window)</div>
+              <input type="text" id="affiliateLinkInput" readonly value="https://gro10x-ai.vercel.app/?ref=AFF-TANVIR" style="width:100%; background:transparent; border:none; color:#34d399; font-weight:700; font-size:0.92rem; font-family:monospace; outline:none;" />
+            </div>
+          </div>
+          <button type="button" class="btn-secondary" onclick="copyAffiliateLink()" style="padding:0.45rem 0.9rem; font-size:0.82rem;" id="copyAffLinkBtn">📋 Copy Link</button>
+        </div>
+
+        <!-- TIER ELEVATION GAMIFICATION CARD -->
+        <div id="affTierGamificationCard" style="margin-top:1.25rem; background:linear-gradient(135deg, rgba(6,182,212,0.1), rgba(16,185,129,0.06)); border:1px solid rgba(6,182,212,0.3); border-radius:12px; padding:1rem 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.1rem;">🚀</span>
+              <span style="font-size:0.85rem; font-weight:800; color:#fff;" id="affTierElevationTitle">Partner Tier Progression</span>
+            </div>
+            <span class="badge badge-cyan" id="affTierProgressBadge" style="font-size:0.72rem;">71.2% to Gold Enterprise</span>
+          </div>
+          <div style="background:rgba(0,0,0,0.4); border-radius:999px; height:10px; width:100%; overflow:hidden; border:1px solid rgba(255,255,255,0.08); margin-bottom:0.6rem;">
+            <div id="affTierProgressBar" style="width:71.2%; background:linear-gradient(90deg, #00df89, #06b6d4); height:100%; border-radius:999px; transition:width 0.4s ease;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; font-size:0.78rem;">
+            <span style="color:#bae6fd;" id="affTierProgressMsg">💡 Earn ৳57,500 more to unlock Gold Tier: 15% Sprint / 20% Retainer (+2.5% bump)</span>
+            <span style="color:var(--text-muted); font-family:monospace;" id="affTierVolumeRatio">৳142,500 / ৳200,000 BDT</span>
+          </div>
+        </div>
+
+        <!-- CO-BRANDED WHITE-LABEL INTAKE DESK (For Gold Enterprise Partners) -->
+        <div id="whiteLabelIntakeCard" style="margin-top:1.25rem; background:linear-gradient(135deg, rgba(234,179,8,0.12), rgba(168,85,247,0.08)); border:1px solid rgba(234,179,8,0.35); border-radius:12px; padding:1.1rem 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.75rem;">
+            <div>
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
+                <span class="badge" style="background:rgba(234,179,8,0.25); color:#facc15; font-weight:800; font-size:0.72rem;">👑 GOLD ENTERPRISE WHITE-LABEL DESK</span>
+                <span class="badge badge-emerald" style="font-size:0.7rem;">Automated Attribution</span>
+              </div>
+              <div style="font-size:0.86rem; color:#fff; font-weight:700;">Co-Branded Client Intake Portal (/portal/:refCode)</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">Send enterprise clients to your branded intake wizard with automated pod provisioning & revenue attribution.</div>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button class="btn-primary btn-sm" onclick="openWhiteLabelPreview()" style="background:linear-gradient(135deg, #facc15, #eab308); color:#000; font-weight:800;">
+                👁️ Preview Co-Branded Portal
+              </button>
+            </div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.6rem 0.85rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <input type="text" id="whiteLabelLinkInput" readonly value="https://gro10x-ai.vercel.app/portal/AFF-GOLD" style="flex:1; min-width:240px; background:transparent; border:none; color:#facc15; font-weight:700; font-size:0.85rem; font-family:monospace; outline:none;" />
+            <button type="button" class="btn-secondary btn-sm" onclick="copyWhiteLabelLink()" id="copyWlLinkBtn" style="font-size:0.78rem;">📋 Copy Co-Branded Link</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FUNNEL METRICS TILES -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.25rem; margin-bottom:2rem;">
+        <div class="glass-card">
+          <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Total Clicks Tracked</div>
+          <div style="font-size:1.8rem; font-weight:900; color:#60a5fa; margin:0.3rem 0;" id="affMetricClicks">142</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">Unique visitor cookies</div>
+        </div>
+        <div class="glass-card">
+          <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Leads Qualified</div>
+          <div style="font-size:1.8rem; font-weight:900; color:#c084fc; margin:0.3rem 0;" id="affMetricLeads">8</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">Intakes & proposals submitted</div>
+        </div>
+        <div class="glass-card">
+          <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Deals Closed</div>
+          <div style="font-size:1.8rem; font-weight:900; color:#34d399; margin:0.3rem 0;" id="affMetricDeals">3</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">Invoices settled & paid</div>
+        </div>
+        <div class="glass-card" style="border-color:rgba(16,185,129,0.3); background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,0,0,0.2));">
+          <div style="font-size:0.78rem; color:#34d399; font-weight:700; text-transform:uppercase;">Pending Payout Balance</div>
+          <div style="font-size:1.8rem; font-weight:900; color:#34d399; margin:0.3rem 0;" id="affMetricPending">৳17,500</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);" id="affMetricPaidSub">Total Earned: ৳32,500 · Paid: ৳15,000</div>
+        </div>
+      </div>
+
+      <!-- CONVERSION LEDGER TABLE -->
+      <section class="glass-panel" style="margin-bottom:2.5rem;">
+        <div class="panel-header">
+          <h2 class="panel-title">📊 Attributed Conversions & Commission Ledger</h2>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Chronological ledger of deals referred through your affiliate link</div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Deal ID</th>
+              <th>Referred Project / Client</th>
+              <th>Contract Value</th>
+              <th>Commission Rate</th>
+              <th>Commission Earned</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="affiliateConversionsTbody">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- INSTITUTIONAL SETTLEMENT DETAILS -->
+      <section class="glass-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">🏦 Settlement & Payout Instructions</h2>
+          <div style="font-size:0.8rem; color:var(--text-muted);">All commission payouts are settled via institutional banking rails within 24 business hours</div>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; margin-top:1rem;">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem;">
+            <div style="font-size:0.75rem; color:#00df89; font-weight:800; text-transform:uppercase; margin-bottom:0.4rem;">Institutional Wire Rail</div>
+            <div style="font-size:1rem; font-weight:700; color:#fff;">BRAC Bank Limited</div>
+            <div style="font-size:0.82rem; color:var(--text-muted); margin-top:0.3rem; line-height:1.7;">
+              Account Beneficiary: <strong>Neoncore Tech Solution</strong><br>
+              A/C Number: <code style="color:#00df89; font-weight:700;" id="dispAccountNumber">2081636480001</code>
+              <button class="btn-secondary btn-sm" onclick="copyAccountNumber()" style="padding:0.15rem 0.45rem; font-size:0.7rem; margin-left:0.35rem; cursor:pointer;" id="btnCopyAccount">📋 Copy</button><br>
+              Branch: <strong>Mohakhali Branch</strong> · Routing: <code id="dispRoutingNumber">060263290</code>
+              <button class="btn-secondary btn-sm" onclick="copyRoutingNumber()" style="padding:0.15rem 0.45rem; font-size:0.7rem; margin-left:0.35rem; cursor:pointer;" id="btnCopyRouting">📋 Copy</button>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem;">
+            <div style="font-size:0.75rem; color:#f59e0b; font-weight:800; text-transform:uppercase; margin-bottom:0.4rem;">Payout Policy & Governance</div>
+            <ul style="font-size:0.82rem; color:var(--text-muted); margin:0.4rem 0 0 1.2rem; line-height:1.6;">
+              <li>Minimum payout threshold: <strong>৳5,000 BDT</strong> ($50 USD).</li>
+              <li>Commission credited upon verified client invoice settlement.</li>
+              <li>No personal bKash/Nagad transfers on enterprise partner accounts.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+    </div> <!-- /partnerAffiliateView -->
+
     <!-- CAMPAIGN BRIEF SUBMISSION MODAL -->
     <div id="partnerBriefModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
       <div style="background: #0f172a; border: 1px solid rgba(168,85,247,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 520px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
@@ -254,7 +419,7 @@
               <select id="payModalMethodSelect" class="form-input" style="width: 100%; padding: 0.55rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
                 <option value="bKash Merchant (01708-459008)">🌸 bKash Direct Merchant (+8801708-459008)</option>
                 <option value="Nagad Merchant (01708-459008)">🟠 Nagad Direct Merchant (+8801708-459008)</option>
-                <option value="BRAC Bank Corporate Transfer">🏦 BRAC Bank Corporate (A/C: 1501204891001)</option>
+                <option value="BRAC Bank Limited (Neoncore Tech Solution)">🏦 BRAC Bank Limited — Neoncore Tech Solution (A/C: 2081636480001)</option>
               </select>
             </div>
 
@@ -269,6 +434,130 @@
             </div>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- AFFILIATE COMMISSION PAYOUT MODAL -->
+    <div id="affiliatePayoutModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+      <div style="background: #0f172a; border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin: 0;">💰 Request Commission Payout</h2>
+          <button onclick="closeAffiliatePayoutModal()" aria-label="Close modal" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+        </div>
+        <form onsubmit="submitAffiliatePayout(event)">
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; padding: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.78rem; color: #94a3b8;">Available Balance</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #34d399;" id="payoutAvailableBalanceLabel">৳17,500</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.72rem; color: #94a3b8;">Minimum Threshold</div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #f59e0b;">৳5,000 BDT</div>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Withdrawal Amount (৳ BDT) *</label>
+              <input type="number" id="payoutAmountInput" min="5000" step="500" class="form-input" style="width: 100%; padding: 0.55rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required placeholder="Minimum 5,000">
+            </div>
+
+            <div>
+              <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Settlement Method *</label>
+              <select id="payoutMethodSelect" class="form-input" style="width: 100%; padding: 0.55rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+                <option value="BRAC Bank Limited (Neoncore Tech Solution)">🏦 BRAC Bank Limited (A/C: 2081636480001)</option>
+                <option value="Corporate Direct Bank Wire">🏦 Institutional Bank Wire (Custom Verified Account)</option>
+                <option value="bKash Merchant Corporate">🌸 bKash Corporate Merchant Settlement</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Beneficiary Account Number / Routing</label>
+              <input type="text" id="payoutAccountInput" class="form-input" style="width: 100%; padding: 0.55rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" placeholder="e.g. 2081636480001 (BRAC Bank) or A/C Details">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.8rem;">
+              <button type="button" class="btn-secondary" onclick="closeAffiliatePayoutModal()" style="padding: 0.5rem 1rem; border-radius: 8px;">Cancel</button>
+              <button type="submit" id="btnSubmitPayout" class="btn-purple" style="padding: 0.5rem 1.25rem; border-radius: 8px; background: linear-gradient(135deg, #10b981, #059669);">🚀 Request Transfer</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- CO-BRANDED WHITE-LABEL INTAKE PREVIEW MODAL -->
+    <div id="whiteLabelPreviewModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(10px); padding: 1rem;">
+      <div style="background: #0f172a; border: 1px solid rgba(234,179,8,0.4); border-radius: 18px; padding: 1.75rem; width: 100%; max-width: 680px; box-shadow: 0 25px 65px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+              <span class="badge" style="background: rgba(234,179,8,0.2); color: #facc15; font-weight: 800; font-size: 0.7rem;">CO-BRANDED LIVE INTAKE</span>
+              <span class="badge badge-emerald" style="font-size: 0.7rem;">Automated Attribution</span>
+            </div>
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0; font-family: var(--font-heading);">
+              👑 Co-Branded Enterprise Portal Preview
+            </h2>
+          </div>
+          <button onclick="closeWhiteLabelPreview()" aria-label="Close modal" style="background: none; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer;">✕</button>
+        </div>
+
+        <!-- Live Co-Branded Mockup Canvas -->
+        <div style="background: linear-gradient(135deg, #070b12, #0d131f); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <div style="background: #facc15; color: #000; font-weight: 900; font-size: 0.85rem; padding: 0.2rem 0.5rem; border-radius: 6px;" id="wlPreviewPartnerBadge">
+                PARTNER ORG
+              </div>
+              <span style="color: var(--text-dim); font-size: 0.85rem;">×</span>
+              <div style="color: #00df89; font-weight: 900; font-size: 0.85rem; letter-spacing: 0.04em;">
+                GRO10X AUTONOMOUS PODS
+              </div>
+            </div>
+            <span style="font-size: 0.7rem; color: #34d399; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); padding: 0.2rem 0.5rem; border-radius: 999px;">
+              🔒 Direct Pod Assignment
+            </span>
+          </div>
+
+          <div style="text-align: center; margin-bottom: 1.25rem;">
+            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0 0 0.3rem;" id="wlPreviewHeadline">
+              Welcome to the Accelerated AI Delivery Intake
+            </h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0; max-width: 480px; margin: 0 auto;">
+              Your engagement is co-sponsored by <strong style="color: #facc15;" id="wlPreviewPartnerName">Your Organization</strong>. Complete your project brief below to lock in guaranteed 14-day sprint velocity and automated Definition of Done.
+            </p>
+          </div>
+
+          <!-- Mockup Form Fields -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0.6rem 0.85rem;">
+              <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Client Enterprise Name</div>
+              <div style="font-size: 0.82rem; color: #fff; font-weight: 600; margin-top: 0.15rem;">Apex Fintech Corporation</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0.6rem 0.85rem;">
+              <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Target Solution Scope</div>
+              <div style="font-size: 0.82rem; color: #38bdf8; font-weight: 600; margin-top: 0.15rem;">AI Agency OS & Automated Pod</div>
+            </div>
+          </div>
+
+          <div style="background: rgba(0,223,137,0.06); border: 1px solid rgba(0,223,137,0.2); border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.76rem; color: #34d399; display: flex; justify-content: space-between; align-items: center;">
+            <span>🛡️ 30-Day Bug Fix Warranty & Master IP Shield automatically bundled.</span>
+            <span style="font-weight: 800;" id="wlPreviewAttributionTag">Attributed: AFF-GOLD</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
+          <button type="button" class="btn-secondary btn-sm" onclick="copyWhiteLabelLink()">
+            📋 Copy Co-Branded URL
+          </button>
+          <div style="display: flex; gap: 0.5rem;">
+            <a id="wlPreviewLiveBtn" href="/portal/AFF-TANVIR" target="_blank" class="btn-primary btn-sm" style="background: linear-gradient(135deg, #06b6d4, #00df89); text-decoration: none;">
+              🌐 Open Live Client Portal ↗
+            </a>
+            <button type="button" class="btn-secondary btn-sm" onclick="closeWhiteLabelPreview()">
+              Close Preview
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 

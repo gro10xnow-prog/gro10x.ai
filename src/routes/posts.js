@@ -127,10 +127,10 @@ async function requirePostApprovalAccess(req, res, next) {
     return next();
   }
 
-  const linkedType = user.linkedType || user.profile?.linkedType || '';
+  const linkedType = (user.linkedType || user.profile?.linkedType || user.type || '').toLowerCase();
   const userLinkedId = user.linkedId || user.profile?.linkedId || user.id;
 
-  if (linkedType === 'client' && userLinkedId) {
+  if ((linkedType === 'client' || linkedType === 'partner' || access.includes('client') || access.includes('partner') || role.includes('client') || role.includes('partner')) && userLinkedId) {
     let post = inMemoryPosts.find(p => p.id === req.params.id);
     if (supabase) {
       try {
@@ -141,16 +141,16 @@ async function requirePostApprovalAccess(req, res, next) {
     if (post) {
       const matchId = String(post.client_id || '').toLowerCase() === String(userLinkedId).toLowerCase();
       const matchName = user.name && String(post.client_name || post.clientName || '').toLowerCase() === String(user.name).toLowerCase();
-      if (matchId || matchName || !post.client_id) {
+      if (matchId || matchName || !post.client_id || linkedType === 'partner' || access.includes('partner') || role.includes('partner')) {
         return next();
       }
       return res.status(403).json({ error: 'Forbidden: You can only approve or review posts assigned to your client account' });
     }
-    // If post is not in DB or inMemory store yet, allow authenticated client to approve/reject
+    // If post is not in DB or inMemory store yet, allow authenticated client or partner to approve/reject
     return next();
   }
 
-  return res.status(403).json({ error: 'Forbidden: Manager or Client privileges required to approve/reject posts' });
+  return res.status(403).json({ error: 'Forbidden: Manager, Client, or Partner privileges required to approve/reject posts' });
 }
 
 const DEFAULT_POSTS = [

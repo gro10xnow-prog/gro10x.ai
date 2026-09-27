@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X QA Automation Runner</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="qa-container">
+    
+    <!-- ──────── 1. HEADER & QUICK UTILITIES ──────── -->
+    <header class="qa-header">
+      <div class="brand-title">
+        <span class="logo-icon">⚡</span>
+        <div>
+          <h2>GRO10X QA Runner</h2>
+          <span class="version-tag">3-Tier E2E Execution Cockpit</span>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button id="btnToggleAudio" class="icon-btn" title="Toggle Sound Chimes (Audio Feedback)">
+          <span id="audioIcon">🔊</span>
+        </button>
+        <button id="btnToggleMatrix" class="icon-btn" title="Toggle Platform Health Matrix View">
+          <span>▦</span>
+        </button>
+        <button id="btnToggleZen" class="icon-btn" title="Toggle Zen Execution Mode (Collapse/Expand Controls)">
+          <span id="zenIcon">👁️</span>
+        </button>
+        <div class="status-indicator offline" id="tabStatus" title="Active Tab Connection Status">
+          <span class="dot"></span> <span id="statusLabel">Checking...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ──────── 2. INSTANT SEARCH & COMMAND PALETTE (Ctrl+K) ──────── -->
+    <div class="search-command-wrapper">
+      <div class="search-input-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          id="quickSearchInput" 
+          placeholder="Jump to tab or workflow... (Ctrl+K)" 
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <span class="search-kbd" id="searchKbdHint">Ctrl K</span>
+        <button id="btnClearSearch" class="btn-clear-search" style="display: none;">×</button>
+      </div>
+      <!-- Dropdown overlay for instant search results -->
+      <div id="searchResultsOverlay" class="search-results-overlay" style="display: none;"></div>
+    </div>
+
+    <!-- ──────── 3. PLATFORM AVATAR QUICK-SWITCH RIBBON ──────── -->
+    <div class="platform-ribbon" id="platformRibbon">
+      <button class="ribbon-chip active" data-platform="workspace">⚡ Workspace</button>
+      <button class="ribbon-chip" data-platform="admin">🏢 Admin</button>
+      <button class="ribbon-chip" data-platform="client">👤 Client</button>
+      <button class="ribbon-chip" data-platform="partners">🤝 Partner</button>
+      <button class="ribbon-chip" data-platform="public">🌐 Public</button>
+    </div>
+
+    <!-- ──────── 4. COMPACT ZEN EXECUTION PILL (Visible during active test or Zen mode) ──────── -->
+    <div id="zenExecutionPill" class="zen-pill-bar" style="display: none;">
+      <div class="zen-pill-info">
+        <span class="zen-platform" id="zenPlatformText">⚡ Workspace</span>
+        <span class="zen-divider">›</span>
+        <span class="zen-page" id="zenPageText">📊 Overview</span>
+        <span class="zen-badge-speed" id="zenSpeedText">800ms</span>
+      </div>
+      <button id="btnExpandSetup" class="btn-zen-expand" title="Expand Setup Controls">
+        ⚙️ Edit
+      </button>
+    </div>
+
+    <!-- ──────── 5. COLLAPSIBLE SETUP PANEL (Tier 1, Tier 2, Mode & Pacing) ──────── -->
+    <div id="setupPanel" class="collapsible-setup">
+      
+      <!-- Tier 1 & Tier 2 Selection Card -->
+      <section class="card">
+        <div class="form-group">
+          <label for="platformSelect">Platform (Tier 1)</label>
+          <select id="platformSelect">
+            <option value="workspace" selected>⚡ Unified Multi-Engine Workspace (/workspace)</option>
+            <option value="admin">🏢 Admin Command Center OS (/app)</option>
+            <option value="client">👤 Client Partner Portal (/client)</option>
+            <option value="partners">🤝 Enterprise Partner Portal (/partners)</option>
+            <option value="public">🌐 Public Portals & Micro-Apps (/)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label for="pageSelect">Target Page / Tab (Tier 2)</label>
+            <button id="btnNavigateTab" class="btn-text-nav" title="Navigate active Chrome tab to this page">
+              🧭 Go to Page
+            </button>
+          </div>
+          <select id="pageSelect">
+            <!-- Dynamically populated from registry -->
+          </select>
+        </div>
+
+        <div class="route-telemetry">
+          <span id="targetRouteText">Route: /app#dashboard</span>
+          <span id="targetScopeInfo" class="badge-scope">22 Tabs Available</span>
+        </div>
+      </section>
+
+      <!-- Tier 3 Selection & Pacing Card -->
+      <section class="card">
+        <div class="form-group">
+          <label>Execution Mode (Tier 3)</label>
+          <div class="mode-pill-group">
+            <button type="button" class="mode-pill active" id="modeBtnWorkflows" data-mode="workflows">
+              🚀 Live E2E Workflows
+            </button>
+            <button type="button" class="mode-pill" id="modeBtnAudit" data-mode="audit">
+              🔍 Page Health Audit
+            </button>
+          </div>
+        </div>
+
+        <!-- Contextual Workflow Dropdown -->
+        <div class="form-group" id="workflowGroup">
+          <label for="workflowSelect">Select Workflow on this Page</label>
+          <select id="workflowSelect">
+            <!-- Dynamically populated based on selected page -->
+          </select>
+        </div>
+
+        <!-- Execution Pacing & Delay Selector -->
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+            <label>Execution Pacing</label>
+            <span id="speedLabel" style="font-size:10px; color:var(--color-primary); font-weight:700;">800ms Human Demo</span>
+          </div>
+          <div class="speed-btn-group">
+            <button type="button" class="speed-btn" data-delay="200" id="speedFast">⚡ Fast 200ms</button>
+            <button type="button" class="speed-btn active" data-delay="800" id="speedHuman">👤 Human 800ms</button>
+            <button type="button" class="speed-btn" data-delay="1500" id="speedSlow">🐢 Demo 1500ms</button>
+          </div>
+        </div>
+
+        <!-- Auto-cleanup fixture toggle -->
+        <div class="cleanup-toggle-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="chkAutoCleanup" checked>
+            <span>🔄 Auto-Cleanup Ephemeral Fixtures [QA-XXXXXX]</span>
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <!-- ──────── 6. PLATFORM SANITY HEALTH MATRIX (Collapsible Visual Board) ──────── -->
+    <section class="card matrix-card" id="platformMatrixSection" style="display: none;">
+      <div class="matrix-header">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:14px;">▦</span>
+          <strong id="matrixTitle">Platform Health Status Matrix</strong>
+        </div>
+        <button id="btnCloseMatrix" class="btn-icon-close" title="Close Matrix View">×</button>
+      </div>
+      <div class="matrix-grid" id="matrixGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ──────── 7. RUNTIME CONTROLS & PROGRESS ──────── -->
+    <section class="card controls-card">
+      <div class="actions-row" id="idleActionsRow">
+        <button id="btnRunSuite" class="btn-primary" title="Run currently selected workflow or audit">
+          <span>▶</span> Run Selected
+        </button>
+        <button id="btnRunPageAll" class="btn-secondary" title="Run all workflows/audits on this page">
+          <span>⚡</span> Run All on Page
+        </button>
+      </div>
+
+      <!-- Active Running Controls (Pause, Resume, Stop, Skip) -->
+      <div class="running-actions-row" id="runningActionsRow" style="display: none;">
+        <button id="btnPauseResume" class="btn-control-active btn-pause" title="Pause / Resume Execution (Spacebar)">
+          <span id="pauseIcon">⏸️</span> <span id="pauseText">Pause</span>
+        </button>
+        <button id="btnSkipStep" class="btn-control-active btn-skip" title="Skip Current Step">
+          <span>⏩ Skip</span>
+        </button>
+        <button id="btnStopSuite" class="btn-control-active btn-stop" title="Stop Test Suite (Esc)">
+          <span>⏹️ Stop</span>
+        </button>
+      </div>
+
+      <div class="secondary-actions-row" id="secondaryActionsRow" style="margin-top: 6px;">
+        <button id="btnRunPlatform" class="btn-outline-small">
+          <span>🌐</span> Run Entire Platform Suite
+        </button>
+      </div>
+
+      <!-- Real-time Step Action Ticker -->
+      <div class="live-action-ticker" id="liveTicker">
+        <span class="ticker-dot" id="tickerDot"></span>
+        <span class="ticker-text" id="tickerText">Standby — Ready for execution</span>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="suiteProgressBar"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-secondary);">
+        <span id="runStatusText">Standby</span>
+        <span id="progressText">0 / 0</span>
+      </div>
+    </section>
+
+    <!-- ──────── 8. NOW EXECUTING HERO CARD (Active during runs) ──────── -->
+    <section class="card hero-step-card" id="nowExecutingHero" style="display: none;">
+      <div class="hero-header">
+        <span class="hero-step-badge" id="heroStepBadge">STEP 1 / 19</span>
+        <span class="hero-timer" id="heroTimer">⏱️ 0.0s</span>
+      </div>
+      <div class="hero-title" id="heroStepTitle">Initializing suite...</div>
+      <div class="hero-meta-row">
+        <span class="hero-action-pill" id="heroActionPill">CLICK</span>
+        <code class="hero-selector-code" id="heroSelectorCode">a[href="#dashboard"]</code>
+      </div>
+    </section>
+
+    <!-- ──────── 9. FINAL SCORECARD & MULTI-EXPORT ──────── -->
+    <section class="scorecard" id="scorecardSection" style="display: none;">
+      <div class="scorecard-header">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:16px;" id="scorecardEmoji">🏆</span>
+          <strong id="scorecardVerdict" style="font-size:12px; color:var(--color-primary);">QA AUDIT PASSED</strong>
+        </div>
+        <div class="export-btn-group">
+          <button id="btnCopyReport" class="btn-export-pill" title="Copy Markdown for GitHub / Logs">
+            📋 Markdown
+          </button>
+          <button id="btnCopySlackTG" class="btn-export-pill" title="Copy formatted summary for Telegram & Slack">
+            💬 Telegram
+          </button>
+          <button id="btnDownloadJson" class="btn-export-pill" title="Download raw JSON report">
+            📥 JSON
+          </button>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-value text-success" id="metricPassed">0</div>
+          <div class="metric-label">Passed</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value text-danger" id="metricFailed">0</div>
+          <div class="metric-label">Failed</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value text-warning" id="metricErrors">0</div>
+          <div class="metric-label">Errors</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value" id="metricDuration">0s</div>
+          <div class="metric-label">Duration</div>
+        </div>
+      </div>
+
+      <!-- Regression history banner -->
+      <div class="regression-banner" id="regressionBanner" style="display: none;">
+        <span id="regressionText">🟢 No regressions detected</span>
+      </div>
+    </section>
+
+    <!-- ──────── 10. REAL-TIME TEST STEP STREAM & INSPECTOR ──────── -->
+    <section class="card stream-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <label>Live Action Stream</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button id="btnClearLogs" class="btn-text-nav" style="font-size: 10px;">Clear</button>
+          <span id="stepRateBadge" style="font-size: 10px; color: var(--text-muted);">Step-by-step</span>
+        </div>
+      </div>
+      <div class="log-stream" id="logStream">
+        <div style="text-align: center; padding: 24px 12px; color: var(--text-muted);">
+          Select platform & page, then click <b>Run Selected</b> to begin.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Load Registries, Workflows, and Health Audits -->
+  <script src="suites/registry.js"></script>
+  <script src="suites/portal-audits.js"></script>
+  <script src="suites/workflows/admin-workflows.js"></script>
+  <script src="suites/workflows/client-workflows.js"></script>
+  <script src="suites/workflows/crew-workflows.js"></script>
+  <script src="suites/workflows/manager-workflows.js"></script>
+  <script src="suites/workflows/dce-workflows.js"></script>
+  <script src="suites/dashboard-qa.js"></script>
+  <script src="suites/engines-qa.js"></script>
+  <script src="suites/platforms-qa.js"></script>
+  <script src="suites/gigs-qa.js"></script>
+  <script src="suites/analytics-qa.js"></script>
+  <script src="suites/crm-qa.js"></script>
+  <script src="suites/leads-qa.js"></script>
+  <script src="suites/proposals-qa.js"></script>
+  <script src="suites/kanban-qa.js"></script>
+  <script src="suites/reviews-qa.js"></script>
+  <script src="suites/content-os-qa.js"></script>
+  <script src="suites/social-qa.js"></script>
+  <script src="suites/cms-qa.js"></script>
+  <script src="suites/brands-qa.js"></script>
+  <script src="suites/digistore-qa.js"></script>
+  <script src="suites/dbm-qa.js"></script>
+  <script src="suites/finance-qa.js"></script>
+  <script src="suites/hr-qa.js"></script>
+  <script src="suites/assets-qa.js"></script>
+  <script src="suites/tickets-qa.js"></script>
+  <script src="suites/automation-qa.js"></script>
+  <script src="suites/settings-qa.js"></script>
+  <script src="suites/workspace-qa.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

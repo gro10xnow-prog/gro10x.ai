@@ -10,6 +10,19 @@ window.APP_MODULES = window.APP_MODULES || {};
 
 window.APP_MODULES.hr = async function(container) {
   let activeHrTab = 'roster';
+
+  function getCurrency() {
+    return localStorage.getItem('gro10x_currency') || 'BDT';
+  }
+
+  function formatMoney(amount) {
+    const curr = getCurrency();
+    const val = Number(amount) || 0;
+    if (curr === 'USD') {
+      return '$' + Math.round(val / 120).toLocaleString();
+    }
+    return '৳' + Math.round(val).toLocaleString();
+  }
   let teamData = [];
   let leavesData = [];
   let workloadData = [];
@@ -152,9 +165,13 @@ window.APP_MODULES.hr = async function(container) {
             Manage team roster, view staff survey profiles, track attendance, generate PDF payslips, and review leave requests.
           </div>
         </div>
-        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <a href="/api/team/attendance-report" target="_blank" class="btn-secondary" style="text-decoration:none; font-size:0.85rem;">📊 Export Attendance (CSV)</a>
-          <button class="btn-primary" onclick="window.HR_MODULE.openAddModal()">+ Onboard Team Member</button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+          <button id="hrCurrencyToggleBtn" class="btn-ghost" onclick="window.HR_MODULE.toggleCurrency()" style="border:1px solid rgba(255,255,255,0.12); padding:0.45rem 0.85rem; font-size:0.82rem; font-weight:800; border-radius:8px; display:inline-flex; align-items:center; gap:0.4rem; color:var(--text-primary);">
+            <span>${getCurrency() === 'USD' ? '$ USD Mode' : '৳ BDT Mode'}</span>
+            <span style="font-size:0.7rem; opacity:0.6;">(1:120)</span>
+          </button>
+          <a id="btnExportAttendanceCsv" href="/api/team/attendance-report" target="_blank" class="btn-secondary" style="text-decoration:none; font-size:0.85rem;">📊 Export Attendance (CSV)</a>
+          <button id="btnOnboardTeamMember" class="btn-primary" onclick="window.HR_MODULE.openAddModal()">+ Onboard Team Member</button>
         </div>
       </div>
 
@@ -162,29 +179,29 @@ window.APP_MODULES.hr = async function(container) {
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
         <div class="kpi-tile">
           <div class="kpi-label">Active Headcount</div>
-          <div class="kpi-val">${teamData.length}</div>
+          <div id="kpiHrHeadcount" class="kpi-val">${teamData.length}</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Currently In Studio</div>
-          <div class="kpi-val" style="color: var(--emerald-brand);">${inStudioCount}</div>
+          <div id="kpiHrInStudio" class="kpi-val" style="color: var(--emerald-brand);">${inStudioCount}</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">🌴 On Leave Today</div>
-          <div class="kpi-val" style="color: var(--purple-light);">${onLeaveCount}</div>
+          <div id="kpiHrOnLeave" class="kpi-val" style="color: var(--purple-light);">${onLeaveCount}</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Pending Leave Requests</div>
-          <div class="kpi-val" style="color: var(--amber-brand);">${pendingLeaves}</div>
+          <div id="kpiHrPendingLeaves" class="kpi-val" style="color: var(--amber-brand);">${pendingLeaves}</div>
         </div>
       </div>
 
       <!-- Subtab Switcher -->
-      <div style="display:flex; gap:0.5rem; background:var(--surface-1); padding:0.35rem; border-radius:12px; border:1px solid var(--border-subtle); width:fit-content; margin-bottom:1.5rem; flex-wrap:wrap;">
-        <button class="btn-ghost ${activeHrTab === 'roster' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('roster')">👥 Team Roster & Profiles (${teamData.length})</button>
-        <button class="btn-ghost ${activeHrTab === 'invitations' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('invitations')">📩 Onboarding & PIN Invites (${invitationsData.length})</button>
-        <button class="btn-ghost ${activeHrTab === 'attendance' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('attendance')">📍 Today's Attendance (${attendanceData.length})</button>
-        <button class="btn-ghost ${activeHrTab === 'eod' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('eod')">📝 EOD Reports (${eodData.length})</button>
-        <button class="btn-ghost ${activeHrTab === 'leaves' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('leaves')">🌴 Leave Requests (${pendingLeaves} Pending)</button>
+      <div id="hrNavTabs" style="display:flex; gap:0.5rem; background:var(--surface-1); padding:0.35rem; border-radius:12px; border:1px solid var(--border-subtle); width:fit-content; margin-bottom:1.5rem; flex-wrap:wrap;">
+        <button id="btnHrTabRoster" data-tab="roster" class="btn-ghost hr-tab-btn ${activeHrTab === 'roster' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('roster')">👥 Team Roster & Profiles (${teamData.length})</button>
+        <button id="btnHrTabInvitations" data-tab="invitations" class="btn-ghost hr-tab-btn ${activeHrTab === 'invitations' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('invitations')">📩 Onboarding & PIN Invites (${invitationsData.length})</button>
+        <button id="btnHrTabAttendance" data-tab="attendance" class="btn-ghost hr-tab-btn ${activeHrTab === 'attendance' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('attendance')">📍 Today's Attendance (${attendanceData.length})</button>
+        <button id="btnHrTabEod" data-tab="eod" class="btn-ghost hr-tab-btn ${activeHrTab === 'eod' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('eod')">📝 EOD Reports (${eodData.length})</button>
+        <button id="btnHrTabLeaves" data-tab="leaves" class="btn-ghost hr-tab-btn ${activeHrTab === 'leaves' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('leaves')">🌴 Leave Requests (${pendingLeaves} Pending)</button>
       </div>
 
       <div class="data-table-container">
@@ -192,12 +209,12 @@ window.APP_MODULES.hr = async function(container) {
       </div>
 
       <!-- Staff Profile Drawer Overlay -->
-      <div id="hrProfileDrawer" class="modal-overlay">
+      <div id="hrProfileDrawer" class="modal-overlay" onclick="if(event.target === this) window.HR_MODULE.closeProfileDrawer()">
         <div class="modal-box" style="max-width:560px; max-height:90vh; overflow-y:auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem; margin-bottom:1.25rem;">
             <h2 style="font-size:1.2rem; font-weight:800; margin:0; color:#fff;" id="drawerStaffName">Staff Profile</h2>
             <div style="display:flex; align-items:center; gap:0.5rem;" id="drawerHeaderActions">
-              <button onclick="window.HR_MODULE.closeProfileDrawer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+              <button id="btnCloseProfileDrawer" onclick="window.HR_MODULE.closeProfileDrawer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
             </div>
           </div>
           <div id="drawerStaffContent">Loading staff details...</div>
@@ -205,11 +222,11 @@ window.APP_MODULES.hr = async function(container) {
       </div>
 
       <!-- Edit Team Member Modal -->
-      <div id="hrEditMemberModal" class="modal-overlay">
+      <div id="hrEditMemberModal" class="modal-overlay" onclick="if(event.target === this) window.HR_MODULE.closeEditModal()">
         <div class="modal-box" style="max-width:540px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <h3 style="margin:0; color:#fff; font-family:var(--font-heading);">✏️ Edit Team Profile</h3>
-            <button onclick="window.HR_MODULE.closeEditModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button id="btnCloseEditModal" onclick="window.HR_MODULE.closeEditModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
           <form onsubmit="window.HR_MODULE.submitEditMember(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
             <input type="hidden" id="hrEditCode" />
@@ -264,7 +281,7 @@ window.APP_MODULES.hr = async function(container) {
               <input type="text" id="hrEditEmergency" placeholder="e.g. +88017..." class="input-text" />
             </div>
             <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.8rem;">
-              <button type="button" class="btn-secondary" onclick="window.HR_MODULE.closeEditModal()">Cancel</button>
+              <button type="button" id="btnCancelEditModal" class="btn-secondary" onclick="window.HR_MODULE.closeEditModal()">Cancel</button>
               <button type="submit" class="btn-primary" id="hrEditSubmitBtn">💾 Save Changes</button>
             </div>
           </form>
@@ -272,11 +289,11 @@ window.APP_MODULES.hr = async function(container) {
       </div>
 
       <!-- Onboard Team Member Modal -->
-      <div id="hrAddMemberModal" class="modal-overlay">
+      <div id="hrAddMemberModal" class="modal-overlay" onclick="if(event.target === this) window.HR_MODULE.closeAddModal()">
         <div class="modal-box" style="max-width:540px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <h3 style="margin:0; color:#fff; font-family:var(--font-heading);">+ Onboard Team Member</h3>
-            <button onclick="window.HR_MODULE.closeAddModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button id="btnCloseAddModal" onclick="window.HR_MODULE.closeAddModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
           <form onsubmit="window.HR_MODULE.submitMember(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
             <div class="form-group">
@@ -319,7 +336,7 @@ window.APP_MODULES.hr = async function(container) {
               </div>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.8rem;">
-              <button type="button" class="btn-secondary" onclick="window.HR_MODULE.closeAddModal()">Cancel</button>
+              <button type="button" id="btnCancelAddMember" class="btn-secondary" onclick="window.HR_MODULE.closeAddModal()">Cancel</button>
               <button type="submit" class="btn-primary" id="hrSubmitBtn">🚀 Onboard Member & Create Profile</button>
             </div>
           </form>
@@ -327,7 +344,7 @@ window.APP_MODULES.hr = async function(container) {
       </div>
 
       <!-- Send PIN Invitation Modal -->
-      <div id="hrInviteModal" class="modal-overlay">
+      <div id="hrInviteModal" class="modal-overlay" onclick="if(event.target === this) window.HR_MODULE.closeInviteModal()">
         <div class="modal-box" style="max-width:540px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
             <h3 style="margin:0; color:#fff; font-family:var(--font-heading);" id="inviteModalTitle">📋 Send PIN Invitation</h3>
@@ -340,7 +357,7 @@ window.APP_MODULES.hr = async function(container) {
       </div>
 
       <!-- Telegram Stage Reminder Modal -->
-      <div id="hrReminderModal" class="modal-overlay">
+      <div id="hrReminderModal" class="modal-overlay" onclick="if(event.target === this) window.HR_MODULE.closeReminderModal()">
         <div class="modal-box" style="max-width:540px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
             <h3 style="margin:0; color:#fff; font-family:var(--font-heading);" id="reminderModalTitle">📲 Send Telegram Reminder</h3>
@@ -353,7 +370,7 @@ window.APP_MODULES.hr = async function(container) {
       </div>
 
       <!-- Gemini AI Personalized Message Modal -->
-      <div id="hrAiMessageModal" class="modal-overlay">
+      <div id="hrAiMessageModal" class="modal-overlay" onclick="if(event.target === this) window.HR_MODULE.closeAiModal()">
         <div class="modal-box" style="max-width:580px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
             <h3 style="margin:0; color:#fff; font-family:var(--font-heading); display:flex; align-items:center; gap:0.5rem;" id="aiModalTitle">
@@ -377,7 +394,7 @@ window.APP_MODULES.hr = async function(container) {
       const pct = invitationsData.length > 0 ? Math.round((onboarded / invitationsData.length) * 100) : 0;
 
       return `
-        <div style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:16px; padding:1.25rem; margin-bottom:1.25rem;">
+        <div id="hrInvitationsPipelineCard" style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:16px; padding:1.25rem; margin-bottom:1.25rem;">
           <div style="margin-bottom:0.75rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:0.4rem;">
               <div style="font-size:1.1rem; font-weight:800; color:#fff;">📋 Platform Onboarding & PIN Invitation Pipeline</div>
@@ -396,7 +413,7 @@ window.APP_MODULES.hr = async function(container) {
           </div>
         </div>
 
-        <table class="data-table">
+        <table id="hrInvitationsTable" class="data-table">
           <thead>
             <tr>
               <th>Member Name</th>
@@ -468,7 +485,7 @@ window.APP_MODULES.hr = async function(container) {
 
     if (activeHrTab === 'roster') {
       return `
-        <table class="data-table">
+        <table id="hrRosterTable" class="data-table">
           <thead>
             <tr>
               <th>Employee Name</th>
@@ -516,11 +533,11 @@ window.APP_MODULES.hr = async function(container) {
                     </div>
                   </td>
                   <td><span class="badge ${statusColor}">● ${escapeHTML(m.status || 'Active')}</span></td>
-                  <td style="font-weight:700; color:var(--purple-light);">৳${salary.toLocaleString()}</td>
+                  <td style="font-weight:700; color:var(--purple-light);">${formatMoney(salary)}</td>
                   <td>
                     <div style="display:flex; gap:0.4rem;">
-                      <button class="btn-primary btn-sm" onclick='window.HR_MODULE.viewProfile("${code}")'>👁️ Profile</button>
-                      <button class="btn-secondary btn-sm" onclick='window.HR_MODULE.openEditModal("${code}")'>✏️ Edit</button>
+                      <button class="btn-primary btn-sm hr-view-profile-btn" data-code="${code}" onclick='window.HR_MODULE.viewProfile("${code}")'>👁️ Profile</button>
+                      <button class="btn-secondary btn-sm hr-edit-profile-btn" data-code="${code}" onclick='window.HR_MODULE.openEditModal("${code}")'>✏️ Edit</button>
                     </div>
                   </td>
                 </tr>
@@ -531,7 +548,7 @@ window.APP_MODULES.hr = async function(container) {
       `;
     } else if (activeHrTab === 'attendance') {
       return `
-        <table class="data-table">
+        <table id="hrAttendanceTable" class="data-table">
           <thead>
             <tr>
               <th>Employee Name</th>
@@ -558,7 +575,7 @@ window.APP_MODULES.hr = async function(container) {
       `;
     } else if (activeHrTab === 'eod') {
       return `
-        <table class="data-table">
+        <table id="hrEodTable" class="data-table">
           <thead>
             <tr>
               <th>Employee Name</th>
@@ -585,7 +602,7 @@ window.APP_MODULES.hr = async function(container) {
       `;
     } else {
       return `
-        <table class="data-table">
+        <table id="hrLeavesTable" class="data-table">
           <thead>
             <tr>
               <th>Employee Name</th>
@@ -638,6 +655,17 @@ window.APP_MODULES.hr = async function(container) {
   }
 
   window.HR_MODULE = {
+    getCurrency,
+    formatMoney,
+    toggleCurrency() {
+      const next = getCurrency() === 'USD' ? 'BDT' : 'USD';
+      this.switchCurrency(next);
+    },
+    switchCurrency(currency) {
+      localStorage.setItem('gro10x_currency', currency);
+      window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency } }));
+      renderHRView();
+    },
     reload() {
       loadHROps();
     },
@@ -713,16 +741,12 @@ window.APP_MODULES.hr = async function(container) {
       }
     },
     async resetStaffPin(code) {
-      const custom = prompt(`Enter new 6-digit PIN for ${code} (or leave blank to auto-generate):`);
-      if (custom === null) return;
       try {
         const payload = {};
-        if (custom && custom.trim().length === 6) payload.customPin = custom.trim();
         const res = await APP_API.post(`/team/${encodeURIComponent(code)}/reset-pin`, payload);
-        if (res && res.success) {
-          const pin = res.tempPin || res.pin || custom || '123456';
-          if (window.showToast) window.showToast(`🔑 PIN Reset Successful! New PIN: ${pin}`, 'success');
-          alert(`✅ Staff PIN has been reset.\n\nEmployee: ${code}\nNew 6-Digit PIN: ${pin}\n\nPlease share this securely with the team member.`);
+        const pin = (res && (res.tempPin || res.pin)) || '123456';
+        if (window.showToast) {
+          window.showToast(`🔑 PIN Reset Successful for ${code}! New PIN: ${pin}`, 'success');
         }
       } catch (err) {
         if (window.showToast) window.showToast('Failed to reset PIN: ' + err.message, 'error');
@@ -737,7 +761,7 @@ window.APP_MODULES.hr = async function(container) {
       if (drawerActions) {
         drawerActions.innerHTML = `
           <button class="btn-secondary btn-sm" style="font-size:0.8rem; padding:0.25rem 0.65rem;" onclick='window.HR_MODULE.openEditModal("${member.emp_code || member.id}")'>✏️ Edit Profile</button>
-          <button onclick="window.HR_MODULE.closeProfileDrawer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          <button id="btnCloseProfileDrawer" onclick="window.HR_MODULE.closeProfileDrawer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
         `;
       }
 
@@ -754,7 +778,7 @@ window.APP_MODULES.hr = async function(container) {
               <div><strong>Department:</strong> ${escapeHTML(member.department || 'Production')}</div>
               <div><strong>Phone:</strong> ${escapeHTML(member.phone || member.whatsapp || 'N/A')}</div>
               <div><strong>Email:</strong> ${escapeHTML(member.email || 'N/A')}</div>
-              <div><strong>Base Salary:</strong> ৳${(Number(member.baseSalary || member.base_salary) || 0).toLocaleString()}</div>
+              <div><strong>Base Salary:</strong> ${formatMoney(member.baseSalary || member.base_salary)}</div>
               <div><strong>Duty Status:</strong> <span class="badge ${member.status === 'In Studio' ? 'badge-emerald' : member.status === 'On Leave' ? 'badge-amber' : 'badge-purple'}">${escapeHTML(member.status || 'Active')}</span></div>
             </div>
           </div>
@@ -1358,5 +1382,49 @@ window.APP_MODULES.hr = async function(container) {
     }
   };
 
+  // Route-guarded Escape key listener for modal dismissal
+  if (window._hrKeydownHandler) {
+    window.removeEventListener('keydown', window._hrKeydownHandler);
+  }
+  window._hrKeydownHandler = function(e) {
+    if (window.location.hash !== '#hr') return;
+    if (e.key === 'Escape') {
+      const modals = ['hrProfileDrawer', 'hrEditMemberModal', 'hrAddMemberModal', 'hrInviteModal', 'hrReminderModal', 'hrAiMessageModal'];
+      modals.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+    }
+  };
+  window.addEventListener('keydown', window._hrKeydownHandler);
+
+  // Global aliases
+  window.HRModule = window.HR_MODULE;
+  window.switchHRCurrency = (curr) => window.HR_MODULE.switchCurrency(curr);
+  window.switchHrCurrency = (curr) => window.HR_MODULE.switchCurrency(curr);
+
+  // Deduplicated gro10x_currency_changed listener with #hr route guard
+  if (window._hrCurrencyHandler) {
+    window.removeEventListener('gro10x_currency_changed', window._hrCurrencyHandler);
+  }
+  window._hrCurrencyHandler = function(e) {
+    if (window.location.hash !== '#hr') return;
+    renderHRView();
+  };
+  window.addEventListener('gro10x_currency_changed', window._hrCurrencyHandler);
+
   await loadHROps();
 };
+
+// Module-level global aliases
+window.HR_MODULE = window.HR_MODULE || {};
+window.HRModule = window.HR_MODULE;
+window.switchHRCurrency = function(curr) {
+  if (window.HR_MODULE && typeof window.HR_MODULE.switchCurrency === 'function') {
+    window.HR_MODULE.switchCurrency(curr);
+  } else {
+    localStorage.setItem('gro10x_currency', curr);
+    window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: curr } }));
+  }
+};
+window.switchHrCurrency = window.switchHRCurrency;

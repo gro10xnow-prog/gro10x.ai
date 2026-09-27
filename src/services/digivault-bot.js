@@ -183,7 +183,7 @@ function initDigiVaultBot() {
 
   if (digivaultBot) return digivaultBot;
 
-  const isPolling = process.env.USE_POLLING === 'true' || process.env.NODE_ENV === 'development';
+  const isPolling = !process.env.VERCEL && process.env.NODE_ENV !== 'test' && (process.env.USE_POLLING === 'true' || process.env.NODE_ENV === 'development');
 
   try {
     digivaultBot = new TelegramBot(token, { polling: isPolling });
@@ -231,8 +231,8 @@ function registerBotHandlers(bot) {
     sendWelcomeMenu(bot, chatId);
   });
 
-  // Command: /catalog
-  bot.onText(/\/catalog/, (msg) => {
+  // Command: /catalog & /products
+  bot.onText(/\/(?:catalog|products)/, (msg) => {
     const chatId = msg.chat.id;
     sendCategoryMenu(bot, chatId);
   });
@@ -1088,6 +1088,7 @@ module.exports = {
   sendRenewalReminder,
   sendTelegramPaymentRejection,
   sendTelegramOrderDelivery,
+  sendAutomatedLicenseDelivery: sendTelegramOrderDelivery,
   sendTelegramActivationDelivery,
   processDigiVaultWebhook
 };

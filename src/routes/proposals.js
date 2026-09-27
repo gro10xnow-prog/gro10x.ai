@@ -15,6 +15,8 @@ const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
+const { readDB, writeDB } = require('../services/db');
+const { createProjectLockinSpec, standardizePOC } = require('../services/onboarding-spec');
 const {
   sendProposalViewedNotification,
   sendProposalAcceptedNotification,
@@ -52,6 +54,7 @@ function mapProposal(p) {
     viewedAt: p.viewed_at || p.viewedAt || null,
     acceptedAt: p.accepted_at || p.acceptedAt || null,
     convertedProjectId: p.converted_project_id || p.convertedProjectId || null,
+    lockinSpecId: p.lockin_spec_id || p.lockinSpecId || null,
     createdAt: p.created_at || p.createdAt || new Date().toISOString(),
     updatedAt: p.updated_at || p.updatedAt || new Date().toISOString()
   };
@@ -183,23 +186,30 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // GET /api/proposals/:id — Get proposal by ID
-router.get('/:id', requireAuth, requireAdmin, async (req, res) => {
-  const { id } = req.params;
-  try {
-    if (isSupabaseConfigured()) {
-      try {
-        const { data, error } = await supabase.from('proposals').select('*').eq('id', id).maybeSingle();
-        if (!error && data) return res.json(mapProposal(data));
-      } catch (e) {}
-    }
-
-    const found = inMemoryProposals.find(p => p.id === id || p.share_token === id);
-    if (found) return res.json(mapProposal(found));
-
-    return res.status(404).json({ error: 'Proposal not found' });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+router.get('/:id', async (req, res, next) => {
+  if (req.baseUrl && req.baseUrl.includes('/public')) {
+    return next();
   }
+  return requireAuth(req, res, () => {
+    return requireAdmin(req, res, async () => {
+      const { id } = req.params;
+      try {
+        if (isSupabaseConfigured()) {
+          try {
+            const { data, error } = await supabase.from('proposals').select('*').eq('id', id).maybeSingle();
+            if (!error && data) return res.json(mapProposal(data));
+          } catch (e) {}
+        }
+
+        const found = inMemoryProposals.find(p => p.id === id || p.share_token === id);
+        if (found) return res.json(mapProposal(found));
+
+        return res.status(404).json({ error: 'Proposal not found' });
+      } catch (err) {
+        return res.status(500).json({ error: err.message });
+      }
+    });
+  });
 });
 
 // POST /api/proposals — Create new proposal
@@ -207,10 +217,10 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
     const nextNum = inMemoryProposals.length + 1;
     const newId = `PROP-2026-${String(nextNum).padStart(3, '0')}`;
-    const token = req.body.shareToken || generateShareToken();
+    const token = req.body.shareToken || req.body.share_token || generateShareToken();
 
-    const oneTimeItems = Array.isArray(req.body.oneTimeItems) ? req.body.oneTimeItems : [];
-    const recurringItems = Array.isArray(req.body.recurringItems) ? req.body.recurringItems : [];
+    const oneTimeItems = Array.isArray(req.body.oneTimeItems) ? req.body.oneTimeItems : (Array.isArray(req.body.one_time_items) ? req.body.one_time_items : []);
+    const recurringItems = Array.isArray(req.body.recurringItems) ? req.body.recurringItems : (Array.isArray(req.body.recurring_items) ? req.body.recurring_items : []);
 
     const oneTimeTotal = oneTimeItems.reduce((acc, item) => acc + (Number(item.amount) || 0), 0);
     const recurringTotal = recurringItems.reduce((acc, item) => acc + (Number(item.amount) || 0), 0);
@@ -218,20 +228,21 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
     const payload = {
       id: newId,
       share_token: token,
-      client_name: req.body.clientName || 'Valued Client',
-      client_company: req.body.clientCompany || '',
-      client_email: req.body.clientEmail || '',
-      client_phone: req.body.clientPhone || '',
-      project_title: req.body.projectTitle || 'AI Growth Proposal',
-      project_summary: req.body.projectSummary || '',
-      scope_items: Array.isArray(req.body.scopeItems) ? req.body.scopeItems : [],
+      client_name: req.body.clientName || req.body.client_name || 'Valued Client',
+      client_company: req.body.clientCompany || req.body.client_company || '',
+      client_email: req.body.clientEmail || req.body.client_email || '',
+      client_phone: req.body.clientPhone || req.body.client_phone || '',
+      project_title: req.body.projectTitle || req.body.project_title || 'AI Growth Proposal',
+      project_summary: req.body.projectSummary || req.body.project_summary || '',
+      canonical_service_code: req.body.canonicalServiceCode || req.body.canonical_service_code || null,
+      scope_items: Array.isArray(req.body.scopeItems) ? req.body.scopeItems : (Array.isArray(req.body.scope_items) ? req.body.scope_items : []),
       one_time_items: oneTimeItems,
       recurring_items: recurringItems,
-      one_time_total: req.body.oneTimeTotal !== undefined ? Number(req.body.oneTimeTotal) : oneTimeTotal,
-      recurring_total: req.body.recurringTotal !== undefined ? Number(req.body.recurringTotal) : recurringTotal,
+      one_time_total: req.body.oneTimeTotal !== undefined ? Number(req.body.oneTimeTotal) : (req.body.one_time_total !== undefined ? Number(req.body.one_time_total) : oneTimeTotal),
+      recurring_total: req.body.recurringTotal !== undefined ? Number(req.body.recurringTotal) : (req.body.recurring_total !== undefined ? Number(req.body.recurring_total) : recurringTotal),
       currency: req.body.currency || 'BDT',
       timeline: req.body.timeline || '2–3 Weeks',
-      valid_until: req.body.validUntil || null,
+      valid_until: req.body.validUntil || req.body.valid_until || null,
       terms: req.body.terms || '',
       notes: req.body.notes || '',
       status: req.body.status || 'Draft',
@@ -596,8 +607,8 @@ You must respond with valid JSON strictly conforming to this JSON schema:
 // PUBLIC ENDPOINTS (No authentication required — client shareable link)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// GET /api/public/proposals/:token — Public view of proposal
-router.get('/public/:token', async (req, res) => {
+// GET /api/public/proposals/:token or /api/proposals/public/:token — Public view of proposal
+router.get(['/public/:token', '/:token'], async (req, res) => {
   const { token } = req.params;
   try {
     let proposal = null;
@@ -663,8 +674,8 @@ router.get('/public/:token', async (req, res) => {
   }
 });
 
-// POST /api/public/proposals/:token/accept — Client accepts proposal
-router.post('/public/:token/accept', async (req, res) => {
+// POST /api/public/proposals/:token/accept or /api/proposals/public/:token/accept — Client accepts proposal
+router.post(['/public/:token/accept', '/:token/accept'], async (req, res) => {
   const { token } = req.params;
   const { acceptedBy, clientNote } = req.body;
 
@@ -683,11 +694,160 @@ router.post('/public/:token/accept', async (req, res) => {
       return res.status(404).json({ error: 'Proposal not found' });
     }
 
+    const affRef = proposal.affiliate_id || proposal.affiliateId || proposal.ref_code || proposal.refCode || req.query.ref || req.body.refCode || req.body.affiliate_id || null;
+
     const updates = {
       status: 'Accepted',
       accepted_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+    if (affRef) {
+      updates.affiliate_id = affRef;
+      updates.ref_code = affRef;
+    }
+
+    // 1. Resolve or Auto-Create Client Organization Record
+    let clientRecord = null;
+    const clientName = (proposal.client_company || proposal.client_name || 'Partner Organization').trim();
+    const contactName = acceptedBy || proposal.client_name || 'Primary Contact';
+    const clientEmail = proposal.client_email || '';
+    const clientPhone = proposal.client_phone || '';
+
+    if (isSupabaseConfigured()) {
+      try {
+        let q = supabase.from('clients').select('*');
+        if (clientEmail) {
+          q = q.or(`email.eq.${clientEmail},name.ilike.%${clientName}%`);
+        } else {
+          q = q.ilike('name', `%${clientName}%`);
+        }
+        const { data: existingClients } = await q.limit(1);
+        if (existingClients && existingClients.length > 0) {
+          clientRecord = existingClients[0];
+        }
+      } catch (_) {}
+    }
+
+    const db = await readDB();
+    if (!clientRecord) {
+      clientRecord = (db.clients || []).find(c => 
+        (clientEmail && c.email && c.email.toLowerCase() === clientEmail.toLowerCase()) ||
+        (c.name && c.name.toLowerCase().includes(clientName.toLowerCase()))
+      );
+    }
+
+    if (!clientRecord) {
+      const newClientId = `CLI-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+      const primaryPoc = standardizePOC({
+        name: contactName,
+        email: clientEmail,
+        phone: clientPhone,
+        decision_role: 'PRIMARY_DECISION_MAKER'
+      });
+
+      clientRecord = {
+        id: newClientId,
+        name: clientName,
+        contact_person: contactName,
+        email: clientEmail,
+        phone: clientPhone,
+        whatsapp: clientPhone,
+        status: 'Onboarding',
+        category: 'AI Transformation',
+        total_spent: '0',
+        active_campaigns: [],
+        pocs: [primaryPoc]
+      };
+
+      if (isSupabaseConfigured()) {
+        try {
+          const { error: insErr } = await supabase.from('clients').insert([clientRecord]);
+          if (insErr) console.warn('[Proposals Accept] Insert client warning:', insErr.message);
+        } catch (e) {
+          console.warn('[Proposals Accept] Insert client exception:', e.message);
+        }
+      }
+
+      db.clients = db.clients || [];
+      db.clients.push(clientRecord);
+      try { writeDB(db); } catch (_) {}
+      try { broadcast('client_update', [clientRecord]); } catch (_) {}
+    }
+
+    // 2. Resolve Canonical Product Code
+    let targetProductCode = proposal.canonical_service_code || proposal.product_code || null;
+    if (!targetProductCode) {
+      const titleLower = (proposal.project_title || '').toLowerCase();
+      if (titleLower.includes('chat') || titleLower.includes('conversational')) targetProductCode = 'SVC-002';
+      else if (titleLower.includes('crm') || titleLower.includes('hub')) targetProductCode = 'SVC-003';
+      else if (titleLower.includes('rag') || titleLower.includes('doc')) targetProductCode = 'SVC-004';
+      else if (titleLower.includes('voice') || titleLower.includes('call')) targetProductCode = 'SVC-005';
+      else if (titleLower.includes('sprint')) targetProductCode = 'SPRINT-01';
+      else targetProductCode = 'SVC-001';
+    }
+
+    // 3. Auto-Generate Zero-Miscommunication Project Lock-In Spec
+    let lockinSpec = null;
+    try {
+      lockinSpec = await createProjectLockinSpec({
+        clientId: clientRecord.id,
+        proposalId: proposal.id,
+        productCode: targetProductCode,
+        questionnaireAnswers: {
+          Q5_SUCCESS_BENCHMARK: clientNote || 'Accepted via digital proposal link.'
+        },
+        customInclusions: (proposal.scope_items || []).map(s => s.title ? `${s.title}: ${s.description || ''}` : String(s))
+      });
+    } catch (specErr) {
+      console.warn('[Proposal Accept] Lock-in spec warning:', specErr.message);
+    }
+
+    const specId = lockinSpec ? lockinSpec.id : null;
+    if (specId) {
+      updates.lockin_spec_id = specId;
+    }
+
+    // 4. Auto-Generate Corporate Upfront Invoice (Engine 2 Settlement Rail)
+    let invoice = null;
+    try {
+      const { createInvoiceRecord } = require('./invoices');
+      const oneTime = Number(proposal.one_time_total || proposal.oneTimeTotal || 0);
+      const recurring = Number(proposal.recurring_total || proposal.recurringTotal || 0);
+      const sprintAmount = oneTime > 0 ? oneTime : (recurring > 0 ? recurring : 50000);
+      const projectTitle = proposal.project_title || proposal.projectTitle || 'AI Sprint Solution';
+      const currency = proposal.currency || 'BDT';
+
+      invoice = await createInvoiceRecord({
+        clientId: clientRecord.id,
+        clientName: clientRecord.name || clientName,
+        projectName: projectTitle,
+        projectRef: proposal.id,
+        currency,
+        engineTag: 'engine2',
+        invoiceType: 'deposit_upfront',
+        settlementRail: currency === 'USD' ? 'usd_stripe' : 'bdt_bank_wire',
+        status: 'Pending',
+        taxRate: 5,
+        affiliateId: affRef,
+        refCode: affRef,
+        items: [
+          {
+            description: `${projectTitle} — Upfront Sprint Deposit`,
+            qty: 1,
+            rate: sprintAmount,
+            amount: sprintAmount
+          }
+        ],
+        notes: `Upfront Deposit for accepted Proposal ${proposal.id}. Corporate Rail: BRAC Bank Limited (Neoncore Tech Solution) A/C: 2081636480001.`
+      });
+    } catch (invErr) {
+      console.warn('[Proposal Accept] Invoice generation warning:', invErr.message);
+    }
+
+    const invoiceId = invoice ? invoice.id : null;
+    if (invoiceId) {
+      updates.invoice_id = invoiceId;
+    }
 
     if (memIdx !== -1) {
       inMemoryProposals[memIdx] = { ...inMemoryProposals[memIdx], ...updates };
@@ -699,11 +859,13 @@ router.post('/public/:token/accept', async (req, res) => {
       } catch (e) {}
     }
 
-    // Dispatch instant celebration Telegram alert to Firoz
+    // Dispatch instant celebration Telegram alert to Owner/Admin with invoice reference
     try {
       sendProposalAcceptedNotification({
         ...proposal,
         ...updates,
+        invoiceId,
+        invoiceAmount: invoice ? invoice.amount : null,
         acceptedBy: acceptedBy || proposal.client_name
       });
     } catch (e) {
@@ -715,7 +877,15 @@ router.post('/public/:token/accept', async (req, res) => {
     return res.json({
       success: true,
       message: 'Proposal successfully accepted. Our team will coordinate next steps immediately.',
-      proposal: mapProposal({ ...proposal, ...updates })
+      proposal: mapProposal({ ...proposal, ...updates }),
+      clientId: clientRecord.id,
+      specId: specId,
+      lockinSpec,
+      invoiceId: invoiceId,
+      invoice: invoice,
+      handoverUrl: `/handover-view.html?projectId=${encodeURIComponent(proposal.id)}`,
+      invoiceUrl: `/client#invoices`,
+      onboardingUrl: specId ? `/client#lockin?specId=${specId}` : '/client#account'
     });
   } catch (err) {
     console.error('Proposal acceptance error:', err);
@@ -723,8 +893,8 @@ router.post('/public/:token/accept', async (req, res) => {
   }
 });
 
-// POST /api/public/proposals/:token/schedule-call — Client requests alignment call
-router.post('/public/:token/schedule-call', async (req, res) => {
+// POST /api/public/proposals/:token/schedule-call or /api/proposals/public/:token/schedule-call — Client requests alignment call
+router.post(['/public/:token/schedule-call', '/:token/schedule-call'], async (req, res) => {
   const { token } = req.params;
   const { name, phone, email, note } = req.body;
 
@@ -755,3 +925,4 @@ router.post('/public/:token/schedule-call', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.inMemoryProposals = inMemoryProposals;

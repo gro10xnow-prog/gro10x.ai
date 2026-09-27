@@ -129,16 +129,16 @@
           resultBox.innerHTML = `
             <div class="card" style="padding: 36px; text-align: center; border-color: rgba(239, 68, 68, 0.3);">
               <div style="font-size: 36px; margin-bottom: 10px;">❌</div>
-              <h3 style="font-size: 18px; font-weight: 700; color: #ef4444; margin-bottom: 6px;">অর্ডার পাওয়া যায়নি</h3>
+              <h3 style="font-size: 18px; font-weight: 700; color: #ef4444; margin-bottom: 6px;">${store.t('trackOrderNotFound')}</h3>
               <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
-                দয়া করে আপনার অর্ডার রেফারেন্স নম্বরটি সঠিক কিনা যাচাই করুন (যেমন: <code style="color: #38bdf8; font-weight: 700;">DIGI-123456</code>)।
+                ${store.t('trackOrderNotFoundDesc')} (e.g. <code style="color: #38bdf8; font-weight: 700;">DIGI-123456</code>).
               </p>
               <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                 <a href="https://wa.me/8801889825025?text=${encodeURIComponent('Salam, I need help finding my DigiVault order: ' + cleanRef)}" target="_blank" class="btn btn-primary" style="background: #25d366; color: #000; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                  <span>💬</span> WhatsApp সাপোর্টে যোগাযোগ করুন
+                  <span>💬</span> ${store.t('btnSupportWhatsApp')}
                 </a>
                 <a href="catalog.html" class="btn btn-secondary" style="text-decoration: none;">
-                  🛒 ক্যাটালগ দেখুন
+                  ${store.t('viewCatalog')}
                 </a>
               </div>
             </div>
@@ -152,24 +152,24 @@
         const isDelivered = o.deliveryStatus === 'delivered';
         const isClosed = o.orderStage === 'confirmed_closed' || o.orderStage === 'admin_closed';
 
-        let statusText = '⏳ পেমেন্ট ভেরিফিকেশন প্রক্রিয়াধীন';
+        let statusText = store.t('statusPendingPay');
         let statusBadgeClass = 'rgba(245, 158, 11, 0.15)';
         let statusColor = '#f59e0b';
 
         if (isRejected) {
-          statusText = '❌ পেমেন্ট বাতিল / ভেরিফিকেশন ব্যর্থ হয়েছে';
+          statusText = store.t('statusRejected');
           statusBadgeClass = 'rgba(239, 68, 68, 0.15)';
           statusColor = '#ef4444';
         } else if (isClosed) {
-          statusText = '✅ অ্যাক্টিভেশন নিশ্চিত ও অর্ডার সফলভাবে সম্পন্ন';
+          statusText = store.t('statusClosed');
           statusBadgeClass = 'rgba(0, 223, 137, 0.2)';
           statusColor = '#00df89';
         } else if (isDelivered) {
-          statusText = '🔑 ডেলিভারি সম্পন্ন! লিংক বা অ্যাক্সেস নিচে দেওয়া হয়েছে';
+          statusText = store.t('statusDeliveredBanner');
           statusBadgeClass = 'rgba(0, 223, 137, 0.15)';
           statusColor = '#00df89';
         } else if (isPaid) {
-          statusText = '✅ পেমেন্ট ভেরিফাইড — প্রকিউরমেন্ট ও ডেলিভারি প্রস্তুত হচ্ছে';
+          statusText = store.t('statusVerified');
           statusBadgeClass = 'rgba(56, 189, 248, 0.15)';
           statusColor = '#38bdf8';
         }
@@ -192,13 +192,21 @@
               <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; position: relative;">
                 ${steps.map((st, i) => {
                   const isCurrentActive = i === activeStepIndex && !isClosed && !isRejected;
+                  const stepNames = [
+                    store.t('stepOrderPlaced'),
+                    store.t('stepPaymentSent'),
+                    store.t('stepPaymentVerified'),
+                    store.t('stepProcuring'),
+                    store.t('stepDelivered')
+                  ];
+                  const labelText = stepNames[i] || st.label;
                   return `
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
                       <div class="${isCurrentActive ? 'step-active-pulse' : ''}" style="width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: ${st.done ? '#00df89' : 'rgba(255,255,255,0.1)'}; color: ${st.done ? '#000' : 'var(--text-muted)'};">
                         ${st.done ? '✓' : (i + 1)}
                       </div>
                       <span style="font-size: 10px; color: ${st.done ? '#fff' : (isCurrentActive ? '#00df89' : 'var(--text-muted)')}; font-weight: ${st.done || isCurrentActive ? '700' : '400'}; line-height: 1.2;">
-                        ${st.label}
+                        ${labelText}
                       </span>
                     </div>
                   `;
@@ -211,15 +219,12 @@
               <div class="eta-banner">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                   <div style="font-size: 13px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
-                    <span>⏱️</span> <span>ডেলিভারি ট্র্যাকিং: প্রস্তুত হচ্ছে</span>
+                    <span>⏱️</span> <span>${store.t('etaTitle')}</span>
                   </div>
-                  <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 800;">১৫-২০ মিনিট</span>
+                  <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 800;">${store.t('etaMinutes')}</span>
                 </div>
                 <div class="eta-progress-track">
                   <div class="eta-progress-fill"></div>
-                </div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
-                  পেমেন্ট ভেরিফিকেশন সম্পন্ন হয়েছে। আমাদের টিম ভেন্ডর থেকে আপনার অ্যাক্টিভেশন প্রস্তুত করছে।
                 </div>
               </div>
             ` : ''}

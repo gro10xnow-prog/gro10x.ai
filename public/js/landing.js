@@ -867,3 +867,53 @@ function toggleFAQ(button) {
   }
 }
 window.toggleFAQ = toggleFAQ;
+
+// ── 11. VERIFIED CLIENT TESTIMONIALS SHOWCASE ──
+async function initShowcaseTestimonials() {
+  const grid = document.getElementById('indexTestimonialsGrid');
+  if (!grid) return;
+  try {
+    const res = await fetch('/api/reviews/testimonials/showcase');
+    const data = await res.json();
+    const list = data?.testimonials || [];
+    if (list.length === 0) {
+      const sec = document.getElementById('testimonials');
+      if (sec) sec.style.display = 'none';
+      return;
+    }
+    function escapeHTML(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    grid.innerHTML = list.map(t => `
+      <div class="pb-engine-card" style="display:flex; flex-direction:column; justify-content:space-between; background:linear-gradient(135deg, rgba(15,23,42,0.85), rgba(7,11,18,0.95)); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:1.5rem; transition:transform 0.2s ease;">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="color:#facc15; font-size:1.1rem; letter-spacing:2px;">
+              ${'⭐'.repeat(t.csatRating || 5)}
+            </div>
+            <span class="badge" style="font-size:0.72rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; padding:0.25rem 0.6rem; border-radius:999px;">
+              ${t.npsScore || 10}/10 NPS Promoted
+            </span>
+          </div>
+          <p style="font-size:0.92rem; color:#e2e8f0; line-height:1.6; font-style:italic; margin-bottom:1.25rem;">
+            "${escapeHTML(t.reviewText)}"
+          </p>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.85rem; font-size:0.82rem;">
+          <div>
+            <strong style="color:#fff; display:block;">${escapeHTML(t.clientDisplayName || 'Client Partner')}</strong>
+            <span style="color:var(--text-muted); font-size:0.75rem;">${escapeHTML(t.clientCompany || 'Enterprise')}</span>
+          </div>
+          <span style="font-size:0.72rem; color:#00df89; font-weight:700; background:rgba(0,223,137,0.1); padding:0.25rem 0.5rem; border-radius:6px;">
+            ✅ Verified Sprint
+          </span>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.warn('Index testimonials load warning:', e);
+  }
+}
+window.initShowcaseTestimonials = initShowcaseTestimonials;
+window.addEventListener('DOMContentLoaded', initShowcaseTestimonials);

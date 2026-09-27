@@ -1,0 +1,39 @@
+# Git and VCS
+.git
+.gitignore
+
+# Environment configurations with sensitive credentials
+.env
+.env.*
+!.env.example
+
+# Dependencies and caches
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Testing, E2E artifacts & reports
+tests
+tests-e2e
+scripts/e2e/reports
+scripts/e2e/screenshots
+coverage
+.nyc_output
+.chrome-test-profile
+
+# Editor & OS files
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Large media files and scratch items in repo root (keep public/** assets!)
+scratch
+/*.png
+/*.jpg
+/*.wav
+/*.pdf
+!public/**
+!.env.example

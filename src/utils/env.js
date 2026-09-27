@@ -29,24 +29,39 @@ function getJwtSecret() {
 function validateEnvironment() {
   const warnings = [];
   const errors = [];
+  const isProd = process.env.NODE_ENV === 'production';
 
   if (!process.env.SUPABASE_URL) {
-    warnings.push('SUPABASE_URL is not set.');
+    if (isProd) {
+      errors.push('SUPABASE_URL is required in production.');
+    } else {
+      warnings.push('SUPABASE_URL is not set.');
+    }
+  } else if (!process.env.SUPABASE_URL.startsWith('https://')) {
+    warnings.push('SUPABASE_URL should use https:// protocol.');
   }
 
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_ANON_KEY) {
-    warnings.push('Neither SUPABASE_SERVICE_ROLE_KEY nor SUPABASE_ANON_KEY is set.');
+    if (isProd) {
+      errors.push('SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY is required in production.');
+    } else {
+      warnings.push('Neither SUPABASE_SERVICE_ROLE_KEY nor SUPABASE_ANON_KEY is set.');
+    }
   }
 
-  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+  if (isProd || process.env.VERCEL) {
     if (!process.env.JWT_SECRET) {
-      warnings.push('JWT_SECRET is not explicitly set; using derived secure key.');
+      warnings.push('JWT_SECRET is not explicitly set; using derived secure key from Supabase credentials.');
+    } else if (process.env.JWT_SECRET.length < 32) {
+      warnings.push('JWT_SECRET length is under 32 characters; recommend 64-character random hex string.');
     }
+
     if (!process.env.CRON_SECRET) {
       warnings.push('CRON_SECRET is missing in production — cron endpoints will require header protection.');
     }
+
     if (!process.env.WEBHOOK_SECRET && !process.env.WEBHOOK_SECRET_TOKEN) {
-      warnings.push('WEBHOOK_SECRET is missing in production — webhook requests will not be signed.');
+      warnings.push('WEBHOOK_SECRET is missing in production — inbound Telegram webhook validation will be bypassed.');
     }
   }
 

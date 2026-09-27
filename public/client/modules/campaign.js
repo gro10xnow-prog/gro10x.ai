@@ -3,7 +3,7 @@
  * Scoped Campaign & Content Schedule Module
  */
 window.CLIENT_MODULES = window.CLIENT_MODULES || {};
-const escapeHTML = window.escapeHTML || function(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; };
+var escapeHTML = window.escapeHTML || function(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; };
 
 window.CLIENT_MODULES.campaign = async function(container) {
   let allPosts = [];

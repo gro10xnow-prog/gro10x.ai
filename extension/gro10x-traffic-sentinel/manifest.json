@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "GRO10X Traffic Sentinel",
+  "version": "1.5.1",
+  "description": "Side-panel traffic intelligence: monitors Facebook traffic alert groups in real-time and forwards filtered alerts to Telegram via Gemini AI.",
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "storage",
+    "alarms",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.facebook.com/groups/*",
+    "http://localhost:*/*",
+    "https://*.vercel.app/*",
+    "<all_urls>"
+  ],
+  "action": {
+    "default_title": "Open Traffic Sentinel Side Panel"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.facebook.com/groups/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

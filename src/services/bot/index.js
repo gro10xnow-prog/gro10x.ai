@@ -19,6 +19,11 @@ module.exports = {
   sendAgreementNotification: notifications.sendAgreementNotification,
   sendClientDeliverableNotification: notifications.sendClientDeliverableNotification,
   sendClientInvoiceNotification: notifications.sendClientInvoiceNotification,
+  sendWarrantyActivatedNotification: notifications.sendWarrantyActivatedNotification,
+  sendTeamWarrantyAlert: notifications.sendTeamWarrantyAlert,
+  sendSprintDeliveredNotification: notifications.sendSprintDeliveredNotification,
+  sendRetainerBurndownAlert: notifications.sendRetainerBurndownAlert,
+  sendWarrantyExpiryAlert: notifications.sendWarrantyExpiryAlert,
   getRoleKeyboard: keyboards.getRoleKeyboard,
   getClientKeyboard: keyboards.getClientKeyboard
 };

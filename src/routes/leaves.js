@@ -75,6 +75,15 @@ router.get('/', requireAuth, async (req, res) => {
       leaves = inMemoryLeaves.map(mapLeave);
     }
 
+    const { normalizeEngineId } = require('../utils/engine-scope');
+    const engineFilter = normalizeEngineId(req.query.engineId || req.query.engine || req.headers['x-gro10x-engine']);
+    if (engineFilter && engineFilter !== 'all') {
+      leaves = leaves.filter(l => {
+        const tag = (l.engine_tag || l.engineTag || '').toLowerCase();
+        return !tag || tag === engineFilter;
+      });
+    }
+
     return res.json(leaves);
   } catch (err) {
     console.error('Leaves GET error:', err.message);

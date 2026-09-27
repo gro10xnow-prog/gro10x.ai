@@ -1,0 +1,80 @@
+{
+  "manifest_version": 3,
+  "name": "GRO10X Platform QA Automation Runner",
+  "version": "1.0.0",
+  "description": "Automated regression testing, button clicking, modal auditing, and health checks across GRO10X platforms.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1/*",
+    "http://127.0.0.1:3000/*",
+    "https://gro10x-ai.vercel.app/*",
+    "https://gro10x.ai/*",
+    "https://*.gro10x.ai/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open GRO10X QA Runner",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://localhost:3000/*",
+        "http://127.0.0.1/*",
+        "http://127.0.0.1:3000/*",
+        "https://gro10x-ai.vercel.app/*",
+        "https://gro10x.ai/*",
+        "https://*.gro10x.ai/*"
+      ],
+      "js": [
+        "bridge-main.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://localhost:3000/*",
+        "http://127.0.0.1/*",
+        "http://127.0.0.1:3000/*",
+        "https://gro10x-ai.vercel.app/*",
+        "https://gro10x.ai/*",
+        "https://*.gro10x.ai/*"
+      ],
+      "js": [
+        "content-script.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["bridge-main.js"],
+      "matches": ["http://localhost/*", "http://127.0.0.1/*", "https://*.gro10x.ai/*", "https://gro10x-ai.vercel.app/*"]
+    }
+  ]
+}

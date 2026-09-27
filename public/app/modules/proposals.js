@@ -46,9 +46,9 @@ window.APP_MODULES['proposals.js'] = {
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
           <div>
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
               <span>💼</span> Client Proposals & Quotations Studio
-            </h2>
+            </h1>
             <p style="color: var(--text-muted, #94a3b8); font-size: 14px;">
               AI-assisted voice/context proposal drafting, shareable client links, and 1-tap project conversion.
             </p>
@@ -298,6 +298,19 @@ window.APP_MODULES['proposals.js'] = {
 
     this.bindEvents(container);
     await this.loadProposals();
+
+    // SSE subscriptions with 400ms debounce
+    if (window.APP_SSE && typeof window.APP_SSE.subscribe === 'function') {
+      let sseTimer = null;
+      const debouncedReload = () => {
+        clearTimeout(sseTimer);
+        sseTimer = setTimeout(() => {
+          this.loadProposals();
+        }, 400);
+      };
+      window.APP_SSE.subscribe('proposal_update', debouncedReload);
+      window.APP_SSE.subscribe('client_update', debouncedReload);
+    }
   },
 
   async loadProposals() {
@@ -436,7 +449,7 @@ window.APP_MODULES['proposals.js'] = {
       if (p.status === 'Converted') { statusColor = '#a855f7'; statusBg = 'rgba(168, 85, 247, 0.2)'; }
 
       return `
-        <tr style="border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.04));">
+        <tr class="proposal-row" style="border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.04));">
           <td style="padding: 14px 18px; font-family: monospace; font-size: 13px; color: var(--primary, #00df89);">
             ${p.id || 'PROP-001'}
           </td>
@@ -587,8 +600,26 @@ window.APP_MODULES['proposals.js'] = {
       this.saveProposal();
     });
 
-    // Window Listeners
-    window.addEventListener('gro10x_currency_changed', (e) => {
+    // Modal Backdrop Dismissal
+    const propModalOverlay = document.getElementById('proposalModal');
+    propModalOverlay?.addEventListener('click', (e) => {
+      if (e.target === propModalOverlay) {
+        this.closeProposalModal();
+      }
+    });
+    const convModalOverlay = document.getElementById('proposalConvertModalOverlay');
+    convModalOverlay?.addEventListener('click', (e) => {
+      if (e.target === convModalOverlay) {
+        this.closeConvertModal();
+      }
+    });
+
+    // Window Listeners (deduplicated across SPA navigations)
+    if (window._proposalsCurrencyHandler) {
+      window.removeEventListener('gro10x_currency_changed', window._proposalsCurrencyHandler);
+    }
+    window._proposalsCurrencyHandler = (e) => {
+      if (window.location.hash !== '#proposals') return;
       if (e.detail && e.detail.currency && e.detail.currency !== this.activeGlobalCurrency) {
         this.activeGlobalCurrency = e.detail.currency;
         const label = document.getElementById('proposalsCurrencyLabel');
@@ -596,14 +627,19 @@ window.APP_MODULES['proposals.js'] = {
         this.updateKPIS();
         this.renderTable();
       }
-    });
+    };
+    window.addEventListener('gro10x_currency_changed', window._proposalsCurrencyHandler);
 
-    window.addEventListener('keydown', (e) => {
+    if (window._proposalsKeyDownHandler) {
+      window.removeEventListener('keydown', window._proposalsKeyDownHandler);
+    }
+    window._proposalsKeyDownHandler = (e) => {
       if (e.key === 'Escape') {
         this.closeProposalModal();
         this.closeConvertModal();
       }
-    });
+    };
+    window.addEventListener('keydown', window._proposalsKeyDownHandler);
   },
 
   toggleVoiceInput() {
@@ -1078,3 +1114,21 @@ window.APP_MODULES['proposals.js'] = {
     }
   }
 };
+
+window.PROPOSALS_MODULE = window.APP_MODULES['proposals.js'];
+window.switchProposalsCurrency = function(cur) {
+  const mod = window.APP_MODULES['proposals.js'];
+  if (!mod) return;
+  if (cur) {
+    mod.activeGlobalCurrency = cur;
+    localStorage.setItem('gro10x_currency', cur);
+    window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: cur } }));
+    const label = document.getElementById('proposalsCurrencyLabel');
+    if (label) label.textContent = cur === 'USD' ? 'USD ($)' : 'BDT (৳)';
+    mod.updateKPIS();
+    mod.renderTable();
+  } else {
+    mod.toggleCurrency();
+  }
+};
+

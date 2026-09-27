@@ -579,6 +579,20 @@
           <span class="stat-lbl">Angel Access</span>
         </div>
       </div>
+
+      <!-- AI Diagnostic Scorecard Bridge Banner -->
+      <div style="background:linear-gradient(135deg, rgba(0,223,137,0.12) 0%, rgba(6,182,212,0.08) 100%); border:1.5px solid rgba(0,223,137,0.3); border-radius:16px; padding:1.25rem 1.75rem; margin-top:2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; text-align:left;">
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <span style="font-size:2.2rem;">📊</span>
+          <div>
+            <div style="font-weight:800; font-size:1.05rem; color:#fff;">Uncertain if your data architecture & tech stack are sprint-ready?</div>
+            <div style="font-size:0.84rem; color:var(--text-muted);">Take the 2-minute Enterprise AI Diagnostic. Receive an instant 0–100 score, architectural gap analysis, and pod recommendation.</div>
+          </div>
+        </div>
+        <a href="/ai-audit" style="background:var(--accent-mint); color:#070b12; font-weight:800; font-size:0.86rem; padding:0.65rem 1.3rem; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; box-shadow:0 4px 14px rgba(0,223,137,0.3);">
+          ⚡ Check AI Readiness Score →
+        </a>
+      </div>
     </section>
 
     <!-- 3 Pillars -->
@@ -629,6 +643,27 @@
           <div class="step-title">Launch & Traction</div>
           <div class="step-desc">Go-to-market rollout, beta user onboarding, feedback loop & investor pitch deck finalization.</div>
         </div>
+      </div>
+    </section>
+
+    <!-- Verified Client Testimonials Showcase Section -->
+    <section class="testimonials-section" id="testimonials" style="margin-bottom: 4rem;">
+      <div style="text-align:center; margin-bottom:2rem;">
+        <div style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(0,223,137,0.1); border:1px solid rgba(0,223,137,0.25); border-radius:999px; padding:0.3rem 0.8rem; font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
+          <span>🌟</span>
+          <span>Verified Client Social Proof</span>
+        </div>
+        <h2 style="font-size:1.75rem; font-weight:800; color:#fff; margin:0 0 0.4rem; font-family:var(--font-heading);">
+          Built & Delivered at Lightning Velocity
+        </h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; max-width:560px; margin:0 auto;">
+          Real post-acceptance endorsements and verified Net Promoter Scores (NPS) from enterprise leaders and sprint clients.
+        </p>
+      </div>
+
+      <!-- Testimonials Dynamic Grid / Carousel -->
+      <div id="showcaseTestimonialsGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
+        <!-- Loaded dynamically via fetch('/api/reviews/testimonials/showcase') -->
       </div>
     </section>
 
@@ -922,6 +957,58 @@
         submitBtn.textContent = 'Submit Application 🚀';
       }
     }
+
+    // Load Public Testimonials Showcase
+    async function loadShowcaseTestimonials() {
+      try {
+        const res = await fetch('/api/reviews/testimonials/showcase');
+        const data = await res.json();
+        const list = data?.testimonials || [];
+        const grid = document.getElementById('showcaseTestimonialsGrid');
+        if (!grid) return;
+        if (list.length === 0) {
+          const sec = document.getElementById('testimonials');
+          if (sec) sec.style.display = 'none';
+          return;
+        }
+
+        function escapeHTML(s) {
+          if (!s) return '';
+          return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        grid.innerHTML = list.map(t => `
+          <div class="pillar-card" style="display:flex; flex-direction:column; justify-content:space-between; border-color:rgba(255,255,255,0.1); background:linear-gradient(135deg, rgba(15,23,42,0.7), rgba(7,11,18,0.9));">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                <div style="color:#facc15; font-size:1.1rem; letter-spacing:2px;">
+                  ${'⭐'.repeat(t.csatRating || 5)}
+                </div>
+                <span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399; font-size:0.72rem; font-weight:800; padding:0.2rem 0.5rem; border-radius:999px;">
+                  ${t.npsScore || 10}/10 NPS
+                </span>
+              </div>
+              <p style="font-size:0.9rem; color:#e2e8f0; line-height:1.6; font-style:italic; margin-bottom:1.2rem;">
+                "${escapeHTML(t.reviewText)}"
+              </p>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.85rem; font-size:0.8rem;">
+              <div>
+                <strong style="color:#fff; display:block;">${escapeHTML(t.clientDisplayName || 'Client Partner')}</strong>
+                <span style="color:var(--text-muted); font-size:0.75rem;">${escapeHTML(t.clientCompany || 'Enterprise')}</span>
+              </div>
+              <span style="font-size:0.72rem; color:#00df89; font-weight:700; background:rgba(0,223,137,0.1); padding:0.25rem 0.5rem; border-radius:6px;">
+                ✅ Verified Sprint
+              </span>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.warn('Failed to load showcase testimonials:', e);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadShowcaseTestimonials);
   </script>
 </body>
 </html>

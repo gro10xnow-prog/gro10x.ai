@@ -48,28 +48,36 @@ function mapReview(r) {
   const isRevisionRequested = !!r.revision_requested_at && !isApproved;
   return {
     id: r.id,
-    projectId: r.project_id,
-    projectName: r.project_name,
+    projectId: r.project_id || r.projectId,
+    projectName: r.project_name || r.projectName,
     client: r.client,
     clientName: r.client,           // Explicit alias so SPA doesn't guess
-    clientId: r.client_id || null,
-    taskId: r.task_id || null,
-    activeVersion: r.active_version,
+    clientId: r.client_id || r.clientId || null,
+    taskId: r.task_id || r.taskId || null,
+    activeVersion: r.active_version || r.activeVersion || 'v1',
     versions: r.versions || ['v1'],
-    mediaType: r.media_type,
-    mediaUrl: r.media_url,
-    posterUrl: r.poster_url,
+    deliverableType: r.deliverable_type || r.deliverableType || (r.media_type === 'video' ? 'video' : 'staging_url'),
+    mediaType: r.media_type || r.mediaType || 'video',
+    mediaUrl: r.media_url || r.mediaUrl,
+    stagingUrl: r.staging_url || r.stagingUrl || null,
+    repoUrl: r.repo_url || r.repoUrl || null,
+    branchName: r.branch_name || r.branchName || null,
+    apiDocsUrl: r.api_docs_url || r.apiDocsUrl || null,
+    posterUrl: r.poster_url || r.posterUrl,
     resolvedCount,
     totalCount,
     unresolvedCount: Math.max(0, totalCount - resolvedCount),
-    approvedBy: r.approved_by || null,
-    approvedAt: r.approved_at || null,
-    revisionRequestedBy: r.revision_requested_by || null,
-    revisionNotes: r.revision_notes || null,
-    revisionRequestedAt: r.revision_requested_at || null,
-    status: isApproved ? 'approved' : isRevisionRequested ? 'revision_requested' : 'pending',
+    revisionRound: Number(r.revision_round !== undefined ? r.revision_round : (r.revisionRound || 1)),
+    maxRevisions: Number(r.max_revisions !== undefined ? r.max_revisions : (r.maxRevisions || 2)),
+    dodChecklist: Array.isArray(r.dod_checklist) ? r.dod_checklist : (Array.isArray(r.dodChecklist) ? r.dodChecklist : []),
+    approvedBy: r.approved_by || r.approvedBy || null,
+    approvedAt: r.approved_at || r.approvedAt || null,
+    revisionRequestedBy: r.revision_requested_by || r.revisionRequestedBy || null,
+    revisionNotes: r.revision_notes || r.revisionNotes || null,
+    revisionRequestedAt: r.revision_requested_at || r.revisionRequestedAt || null,
+    status: isApproved ? 'approved' : isRevisionRequested ? 'revision_requested' : (r.status || 'pending'),
     isApproved,
-    createdAt: r.created_at
+    createdAt: r.created_at || r.createdAt
   };
 }
 
@@ -77,15 +85,20 @@ function mapComment(c) {
   if (!c) return null;
   return {
     id: c.id,
-    reviewId: c.review_id,
+    reviewId: c.review_id || c.reviewId,
     author: c.author,
-    authorRole: c.author_role,
+    authorRole: c.author_role || c.authorRole || 'Client Reviewer',
+    authorPocId: c.author_poc_id || c.authorPocId || null,
+    assignedTeamMember: c.assigned_team_member || c.assignedTeamMember || null,
+    commentType: c.comment_type || c.commentType || 'GENERAL',
+    scopeFlag: c.scope_flag || c.scopeFlag || 'IN_SCOPE',
+    scopeWarning: c.scope_warning || c.scopeWarning || null,
     timestamp: c.timestamp,
-    timeSeconds: Number(c.time_seconds) || 0,
+    timeSeconds: Number(c.time_seconds !== undefined ? c.time_seconds : (c.timeSeconds || 0)),
     text: c.text,
     resolved: !!c.resolved,
     drawings: c.drawings || [],
-    createdAt: c.created_at
+    createdAt: c.created_at || c.createdAt
   };
 }
 
@@ -108,26 +121,40 @@ async function requireReviewOwnership(req, res, next) {
   const userName = (user.profile?.name || user.name || user.company || '').toLowerCase();
 
   if (linkedType === 'client' && (userLinkedId || userName)) {
+    let review = null;
     if (isSupabaseConfigured()) {
-      const { data: review } = await supabase
-        .from('reviews')
-        .select('client_id, client')
-        .eq('id', req.params.id)
-        .maybeSingle();
-
-      if (!review) return res.status(404).json({ error: 'Review project not found' });
-      
-      const revClientId = review.client_id;
-      const revClientName = (review.client || '').toLowerCase();
-
-      const matchId = revClientId && userLinkedId && String(revClientId).toLowerCase() === String(userLinkedId).toLowerCase();
-      const matchName = revClientName && userName && (revClientName.includes(userName) || userName.includes(revClientName));
-
-      if (matchId || matchName || !revClientId) {
-        return next();
-      }
-      return res.status(403).json({ error: 'Forbidden: You do not have permission to modify this review deliverable' });
+      try {
+        const { data } = await supabase
+          .from('reviews')
+          .select('client_id, client')
+          .eq('id', req.params.id)
+          .maybeSingle();
+        if (data) review = data;
+      } catch (_) {}
     }
+
+    if (!review) {
+      review = fallbackReviews.find(r => r.id === req.params.id);
+    }
+    if (!review) {
+      try {
+        const { getMemoryDeliverable } = require('../services/delivery-review');
+        review = getMemoryDeliverable(req.params.id);
+      } catch (_) {}
+    }
+
+    if (!review) return res.status(404).json({ error: 'Review project not found' });
+    
+    const revClientId = review.client_id || review.clientId;
+    const revClientName = (review.client || review.clientName || '').toLowerCase();
+
+    const matchId = revClientId && userLinkedId && String(revClientId).toLowerCase() === String(userLinkedId).toLowerCase();
+    const matchName = revClientName && userName && (revClientName.includes(userName) || userName.includes(revClientName));
+
+    if (matchId || matchName || !revClientId) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Forbidden: You do not have permission to modify this review deliverable' });
   }
 
   next();
@@ -170,7 +197,12 @@ router.get('/', requireAuth, async (req, res) => {
       return res.json(fallbackReviews.map(mapReview));
     }
 
-    res.json((data || []).map(mapReview));
+    const enrichedData = (data || []).map(r => {
+      const local = fallbackReviews.find(fb => fb.id === r.id);
+      return local ? { ...local, ...r } : r;
+    });
+
+    res.json(enrichedData.map(mapReview));
   } catch (err) {
     console.warn('[Reviews] GET error fallback:', err.message);
     res.json(fallbackReviews.map(mapReview));
@@ -192,15 +224,16 @@ router.get('/:id', requireAuth, async (req, res) => {
       if (cData) commentsData = cData;
     } catch (_) {}
 
-    if (!reviewData) {
-      reviewData = fallbackReviews.find(r => r.id === id);
+    const fbRev = fallbackReviews.find(r => r.id === id);
+    if (fbRev) {
+      reviewData = reviewData ? { ...fbRev, ...reviewData } : fbRev;
     }
     if (!reviewData) return res.status(404).json({ error: 'Review project not found' });
 
     // IDOR security check: If user is a Client, ensure they own this review project
     const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
     if (isClientUser) {
-      const clientName = (req.user.profile?.name || req.user.name || '').toLowerCase();
+      const clientName = (req.user.company || req.user.client || req.user.profile?.company || req.user.profile?.name || req.user.name || '').toLowerCase();
       const clientId = req.user.linkedId || req.user.id;
       const reviewClient = (reviewData.client || '').toLowerCase();
       const reviewClientId = reviewData.client_id;
@@ -230,42 +263,74 @@ router.post('/', requireAuth, async (req, res) => {
     const newId = `REV-${randomUUID().split('-')[0].toUpperCase()}`;
 
     const defaultMedia = 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-sky-in-a-sunset-26070-large.mp4';
+    const deliverableType = req.body.deliverableType || req.body.deliverable_type || (req.body.mediaType || 'staging_url');
+    const stagingUrl = req.body.stagingUrl || req.body.staging_url || null;
+    const repoUrl = req.body.repoUrl || req.body.repo_url || null;
+    const branchName = req.body.branchName || req.body.branch_name || 'main';
+    const apiDocsUrl = req.body.apiDocsUrl || req.body.api_docs_url || null;
+    const dodChecklist = Array.isArray(req.body.dodChecklist) ? req.body.dodChecklist : (Array.isArray(req.body.dod_checklist) ? req.body.dod_checklist : []);
+    const maxRevisions = Number(req.body.maxRevisions || req.body.max_revisions || 2);
+    const primaryMedia = stagingUrl || repoUrl || apiDocsUrl || req.body.mediaUrl || req.body.media_url || defaultMedia;
+
     const payload = {
       id: newId,
       project_id: req.body.projectId || req.body.taskId || newId,
-      project_name: req.body.projectName || req.body.title || 'Untitled Creative Project',
+      project_name: req.body.projectName || req.body.title || 'Untitled Deliverable Project',
       client: req.body.client || 'Agency Client',
       client_id: req.body.clientId || req.body.client_id || (req.user?.linkedType === 'client' ? req.user.linkedId : null),
       task_id: req.body.taskId || req.body.task_id || null,
-      active_version: req.body.activeVersion || 'v1',
-      versions: req.body.versions || ['v1'],
-      media_type: req.body.mediaType || req.body.media_type || 'video',
-      media_url: req.body.mediaUrl || req.body.media_url || defaultMedia,
+      active_version: req.body.activeVersion || 'v1.0-alpha',
+      versions: req.body.versions || ['v1.0-alpha'],
+      deliverable_type: deliverableType,
+      media_type: deliverableType === 'video' ? 'video' : 'document',
+      media_url: primaryMedia,
+      staging_url: stagingUrl,
+      repo_url: repoUrl,
+      branch_name: branchName,
+      api_docs_url: apiDocsUrl,
+      poster_url: req.body.posterUrl || req.body.poster_url || null,
+      resolved_count: 0,
+      total_count: 0,
+      revision_round: 1,
+      max_revisions: maxRevisions,
+      dod_checklist: dodChecklist,
+      created_at: new Date().toISOString()
+    };
+
+    const supabasePayload = {
+      id: newId,
+      project_id: req.body.projectId || req.body.taskId || newId,
+      project_name: req.body.projectName || req.body.title || 'Untitled Deliverable Project',
+      client: req.body.client || 'Agency Client',
+      client_id: req.body.clientId || req.body.client_id || (req.user?.linkedType === 'client' ? req.user.linkedId : null),
+      task_id: req.body.taskId || req.body.task_id || null,
+      active_version: req.body.activeVersion || 'v1.0-alpha',
+      versions: req.body.versions || ['v1.0-alpha'],
+      media_type: deliverableType === 'video' ? 'video' : 'document',
+      media_url: primaryMedia,
       poster_url: req.body.posterUrl || req.body.poster_url || null,
       resolved_count: 0,
       total_count: 0,
       created_at: new Date().toISOString()
     };
 
-    try {
-      const { data, error } = await supabase.from('reviews').insert([payload]).select().single();
-      if (error) throw error;
+    fallbackReviews.unshift(payload);
 
-      const review = mapReview(data);
-      const { data: allReviews } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
-      broadcast('review_update', (allReviews || []).map(mapReview));
-      if (review.clientId) {
-        broadcastToClient('review_update', [review], [review.clientId]);
+    if (supabase) {
+      try {
+        await supabase.from('reviews').insert([supabasePayload]);
+      } catch (dbErr) {
+        console.warn('[Reviews] DB write notice:', dbErr.message);
       }
-
-      return res.json({ success: true, review });
-    } catch (dbErr) {
-      console.warn('[Reviews] DB write notice, storing in fallback in-memory store:', dbErr.message);
-      fallbackReviews.unshift(payload);
-      const review = mapReview(payload);
-      broadcast('review_update', fallbackReviews.map(mapReview));
-      return res.json({ success: true, review });
     }
+
+    const review = mapReview(payload);
+    broadcast('review_update', [review]);
+    if (review.clientId) {
+      broadcastToClient('review_update', [review], [review.clientId]);
+    }
+
+    return res.json({ success: true, review });
   } catch (err) {
     console.error('Review POST error:', err.message);
     res.status(500).json({ error: err.message });
@@ -316,33 +381,101 @@ router.post('/:id/upload', requireAuth, requireReviewOwnership, upload.single('a
   }
 });
 
-// POST Add Timecoded Comment to Video Cut
+// POST Add Timecoded Comment to Video Cut or Deliverable
 router.post('/:id/comments', requireAuth, requireReviewOwnership, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { data: review } = await supabase.from('reviews').select('*').eq('id', id).single();
+    let review = null;
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('reviews').select('*').eq('id', id).single();
+        if (data) review = data;
+      } catch (_) {}
+    }
+    if (!review) {
+      review = fallbackReviews.find(r => r.id === id);
+    }
+    if (!review) {
+      try {
+        const { getMemoryDeliverable } = require('../services/delivery-review');
+        review = getMemoryDeliverable(id);
+      } catch (_) {}
+    }
     if (!review) return res.status(404).json({ error: 'Review project not found' });
+
+    const text = req.body.text || '';
+    const commentType = req.body.commentType || req.body.comment_type || 'GENERAL';
+    const authorPocId = req.body.authorPocId || req.body.author_poc_id || null;
+    const assignedTeamMember = req.body.assignedTeamMember || req.body.assigned_team_member || null;
+
+    // Scope check heuristics
+    const textLower = text.toLowerCase();
+    const outOfScopeKeywords = [
+      'legacy data migration',
+      'native mobile app',
+      'app store submission',
+      'ios app',
+      'android apk',
+      'additional language localization',
+      'custom hardware',
+      'white glove on-premise'
+    ];
+    const isExclusion = outOfScopeKeywords.some(kw => textLower.includes(kw));
+    const scopeFlag = (commentType === 'OUT_OF_SCOPE' || isExclusion) ? 'OUT_OF_SCOPE_POTENTIAL' : 'IN_SCOPE';
+    const scopeWarning = scopeFlag === 'OUT_OF_SCOPE_POTENTIAL' 
+      ? '⚠️ Notice: This request appears to fall outside the locked contract scope. A Phase 2 change order may be required.' 
+      : null;
 
     const newComment = {
       id: `CMT-${Date.now()}`,
       review_id: id,
       author: req.user.name || req.body.author || 'Reviewer',
       author_role: req.user.role || req.body.authorRole || 'Client Reviewer',
+      author_poc_id: authorPocId,
+      assigned_team_member: assignedTeamMember,
       timestamp: req.body.timestamp || '0:05',
       time_seconds: Number(req.body.timeSeconds) || 5,
-      text: req.body.text || '',
+      text,
+      comment_type: isExclusion ? 'OUT_OF_SCOPE' : commentType,
+      scope_flag: scopeFlag,
+      scope_warning: scopeWarning,
       resolved: false,
       drawings: req.body.drawings || []
     };
 
-    const { data: insertedComment, error: cErr } = await supabase.from('review_comments').insert([newComment]).select().single();
-    if (cErr) throw cErr;
+    const supabaseComment = {
+      id: newComment.id,
+      review_id: id,
+      author: newComment.author,
+      author_role: newComment.author_role,
+      timestamp: newComment.timestamp,
+      time_seconds: newComment.time_seconds,
+      text: newComment.text,
+      resolved: false,
+      drawings: newComment.drawings,
+      replies: [{
+        comment_type: newComment.comment_type,
+        scope_flag: newComment.scope_flag,
+        scope_warning: newComment.scope_warning,
+        author_poc_id: newComment.author_poc_id,
+        assigned_team_member: newComment.assigned_team_member
+      }]
+    };
 
-    const newTotal = (review.total_count || 0) + 1;
-    await supabase.from('reviews').update({ total_count: newTotal }).eq('id', id);
+    if (supabase) {
+      try {
+        await supabase.from('review_comments').insert([supabaseComment]);
+        const newTotal = (review.total_count || 0) + 1;
+        await supabase.from('reviews').update({ total_count: newTotal }).eq('id', id);
+      } catch (_) {}
+    }
 
-    const comment = mapComment(insertedComment);
+    review.total_count = (review.total_count || 0) + 1;
+    const fbRev = fallbackReviews.find(r => r.id === id);
+    if (fbRev) fbRev.total_count = (fbRev.total_count || 0) + 1;
+
+    const comment = mapComment(newComment);
     broadcast('review_comment_update', { reviewId: id, comment });
     const cId = review.client_id || review.clientId;
     if (cId) {
@@ -430,8 +563,22 @@ router.post('/:id/drawings', requireAuth, requireReviewOwnership, async (req, re
   }
 });
 
-// POST /:id/approve — Client formal sign-off (cascades to task stage + automation)
+// POST /api/reviews/approve — 1-Tap Cut Approval via In-Chat MiniApp or External Webhook
+router.post('/approve', requireAuth, async (req, res, next) => {
+  const reviewId = req.body.reviewId || req.body.id;
+  if (!reviewId) return res.status(400).json({ ok: false, error: 'reviewId is required in body' });
+  req.params.id = reviewId;
+  next();
+}, requireReviewOwnership, async (req, res) => {
+  return handleReviewApproveInternal(req, res);
+});
+
+// POST /:id/approve — Client formal sign-off (cascades to project completion + 30-day warranty)
 router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res) => {
+  return handleReviewApproveInternal(req, res);
+});
+
+async function handleReviewApproveInternal(req, res) {
 
   try {
     const { id } = req.params;
@@ -444,12 +591,28 @@ router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res
     if (!reviewData) {
       reviewData = fallbackReviews.find(r => r.id === id);
     }
+    if (!reviewData) {
+      try {
+        const { getMemoryDeliverable } = require('../services/delivery-review');
+        reviewData = getMemoryDeliverable(id);
+      } catch (_) {}
+    }
     if (!reviewData) return res.status(404).json({ error: 'Review project not found' });
 
-    const approverName = req.user?.name || 'Client Partner';
+    const fbRev = fallbackReviews.find(r => r.id === id);
+    if (fbRev) {
+      reviewData = { ...fbRev, ...reviewData };
+    }
+
+    const approverName = req.body.approvedBy || req.body.approverName || req.user?.name || 'Client Partner';
     const taskId = reviewData.project_id || id;
+    const projectId = reviewData.project_id;
+    const approvedAt = new Date().toISOString();
+    const warrantyUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
     reviewData.approved_by = approverName;
-    reviewData.approved_at = new Date().toISOString();
+    reviewData.approved_at = approvedAt;
+    reviewData.invoice_released = true;
 
     // Add formal approval comment into review_comments
     const approvalComment = {
@@ -459,7 +622,7 @@ router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res
       author_role: req.user?.role || 'Client Partner',
       timestamp: '0:00',
       time_seconds: 0,
-      text: '✅ Deliverable Approved by Client',
+      text: '✅ Deliverable Approved by Client (Handover & 30-Day Warranty Activated)',
       resolved: true,
       drawings: []
     };
@@ -468,16 +631,50 @@ router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res
     // Persist formal approval to reviews table
     await Promise.resolve(supabase.from('reviews').update({
       approved_by: approverName,
-      approved_at: new Date().toISOString()
+      approved_at: approvedAt,
+      invoice_released: true
     }).eq('id', id)).catch(() => {});
+
+    // Cascade: advance linked project to 'Completed', 'APPROVED', and set warranty
+    if (projectId) {
+      await Promise.resolve(supabase.from('projects').update({
+        status: 'Completed',
+        delivery_status: 'APPROVED',
+        warranty_until: warrantyUntil,
+        updated_at: approvedAt
+      }).eq('id', projectId)).catch(() => {});
+
+      try {
+        const { readDB, writeDB } = require('../services/db');
+        const db = await readDB();
+        const pIdx = (db.projects || []).findIndex(p => p.id === projectId);
+        if (pIdx !== -1) {
+          db.projects[pIdx].status = 'Completed';
+          db.projects[pIdx].delivery_status = 'APPROVED';
+          db.projects[pIdx].warranty_until = warrantyUntil;
+          try { writeDB(db); } catch (_) {}
+        }
+      } catch (_) {}
+
+      try {
+        const { memoryProjects } = require('../services/post-delivery');
+        if (memoryProjects && memoryProjects.has(projectId)) {
+          const memP = memoryProjects.get(projectId);
+          memP.status = 'Completed';
+          memP.delivery_status = 'APPROVED';
+          memP.warranty_until = warrantyUntil;
+          memP.warrantyUntil = warrantyUntil;
+        }
+      } catch (_) {}
+    }
 
     // Cascade: advance linked Kanban task to 'Approved'
     if (taskId) {
       await Promise.resolve(supabase.from('tasks').update({
         stage: 'Approved',
         qc_approved_by: approverName,
-        qc_approved_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        qc_approved_at: approvedAt,
+        updated_at: approvedAt
       }).eq('id', taskId)).catch(() => {});
 
       const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
@@ -502,7 +699,9 @@ router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res
           client: reviewData.client,
           clientId: reviewData.client_id,
           taskId,
-          approvedBy: approverName
+          projectId,
+          approvedBy: approverName,
+          warrantyUntil
         });
       }
     } catch (autoErr) {
@@ -514,7 +713,7 @@ router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res
       status: 'approved',
       isApproved: true,
       approvedBy: approverName,
-      approvedAt: new Date().toISOString()
+      approvedAt
     });
 
     broadcast('review_update', [mapped]);
@@ -522,14 +721,77 @@ router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res
       broadcastToClient('review_update', [mapped], [reviewData.client_id]);
     }
 
-    res.json({ success: true, review: mapped });
+    let linkedProject = null;
+    try {
+      const { sendWarrantyActivatedNotification, sendTeamWarrantyAlert } = require('../services/bot/notifications');
+      const { findProject } = require('../services/post-delivery');
+      linkedProject = projectId ? await findProject(projectId).catch(() => null) : null;
+      if (!linkedProject) {
+        linkedProject = {
+          id: projectId || id,
+          name: reviewData.project_name || 'AI Sprint Solution',
+          client_name: reviewData.client,
+          client_telegram_id: reviewData.client_telegram_id || null,
+          warranty_until: warrantyUntil
+        };
+      }
+      sendWarrantyActivatedNotification(linkedProject, {
+        ...reviewData,
+        approvedBy: approverName,
+        warrantyUntil
+      });
+      sendTeamWarrantyAlert(linkedProject, {
+        ...reviewData,
+        approvedBy: approverName,
+        warrantyUntil
+      });
+    } catch (notifErr) {
+      console.warn('[Review Approval Telegram Alert Note]:', notifErr.message);
+    }
+
+    let milestoneInvoice = null;
+    try {
+      const { createInvoiceRecord } = require('./invoices');
+      const invoiceProjName = reviewData.project_name || linkedProject?.name || 'AI Solution Sprint (Milestone 2 Handover)';
+      const invoiceAmount = Number(linkedProject?.budget) > 0 ? Math.round(Number(linkedProject.budget) / 2) : 25000;
+      milestoneInvoice = await createInvoiceRecord({
+        clientId: reviewData.client_id || linkedProject?.client_id || null,
+        clientName: reviewData.client || linkedProject?.client || linkedProject?.client_name || 'Agency Client',
+        projectName: `${invoiceProjName} - Milestone 2 (Handover & Acceptance)`,
+        projectRef: projectId || id,
+        amount: invoiceAmount,
+        currency: 'BDT',
+        invoiceType: 'milestone_completion',
+        settlementRail: 'bdt_bank_wire',
+        taxRate: 5,
+        notes: `Milestone 2 Completion Invoice — Formally authorized upon deliverable acceptance for ${invoiceProjName}. Activates 30-Day Zero-Cost Bug-Fix Warranty Shield and final IP Handover. [rail:bdt_bank_wire] [type:milestone_completion]`
+      });
+    } catch (invErr) {
+      console.warn('[Milestone Invoice Auto-Creation Note]:', invErr.message);
+    }
+
+    const finalInvoiceId = milestoneInvoice?.id || ('INV-' + id.replace('REV-', ''));
+
+    res.json({
+      success: true,
+      review: mapped,
+      projectId,
+      warrantyUntil,
+      warranty: {
+        warrantyEndsAt: warrantyUntil,
+        warrantyDays: 30
+      },
+      invoiceId: finalInvoiceId,
+      milestoneInvoice: milestoneInvoice || null,
+      milestoneInvoiceReleased: true
+    });
   } catch (err) {
     console.error('Review Approve error:', err.message);
     res.status(500).json({ error: err.message });
   }
-});
+}
 
-// POST /:id/request-revisions — Client formal revision request
+// POST /:id/request-revisions — Client formal revision request (enforces max_revisions limit)
 router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async (req, res) => {
   try {
     const { id } = req.params;
@@ -546,9 +808,42 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
     if (!reviewData) {
       reviewData = fallbackReviews.find(r => r.id === id);
     }
+    if (!reviewData) {
+      try {
+        const { getMemoryDeliverable } = require('../services/delivery-review');
+        reviewData = getMemoryDeliverable(id);
+      } catch (_) {}
+    }
     if (!reviewData) return res.status(404).json({ error: 'Review project not found' });
 
+    const fbRev = fallbackReviews.find(r => r.id === id);
+    if (fbRev) {
+      reviewData = { ...fbRev, ...reviewData };
+    }
+
+    const currentRound = Number(reviewData.revision_round) || 1;
+    const maxRounds = Number(reviewData.max_revisions) || 2;
+
+    if (currentRound >= maxRounds) {
+      return res.status(400).json({
+        error: `Revision limit reached (${currentRound}/${maxRounds} rounds used). Additional revisions require a formal Phase 2 Add-On.`
+      });
+    }
+
+    const nextRound = currentRound + 1;
+    const nextVersion = `v1.${nextRound - 1}-rc`;
+    const updatedVersions = Array.isArray(reviewData.versions) ? [...reviewData.versions] : ['v1.0-alpha'];
+    if (!updatedVersions.includes(nextVersion)) updatedVersions.push(nextVersion);
+
     const taskId = reviewData.project_id || id;
+    reviewData.revision_round = nextRound;
+    reviewData.active_version = nextVersion;
+    reviewData.versions = updatedVersions;
+    if (fbRev) {
+      fbRev.revision_round = nextRound;
+      fbRev.active_version = nextVersion;
+      fbRev.versions = updatedVersions;
+    }
     reviewData.revision_requested_by = requesterName;
     reviewData.revision_notes = revisionText;
     reviewData.revision_requested_at = new Date().toISOString();
@@ -561,7 +856,7 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
       author_role: req.user?.role || 'Client Partner',
       timestamp: '0:00',
       time_seconds: 0,
-      text: `✏️ Revision Requested: ${revisionText}`,
+      text: `✏️ Revision Round ${nextRound} Requested: ${revisionText}`,
       resolved: false,
       drawings: []
     };
@@ -569,6 +864,9 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
 
     // Persist revision request to reviews table
     await Promise.resolve(supabase.from('reviews').update({
+      revision_round: nextRound,
+      active_version: nextVersion,
+      versions: updatedVersions,
       revision_requested_by: requesterName,
       revision_notes: revisionText,
       revision_requested_at: new Date().toISOString()
@@ -631,4 +929,133 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4: Deliverable Side-by-Side Version Comparison
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/:id/compare', requireAuth, requireReviewOwnership, async (req, res) => {
+  try {
+    const { id } = req.params;
+    let reviewData = null;
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('reviews').select('*').eq('id', id).maybeSingle();
+        if (data) reviewData = data;
+      } catch (_) {}
+    }
+    if (!reviewData) reviewData = fallbackReviews.find(r => r.id === id);
+    if (!reviewData) {
+      try {
+        const { getMemoryDeliverable } = require('../services/delivery-review');
+        reviewData = getMemoryDeliverable(id);
+      } catch (_) {}
+    }
+    if (!reviewData) return res.status(404).json({ ok: false, error: 'Review deliverable not found' });
+
+    const versions = Array.isArray(reviewData.versions) && reviewData.versions.length > 0
+      ? reviewData.versions
+      : ['v1', 'v2'];
+    const activeVersion = reviewData.active_version || versions[versions.length - 1];
+    const previousVersion = versions.length > 1 ? versions[versions.length - 2] : versions[0];
+
+    return res.json({
+      ok: true,
+      success: true,
+      reviewId: id,
+      projectName: reviewData.project_name || 'AI Solution Sprint Cut',
+      client: reviewData.client,
+      activeVersion,
+      previousVersion,
+      versions,
+      mediaUrl: reviewData.media_url,
+      revisionRound: Number(reviewData.revision_round) || 1,
+      revisionNotes: reviewData.revision_notes || null,
+      resolvedCount: Number(reviewData.resolved_count) || 0,
+      totalCount: Number(reviewData.total_count) || 0,
+      isApproved: Boolean(reviewData.approved_at || reviewData.is_approved),
+      comparisonMode: 'side_by_side_synchronized'
+    });
+  } catch (err) {
+    console.error('Review compare GET error:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4: Automated Post-Acceptance NPS & Testimonial Harvest
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/:id/feedback', requireAuth, requireReviewOwnership, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      csatRating = 5,
+      npsScore = 10,
+      reviewText = 'Exceptional velocity and engineering execution.',
+      consentShowcase = true,
+      videoUrl = null
+    } = req.body;
+
+    let reviewData = null;
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('reviews').select('*').eq('id', id).maybeSingle();
+        if (data) reviewData = data;
+      } catch (_) {}
+    }
+    if (!reviewData) reviewData = fallbackReviews.find(r => r.id === id);
+    if (!reviewData) {
+      try {
+        const { getMemoryDeliverable } = require('../services/delivery-review');
+        reviewData = getMemoryDeliverable(id);
+      } catch (_) {}
+    }
+    if (!reviewData) return res.status(404).json({ ok: false, error: 'Review deliverable not found' });
+
+    const projectId = reviewData.project_id || id;
+    const { submitProjectTestimonial } = require('../services/post-delivery');
+
+    const testimonial = await submitProjectTestimonial(projectId, {
+      csatRating: Number(csatRating),
+      npsScore: Number(npsScore),
+      reviewText,
+      clientDisplayName: req.user?.name || reviewData.client || 'Enterprise Client',
+      clientRole: req.user?.role || 'Managing Director',
+      clientCompany: req.user?.company || reviewData.client || 'Enterprise Partner',
+      consentShowcase: Boolean(consentShowcase),
+      videoUrl
+    });
+
+    return res.status(201).json({
+      ok: true,
+      success: true,
+      reviewId: id,
+      projectId,
+      testimonial,
+      isFeaturedTestimonial: Number(npsScore) >= 9 && Boolean(consentShowcase)
+    });
+  } catch (err) {
+    console.error('Review feedback POST error:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4: Public Showcase Testimonials
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/testimonials/showcase', async (req, res) => {
+  try {
+    const { getPublicTestimonials } = require('../services/post-delivery');
+    const testimonials = await getPublicTestimonials();
+    return res.json({
+      ok: true,
+      success: true,
+      count: testimonials.length,
+      testimonials
+    });
+  } catch (err) {
+    console.error('Testimonials showcase GET error:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
+

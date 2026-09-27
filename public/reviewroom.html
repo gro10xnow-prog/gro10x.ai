@@ -58,13 +58,19 @@
           </p>
 
           <!-- Milestone Invoice Preview -->
-          <div style="background: rgba(0,223,137,0.08); border: 1px solid rgba(0,223,137,0.25); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: left;">
+          <div style="background: rgba(0,223,137,0.08); border: 1px solid rgba(0,223,137,0.25); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; text-align: left;">
             <div style="font-size: 0.75rem; color: #00df89; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Milestone Commercial Invoice</div>
             <div style="display: flex; justify-content: space-between; align-items: baseline;">
               <span style="font-size: 1.4rem; font-weight: 900; color: #ffffff;" id="modalInvoiceUsd">$1,500 USD</span>
               <span style="font-size: 0.95rem; font-weight: 700; color: #34d399;" id="modalInvoiceBdt">৳176,250 BDT</span>
             </div>
             <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.4rem;">Includes high-resolution master asset delivery & commercial IP transfer.</div>
+          </div>
+
+          <!-- 30-Day Bug-Fix Warranty Activation -->
+          <div style="background: rgba(0,223,137,0.06); border: 1px solid rgba(0,223,137,0.2); border-radius: 12px; padding: 0.85rem; margin-bottom: 1.25rem; text-align: left; font-size: 0.8rem; color: #a1a1aa;">
+            <div style="font-weight: 700; color: #34d399; margin-bottom: 0.2rem;">🛡️ 30-Day Bug-Fix Warranty Activated</div>
+            All reported software defects and deviations from the locked sprint specifications are covered at zero cost for 30 days from sign-off.
           </div>
 
           <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
@@ -79,8 +85,22 @@
         <div class="rr-modal-box">
           <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0; color: #ffffff;">🔴 Request Revisions</h3>
           <p style="font-size: 0.88rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 0.75rem;">
-            Describe the changes needed. The production team will be notified immediately.
+            Describe the changes needed. The production team will be notified immediately under the 48h turnaround SLA.
           </p>
+
+          <div style="margin-bottom:0.75rem;">
+            <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Feedback Category</label>
+            <select id="revisionCategorySelect" class="rr-input" style="width:100%; box-sizing:border-box;" onchange="handleRevisionCategoryChange(this.value)">
+              <option value="BUG_FIX">🐞 Defect / Bug Fix (Against approved spec)</option>
+              <option value="POLISH_REVISION">✨ Polish Revision (Within locked scope)</option>
+              <option value="OUT_OF_SCOPE">⚠️ Scope Expansion (Requires Change Order)</option>
+            </select>
+          </div>
+
+          <div id="rrScopeWarning" style="display:none; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:0.6rem; font-size:0.78rem; color:#fde68a; margin-bottom:0.75rem;">
+            <strong>⚠️ Scope Creep Advisory:</strong> This request may touch features outside the locked sprint scope. It will be screened under the Scope Creep Shield.
+          </div>
+
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
             <span style="font-size:0.75rem; color:var(--text-muted);">Feedback Notes:</span>
             <button type="button" class="rr-btn rr-btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem;" onclick="insertCurrentVideoTimestamp()">⏱️ Insert Video Timestamp</button>
@@ -89,6 +109,104 @@
           <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
             <button class="rr-btn rr-btn-secondary" onclick="closeRevisionModal()">Cancel</button>
             <button class="rr-btn" style="background:rgba(239,68,68,0.8); color:#fff;" onclick="executeRevisionRequest()">🔴 Submit Revision Request</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDE-BY-SIDE VERSION COMPARISON MODAL -->
+      <div class="rr-modal-overlay" id="rrCompareModal">
+        <div class="rr-modal-box" style="max-width: 900px; width:92%; max-height:85vh; overflow-y:auto; border: 1px solid rgba(6,182,212,0.4);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.75rem;">
+            <div>
+              <span class="badge badge-cyan" style="font-size:0.7rem; font-weight:800;">SYNCHRONIZED VERSION DIFF</span>
+              <h3 style="margin:0.2rem 0 0 0; color:#fff; font-size:1.25rem; font-weight:800;" id="rrCmpTitle">Version Comparison</h3>
+            </div>
+            <button onclick="closeCompareModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+
+          <div id="rrCmpLoading" style="text-align:center; padding:2rem; color:var(--text-muted);">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">⏳</div>
+            <div>Loading deliverable version diff...</div>
+          </div>
+
+          <div id="rrCmpBody" style="display:none; flex-direction:column; gap:1.25rem;">
+            <div style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.25); border-radius:10px; padding:0.75rem 1rem; font-size:0.85rem; color:#bae6fd;" id="rrCmpNotes">
+              <strong>Revision Notes:</strong> Changes incorporated from client review feedback.
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; margin-bottom:0.4rem;" id="rrCmpPrevLabel">Previous Version (v1.0)</div>
+                <div style="padding:2rem 1rem; background:rgba(0,0,0,0.4); border-radius:8px; font-size:0.82rem; color:var(--text-dim);">
+                  <div style="font-size:2rem; margin-bottom:0.5rem; opacity:0.6;">📦</div>
+                  Historical Baseline Artifact
+                </div>
+              </div>
+              <div style="background:rgba(0,223,137,0.06); border:1px solid rgba(0,223,137,0.3); border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:0.75rem; color:#00df89; font-weight:700; text-transform:uppercase; margin-bottom:0.4rem;" id="rrCmpActiveLabel">Active Candidate (v2.0)</div>
+                <div style="padding:2rem 1rem; background:rgba(0,0,0,0.4); border-radius:8px; font-size:0.82rem; color:#fff;">
+                  <div style="font-size:2rem; margin-bottom:0.5rem; color:#00df89;">🚀</div>
+                  Active Candidate Ready for Sign-Off
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:0.75rem 1rem; border-radius:8px; font-size:0.8rem;">
+              <span id="rrCmpStats" style="color:var(--text-muted);">Audited feedback items</span>
+              <button class="rr-btn rr-btn-secondary" onclick="closeCompareModal()">Close Comparison</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST-ACCEPTANCE NPS & TESTIMONIAL HARVEST MODAL -->
+      <div class="rr-modal-overlay" id="rrNpsModal">
+        <div class="rr-modal-box" style="max-width: 520px; text-align:center; border: 1px solid rgba(0,223,137,0.4); box-shadow: 0 20px 60px rgba(0,0,0,0.9);">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🌟</div>
+          <h3 style="color:#fff; font-size:1.35rem; font-weight:800; margin:0 0 0.35rem; font-family:var(--font-heading);">Deliverable Sign-Off Complete!</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:1.25rem;">
+            Please rate your sprint velocity and share a brief feedback testimonial to help our engineering specialists.
+          </p>
+
+          <div style="margin-bottom:1.25rem;">
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.35rem;">Satisfaction (CSAT)</div>
+            <div id="rrCsatStars" style="display:flex; justify-content:center; gap:0.5rem; font-size:1.8rem; cursor:pointer;">
+              <span onclick="setRrCsat(1)">⭐</span>
+              <span onclick="setRrCsat(2)">⭐</span>
+              <span onclick="setRrCsat(3)">⭐</span>
+              <span onclick="setRrCsat(4)">⭐</span>
+              <span onclick="setRrCsat(5)">⭐</span>
+            </div>
+            <div id="rrCsatLabel" style="font-size:0.75rem; color:#00df89; font-weight:700; margin-top:0.25rem;">5/5 — Exceptional Velocity</div>
+          </div>
+
+          <div style="margin-bottom:1.25rem;">
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.35rem;">Likelihood to Recommend (NPS: 1–10)</div>
+            <div id="rrNpsPills" style="display:flex; justify-content:center; gap:0.2rem; flex-wrap:wrap;">
+              ${[1,2,3,4,5,6,7,8,9,10].map(n => `
+                <button type="button" class="rr-nps-btn" data-score="${n}" onclick="setRrNps(${n})"
+                  style="min-width:30px; height:30px; border-radius:6px; border:1px solid ${n === 10 ? '#00df89' : 'rgba(255,255,255,0.15)'}; background:${n === 10 ? 'rgba(0,223,137,0.35)' : 'rgba(255,255,255,0.06)'}; color:#fff; font-weight:700; font-size:0.75rem; cursor:pointer;">
+                  ${n}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div style="text-align:left; margin-bottom:1rem;">
+            <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Feedback Testimonial:</label>
+            <textarea id="rrNpsText" rows="3" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; padding:0.6rem; font-size:0.85rem; font-family:inherit; box-sizing:border-box;">Flawless delivery, incredible communication, and elite engineering polish.</textarea>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:0.5rem; text-align:left; background:rgba(255,255,255,0.03); padding:0.5rem 0.75rem; border-radius:6px; margin-bottom:1.25rem;">
+            <input type="checkbox" id="rrNpsConsent" checked style="accent-color:#00df89; cursor:pointer;" />
+            <label for="rrNpsConsent" style="font-size:0.72rem; color:var(--text-muted); cursor:pointer;">
+              Authorize GRO10X to showcase this testimonial on our portfolio & showcase.
+            </label>
+          </div>
+
+          <div style="display:flex; gap:0.75rem;">
+            <button class="rr-btn rr-btn-secondary" style="flex:1;" onclick="closeNpsModal()">Skip</button>
+            <button class="rr-btn rr-btn-approve" style="flex:1.4;" onclick="submitRrNpsFeedback()">🌟 Submit & Finish</button>
           </div>
         </div>
       </div>
@@ -178,6 +296,34 @@
         <span style="font-size: 0.75rem; color: var(--text-muted);">Draw on the video to add visual feedback at the current timestamp.</span>
         <label for="assetUploadVersionInput" class="rr-btn" style="background:rgba(255,255,255,0.08); padding:0.4rem 0.8rem; font-size:0.85rem; cursor:pointer;">📤 Upload New Version</label>
         <input type="file" id="assetUploadVersionInput" accept="video/*,image/*,.pdf" style="display:none;" onchange="handleAssetUpload(event)">
+      </div>
+
+      <!-- Engine 2 Multi-Format Links & DoD Panel -->
+      <div id="rrMultiFormatSection" style="display:none; margin-top:1rem; flex-direction:column; gap:0.6rem;">
+        <!-- Git Repo Card -->
+        <div id="rrGitCard" style="display:none; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:0.6rem 0.85rem; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.8rem;">
+            <span>🐙</span>
+            <span>Git Repo: <strong id="rrGitBranch" style="color:var(--purple-light, #c084fc);">main</strong></span>
+          </div>
+          <a id="rrGitLink" href="#" target="_blank" rel="noopener" class="rr-btn rr-btn-secondary" style="font-size:0.75rem; text-decoration:none;">View Pull Request ↗</a>
+        </div>
+        <!-- API Docs Card -->
+        <div id="rrApiDocsCard" style="display:none; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:0.6rem 0.85rem; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; color:#38bdf8;">
+            <span>📖</span>
+            <span>OpenAPI / Swagger Contracts</span>
+          </div>
+          <a id="rrApiDocsLink" href="#" target="_blank" rel="noopener" class="rr-btn rr-btn-secondary" style="font-size:0.75rem; text-decoration:none; color:#38bdf8;">Explore Endpoints ↗</a>
+        </div>
+        <!-- DoD Criteria Panel -->
+        <div id="rrDodPanel" style="display:none; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.75rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; font-size:0.78rem;">
+            <strong style="color:#fff;">📋 Definition of Done (DoD) Criteria</strong>
+            <span id="rrDodProgressBadge" style="color:#00df89; font-weight:700;">0/0 Verified</span>
+          </div>
+          <div id="rrDodItems" style="display:flex; flex-direction:column; gap:0.3rem;"></div>
+        </div>
       </div>
 
       <!-- Client & Action Footer -->
@@ -369,9 +515,10 @@
       document.getElementById('clientNameLabel').innerText = safeText(data.clientName || data.client || 'Agency Client');
       document.getElementById('editorNameLabel').innerText = safeText(data.editor || data.leadEditor || 'Production Team');
 
-      // Switch between video / image / pdf / no-asset
-      const mediaUrl = data.mediaUrl || '';
-      const mediaType = (data.mediaType || 'video').toLowerCase();
+      // Switch between video / image / pdf / staging_url / no-asset
+      const stagingUrl = data.stagingUrl || (data.deliverableType === 'staging_url' ? data.mediaUrl : null);
+      const mediaUrl = stagingUrl || data.mediaUrl || '';
+      const mediaType = (data.deliverableType || data.mediaType || 'video').toLowerCase();
       const videoPlayer = document.getElementById('videoPlayer');
       const imageViewer = document.getElementById('imageViewer');
       const pdfViewer = document.getElementById('pdfViewer');
@@ -389,7 +536,16 @@
       pdfViewer.style.display = 'none';
       noAsset.style.display = 'none';
 
-      if (!mediaUrl) {
+      if (mediaType === 'web' || mediaType === 'saas' || mediaType === 'prototype' || mediaType === 'staging_url' || stagingUrl) {
+        if (webViewer) {
+          webViewer.style.display = 'block';
+          document.getElementById('webViewerFrame').src = mediaUrl;
+          const ext = document.getElementById('webExternalLink');
+          if (ext) ext.href = mediaUrl;
+        }
+        if (drawingToolbar) drawingToolbar.style.display = 'none';
+        if (canvas) canvas.style.display = 'none';
+      } else if (!mediaUrl) {
         noAsset.style.display = 'flex';
         if (drawingToolbar) drawingToolbar.style.display = 'none';
         if (canvas) canvas.style.display = 'none';
@@ -407,15 +563,6 @@
         }
         if (drawingToolbar) drawingToolbar.style.display = 'none';
         if (canvas) canvas.style.display = 'none';
-      } else if (mediaType === 'web' || mediaType === 'saas' || mediaType === 'prototype') {
-        if (webViewer) {
-          webViewer.style.display = 'block';
-          document.getElementById('webViewerFrame').src = mediaUrl;
-          const ext = document.getElementById('webExternalLink');
-          if (ext) ext.href = mediaUrl;
-        }
-        if (drawingToolbar) drawingToolbar.style.display = 'none';
-        if (canvas) canvas.style.display = 'none';
       } else if (mediaType === 'pdf' || mediaType === 'doc') {
         pdfViewer.style.display = 'block';
         document.getElementById('pdfViewerFrame').src = mediaUrl;
@@ -429,6 +576,48 @@
         if (canvas) canvas.style.display = 'block';
       }
 
+      // Multi-Format Cards (Git Repo & API Docs) & DoD Criteria
+      const multiSec = document.getElementById('rrMultiFormatSection');
+      const gitCard = document.getElementById('rrGitCard');
+      const apiCard = document.getElementById('rrApiDocsCard');
+      const dodPanel = document.getElementById('rrDodPanel');
+      let hasMulti = false;
+
+      if (data.repoUrl && gitCard) {
+        hasMulti = true;
+        gitCard.style.display = 'flex';
+        document.getElementById('rrGitBranch').innerText = safeText(data.branchName || 'main');
+        document.getElementById('rrGitLink').href = data.repoUrl;
+      } else if (gitCard) {
+        gitCard.style.display = 'none';
+      }
+
+      if (data.apiDocsUrl && apiCard) {
+        hasMulti = true;
+        apiCard.style.display = 'flex';
+        document.getElementById('rrApiDocsLink').href = data.apiDocsUrl;
+      } else if (apiCard) {
+        apiCard.style.display = 'none';
+      }
+
+      const dod = Array.isArray(data.dodChecklist) ? data.dodChecklist : [];
+      if (dod.length > 0 && dodPanel) {
+        hasMulti = true;
+        dodPanel.style.display = 'block';
+        const completedCount = dod.filter(d => d.completed).length;
+        document.getElementById('rrDodProgressBadge').innerText = `${completedCount}/${dod.length} Verified`;
+        document.getElementById('rrDodItems').innerHTML = dod.map(d => `
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#cbd5e1; background:rgba(255,255,255,0.03); padding:0.35rem 0.6rem; border-radius:6px;">
+            <span style="${d.completed ? 'text-decoration:line-through; opacity:0.85;' : ''}">${d.completed ? '✅' : '⏳'} ${safeText(d.item || d)}</span>
+            <span style="font-size:0.7rem; color:${d.completed ? '#00df89' : 'var(--text-muted)'}; font-weight:600;">${d.completed ? 'QA Verified' : 'Pending'}</span>
+          </div>
+        `).join('');
+      } else if (dodPanel) {
+        dodPanel.style.display = 'none';
+      }
+
+      if (multiSec) multiSec.style.display = hasMulti ? 'flex' : 'none';
+
       // Versions Pills
       const versionsContainer = document.getElementById('rrVersionPills');
       const versions = data.versions || ['v1'];
@@ -437,12 +626,17 @@
         <button class="rr-version-btn ${v === activeVer ? 'is-active' : ''}" onclick="switchVersion('${safeText(v)}')">
           ${safeText(v)} ${v === activeVer ? '⭐ Active' : ''}
         </button>
-      `).join('');
+      `).join('') + `
+        <button class="rr-version-btn" style="color:#06b6d4; border-color:rgba(6,182,212,0.4);" onclick="openCompareModal()">
+          🔄 Compare Versions
+        </button>
+      `;
 
       // Status & action buttons
       const approveContainer = document.getElementById('approveBtnContainer');
       if (data.isApproved || data.status === 'approved') {
         approveContainer.innerHTML = `
+          <button class="rr-btn" style="background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); color:#00df89; margin-right:0.5rem;" onclick="openNpsModal()">🌟 Review & NPS</button>
           <span style="background:rgba(16,185,129,0.2); color:#34d399; padding:0.5rem 1rem; border-radius:12px; font-weight:700; font-size:0.88rem; border:1px solid rgba(16,185,129,0.3);">✅ Deliverable Approved — Invoice Released</span>
         `;
       } else if (data.status === 'revision_requested') {
@@ -697,8 +891,16 @@
       const modal = document.getElementById('rrRevisionModal');
       if (modal) modal.classList.remove('active');
     }
+    function handleRevisionCategoryChange(val) {
+      const banner = document.getElementById('rrScopeWarning');
+      if (banner) {
+        banner.style.display = val === 'OUT_OF_SCOPE' ? 'block' : 'none';
+      }
+    }
+
     async function executeRevisionRequest() {
       const feedback = document.getElementById('revisionFeedbackInput')?.value.trim();
+      const commentType = document.getElementById('revisionCategorySelect')?.value || 'BUG_FIX';
       if (!feedback) { showToast('Please describe the revisions needed.', 'error'); return; }
       if (!activeReviewData?.id) return;
       closeRevisionModal();
@@ -707,12 +909,13 @@
         const res = await fetch(`/api/reviews/${activeReviewData.id}/request-revisions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ feedback })
+          body: JSON.stringify({ feedback, commentType })
         });
         const data = await res.json();
         if (data.success) {
-          showToast('🔴 Revision request submitted! Production team notified.', 'success');
+          showToast('🔴 Revision request submitted under 48h SLA! Production team notified.', 'success');
           activeReviewData.status = 'revision_requested';
+          if (data.review) activeReviewData.revisionRound = data.review.revisionRound;
           renderReviewUI(activeReviewData);
         } else {
           showToast('Error: ' + (data.error || 'Could not submit revision request'), 'error');
@@ -727,26 +930,141 @@
       if (!activeReviewData || !activeReviewData.id) return;
       
       try {
+        let user = {};
+        try { user = JSON.parse(localStorage.getItem('purple_user') || '{}'); } catch(e) {}
+        const approvedBy = user.name || 'Authorized Client POC';
+
         const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
         const res = await fetch(`/api/reviews/${activeReviewData.id}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({
+            approvedBy,
             assetTitle: activeReviewData.projectName,
             clientName: activeReviewData.client
           })
         });
 
         const data = await res.json();
-        showToast(`🎉 Deliverable Approved! Invoice INV-${data.invoiceId || 'TBD (Finance Notified)'} released. Production team alerted.`, 'success');
+        showToast(`🎉 Deliverable Approved! 30-Day Warranty Active. Commercial Invoice INV-${data.invoiceId || '001'} released.`, 'success');
 
         if (activeReviewData) {
           activeReviewData.status = 'approved';
           activeReviewData.isApproved = true;
+          activeReviewData.approvedBy = approvedBy;
+          activeReviewData.approvedAt = new Date().toISOString();
           renderReviewUI(activeReviewData);
+          openNpsModal();
         }
       } catch (err) {
-        showToast('Error approving cut: ' + err.message, 'error');
+        showToast('Error approving deliverable: ' + err.message, 'error');
+      }
+    }
+
+    // Version Comparison Handlers
+    async function openCompareModal() {
+      if (!activeReviewData?.id) return;
+      const modal = document.getElementById('rrCompareModal');
+      const loading = document.getElementById('rrCmpLoading');
+      const body = document.getElementById('rrCmpBody');
+      if (modal) modal.classList.add('active');
+      if (loading) loading.style.display = 'block';
+      if (body) body.style.display = 'none';
+
+      try {
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        const res = await fetch(`/api/reviews/${activeReviewData.id}/compare`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        document.getElementById('rrCmpTitle').innerText = `${data.projectName || activeReviewData.projectName || 'Deliverable'} — Version Diff`;
+        document.getElementById('rrCmpPrevLabel').innerText = `Previous (${data.previousVersion || 'v1.0'})`;
+        document.getElementById('rrCmpActiveLabel').innerText = `Active Candidate (${data.activeVersion || 'v2.0'})`;
+        document.getElementById('rrCmpNotes').innerHTML = `<strong>Revision Notes:</strong> ${safeText(data.revisionNotes || 'Sprint adjustments verified against DoD checklist.')}`;
+        document.getElementById('rrCmpStats').innerText = `Audited: ${data.resolvedCount || 0} of ${data.totalCount || 0} items resolved`;
+
+        if (loading) loading.style.display = 'none';
+        if (body) body.style.display = 'flex';
+      } catch (err) {
+        if (loading) loading.innerHTML = `<div style="color:#ef4444;">Error loading compare view: ${safeText(err.message)}</div>`;
+      }
+    }
+
+    function closeCompareModal() {
+      const modal = document.getElementById('rrCompareModal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    // NPS & Testimonial Harvest Handlers
+    let _rrCsat = 5;
+    let _rrNps = 10;
+
+    function openNpsModal() {
+      _rrCsat = 5;
+      _rrNps = 10;
+      setRrCsat(5);
+      setRrNps(10);
+      const modal = document.getElementById('rrNpsModal');
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeNpsModal() {
+      const modal = document.getElementById('rrNpsModal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function setRrCsat(val) {
+      _rrCsat = val;
+      const stars = document.querySelectorAll('#rrCsatStars span');
+      stars.forEach((s, idx) => {
+        s.style.opacity = idx < val ? '1' : '0.3';
+        s.style.transform = idx < val ? 'scale(1.15)' : 'scale(1)';
+      });
+      const lbl = document.getElementById('rrCsatLabel');
+      if (lbl) {
+        const labels = { 1: '1/5 Needs Fix', 2: '2/5 Below Standard', 3: '3/5 Standard', 4: '4/5 Great', 5: '5/5 Exceptional Velocity' };
+        lbl.innerText = labels[val] || `${val}/5`;
+      }
+    }
+
+    function setRrNps(val) {
+      _rrNps = val;
+      const btns = document.querySelectorAll('#rrNpsPills .rr-nps-btn');
+      btns.forEach(b => {
+        const s = Number(b.dataset.score);
+        if (s === val) {
+          b.style.borderColor = '#00df89';
+          b.style.background = 'rgba(0,223,137,0.35)';
+        } else {
+          b.style.borderColor = 'rgba(255,255,255,0.15)';
+          b.style.background = 'rgba(255,255,255,0.06)';
+        }
+      });
+    }
+
+    async function submitRrNpsFeedback() {
+      if (!activeReviewData?.id) { closeNpsModal(); return; }
+      const reviewText = (document.getElementById('rrNpsText')?.value || '').trim();
+      const consentShowcase = Boolean(document.getElementById('rrNpsConsent')?.checked);
+
+      try {
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        await fetch(`/api/reviews/${activeReviewData.id}/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            csatRating: _rrCsat,
+            npsScore: _rrNps,
+            reviewText,
+            consentShowcase
+          })
+        });
+        showToast('🌟 Thank you! Your verified review and testimonial have been recorded.', 'success');
+      } catch (err) {
+        console.warn('Feedback submit error:', err);
+      } finally {
+        closeNpsModal();
       }
     }
 

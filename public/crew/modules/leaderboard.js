@@ -4,7 +4,7 @@
  */
 window.CREW_MODULES = window.CREW_MODULES || {};
 
-let activeLeaderboardDept = 'All';
+var activeLeaderboardDept = window.activeLeaderboardDept || 'All';
 
 window.filterCrewLeaderboard = function(dept) {
   activeLeaderboardDept = dept;
@@ -143,6 +143,11 @@ window.CREW_MODULES.leaderboard = async function(container) {
             </div>
             <div style="font-size:0.78rem; color:var(--purple-light); font-weight:600; margin-top:0.1rem;">
               ${p.badge || '🌱 Recruit'}
+            </div>
+            <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.4rem; margin-top:0.25rem;">
+              <span class="badge" style="background:rgba(0,223,137,0.12); color:#00df89; border:1px solid rgba(0,223,137,0.3); font-size:0.72rem; font-weight:800; font-family:var(--font-mono); padding:0.1rem 0.45rem;">
+                ⚡ ${p.spiScore || p.spi || 94} SPI
+              </span>
             </div>
             ${streak > 1 ? `
               <div style="font-size:0.72rem; color:orange; font-weight:700; margin-top:0.2rem;">

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — DCE Unified Omnichannel Order Inbox</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22%20%2232%22><text y=%2224%22 font-size=%2224%22>🛒</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #ec4899;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: relative;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .brand-logo .icon-badge {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    .brand-logo h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #1f2937; color: var(--text); border: 1px solid #374151; }
+    .btn-secondary:hover { background: #374151; }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 24px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .kpi-card .title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .kpi-card .val {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .kpi-card .sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Filter Toolbar */
+    .toolbar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filters-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    select, input {
+      background: #090e17;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 9px 14px;
+      color: white;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+    select:focus, input:focus { border-color: var(--primary); }
+
+    /* Orders Table */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: #0f172a;
+      padding: 14px 18px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 16px 18px;
+      border-bottom: 1px solid #1a2234;
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      font-family: var(--mono);
+    }
+
+    .badge-etsy { background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.4); color: #fb923c; }
+    .badge-amazon { background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); color: #facc15; }
+    .badge-gumroad { background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.4); color: #f472b6; }
+    .badge-daraz { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; }
+    .badge-direct { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .status-completed { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-dispatched { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+    .status-processing { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .status-confirmed { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+    .status-cancelled { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    .sku-pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    /* Modal / Drawer */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      width: 90%; max-width: 600px;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; }
+
+    /* Skeleton Loading & Empty State */
+    @keyframes dce-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-bar {
+      height: 14px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #111827 25%, #1e293b 50%, #111827 75%);
+      background-size: 200% 100%;
+      animation: dce-shimmer 1.5s infinite;
+      display: inline-block;
+    }
+    .empty-state-box {
+      text-align: center;
+      padding: 48px 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="/dce" class="brand-logo">
+      <div class="icon-badge">🛒</div>
+      <div>
+        <h1>GRO10X Order Clearinghouse</h1>
+        <small style="color: var(--text-muted); font-size: 11px;">Omnichannel Canonical Order Ledger</small>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <a href="/dce" class="btn btn-secondary">⚡ Catalog</a>
+      <a href="/dce/operations" class="btn btn-secondary">🛠️ Operations</a>
+      <a href="/dce/growth" class="btn btn-secondary">📈 Growth Suite</a>
+      <button class="btn btn-primary" onclick="syncEtsyNow()">🔄 Sync Etsy Receipts</button>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <main class="container">
+
+    <!-- KPI Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="title">Total Ingested Orders</div>
+        <div class="val" id="kpi-orders">—</div>
+        <div class="sub">Across all connected channels</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Gross Platform GMV</div>
+        <div class="val" id="kpi-gmv" style="color: #38bdf8;">—</div>
+        <div class="sub">Pre-commission volume</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Marketplace Fees</div>
+        <div class="val" id="kpi-fees" style="color: #f87171;">—</div>
+        <div class="sub">Channel commissions deducted</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Net Retained Yield</div>
+        <div class="val" id="kpi-net" style="color: #34d399;">—</div>
+        <div class="sub">Gross GMV − Channel Fees</div>
+      </div>
+    </div>
+
+    <!-- Toolbar Filters -->
+    <div class="toolbar">
+      <div class="filters-group">
+        <select id="filter-channel" onchange="applyFilters()">
+          <option value="ALL">🌐 All Channels</option>
+          <option value="ETSY">Etsy Marketplace</option>
+          <option value="AMAZON">Amazon SP-API</option>
+          <option value="GUMROAD">Gumroad Digital</option>
+          <option value="DARAZ">Daraz Bangladesh</option>
+          <option value="DIRECT">Direct Store Platform</option>
+        </select>
+
+        <select id="filter-status" onchange="applyFilters()">
+          <option value="ALL">All Statuses</option>
+          <option value="COMPLETED">Completed / Settled</option>
+          <option value="DISPATCHED">Dispatched / Shipped</option>
+          <option value="PROCESSING">Processing</option>
+          <option value="CONFIRMED">Confirmed</option>
+          <option value="CANCELLED">Cancelled / Refunded</option>
+        </select>
+
+        <input type="text" id="filter-search" placeholder="Search order ID, buyer, email..." oninput="applyFilters()" style="min-width: 250px;">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary" onclick="exportOrdersCSV()">📥 Export CSV</button>
+        <button class="btn btn-primary" onclick="bulkMarkStatus('DISPATCHED')">📦 Batch Dispatch</button>
+        <button class="btn btn-secondary" onclick="loadOrderData()">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Channel</th>
+            <th>Brand & Buyer</th>
+            <th>SKU Attribution</th>
+            <th>Gross GMV</th>
+            <th>Channel Fee</th>
+            <th>Net Yield</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="orders-table-body">
+          <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">Loading orders...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- Modal: Order Detail -->
+  <div id="modal-order-detail" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="mod-order-title">Order Details</h3>
+        <button class="modal-close" onclick="closeModal('modal-order-detail')">&times;</button>
+      </div>
+      <div id="mod-order-content">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allOrders = [];
+
+    function showOrdersSkeleton() {
+      const tbody = document.getElementById('orders-table-body');
+      tbody.innerHTML = [1, 2, 3, 4, 5].map(() => `
+        <tr class="skeleton-row">
+          <td><div class="skeleton-bar" style="width: 100px;"></div><div class="skeleton-bar" style="width: 70px; height: 10px; margin-top: 4px;"></div></td>
+          <td><div class="skeleton-bar" style="width: 50px;"></div></td>
+          <td><div class="skeleton-bar" style="width: 110px;"></div></td>
+          <td><div class="skeleton-bar" style="width: 80px;"></div></td>
+          <td><div class="skeleton-bar" style="width: 50px;"></div></td>
+          <td><div class="skeleton-bar" style="width: 45px;"></div></td>
+          <td><div class="skeleton-bar" style="width: 55px;"></div></td>
+          <td><div class="skeleton-bar" style="width: 65px; border-radius: 6px;"></div></td>
+          <td><div class="skeleton-bar" style="width: 55px; border-radius: 6px;"></div></td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadOrderData() {
+      showOrdersSkeleton();
+      try {
+        const [mRes, oRes] = await Promise.all([
+          fetch('/api/dce/orders/metrics').then(r => r.json()),
+          fetch('/api/dce/orders').then(r => r.json())
+        ]);
+
+        if (mRes.success) {
+          document.getElementById('kpi-orders').innerText = mRes.data.totalOrders;
+          document.getElementById('kpi-gmv').innerText = '$' + mRes.data.grossGMV.toFixed(2);
+          document.getElementById('kpi-fees').innerText = '-$' + mRes.data.totalFees.toFixed(2);
+          document.getElementById('kpi-net').innerText = '$' + mRes.data.netRevenue.toFixed(2);
+        }
+
+        if (oRes.success) {
+          allOrders = oRes.data;
+          renderOrdersTable(allOrders);
+        }
+      } catch (err) {
+        console.error('Error loading DCE orders:', err);
+      }
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-channel').value = 'ALL';
+      document.getElementById('filter-status').value = 'ALL';
+      document.getElementById('filter-search').value = '';
+      renderOrdersTable(allOrders);
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById('orders-table-body');
+      if (orders.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9">
+              <div class="empty-state-box">
+                <div style="font-size: 36px; margin-bottom: 8px;">🔍</div>
+                <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">No Orders Match Criteria</div>
+                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 14px;">Try selecting a different channel, status, or clearing your search term.</p>
+                <button class="btn btn-secondary" onclick="resetFilters()">🔄 Clear All Filters</button>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => {
+        const items = o.items || [];
+        const skuBadges = items.map(i => `
+          <div style="margin-bottom: 2px;">
+            <span class="sku-pill">${i.sku || i.external_sku_ref}</span>
+            <small style="color: var(--text-muted); font-size: 11px;">(x${i.quantity})</small>
+          </div>
+        `).join('') || '—';
+
+        const statusClass = 'status-' + o.status.toLowerCase();
+
+        return `
+          <tr>
+            <td>
+              <strong style="font-family: var(--mono); color: #fff;">${o.external_order_id}</strong>
+              <div style="font-size: 11px; color: var(--text-muted);">${new Date(o.placed_at).toLocaleString()}</div>
+            </td>
+            <td>
+              <span class="badge badge-${o.channel_code.toLowerCase()}">${o.channel_code}</span>
+            </td>
+            <td>
+              <div style="font-weight: 700; color: #fff;">${o.customer_name || 'Customer'}</div>
+              <small style="color: var(--text-muted);">${o.customer_email || ''}</small>
+            </td>
+            <td>${skuBadges}</td>
+            <td style="font-weight: 700; color: #fff;">$${Number(o.total_amount).toFixed(2)}</td>
+            <td style="color: #f87171; font-weight: 600;">-$${Number(o.channel_fee).toFixed(2)}</td>
+            <td style="color: #34d399; font-weight: 800;">$${Number(o.net_amount).toFixed(2)}</td>
+            <td>
+              <span class="status-badge ${statusClass}">${o.status}</span>
+            </td>
+            <td>
+              <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="viewOrderDetail('${o.id}')">Inspect</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function applyFilters() {
+      const channel = document.getElementById('filter-channel').value;
+      const status = document.getElementById('filter-status').value;
+      const search = document.getElementById('filter-search').value.toLowerCase().trim();
+
+      let filtered = [...allOrders];
+      if (channel !== 'ALL') {
+        filtered = filtered.filter(o => o.channel_code === channel);
+      }
+      if (status !== 'ALL') {
+        filtered = filtered.filter(o => o.status === status);
+      }
+      if (search) {
+        filtered = filtered.filter(o =>
+          o.external_order_id.toLowerCase().includes(search) ||
+          (o.customer_name && o.customer_name.toLowerCase().includes(search)) ||
+          (o.customer_email && o.customer_email.toLowerCase().includes(search))
+        );
+      }
+
+      renderOrdersTable(filtered);
+    }
+
+    function viewOrderDetail(orderId) {
+      const order = allOrders.find(o => o.id === orderId);
+      if (!order) return;
+
+      document.getElementById('mod-order-title').innerText = `Order: ${order.external_order_id} (${order.channel_code})`;
+      
+      const itemsList = (order.items || []).map(i => `
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1f2937;">
+          <div>
+            <strong>${i.title}</strong>
+            <div style="font-family: var(--mono); font-size: 12px; color: #38bdf8;">${i.sku || i.external_sku_ref}</div>
+          </div>
+          <div style="text-align: right;">
+            <div>$${i.line_total.toFixed(2)}</div>
+            <small style="color: var(--text-muted); font-size: 11px;">Qty: ${i.quantity}</small>
+          </div>
+        </div>
+      `).join('');
+
+      const eventsList = (order.events || []).map(e => `
+        <div style="font-size: 12px; margin-bottom: 6px; padding-left: 8px; border-left: 2px solid var(--primary);">
+          <strong>${e.event_type}</strong> — <span style="color: var(--text-muted);">${new Date(e.created_at).toLocaleTimeString()}</span>
+          <div>Status: <span style="color: #38bdf8;">${e.new_status}</span> via ${e.source}</div>
+        </div>
+      `).join('') || '<div style="color: var(--text-muted); font-size: 12px;">No event transitions logged yet.</div>';
+
+      document.getElementById('mod-order-content').innerHTML = `
+        <div style="margin-bottom: 16px;">
+          <h4 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Line Items</h4>
+          ${itemsList}
+        </div>
+        <div style="margin-bottom: 16px; background: #090e17; padding: 12px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Gross Total:</span><strong>$${Number(order.total_amount).toFixed(2)}</strong></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #f87171;"><span>Channel Fee Deducted:</span><strong>-$${Number(order.channel_fee).toFixed(2)}</strong></div>
+          <div style="display: flex; justify-content: space-between; color: #34d399; font-size: 15px; font-weight: 800;"><span>Net Revenue:</span><span>$${Number(order.net_amount).toFixed(2)}</span></div>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <h4 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Audit Event Timeline</h4>
+          ${eventsList}
+        </div>
+      `;
+
+      document.getElementById('modal-order-detail').classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    async function syncEtsyNow() {
+      try {
+        const res = await fetch('/api/dce/orders/connectors/etsy/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brandId: 1 })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`✅ Etsy sync completed! Found ${data.data.ordersFound} receipts.`);
+          loadOrderData();
+        } else {
+          alert('Etsy sync info: ' + (data.error || data.data?.message || 'Done'));
+        }
+      } catch (e) {
+        alert('Sync error: ' + e.message);
+      }
+    }
+
+    function exportOrdersCSV() {
+      const channel = document.getElementById('filter-channel').value;
+      const status = document.getElementById('filter-status').value;
+      const url = `/api/dce/orders/export/csv?channel_code=${channel}&status=${status}`;
+      window.open(url, '_blank');
+    }
+
+    async function bulkMarkStatus(targetStatus) {
+      if (!allOrders.length) return alert('No orders available to update');
+      const confirmed = confirm(`Are you sure you want to mark orders as ${targetStatus}?`);
+      if (!confirmed) return;
+
+      const orderIds = allOrders.map(o => o.id);
+      try {
+        const res = await fetch('/api/dce/orders/bulk-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderIds, status: targetStatus })
+        }).then(r => r.json());
+
+        if (res.success) {
+          alert(`✅ Bulk updated ${res.data.updatedCount} orders to ${targetStatus}!`);
+          loadOrderData();
+        } else {
+          alert(res.error || 'Failed bulk update');
+        }
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    // Initial load
+    loadOrderData();
+  </script>
+  <script src="/dce/nav.js"></script>
+</body>
+</html>

@@ -26,7 +26,86 @@ function mapAsset(a) {
   };
 }
 
-const DEFAULT_ASSETS = [];
+const DEFAULT_ASSETS = [
+  {
+    id: 'AST-MBP-01',
+    name: 'MacBook Pro M3 Max 16"',
+    serial: 'SN-MBP-9821',
+    category: 'Laptop & PC',
+    purchase_price: 385000,
+    monthly_depreciation: 6500,
+    condition: 'In Use',
+    assigned_to: 'Firoz Uddin Ahmed',
+    purchase_date: '2026-01-15',
+    warranty_expiry: '2027-01-15',
+    notes: 'Primary Tech Admin workstation'
+  },
+  {
+    id: 'AST-CAM-01',
+    name: 'Sony FX3 Cinema Camera',
+    serial: 'SN-CAM-4421',
+    category: 'Camera & Cinema',
+    purchase_price: 420000,
+    monthly_depreciation: 7000,
+    condition: 'In Use',
+    assigned_to: 'Anika Nower',
+    purchase_date: '2026-02-10',
+    warranty_expiry: '2027-02-10',
+    notes: '4K 120fps Full Frame Cinema Line'
+  },
+  {
+    id: 'AST-LGT-01',
+    name: 'Godox SL-200W II Studio Light',
+    serial: 'SN-LGT-1044',
+    category: 'Lighting & Audio',
+    purchase_price: 45000,
+    monthly_depreciation: 800,
+    condition: 'Good',
+    assigned_to: 'Unassigned',
+    purchase_date: '2026-02-20',
+    warranty_expiry: '2027-02-20',
+    notes: 'Studio Key Light with Bowens mount'
+  },
+  {
+    id: 'AST-AUD-01',
+    name: 'Rode Wireless PRO Dual Mic Kit',
+    serial: 'SN-AUD-7732',
+    category: 'Lighting & Audio',
+    purchase_price: 55000,
+    monthly_depreciation: 1000,
+    condition: 'Excellent',
+    assigned_to: 'Unassigned',
+    purchase_date: '2026-03-01',
+    warranty_expiry: '2027-03-01',
+    notes: '32-bit float on-board recording'
+  },
+  {
+    id: 'AST-FRN-01',
+    name: 'Ergonomic Herman Miller Chair',
+    serial: 'SN-FRN-0012',
+    category: 'Office & Furniture',
+    purchase_price: 95000,
+    monthly_depreciation: 1200,
+    condition: 'Good',
+    assigned_to: 'Unassigned',
+    purchase_date: '2026-01-10',
+    warranty_expiry: '2031-01-10',
+    notes: 'Executive posture support chair'
+  },
+  {
+    id: 'AST-MBA-01',
+    name: 'MacBook Air M2 15"',
+    serial: 'SN-MBA-6102',
+    category: 'Laptop & PC',
+    purchase_price: 165000,
+    monthly_depreciation: 3000,
+    condition: 'Good',
+    assigned_to: 'Unassigned',
+    purchase_date: '2026-02-05',
+    warranty_expiry: '2027-02-05',
+    notes: 'General crew editing laptop'
+  }
+];
 
 let inMemoryAssets = [...DEFAULT_ASSETS];
 

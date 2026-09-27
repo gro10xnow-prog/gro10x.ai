@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlannerQueen™ Official Storefront — GRO10X Digital Commerce Engine</title>
+  <meta name="description" content="Shop official PlannerQueen™ premium digital templates, planners, and productivity kits. Automated instant digital delivery.">
+  
+  <!-- OpenGraph Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GRO10X Digital Commerce Engine">
+  <meta property="og:title" content="PlannerQueen™ Official Storefront — Instant Digital Planners">
+  <meta property="og:description" content="Instant access to high-converting productivity systems, digital planners, and business bundles with automated instant delivery.">
+  <meta property="og:url" content="https://gro10x.ai/dce/store">
+  <meta property="og:image" content="/vault/preview.png">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PlannerQueen™ Official Storefront">
+  <meta name="twitter:description" content="Shop official PlannerQueen™ premium digital templates & productivity kits.">
+  <meta name="twitter:image" content="/vault/preview.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.9);
+      --card-border: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #10b981;
+      --gold: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 500px),
+                        radial-gradient(circle at bottom left, rgba(245, 158, 11, 0.08), transparent 500px);
+    }
+    header {
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      position: relative;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand-crown {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #f59e0b, #ec4899);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+    .hero {
+      text-align: center;
+      padding: 50px 20px 30px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #818cf8;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .products-container {
+      max-width: 1000px;
+      margin: 20px auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+    }
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+    .popular-tag {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #000;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .prod-icon { font-size: 32px; margin-bottom: 14px; }
+    .prod-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; line-height: 1.3; }
+    .prod-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+    .pricing-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .price-current { font-size: 32px; font-weight: 800; color: #fff; }
+    .price-original { font-size: 18px; color: #64748b; text-decoration: line-through; }
+    .features-list { list-style: none; margin-bottom: 26px; }
+    .features-list li {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .features-list li span.check { color: #34d399; font-weight: 800; }
+    .btn-buy {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn-buy:hover { background: var(--primary-hover); }
+    .btn-gold {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #0b0f19;
+    }
+    .btn-gold:hover { opacity: 0.92; }
+
+    /* Checkout Drawer Modal */
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      place-items: center;
+    }
+    .drawer-content {
+      background: #111827;
+      border: 1px solid #374151;
+      width: 90%;
+      max-width: 520px;
+      border-radius: 20px;
+      padding: 28px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+    .input-field {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid #334155;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .input-field:focus { border-color: var(--primary); }
+    .coupon-bar {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-apply {
+      background: #374151;
+      color: #fff;
+      border: none;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-apply:hover { background: #4b5563; }
+    .summary-card {
+      background: #090e17;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 18px 0;
+      font-size: 13px;
+    }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--text-muted); }
+    .summary-row.total { font-size: 16px; font-weight: 800; color: #fff; border-top: 1px solid #1f2937; padding-top: 10px; margin-top: 8px; }
+    .discount-pill { color: #34d399; font-weight: 700; }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 12px 16px;
+      }
+      .catalog-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+      .drawer-content {
+        width: 95% !important;
+        padding: 20px 16px !important;
+        max-height: 94vh !important;
+        border-radius: 16px !important;
+      }
+      .coupon-bar {
+        flex-direction: column;
+      }
+      .btn-apply {
+        padding: 12px;
+        min-height: 44px;
+        width: 100%;
+      }
+      .input-field, .btn-buy {
+        min-height: 44px;
+      }
+    }
+
+    /* Shimmer Skeleton & Live Catalog Status (Phase D3) */
+    @keyframes storeShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .store-skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: storeShimmer 1.8s infinite;
+      border-radius: 8px;
+    }
+    .catalog-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    .catalog-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/dce" class="brand">
+      <div class="brand-crown">👑</div>
+      <div>
+        <div style="font-weight: 800; font-size: 17px; letter-spacing: -0.3px;">PlannerQueen™ Direct</div>
+        <div style="font-size: 11px; color: #94a3b8;">Official Direct Publisher · GRO10X DCE</div>
+      </div>
+    </a>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <span class="catalog-status-pill" id="catalogSyncBadge">
+        <span class="catalog-status-dot"></span> <span id="catalogSyncText">Live Catalog Synced</span>
+      </span>
+      <a href="/dce/track" style="font-size: 13px; color: #94a3b8; text-decoration: none; font-weight: 600;">🔍 Track Existing Order</a>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="pill">✨ 2026 EDITION RELEASED · 100% DIRECT PUBLISHER GUARANTEE</div>
+    <h1>Master Your Time & Build Wealth with PlannerQueen™</h1>
+    <p>Hyperlinked digital planning systems engineered for GoodNotes, Notability, Notion, & luxury hardcover spiral print. Instant access upon purchase.</p>
+  </div>
+
+  <div class="products-container">
+    
+    <!-- Product 1: Digital Template System -->
+    <div class="product-card">
+      <div class="popular-tag">🔥 Best Seller</div>
+      <div>
+        <div class="prod-icon">📱</div>
+        <div class="prod-title">PlannerQueen Digital Daily & Weekly System 2026</div>
+        <div class="prod-desc">Universal digital planner engineered for iPad, tablets, and desktop. Includes GoodNotes, Notion template integration, and interactive PDFs.</div>
+        
+        <div class="pricing-wrap">
+          <div class="price-current" id="price-digital">$19.99</div>
+          <div class="price-original">$39.99</div>
+          <span style="font-size: 11px; background: rgba(16,185,129,0.15); color: #34d399; padding: 2px 8px; border-radius: 12px; font-weight: 700;">50% OFF</span>
+        </div>
+
+        <ul class="features-list">
+          <li><span class="check">✓</span> <strong>Instant Cryptographic License</strong> generated on checkout</li>
+          <li><span class="check">✓</span> 450+ Hyperlinked daily, weekly, and quarterly spreads</li>
+          <li><span class="check">✓</span> Finance, net-worth, and monthly cash flow trackers</li>
+          <li><span class="check">✓</span> 1,200+ Aesthetic digital planner stickers included</li>
+          <li><span class="check">✓</span> Free lifetime updates for 2026 calendar version</li>
+        </ul>
+      </div>
+
+      <button class="btn-buy" id="btn-buy-digital" onclick="handleBuyDigital()">
+        <span id="btn-text-digital">⚡ Instant Download ($19.99)</span>
+      </button>
+    </div>
+
+    <!-- Product 2: Physical Spiral Planner -->
+    <div class="product-card" style="border-color: rgba(245, 158, 11, 0.3);">
+      <div class="popular-tag" style="background: #e2e8f0; color: #0f172a;">📦 Free Courier Shipping</div>
+      <div>
+        <div class="prod-icon">📖</div>
+        <div class="prod-title">PlannerQueen Luxury Spiral Hardcover 2026 Planner</div>
+        <div class="prod-desc">Premium physical hardcover planner with gold foil stamping, ultra-thick 120gsm bleed-proof paper, and twin-wire gold spiral binding.</div>
+        
+        <div class="pricing-wrap">
+          <div class="price-current" id="price-physical">$34.99</div>
+          <div class="price-original">$49.99</div>
+        </div>
+
+        <ul class="features-list">
+          <li><span class="check">✓</span> <strong>Dispatched within 24 Hours</strong> via DHL / Express Courier</li>
+          <li><span class="check">✓</span> 120 GSM bleed-resistant silky ivory paper</li>
+          <li><span class="check">✓</span> Reinforced metal corners & twin-wire luxury gold coil</li>
+          <li><span class="check">✓</span> Includes full digital system download as a free bonus!</li>
+          <li><span class="check">✓</span> Real-time courier tracking telemetry on our web portal</li>
+        </ul>
+      </div>
+
+      <button class="btn-buy btn-gold" id="btn-buy-physical" onclick="handleBuyPhysical()">
+        <span id="btn-text-physical">📦 Order Physical Planner ($34.99)</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Interactive Checkout Drawer -->
+  <div id="checkoutDrawer" class="drawer-overlay">
+    <div class="drawer-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h3 id="checkoutTitle" style="font-size: 18px; font-weight: 800;">Secure Direct Checkout</h3>
+        <button onclick="closeCheckout()" style="background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer;">&times;</button>
+      </div>
+
+      <div id="checkoutFormWrap">
+        <form id="checkoutForm">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="custName" class="input-field" placeholder="e.g. Jane Doe" required>
+          </div>
+          <div class="form-group">
+            <label>Email Address (For instant digital delivery)</label>
+            <input type="email" id="custEmail" class="input-field" placeholder="jane@example.com" required>
+          </div>
+          <div class="form-group" id="addressGroup" style="display: none;">
+            <label>Shipping Address</label>
+            <textarea id="custAddress" class="input-field" rows="2" placeholder="Street, City, Postal Code, Country"></textarea>
+          </div>
+
+          <!-- Promo Code Bar -->
+          <div class="form-group">
+            <label>Promo Code / Coupon</label>
+            <div class="coupon-bar">
+              <input type="text" id="promoCodeInput" class="input-field" placeholder="Try: VIP50 or SUMMER20" style="text-transform: uppercase;">
+              <button type="button" class="btn-apply" onclick="applyCoupon()">Apply</button>
+            </div>
+            <div id="couponStatus" style="font-size: 12px; margin-top: 5px;"></div>
+          </div>
+
+          <!-- Payment Options -->
+          <div class="form-group">
+            <label>Payment Method</label>
+            <select id="paymentMethod" class="input-field" style="background: #090e17;">
+              <option value="CARD">💳 Instant Card Checkout (Stripe Simulation)</option>
+              <option value="BKASH">📱 bKash Merchant 1-Tap</option>
+            </select>
+          </div>
+
+          <!-- Price Calculation Breakdown -->
+          <div class="summary-card">
+            <div class="summary-row">
+              <span id="sumItemTitle">Item</span>
+              <span id="sumItemPrice">$19.99</span>
+            </div>
+            <div class="summary-row" id="discountRow" style="display: none;">
+              <span>Promo Discount</span>
+              <span id="sumDiscount" class="discount-pill">-$0.00</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total Payable</span>
+              <span id="sumTotal">$19.99</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-buy" id="payBtn" style="background: #10b981;">
+            <span>🔒 Pay & Access Instantly</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Success Screen -->
+      <div id="successScreen" style="display: none; text-align: center; padding: 15px 0;">
+        <div style="font-size: 44px; margin-bottom: 10px;">🎉</div>
+        <h2 style="font-size: 22px; font-weight: 800; color: #34d399; margin-bottom: 6px;">Order Confirmed & Delivered!</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Receipt sent to <strong id="succEmail" style="color: #fff;"></strong></p>
+
+        <div style="background: #090e17; border: 1px dashed #334155; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Order Reference</div>
+          <div id="succOrderRef" style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 12px;"></div>
+
+          <div id="succLicenseBox" style="display: none;">
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Cryptographic License Key</div>
+            <div id="succLicenseKey" style="font-family: monospace; font-size: 15px; font-weight: 700; color: #60a5fa; letter-spacing: 0.5px;"></div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a id="succDownloadLink" href="#" target="_blank" class="btn-buy" style="background: #10b981;">
+            <span id="succDownloadLabel">⚡ Open & Download Files Now</span>
+          </a>
+          <a id="succTrackLink" href="#" class="btn-buy" style="background: #374151;">
+            <span>🔍 View Order in Tracking Portal</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let activeProduct = { skuId: '', title: '', price: 0, format: 'PDF' };
+    let appliedDiscount = 0;
+    let appliedPromo = null;
+
+    let digitalProductData = { skuId: 'sku-pq-dir-01', title: 'PlannerQueen Digital Daily & Weekly System 2026', price: 19.99, format: 'PDF' };
+    let physicalProductData = { skuId: 'sku-pq-phys-01', title: 'PlannerQueen Luxury Spiral Hardcover 2026 Planner', price: 34.99, format: 'PHYSICAL' };
+
+    function handleBuyDigital() {
+      openCheckout(digitalProductData.skuId, digitalProductData.title, digitalProductData.price, digitalProductData.format);
+    }
+
+    function handleBuyPhysical() {
+      openCheckout(physicalProductData.skuId, physicalProductData.title, physicalProductData.price, physicalProductData.format);
+    }
+
+    // Parse URL params for pre-filled coupon or affiliate ref
+    const urlParams = new URLSearchParams(window.location.search);
+    const prefillCoupon = urlParams.get('coupon') || urlParams.get('code');
+    const affiliateRef = urlParams.get('ref') || urlParams.get('affiliate') || null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (prefillCoupon) {
+        document.getElementById('promoCodeInput').value = prefillCoupon.toUpperCase();
+      }
+      syncPricesFromCatalog();
+    });
+
+    async function syncPricesFromCatalog() {
+      const syncBadge = document.getElementById('catalogSyncText');
+      try {
+        if (syncBadge) syncBadge.innerText = 'Syncing Live SKUs...';
+        const res = await fetch('/api/dce/products');
+        const data = await res.json();
+        const products = data.data || [];
+        if (!products.length) {
+          if (syncBadge) syncBadge.innerText = 'Catalog Active (Direct Fallback)';
+          return;
+        }
+
+        const allSkus = products.flatMap(p => (p.skus || []).map(s => ({
+          ...s,
+          productTitle: p.title,
+          productType: p.product_type
+        })));
+
+        const directSkus = allSkus.filter(s => s.channel_code === 'DIRECT');
+        const digitalSku = directSkus.find(s => ['PDF', 'DIGITAL', 'BUNDLE'].includes(s.format)) ||
+                           allSkus.find(s => ['PDF', 'DIGITAL'].includes(s.format));
+        const physicalSku = directSkus.find(s => ['PRINT', 'PHYSICAL'].includes(s.format)) ||
+                            allSkus.find(s => ['PRINT', 'PHYSICAL'].includes(s.format));
+
+        if (digitalSku && digitalSku.price) {
+          const priceVal = parseFloat(digitalSku.price);
+          digitalProductData.skuId = digitalSku.sku || digitalSku.id || digitalProductData.skuId;
+          digitalProductData.price = priceVal;
+          const el = document.getElementById('price-digital');
+          if (el) el.innerText = '$' + priceVal.toFixed(2);
+          const btnText = document.getElementById('btn-text-digital');
+          if (btnText) btnText.innerText = `⚡ Instant Download ($${priceVal.toFixed(2)})`;
+        }
+
+        if (physicalSku && physicalSku.price) {
+          const priceVal = parseFloat(physicalSku.price);
+          physicalProductData.skuId = physicalSku.sku || physicalSku.id || physicalProductData.skuId;
+          physicalProductData.price = priceVal;
+          const el = document.getElementById('price-physical');
+          if (el) el.innerText = '$' + priceVal.toFixed(2);
+          const btnText = document.getElementById('btn-text-physical');
+          if (btnText) btnText.innerText = `📦 Order Physical Planner ($${priceVal.toFixed(2)})`;
+        }
+
+        if (syncBadge) {
+          syncBadge.innerText = `Verified · ${products.length} Products Active`;
+        }
+      } catch (e) {
+        console.warn('[Store Catalog Sync] Note:', e);
+        if (syncBadge) syncBadge.innerText = 'Catalog Offline (Cached Fallback)';
+      }
+    }
+
+    function openCheckout(skuId, title, price, format) {
+      activeProduct = { skuId, title, price, format };
+      document.getElementById('checkoutTitle').innerText = 'Checkout — ' + title;
+      document.getElementById('sumItemTitle').innerText = title;
+      document.getElementById('sumItemPrice').innerText = '$' + price.toFixed(2);
+      
+      const addrGroup = document.getElementById('addressGroup');
+      addrGroup.style.display = format === 'PHYSICAL' ? 'block' : 'none';
+
+      appliedDiscount = 0;
+      appliedPromo = null;
+      document.getElementById('discountRow').style.display = 'none';
+      document.getElementById('couponStatus').innerHTML = '';
+      recalcTotal();
+
+      document.getElementById('checkoutFormWrap').style.display = 'block';
+      document.getElementById('successScreen').style.display = 'none';
+      document.getElementById('checkoutDrawer').style.display = 'grid';
+
+      if (prefillCoupon) {
+        applyCoupon();
+      }
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkoutDrawer').style.display = 'none';
+    }
+
+    async function applyCoupon() {
+      const code = document.getElementById('promoCodeInput').value.trim();
+      const statusEl = document.getElementById('couponStatus');
+      if (!code) return;
+
+      statusEl.innerHTML = '<span style="color: #94a3b8;">Validating coupon...</span>';
+
+      try {
+        const res = await fetch('/api/dce/promotions/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code,
+            orderAmount: activeProduct.price
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.data?.valid) {
+          appliedDiscount = data.data.discount_amount;
+          appliedPromo = code;
+          statusEl.innerHTML = `<span style="color: #34d399; font-weight: 700;">✅ Coupon "${code}" Applied (-$${appliedDiscount.toFixed(2)})</span>`;
+          document.getElementById('discountRow').style.display = 'flex';
+          document.getElementById('sumDiscount').innerText = '-$' + appliedDiscount.toFixed(2);
+          recalcTotal();
+        } else {
+          statusEl.innerHTML = `<span style="color: #f87171;">❌ ${data.message || 'Invalid or expired coupon'}</span>`;
+          appliedDiscount = 0;
+          appliedPromo = null;
+          document.getElementById('discountRow').style.display = 'none';
+          recalcTotal();
+        }
+      } catch (e) {
+        statusEl.innerHTML = '<span style="color: #f87171;">Error checking coupon</span>';
+      }
+    }
+
+    function recalcTotal() {
+      const total = Math.max(0, activeProduct.price - appliedDiscount);
+      document.getElementById('sumTotal').innerText = '$' + total.toFixed(2);
+      document.getElementById('payBtn').innerText = `🔒 Pay $${total.toFixed(2)} & Complete`;
+    }
+
+    document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payBtn = document.getElementById('payBtn');
+      payBtn.disabled = true;
+      payBtn.innerText = 'Processing Order & License...';
+
+      const payload = {
+        brandSlug: 'plannerqueen',
+        skuId: activeProduct.skuId,
+        customer: {
+          name: document.getElementById('custName').value.trim(),
+          email: document.getElementById('custEmail').value.trim(),
+          address: document.getElementById('custAddress')?.value || ''
+        },
+        quantity: 1,
+        paymentMethod: document.getElementById('paymentMethod').value,
+        promoCode: appliedPromo,
+        refCode: affiliateRef
+      };
+
+      try {
+        const res = await fetch('/api/dce/orders/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || 'Checkout failed. Please try again.');
+        }
+
+        const result = data.data;
+        document.getElementById('checkoutFormWrap').style.display = 'none';
+        document.getElementById('successScreen').style.display = 'block';
+
+        document.getElementById('succEmail').innerText = result.customer.email;
+        document.getElementById('succOrderRef').innerText = result.externalOrderId;
+
+        if (result.licenseKey) {
+          document.getElementById('succLicenseBox').style.display = 'block';
+          document.getElementById('succLicenseKey').innerText = result.licenseKey;
+        }
+
+        const isDigital = activeProduct.format !== 'PHYSICAL';
+        const downloadLink = document.getElementById('succDownloadLink');
+        const downloadLabel = document.getElementById('succDownloadLabel');
+
+        downloadLink.href = isDigital
+          ? (result.accessUrl || '/planner')
+          : (result.accessUrl || result.trackingUrl || '/dce/track');
+
+        if (downloadLabel) {
+          downloadLabel.innerText = isDigital
+            ? '✨ Open Your Interactive Planner'
+            : '📦 Track Your Shipment';
+        }
+
+        document.getElementById('succTrackLink').href = result.trackingUrl;
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        payBtn.disabled = false;
+        recalcTotal();
+      }
+    });
+  </script>
+  <script src="/dce/nav.js"></script>
+</body>
+</html>

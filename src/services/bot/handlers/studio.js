@@ -80,7 +80,7 @@ async function handleStudioWorkload(teamBot, msg) {
             { text: '📸 Studio & Gear Slots', callback_data: 'cmd_gear_slots' }
           ],
           [
-            { text: '📊 Open Manager Portal', web_app: { url: 'https://gro10x-ai.vercel.app/manager#tasks' } }
+            { text: '📊 Open Manager Portal', web_app: { url: 'https://gro10x-ai.vercel.app/workspace#tasks' } }
           ]
         ]
       }
@@ -270,7 +270,7 @@ async function handleTurnaroundMetrics(teamBot, msg) {
         inline_keyboard: [
           [
             { text: '⚡ Studio Workload', callback_data: 'cmd_studio_workload' },
-            { text: '📊 Full Ops Dashboard', web_app: { url: 'https://gro10x-ai.vercel.app/manager' } }
+            { text: '📊 Full Ops Dashboard', web_app: { url: 'https://gro10x-ai.vercel.app/workspace#overview' } }
           ]
         ]
       }
@@ -327,10 +327,10 @@ async function handleCrewStudioRequest(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📅 Production Calendar & Gear', web_app: { url: 'https://gro10x-ai.vercel.app/crew#calendar' } }
+            { text: '📅 Production Calendar & Gear', web_app: { url: 'https://gro10x-ai.vercel.app/workspace#deliverables' } }
           ],
           [
-            { text: '🎬 Production Deliverables', web_app: { url: 'https://gro10x-ai.vercel.app/crew#deliverables' } }
+            { text: '🎬 Production Deliverables', web_app: { url: 'https://gro10x-ai.vercel.app/workspace#deliverables' } }
           ]
         ]
       }

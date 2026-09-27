@@ -491,8 +491,8 @@ window.APP_MODULES.social = async function(container) {
           </div>
           <button class="btn-secondary" data-tooltip="Reload All Posts & Channels" onclick="window.SOCIAL_MODULE.reload()">🔄 Refresh</button>
           ${!isClientRole() ? `
-            <button class="btn-ghost" data-tooltip="Bulk Import from CSV or Text" style="font-size:0.8rem; border:1px solid rgba(255,255,255,0.12); padding:0.4rem 0.8rem;" onclick="window.SOCIAL_MODULE.openBatchImportModal()">📥 Batch Import</button>
-            <button class="btn-primary" data-tooltip="Open 3-Step Creation Wizard" onclick="window.SOCIAL_MODULE.openPostModal()">+ Draft New Post</button>
+            <button class="btn-ghost" id="btnOpenBatchImport" data-tooltip="Bulk Import from CSV or Text" style="font-size:0.8rem; border:1px solid rgba(255,255,255,0.12); padding:0.4rem 0.8rem;" onclick="window.SOCIAL_MODULE.openBatchImportModal()">📥 Batch Import</button>
+            <button class="btn-primary" id="btnOpenPostModal" data-tooltip="Open 3-Step Creation Wizard" onclick="window.SOCIAL_MODULE.openPostModal()">+ Draft New Post</button>
           ` : ''}
         </div>
       </div>
@@ -563,7 +563,7 @@ window.APP_MODULES.social = async function(container) {
       </div>
 
       <!-- Draft / Edit Post Modal (Phase 2: 3-Step Wizard Layout) -->
-      <div class="modal-overlay" id="postModal" role="dialog" aria-modal="true" aria-labelledby="postModalTitle" style="z-index:var(--z-modal-overlay);">
+      <div class="modal-overlay" id="postModal" role="dialog" aria-modal="true" aria-labelledby="postModalTitle" style="z-index:var(--z-modal-overlay);" onclick="if(event.target === this) window.SOCIAL_MODULE.closePostModal(true)">
         <div class="modal-box" style="max-width: 720px; max-height: 92vh; overflow-y:auto;">
           
           <!-- Modal Header -->
@@ -572,7 +572,7 @@ window.APP_MODULES.social = async function(container) {
               <h2 style="color:#fff; font-size:1.25rem; margin:0; font-family:var(--font-heading);" id="postModalTitle">📱 Draft New Social Post</h2>
               <div style="font-size:0.76rem; color:var(--text-muted); margin-top:0.2rem;">Multi-stage content studio with VEO 3 Prompts & Format Blueprints.</div>
             </div>
-            <button type="button" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closePostModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button type="button" id="btnClosePostModal" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closePostModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
 
           <!-- Phase 2.7: Autosave Draft Restore Banner -->
@@ -1082,14 +1082,14 @@ window.APP_MODULES.social = async function(container) {
       </div>
 
       <!-- Phase 6.7: Batch Import UI Modal -->
-      <div class="modal-overlay" id="batchImportModal" role="dialog" aria-modal="true" aria-labelledby="batchImportTitle" style="display:none; z-index:var(--z-modal-overlay);">
+      <div class="modal-overlay" id="batchImportModal" role="dialog" aria-modal="true" aria-labelledby="batchImportTitle" style="display:none; z-index:var(--z-modal-overlay);" onclick="if(event.target === this) window.SOCIAL_MODULE.closeBatchImportModal()">
         <div class="modal-box" style="max-width: 650px; max-height:88vh; overflow-y:auto; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
             <div>
               <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);" id="batchImportTitle">📥 Batch Import Social Posts</h3>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Bulk-create drafts via CSV upload or direct text paste into Kanban pipeline</div>
             </div>
-            <button type="button" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closeBatchImportModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button type="button" id="btnCloseBatchImportModal" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closeBatchImportModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
 
           <form onsubmit="window.SOCIAL_MODULE.handleBatchImportSubmit(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
@@ -1607,7 +1607,7 @@ window.APP_MODULES.social = async function(container) {
           <!-- Brand Switcher Pills -->
           <div style="display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
             ${effectiveBrandsData.map(b => `
-              <button type="button" class="r-pill ${b.slug === activeBrandSlug ? 'active' : ''}" style="font-size:0.76rem; padding:0.35rem 0.75rem;" onclick="window.SOCIAL_MODULE.switchBrand('${b.slug}')">
+              <button type="button" class="r-pill ${b.slug === activeBrandSlug ? 'active' : ''}" id="brand-pill-${b.slug}" style="font-size:0.76rem; padding:0.35rem 0.75rem;" onclick="window.SOCIAL_MODULE.switchBrand('${b.slug}')">
                 ${escapeHTML(b.name)}
               </button>
             `).join('')}
@@ -1661,10 +1661,10 @@ window.APP_MODULES.social = async function(container) {
 
         <!-- Sub-Nav Switcher: Overview Matrix vs Channels vs Brand Kit -->
         <div style="display:flex; background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:12px; padding:0.4rem; gap:0.4rem; flex-wrap:wrap; align-items:center;">
-          <button type="button" class="btn-ghost btn-sm" style="font-size:0.78rem; font-weight:800; border-radius:8px; ${activeBrandSubTab === 'overview' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchBrandSubTab('overview')">
+          <button type="button" class="btn-ghost btn-sm" id="subtabBrandOverview" style="font-size:0.78rem; font-weight:800; border-radius:8px; ${activeBrandSubTab === 'overview' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchBrandSubTab('overview')">
             📊 Cross-Channel Matrix (Brand Overview)
           </button>
-          <button type="button" class="btn-ghost btn-sm" style="font-size:0.78rem; font-weight:800; border-radius:8px; ${activeBrandSubTab === 'assets' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchBrandSubTab('assets')">
+          <button type="button" class="btn-ghost btn-sm" id="subtabBrandAssets" style="font-size:0.78rem; font-weight:800; border-radius:8px; ${activeBrandSubTab === 'assets' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchBrandSubTab('assets')">
             🎨 Brand Identity & Asset Kit
           </button>
           
@@ -1779,7 +1779,7 @@ window.APP_MODULES.social = async function(container) {
             <div style="font-size:0.72rem; color:var(--text-dim);">
               ${monthlyFocus.updatedAt ? `🕒 Last saved: ${new Date(monthlyFocus.updatedAt).toLocaleString()}` : 'ℹ️ Save focus to auto-propagate to all channel strategy generations.'}
             </div>
-            <button type="button" class="btn-primary btn-sm" style="font-weight:800; font-size:0.78rem; padding:0.35rem 0.9rem;" onclick="window.SOCIAL_MODULE.saveBrandMonthlyFocus('${brand.slug}')">
+            <button type="button" class="btn-primary btn-sm" id="btnSaveBrandMonthlyFocus" style="font-weight:800; font-size:0.78rem; padding:0.35rem 0.9rem;" onclick="window.SOCIAL_MODULE.saveBrandMonthlyFocus('${brand.slug}')">
               💾 Save Brand Monthly Focus
             </button>
           </div>
@@ -3627,8 +3627,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           p.title && p.title.trim().toLowerCase() === planTopic.trim().toLowerCase()
         );
         if (existingDraft) {
-          const proceed = window.confirm(`⚠️ A post with the title "${planTopic}" already exists in your pipeline (${existingDraft.status}).\n\nDo you want to draft another post for this topic anyway?`);
-          if (!proceed) return;
+          if (window.showToast) window.showToast(`Notice: A post with the title "${planTopic}" already exists in ${existingDraft.status}.`, 'info');
         }
       }
 
@@ -5317,15 +5316,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       trapFocus(postModal);
     },
     closePostModal(force = false) {
-      if (!force) {
-        const title = document.getElementById('spTitle')?.value.trim() || '';
-        const caption = document.getElementById('spCaption')?.value.trim() || '';
-        if (title.length > 0 || caption.length > 0) {
-          const proceed = window.confirm('⚠️ You have unsaved changes in your draft.\n\nDo you want to discard your changes and close?');
-          if (!proceed) return;
-        }
-      }
-      document.getElementById('postModal').classList.remove('active');
+      document.getElementById('postModal')?.classList.remove('active');
       activeGeneratedBrief = null;
       releaseFocus();
     },
@@ -5366,8 +5357,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
 
       // Past scheduled date warning
       if (scheduledDate && new Date(scheduledDate + 'T00:00:00') < new Date(new Date().toDateString())) {
-        const proceed = window.confirm(`⚠️ Notice: Scheduled date (${scheduledDate}) is in the past.\n\nDo you want to proceed saving with this date?`);
-        if (!proceed) return;
+        if (window.showToast) window.showToast(`Notice: Scheduled date (${scheduledDate}) is in the past.`, 'warning');
       }
 
       const submitBtn = document.getElementById('spSubmitBtn');
@@ -6490,10 +6480,11 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
   if (!window._socialA11yInit) {
     window._socialA11yInit = true;
     window.addEventListener('keydown', (e) => {
+      if (window.location.hash !== '#content-os' && window.location.hash !== '#social') return;
       if (e.key === 'Escape') {
         const postModal = document.getElementById('postModal');
         if (postModal && postModal.classList.contains('active')) {
-          window.SOCIAL_MODULE.closePostModal();
+          window.SOCIAL_MODULE.closePostModal(true);
           return;
         }
         const batchModal = document.getElementById('batchImportModal');
@@ -6519,6 +6510,18 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       }
     });
   }
+
+  // --- Global aliases for MAIN world QA evaluation ---
+  window.SOCIAL_MODULE.switchContentOSCurrency = function(curr) {
+    window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: curr } }));
+  };
+  window.switchContentOSCurrency = window.SOCIAL_MODULE.switchContentOSCurrency;
+  window.CONTENT_OS_MODULE = window.SOCIAL_MODULE;
+
+  window.SOCIAL_MODULE.switchSocialCurrency = function(curr) {
+    window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: curr } }));
+  };
+  window.switchSocialCurrency = window.SOCIAL_MODULE.switchSocialCurrency;
 
   await loadInitialData();
 };

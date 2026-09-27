@@ -37,6 +37,37 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         return teamBot.answerCallbackQuery(queryId, { text: '🩺 Telemetry Refreshed!' }).catch(() => {});
       }
 
+      // ─── DEFECT SLA ACKNOWLEDGMENT ──────────────────────────────────────────
+      if (data.startsWith('ack_defect_sla:')) {
+        const ticketId = data.split(':')[1];
+        if (supabase) {
+          try {
+            await supabase.from('tickets').update({
+              sla_acknowledged: true,
+              sla_acknowledged_by: emp.name,
+              sla_acknowledged_at: new Date().toISOString()
+            }).eq('id', ticketId);
+          } catch (_) {}
+        }
+        broadcast('sla_acknowledged', [{ ticketId, acknowledgedBy: emp.name, time: new Date().toISOString() }]);
+        teamBot.sendMessage(chatId, `🚨 *SLA Warning Acknowledged for Ticket \`${ticketId}\`!*\n\nLogged by: *${emp.name}*\nStatus: Manager intervention recorded.`, { parse_mode: 'Markdown' }).catch(() => {});
+        return teamBot.answerCallbackQuery(queryId, { text: '🚨 SLA Acknowledged!' }).catch(() => {});
+      }
+
+      // ─── DCE (DIGITAL COMMERCE ENGINE) CALLBACKS ──────────────────────────────
+      if (data.startsWith('dce_')) {
+        const dceOpsHandler = require('./dce-ops');
+        return await dceOpsHandler.handleDCECallbackQuery(teamBot, query);
+      }
+
+      // ─── ENGINE 2 CALLBACKS ──────────────────────────────────────────────────
+      if (data.startsWith('e2_')) {
+        const engine2Handler = require('./engine2');
+        if (data === 'e2_pods') return await engine2Handler.handleEngine2Pods(teamBot, query.message);
+        if (data === 'e2_warranties') return await engine2Handler.handleEngine2Warranties(teamBot, query.message);
+        if (data === 'e2_flash') return await engine2Handler.handleEngine2Flash(teamBot, query.message);
+      }
+
       // ─── 0. EOD MOOD CALLBACK ──────────────────────────────────────────────────
       if (data.startsWith('eod_mood:')) {
         const mood = data.split(':')[1];
@@ -655,11 +686,61 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         }).eq('id', payId);
 
         if (payLog?.invoice_id) {
+          const { inMemoryInvoices } = require('../../../routes/invoices');
+          const paidDate = new Date().toISOString().split('T')[0];
+          const noteStr = `Verified Corporate Wire Payment (Ref: ${payLog.trx_id}) by ${emp.name} [BRAC Bank Limited]`;
+          const memIdx = (inMemoryInvoices || []).findIndex(i => i.id === payLog.invoice_id);
+
+          if (memIdx !== -1) {
+            inMemoryInvoices[memIdx] = {
+              ...inMemoryInvoices[memIdx],
+              status: 'Paid',
+              paid_date: paidDate,
+              paidDate,
+              paid_at: new Date().toISOString(),
+              notes: noteStr
+            };
+          }
+
           await supabase.from('invoices').update({
             status: 'Paid',
-            paid_date: new Date().toISOString().split('T')[0],
-            notes: `Verified bKash Payment (TrxID: ${payLog.trx_id}) by ${emp.name}`
+            paid_date: paidDate,
+            notes: noteStr,
+            updated_at: new Date().toISOString()
           }).eq('id', payLog.invoice_id);
+
+          // Credit Affiliate Commission
+          try {
+            const invoiceRecord = memIdx !== -1 ? inMemoryInvoices[memIdx] : null;
+            const pRef = invoiceRecord?.projectRef || invoiceRecord?.project_ref;
+            const { findProject } = require('../../post-delivery');
+            let linkedProject = pRef ? await findProject(pRef) : null;
+            const affRef = invoiceRecord?.affiliateId || invoiceRecord?.refCode || invoiceRecord?.affiliate_id || invoiceRecord?.ref_code ||
+                           linkedProject?.affiliateId || linkedProject?.affiliate_id;
+            if (affRef) {
+              const { creditAffiliateCommission } = require('../../../routes/affiliates');
+              const baseAmount = Number(invoiceRecord?.subtotal != null ? invoiceRecord.subtotal : (invoiceRecord?.amount || payLog.amount || 0));
+              await creditAffiliateCommission(affRef, {
+                amount: baseAmount,
+                invoiceId: payLog.invoice_id,
+                projectId: pRef,
+                projectName: invoiceRecord?.projectName || linkedProject?.name || 'Client Project',
+                dealType: 'sprint_closed'
+              });
+            }
+          } catch (_) {}
+
+          // Emit canonical stakeholder event
+          try {
+            const { emitStakeholderEvent } = require('../../stakeholder-events');
+            await emitStakeholderEvent('invoice.paid', {
+              invoice: { id: payLog.invoice_id, amount: payLog.amount },
+              paymentLog: payLog
+            }, {
+              stakeholderId: payLog.client_id,
+              stakeholderType: 'client'
+            });
+          } catch (_) {}
         }
 
         alertMsg = `💳 Payment ${payId} Verified & Invoice Marked Paid!`;

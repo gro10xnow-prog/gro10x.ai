@@ -66,7 +66,7 @@ window.MANAGER_MODULES.tech = async function(container) {
           ⚡ DevOps Diagnostics & Emergency Actions
         </h2>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
-          <button class="btn-secondary" style="padding:0.75rem; text-align:left; justify-content:flex-start;" onclick="window.MGR_TECH.resyncDB()">
+          <button id="mgrTechResyncBtn" class="btn-secondary" style="padding:0.75rem; text-align:left; justify-content:flex-start;" onclick="window.MGR_TECH.resyncDB()">
             <div>
               <div style="font-weight:700;">🔄 Resync Supabase State</div>
               <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">Flush stale memory cache</div>

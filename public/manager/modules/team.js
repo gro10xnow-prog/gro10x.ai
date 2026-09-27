@@ -19,8 +19,8 @@ window.MANAGER_MODULES.team = async function(container) {
       MANAGER_API.get('/team').catch(() => []),
       MANAGER_API.get('/tasks').catch(() => [])
     ]);
-    allTeam = teamRes || [];
-    allTasks = taskRes || [];
+    allTeam = Array.isArray(teamRes) ? teamRes : (teamRes?.team || teamRes?.data || []);
+    allTasks = Array.isArray(taskRes) ? taskRes : (taskRes?.tasks || taskRes?.data || []);
     render();
   }
 
@@ -66,16 +66,16 @@ window.MANAGER_MODULES.team = async function(container) {
 
       <!-- Department Filter Pills -->
       <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; overflow-x:auto; padding-bottom:0.25rem;">
-        <button class="filter-pill ${currentDeptFilter === 'all' ? 'active' : ''}" onclick="window.MGR_TEAM.setDept('all')">
+        <button id="mgrTeamFilterAll" class="filter-pill ${currentDeptFilter === 'all' ? 'active' : ''}" onclick="window.MGR_TEAM.setDept('all')">
           All Departments (${allTeam.length})
         </button>
-        <button class="filter-pill ${currentDeptFilter === 'creative' ? 'active' : ''}" onclick="window.MGR_TEAM.setDept('creative')">
+        <button id="mgrTeamFilterCreative" class="filter-pill ${currentDeptFilter === 'creative' ? 'active' : ''}" onclick="window.MGR_TEAM.setDept('creative')">
           🎨 Creative & Design
         </button>
         <button class="filter-pill ${currentDeptFilter === 'production' ? 'active' : ''}" onclick="window.MGR_TEAM.setDept('production')">
           🎬 Video Production
         </button>
-        <button class="filter-pill ${currentDeptFilter === 'technology' ? 'active' : ''}" onclick="window.MGR_TEAM.setDept('technology')">
+        <button id="mgrTeamFilterTech" class="filter-pill ${currentDeptFilter === 'technology' ? 'active' : ''}" onclick="window.MGR_TEAM.setDept('technology')">
           💻 Technology
         </button>
         <button class="filter-pill ${currentDeptFilter === 'finance' ? 'active' : ''}" onclick="window.MGR_TEAM.setDept('finance')">

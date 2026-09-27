@@ -51,6 +51,11 @@ router.get('/me', requireAuth, async (req, res) => {
   const empCode = u.emp_code || u.empCode || u.linkedId || prof.emp_code || prof.empCode || u.id;
   const name = u.name || prof.name || 'Crew Member';
 
+  const seniorityTier = u.seniorityTier || (prof.seniorityTier !== undefined ? prof.seniorityTier : 1);
+  const seniorityTitle = u.seniorityTitle || prof.seniorityTitle || (seniorityTier === 3 ? 'Tier 3 (Command)' : (seniorityTier === 2 ? 'Tier 2 (Review)' : 'Tier 1 (Execution)'));
+  const assignedEngine = u.assignedEngine || prof.assignedEngine || 'engine2';
+  const allowedEngines = u.allowedEngines || prof.allowedEngines || (seniorityTier === 3 ? ['all', 'engine1', 'engine2', 'engine3', 'engine4', 'engine5'] : [assignedEngine]);
+
   res.json({
     success: true,
     user: {
@@ -62,10 +67,18 @@ router.get('/me', requireAuth, async (req, res) => {
       role: u.role || prof.role || 'Specialist',
       accessLevel: u.accessLevel || u.access_level || prof.accessLevel || prof.access_level || 'Specialist / Crew',
       department: u.department || prof.department || 'Production',
+      seniorityTier,
+      seniorityTitle,
+      assignedEngine,
+      allowedEngines,
       profile: {
         ...prof,
         emp_code: empCode,
-        name: name
+        name: name,
+        seniorityTier,
+        seniorityTitle,
+        assignedEngine,
+        allowedEngines
       }
     }
   });
@@ -123,22 +136,22 @@ router.post('/telegram', async (req, res) => {
       }
     }
 
-    // Reject unlinked users in production or strict auth mode
+    // Reject unlinked users in production, strict auth mode, or when not explicitly debug
     if (!resolvedUser) {
-      if (process.env.NODE_ENV === 'production' || process.env.FORCE_SUPABASE === 'true' || req.headers['x-disable-dev-auth'] === 'true') {
+      if (process.env.NODE_ENV === 'production' || process.env.FORCE_SUPABASE === 'true' || req.headers['x-disable-dev-auth'] === 'true' || (tgId !== 'debug' && !process.env.ALLOW_DEV_FALLBACK)) {
         return res.status(404).json({ error: 'No account linked to this Telegram account. Please link your phone number first.' });
       }
     }
 
-    // Fallback default user for local development only
+    // Fallback default user for local development only (never grant Owner/MD automatically)
     const userPayload = {
       userId: resolvedUser?.id || (linkedType === 'client' ? 'CLI-001' : 'EMP-001'),
-      name: resolvedUser?.name || (linkedType === 'client' ? 'Client Partner' : 'Mahmudul Hasan'),
+      name: resolvedUser?.name || (linkedType === 'client' ? 'Client Partner' : 'Guest Crew Member'),
       email: resolvedUser?.email || '',
       phone: resolvedUser?.phone || '',
-      role: resolvedUser?.role || (linkedType === 'client' ? 'Client Representative' : 'Managing Director / Owner'),
-      accessLevel: resolvedUser?.access_level || (linkedType === 'client' ? 'Client' : 'Owner / MD'),
-      department: resolvedUser?.department || (linkedType === 'client' ? 'Client Partner' : 'Executive'),
+      role: resolvedUser?.role || (linkedType === 'client' ? 'Client Representative' : 'Specialist'),
+      accessLevel: resolvedUser?.access_level || (linkedType === 'client' ? 'Client' : 'Crew Member'),
+      department: resolvedUser?.department || (linkedType === 'client' ? 'Client Partner' : 'Operations'),
       linkedType,
       linkedId: resolvedUser?.id || (linkedType === 'client' ? 'CLI-001' : 'EMP-001'),
       telegramId: tgId

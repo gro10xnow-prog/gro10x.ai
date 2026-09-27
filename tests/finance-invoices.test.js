@@ -91,10 +91,45 @@ describe('Finance Invoices API Integration Tests', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  test('POST /api/invoices/quotes creates a new quotation', async () => {
+    const res = await request(app)
+      .post('/api/invoices/quotes')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({
+        clientName: 'Acme Corp',
+        projectTitle: 'E-commerce AI Sprint',
+        amount: 60000,
+        validDays: 14
+      });
+    expect(res.statusCode).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.quote).toBeDefined();
+    expect(res.body.quote.id).toMatch(/^QTE-2026-\d{3}$/);
+  });
+
+  test('DELETE /api/invoices/:id deletes the invoice', async () => {
+    // Create an invoice to delete
+    const createRes = await request(app)
+      .post('/api/invoices')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({
+        clientName: 'Acme ToDelete Corp',
+        amount: 20000
+      });
+    const invId = createRes.body.invoice.id;
+
+    const delRes = await request(app)
+      .delete(`/api/invoices/${invId}`)
+      .set('Authorization', `Bearer ${managerToken}`);
+    expect(delRes.statusCode).toBe(200);
+    expect(delRes.body.success).toBe(true);
+  });
+
   afterAll(async () => {
     const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
     if (isSupabaseConfigured()) {
-      await supabase.from('invoices').delete().ilike('client_name', '%Acme Corp%');
+      await supabase.from('invoices').delete().ilike('client_name', '%Acme%');
+      await supabase.from('quotes').delete().ilike('client_name', '%Acme%');
     }
   });
 });

@@ -1708,6 +1708,12 @@
     }).join('');
   }
 
+  function getReferenceProducts() {
+    const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0] || {};
+    const catalog = DBM_STATE.productsCatalog[brand.id] || [];
+    return catalog.filter(p => p.status === 'Live');
+  }
+
   window.setRefCategoryFilter = function(filter) {
     DBM_STATE.refCategoryFilter = filter;
     renderCurrentRoute();
@@ -1863,6 +1869,21 @@
     const modal = document.getElementById('referenceModal');
     if (modal) modal.classList.remove('active');
   };
+
+  // Backdrop click & Escape key listeners for Reference Modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      window.closeReferenceModal();
+    }
+  });
+  const refModalEl = document.getElementById('referenceModal');
+  if (refModalEl) {
+    refModalEl.addEventListener('click', (e) => {
+      if (e.target === refModalEl) {
+        window.closeReferenceModal();
+      }
+    });
+  }
 
   // ── VIEW 4: MY OUTPUT ──
   function renderOutputView(container) {

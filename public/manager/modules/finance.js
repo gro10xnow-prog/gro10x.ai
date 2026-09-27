@@ -21,9 +21,9 @@ window.MANAGER_MODULES.finance = async function(container) {
       MANAGER_API.get('/invoices').catch(() => []),
       MANAGER_API.get('/team').catch(() => [])
     ]);
-    expenses = expRes || [];
-    invoices = invRes || [];
-    team = teamRes || [];
+    expenses = Array.isArray(expRes) ? expRes : (expRes?.expenses || expRes?.data || []);
+    invoices = Array.isArray(invRes) ? invRes : (invRes?.invoices || invRes?.data || []);
+    team = Array.isArray(teamRes) ? teamRes : (teamRes?.team || teamRes?.data || []);
     render();
   }
 
@@ -46,7 +46,7 @@ window.MANAGER_MODULES.finance = async function(container) {
         </div>
 
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button class="btn-secondary" onclick="window.MGR_FINANCE.exportCSV()">
+          <button id="mgrExportCsvBtn" class="btn-secondary" onclick="window.MGR_FINANCE.exportCSV()">
             📥 Export to CSV
           </button>
           ${selectedExpenseIds.size > 0 ? `

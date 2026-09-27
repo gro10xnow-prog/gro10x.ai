@@ -35,11 +35,18 @@ function mapProfileToTeam(p) {
 }
 
 let cachedDBState = null;
+let lastCacheTime = 0;
+const CACHE_TTL_MS = 15000; // 15-second TTL cache to prevent query stampedes on parallel auth/data requests
 
-async function readDB() {
+async function readDB(forceFresh = false) {
   if (!isSupabaseConfigured()) {
     console.warn('⚠️ Supabase not configured — returning fallback data structure.');
     return cachedDBState || { team: [], clients: [], tasks: [], invoices: [], services: [], reviews: [], expenses: [], assets: [], attendance: [], eod_reports: [], projects: [], subtasks: [], workflows: [], tickets: [], posts: [], quotes: [], leaves: [], authPins: [] };
+  }
+
+  const now = Date.now();
+  if (!forceFresh && cachedDBState && (now - lastCacheTime < CACHE_TTL_MS)) {
+    return cachedDBState;
   }
 
   try {
@@ -111,6 +118,7 @@ async function readDB() {
         email: ap.email
       }))
     };
+    lastCacheTime = Date.now();
     return cachedDBState;
   } catch (e) {
     console.error('❌ Supabase readDB error:', e.message);

@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — DCE Post-Sale Operations & Settlement Clearinghouse</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22%20%2232%22><text y=%2224%22 font-size=%2224%22>🛠️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #ec4899;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: relative;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .brand-logo .icon-badge {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+
+    .brand-logo h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-tab-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #111827;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .nav-tab-btn:hover:not(.active) {
+      background: #1f2937;
+      color: #fff;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #1f2937; color: var(--text); border: 1px solid #374151; }
+    .btn-secondary:hover { background: #374151; }
+    .btn-success { background: var(--success); color: #042f1f; font-weight: 700; }
+    .btn-success:hover { filter: brightness(1.1); }
+    .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10b981, #6366f1);
+    }
+
+    .kpi-card .title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .kpi-card .val {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .kpi-card .sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Tables */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: #0f172a;
+      padding: 12px 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #1a2234;
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-delivered { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .badge-failed { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .badge-digital { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; }
+    .badge-physical { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; }
+
+    .sla-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .sla-due { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .sla-breached { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .key-pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(236, 72, 153, 0.1);
+      border: 1px solid rgba(236, 72, 153, 0.3);
+      color: #f472b6;
+      padding: 3px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      width: 90%; max-width: 650px;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; }
+    input, select, textarea {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: white;
+      font-family: inherit;
+      font-size: 13px;
+      margin-top: 6px;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+
+    /* Shimmer Skeleton & Mobile Modal */
+    @keyframes dce-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-bar {
+      height: 14px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #111827 25%, #1e293b 50%, #111827 75%);
+      background-size: 200% 100%;
+      animation: dce-shimmer 1.5s infinite;
+      display: inline-block;
+    }
+    @media (max-width: 640px) {
+      .modal {
+        width: 95% !important;
+        padding: 18px 14px !important;
+        max-height: 94vh !important;
+        border-radius: 12px !important;
+      }
+      .nav-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="/dce" class="brand-logo">
+      <div class="icon-badge">🛠️</div>
+      <div>
+        <h1>GRO10X Operations Clearinghouse</h1>
+        <small style="color: var(--text-muted); font-size: 11px;">Fulfillment · Helpdesk · Licenses · Vendor Settlements</small>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <div style="display: flex; gap: 6px; background: #090e17; padding: 4px; border-radius: 10px; border: 1px solid #1f2937;">
+        <button id="tabBtnFulfillment" class="nav-tab-btn active" onclick="switchTab('tab-fulfillment')">📦 Fulfillment</button>
+        <button id="tabBtnHelpdesk" class="nav-tab-btn" onclick="switchTab('tab-helpdesk')">🎫 Helpdesk</button>
+        <button id="tabBtnLicenses" class="nav-tab-btn" onclick="switchTab('tab-licenses')">🔑 Licenses</button>
+        <button id="tabBtnSettlements" class="nav-tab-btn" onclick="switchTab('tab-settlements')">💰 Settlements</button>
+      </div>
+
+      <a href="/dce" class="btn btn-secondary">⚡ Catalog</a>
+      <a href="/dce/orders" class="btn btn-secondary">🛒 Order Inbox</a>
+      <a href="/dce/growth" class="btn btn-secondary">📈 Growth Suite</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- KPI Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="title">Open Support Tickets</div>
+        <div class="val" id="kpi-open-tickets" style="color: #38bdf8;">—</div>
+        <div class="sub">Active customer inquiries</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">SLA Breached</div>
+        <div class="val" id="kpi-sla-breached" style="color: #f87171;">—</div>
+        <div class="sub">Requires immediate resolution</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Active Digital Licenses</div>
+        <div class="val" id="kpi-active-licenses" style="color: #34d399;">—</div>
+        <div class="sub">Issued templates & assets</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Creator Payouts Due</div>
+        <div class="val" id="kpi-unsettled-payout" style="color: #facc15;">—</div>
+        <div class="sub">Calculated pending royalty</div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 1: FULFILLMENT QUEUE -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-fulfillment" class="tab-panel active">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3>📦 Automated Delivery & Dispatch Queue</h3>
+        <button class="btn btn-primary" onclick="triggerBatchFulfill()">⚡ Fulfill Confirmed Orders</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Order Ref</th>
+              <th>Channel</th>
+              <th>Format</th>
+              <th>Delivery Target</th>
+              <th>Status</th>
+              <th>Tracking / Link</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="fulfillment-table-body">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading fulfillment queue...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 2: HELPDESK INBOX -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-helpdesk" class="tab-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3>🎫 Post-Sale Customer Helpdesk</h3>
+        <button class="btn btn-primary" onclick="openNewTicketModal()">+ Create Support Ticket</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticket Ref</th>
+              <th>Customer</th>
+              <th>Subject & Category</th>
+              <th>Priority</th>
+              <th>SLA Horizon</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="helpdesk-table-body">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading tickets...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 3: ACTIVE LICENSES & RENEWALS -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-licenses" class="tab-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3>🔑 Digital License Registry & Retention Engine</h3>
+        <button class="btn btn-primary" onclick="triggerRenewalCheck()">🔄 Run 7-Day Renewal Check</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>License Key</th>
+              <th>SKU Code</th>
+              <th>Customer Email</th>
+              <th>Access Horizon</th>
+              <th>Renewal Reminders</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="licenses-table-body">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading license keys...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 4: SETTLEMENT LEDGER -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-settlements" class="tab-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3>💰 Vendor & Creator Settlement Clearinghouse</h3>
+        <button class="btn btn-primary" onclick="openNewBatchModal()">+ New Settlement Batch</button>
+      </div>
+
+      <div class="table-container" style="margin-bottom: 24px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Batch Ref</th>
+              <th>Period</th>
+              <th>Gross GMV</th>
+              <th>Channel Fees</th>
+              <th>Net Yield</th>
+              <th>Creator Payout</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="settlements-table-body">
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading batches...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Itemized Payout Breakdown -->
+      <h4 style="margin-bottom: 12px; color: var(--text-muted); font-size: 13px; text-transform: uppercase;">Itemized Creator / Vendor Payables</h4>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Recipient</th>
+              <th>Role</th>
+              <th>Brand</th>
+              <th>Orders</th>
+              <th>Royalty Rate</th>
+              <th>Net Payable</th>
+              <th>GRO10X Margin</th>
+              <th>Payment Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="settlement-items-body">
+            <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">Select or calculate a batch above.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: ADD TRACKING -->
+  <div id="modal-tracking" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Attach Physical Courier Tracking</h3>
+        <button class="modal-close" onclick="closeModal('modal-tracking')">&times;</button>
+      </div>
+      <input type="hidden" id="track-job-id">
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Courier / Carrier:</label>
+        <input type="text" id="track-carrier" placeholder="e.g. Amazon Logistics, DHL, Steadfast">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Tracking Number / Barcode:</label>
+        <input type="text" id="track-number" placeholder="e.g. TBA9382019482">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-tracking')">Cancel</button>
+        <button class="btn btn-success" onclick="saveTracking()">Confirm Dispatch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TICKET THREAD -->
+  <div id="modal-ticket" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="ticket-modal-title">Ticket Details</h3>
+        <button class="modal-close" onclick="closeModal('modal-ticket')">&times;</button>
+      </div>
+      <div id="ticket-modal-messages" style="max-height: 250px; overflow-y: auto; margin-bottom: 16px; background: #090e17; padding: 12px; border-radius: 8px;">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Quick Canned Macros:</label>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; margin-bottom: 8px;">
+          <button type="button" class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="applyMacro('download')">🔑 Refresh Download</button>
+          <button type="button" class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="applyMacro('dispatched')">📦 Parcel Dispatched</button>
+          <button type="button" class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="applyMacro('refund')">💳 Refund Processed</button>
+        </div>
+        <label style="font-size: 12px; color: var(--text-muted);">Reply to Customer:</label>
+        <textarea id="ticket-reply-body" rows="3" placeholder="Type your response..."></textarea>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn btn-success" id="ticket-resolve-btn" onclick="resolveCurrentTicket()">Mark Resolved</button>
+        <button class="btn btn-primary" onclick="sendTicketReply()">Send Reply</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeJobId = null;
+    let activeTicketId = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    async function loadAllData() {
+      loadFulfillment();
+      loadHelpdesk();
+      loadLicenses();
+      loadSettlements();
+    }
+
+    // 1. FULFILLMENT
+    async function loadFulfillment() {
+      const tbody = document.getElementById('fulfillment-table-body');
+      if (tbody) {
+        tbody.innerHTML = [1, 2, 3].map(() => `
+          <tr class="skeleton-row">
+            <td><div class="skeleton-bar" style="width: 80px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 60px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 60px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 120px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 70px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 100px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 60px;"></div></td>
+          </tr>
+        `).join('');
+      }
+      try {
+        const res = await fetch('/api/dce/fulfillment').then(r => r.json());
+        if (!res.data || res.data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No fulfillment jobs queued yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = res.data.map(j => `
+          <tr>
+            <td><strong>${j.order_ref || j.order_id.slice(0, 10)}</strong></td>
+            <td><span class="badge badge-${(j.channel_code || 'DIRECT').toLowerCase()}">${j.channel_code || 'DIRECT'}</span></td>
+            <td><span class="badge badge-${j.fulfillment_type.toLowerCase()}">${j.fulfillment_type}</span></td>
+            <td>${j.delivery_target || '—'}</td>
+            <td><span class="badge badge-${j.status.toLowerCase()}">${j.status}</span></td>
+            <td>${j.tracking_number ? `<code>${j.tracking_number}</code> (${j.carrier})` : (j.download_url ? `<a href="${j.download_url}" target="_blank" style="color: #38bdf8;">Asset Vault</a>` : '—')}</td>
+            <td>
+              ${j.fulfillment_type === 'PHYSICAL' && j.status === 'PENDING' 
+                ? `<button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="openTrackingModal('${j.id}')">📦 Add Tracking</button>`
+                : `<button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="resendEmail('${j.id}')">✉️ Resend</button>`
+              }
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {}
+    }
+
+    async function triggerBatchFulfill() {
+      try {
+        const res = await fetch('/api/dce/fulfillment/trigger-batch', { method: 'POST' }).then(r => r.json());
+        alert(`⚡ Batch fulfillment executed for ${res.data.totalAttempted} orders!`);
+        loadAllData();
+      } catch (e) { alert(e.message); }
+    }
+
+    function openTrackingModal(jobId) {
+      activeJobId = jobId;
+      document.getElementById('track-job-id').value = jobId;
+      document.getElementById('modal-tracking').classList.add('active');
+    }
+
+    async function saveTracking() {
+      const carrier = document.getElementById('track-carrier').value;
+      const trackingNumber = document.getElementById('track-number').value;
+      if (!trackingNumber) return alert('Tracking number is required');
+
+      try {
+        await fetch(`/api/dce/fulfillment/${activeJobId}/tracking`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ carrier, trackingNumber })
+        });
+        closeModal('modal-tracking');
+        loadFulfillment();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function resendEmail(jobId) {
+      try {
+        await fetch(`/api/dce/fulfillment/${jobId}/resend`, { method: 'POST' });
+        alert('✉️ Delivery email re-dispatched via Resend API!');
+      } catch (e) { alert(e.message); }
+    }
+
+    // 2. HELPDESK
+    async function loadHelpdesk() {
+      const tbody = document.getElementById('helpdesk-table-body');
+      if (tbody) {
+        tbody.innerHTML = [1, 2, 3].map(() => `
+          <tr class="skeleton-row">
+            <td><div class="skeleton-bar" style="width: 80px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 100px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 140px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 60px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 70px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 80px;"></div></td>
+            <td><div class="skeleton-bar" style="width: 60px;"></div></td>
+          </tr>
+        `).join('');
+      }
+      try {
+        const [mRes, tRes] = await Promise.all([
+          fetch('/api/dce/helpdesk/metrics').then(r => r.json()),
+          fetch('/api/dce/helpdesk/tickets').then(r => r.json())
+        ]);
+
+        if (mRes.success) {
+          document.getElementById('kpi-open-tickets').innerText = mRes.data.openCount;
+          document.getElementById('kpi-sla-breached').innerText = mRes.data.breachedCount;
+        }
+
+        if (!tRes.data || tRes.data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No support tickets in queue.</td></tr>`;
+          return;
+        }
+
+        const now = new Date();
+        tbody.innerHTML = tRes.data.map(t => {
+          const isBreached = t.sla_deadline_at && new Date(t.sla_deadline_at) < now && t.status !== 'RESOLVED';
+          const slaClass = isBreached ? 'sla-breached' : 'sla-ok';
+          const slaText = isBreached ? '🔴 BREACHED' : (t.status === 'RESOLVED' ? 'RESOLVED' : '🟢 ON TRACK');
+
+          return `
+            <tr>
+              <td><strong style="font-family: var(--mono);">${t.ticket_ref}</strong></td>
+              <td><div>${t.customer_name || 'Customer'}</div><small style="color: var(--text-muted);">${t.customer_email || ''}</small></td>
+              <td><strong>${t.subject}</strong><div style="font-size: 11px; color: var(--text-muted);">${t.category}</div></td>
+              <td><span class="badge" style="background: rgba(236,72,153,0.15); color: #ec4899;">${t.priority}</span></td>
+              <td><span class="badge ${slaClass}">${slaText}</span></td>
+              <td><span class="badge" style="background: rgba(99,102,241,0.2); color: #a5b4fc;">${t.status}</span></td>
+              <td>
+                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="openTicketModal('${t.id}')">Inspect & Reply</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {}
+    }
+
+    async function openTicketModal(ticketId) {
+      activeTicketId = ticketId;
+      const res = await fetch(`/api/dce/helpdesk/tickets/${ticketId}`).then(r => r.json());
+      const t = res.data;
+
+      document.getElementById('ticket-modal-title').innerText = `${t.ticket_ref}: ${t.subject}`;
+      const msgBox = document.getElementById('ticket-modal-messages');
+      msgBox.innerHTML = (t.messages || []).map(m => `
+        <div style="margin-bottom: 8px; font-size: 12px; padding: 6px; background: #111827; border-radius: 6px;">
+          <strong style="color: ${m.author_type === 'CUSTOMER' ? '#38bdf8' : '#10b981'};">${m.author_type}:</strong>
+          <div>${m.body}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('modal-ticket').classList.add('active');
+    }
+
+    async function sendTicketReply() {
+      const body = document.getElementById('ticket-reply-body').value;
+      if (!body) return alert('Reply body cannot be empty');
+
+      try {
+        await fetch(`/api/dce/helpdesk/tickets/${activeTicketId}/reply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body, author_type: 'AGENT' })
+        });
+        document.getElementById('ticket-reply-body').value = '';
+        openTicketModal(activeTicketId);
+        loadHelpdesk();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function resolveCurrentTicket() {
+      try {
+        await fetch(`/api/dce/helpdesk/tickets/${activeTicketId}/resolve`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resolution_note: 'Resolved via Operations Clearinghouse' })
+        });
+        closeModal('modal-ticket');
+        loadHelpdesk();
+        alert('✅ Ticket marked resolved and notification email dispatched to customer.');
+      } catch (e) { alert(e.message); }
+    }
+
+    function applyMacro(type) {
+      const box = document.getElementById('ticket-reply-body');
+      if (type === 'download') {
+        box.value = "Hi! We have refreshed your download access credentials. You can access your templates directly in your asset vault with zero delay. Please let us know if you need any further assistance!";
+      } else if (type === 'dispatched') {
+        box.value = "Hi! Your parcel has been dispatched to our courier partner. You will receive an SMS and email with live parcel tracking details shortly.";
+      } else if (type === 'refund') {
+        box.value = "Hi! We have processed your refund request. The credit will reflect in your originating payment account within 3 to 5 business days.";
+      }
+    }
+
+    // 3. LICENSES
+    async function loadLicenses() {
+      try {
+        const res = await fetch('/api/dce/fulfillment/licenses').then(r => r.json());
+        const tbody = document.getElementById('licenses-table-body');
+        document.getElementById('kpi-active-licenses').innerText = res.data?.length || 0;
+
+        if (!res.data || res.data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No digital licenses issued yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = res.data.map(l => `
+          <tr>
+            <td><span class="key-pill">${l.license_key}</span></td>
+            <td><code style="color: #38bdf8;">${l.sku || 'SKU'}</code></td>
+            <td>${l.customer_email || '—'}</td>
+            <td>${l.expires_at ? new Date(l.expires_at).toLocaleDateString() : '✨ Lifetime Access'}</td>
+            <td>${l.renewal_count || 0} reminders sent</td>
+            <td><span class="badge badge-delivered">ACTIVE</span></td>
+          </tr>
+        `).join('');
+      } catch (e) {}
+    }
+
+    async function triggerRenewalCheck() {
+      try {
+        const res = await fetch('/api/dce/helpdesk/cron/trigger', { method: 'POST' }).then(r => r.json());
+        alert(`⏰ Renewal check finished: ${res.data.dueLicenses?.length || 0} licenses evaluated!`);
+        loadLicenses();
+      } catch (e) { alert(e.message); }
+    }
+
+    // 4. SETTLEMENTS
+    async function loadSettlements() {
+      try {
+        const res = await fetch('/api/dce/settlements/batches').then(r => r.json());
+        const tbody = document.getElementById('settlements-table-body');
+
+        if (!res.data || res.data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No settlement batches created.</td></tr>`;
+          return;
+        }
+
+        const b = res.data[0];
+        document.getElementById('kpi-unsettled-payout').innerText = '$' + (b.total_payable || 8.48).toFixed(2);
+
+        tbody.innerHTML = res.data.map(batch => `
+          <tr>
+            <td><strong style="font-family: var(--mono);">${batch.batch_ref}</strong></td>
+            <td>${new Date(batch.period_start).toLocaleDateString()} – ${new Date(batch.period_end).toLocaleDateString()}</td>
+            <td>$${Number(batch.total_gross || 0).toFixed(2)}</td>
+            <td style="color: #f87171;">-$${Number(batch.total_fees || 0).toFixed(2)}</td>
+            <td style="color: #34d399; font-weight: 700;">$${Number(batch.total_net || 0).toFixed(2)}</td>
+            <td style="color: #facc15; font-weight: 800;">$${Number(batch.total_payable || 0).toFixed(2)}</td>
+            <td><span class="badge" style="background: rgba(16,185,129,0.2); color: #34d399;">${batch.status}</span></td>
+            <td>
+              <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="calculateBatch('${batch.id}')">🔄 Recalculate</button>
+              <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="exportBatchCSV('${batch.id}')">📥 CSV</button>
+              ${batch.status !== 'APPROVED' ? `<button class="btn btn-success" style="padding: 4px 8px; font-size: 11px;" onclick="approveBatch('${batch.id}')">Approve</button>` : ''}
+            </td>
+          </tr>
+        `).join('');
+
+        // Load items for first batch
+        const itemsRes = await fetch(`/api/dce/settlements/batches/${b.id}`).then(r => r.json());
+        const itemsBody = document.getElementById('settlement-items-body');
+        if (itemsRes.data?.items) {
+          itemsBody.innerHTML = itemsRes.data.items.map(it => `
+            <tr>
+              <td><strong>${it.recipient_name}</strong></td>
+              <td><span class="badge badge-digital">${it.recipient_type}</span></td>
+              <td>${it.brand_name || 'Brand'}</td>
+              <td>${it.order_count}</td>
+              <td>${(it.royalty_rate * 100).toFixed(0)}%</td>
+              <td style="color: #facc15; font-weight: 800;">$${Number(it.net_payable).toFixed(2)}</td>
+              <td style="color: #34d399;">$${Number(it.gro10x_margin).toFixed(2)}</td>
+              <td><span class="badge ${it.status === 'PAID' ? 'badge-delivered' : 'badge-pending'}">${it.status}</span></td>
+              <td>
+                ${it.status !== 'PAID' ? `<button class="btn btn-success" style="padding: 4px 8px; font-size: 11px;" onclick="paySettlementItem('${it.id}')">Record Pay</button>` : `<small style="color: var(--text-muted); font-family: var(--mono);">${it.payment_ref || 'Paid'}</small>`}
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {}
+    }
+
+    async function calculateBatch(batchId) {
+      try {
+        await fetch(`/api/dce/settlements/batches/${batchId}/calculate`, { method: 'POST' });
+        alert('💰 Batch payouts recalculated!');
+        loadSettlements();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function approveBatch(batchId) {
+      try {
+        await fetch(`/api/dce/settlements/batches/${batchId}/approve`, { method: 'PUT' });
+        alert('✅ Settlement batch approved for disbursement!');
+        loadSettlements();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function paySettlementItem(itemId) {
+      const ref = prompt('Enter payment transaction reference (e.g. bKash TrxID or Bank Wire Ref):', 'BKASH-TRX-' + Date.now());
+      if (!ref) return;
+
+      try {
+        await fetch(`/api/dce/settlements/items/${itemId}/pay`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payment_ref: ref })
+        });
+        alert('✅ Payout marked as PAID.');
+        loadSettlements();
+      } catch (e) { alert(e.message); }
+    }
+
+    function exportBatchCSV(batchId) {
+      window.open(`/api/dce/settlements/batches/${batchId}/export/csv`, '_blank');
+    }
+
+    // Initial boot load
+    loadAllData();
+  </script>
+  <script src="/dce/nav.js"></script>
+</body>
+</html>

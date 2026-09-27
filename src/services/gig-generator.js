@@ -10,7 +10,7 @@
 const https = require('https');
 const { DEFAULT_SERVICES } = require('../constants/services');
 
-const GEMINI_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
 
 /**
  * 10-Point Gig Health Check Engine
@@ -482,8 +482,88 @@ function generateTemplateGig({ service, gigIndex = 1, accountId = 'ACC-TECH-001'
   return gig;
 }
 
+/**
+ * Generates an Upwork Project Catalog package for a service
+ */
+function generateUpworkCatalogPackage({ service }) {
+  const priceNum = typeof service.priceUSD === 'number' 
+    ? service.priceUSD 
+    : (parseFloat((service.priceUSD || '$2,500').replace(/[^0-9.]/g, '')) || 2500);
+  const priceBdtNum = typeof service.priceBDT === 'number' 
+    ? service.priceBDT 
+    : (parseFloat((service.priceBDT || '৳295,000').replace(/[^0-9.]/g, '')) || 295000);
+
+  const cleanTitle = (service.title || '').replace(/^Sprint \d+:\s*/i, '');
+  const outcomeTitle = `You will get a production-ready ${cleanTitle.toLowerCase()} deployed on cloud infrastructure`;
+
+  return {
+    platform: 'UPWORK_CATALOG',
+    outcome_title: outcomeTitle,
+    category: 'Web Development & AI Engineering',
+    turnaround_days: 14,
+    price_usd: priceNum,
+    price_bdt: priceBdtNum,
+    steps: [
+      { step: 1, name: 'Architecture Blueprint & Figma UX Wireframe', duration_days: 3 },
+      { step: 2, name: 'Core Full-Stack Engineering & Database Setup', duration_days: 6 },
+      { step: 3, name: 'Cloud Deployment, API Connections & Security Audit', duration_days: 3 },
+      { step: 4, name: 'Staging Walkthrough, Source Code Transfer & Final Handover', duration_days: 2 }
+    ],
+    key_deliverables: service.features || [
+      'Full Source Code Repository (GitHub)',
+      'Production Relational Database Setup',
+      'Automated CI/CD Cloud Deployment',
+      'Secure User Authentication & Access Control',
+      'Interactive Admin Control Panel'
+    ],
+    consultation: {
+      included: true,
+      duration_minutes: 30,
+      topic: 'Founder Technical Handover & Architecture Walkthrough'
+    },
+    pricing_tiers: {
+      starter: { name: 'Core MVP Prototype', price_usd: Math.round(priceNum * 0.5), turnaround_days: 5 },
+      standard: { name: 'Production Build', price_usd: priceNum, turnaround_days: 14 },
+      advanced: { name: 'Enterprise Scale Suite', price_usd: Math.round(priceNum * 1.6), turnaround_days: 21 }
+    }
+  };
+}
+
+/**
+ * Generates an Enterprise SOW proposal package for Direct Wire clients
+ */
+function generateDirectWireSOWPackage({ service }) {
+  const priceNum = typeof service.priceUSD === 'number' 
+    ? service.priceUSD 
+    : (parseFloat((service.priceUSD || '$2,500').replace(/[^0-9.]/g, '')) || 2500);
+  const priceBdtNum = typeof service.priceBDT === 'number' 
+    ? service.priceBDT 
+    : (parseFloat((service.priceBDT || '৳295,000').replace(/[^0-9.]/g, '')) || 295000);
+
+  return {
+    platform: 'DIRECT_WIRE',
+    contract_type: 'FIXED_PRICE_SOW',
+    sow_title: `Statement of Work: ${service.title}`,
+    price_usd: priceNum,
+    price_bdt: priceBdtNum,
+    payment_schedule: {
+      upfront_percent: 50,
+      delivery_percent: 50,
+      milestones: [
+        { milestone: 1, name: 'Kickoff, System Architecture Blueprint & UX Approval', percent: 50, trigger: 'Upon Agreement Signing' },
+        { milestone: 2, name: 'Staging Delivery, Final QA Acceptance & GitHub Code Handover', percent: 50, trigger: 'Upon Final Verification' }
+      ]
+    },
+    warranty_days: 30,
+    sla_terms: 'Standard Agency SLA: Next business day support response with critical bug-fix priority.',
+    ip_transfer: '100% intellectual property, proprietary assets, and source code ownership transferred to Client upon final settlement.'
+  };
+}
+
 module.exports = {
   validateGigHealth,
   generateGigWithAI,
-  generateTemplateGig
+  generateTemplateGig,
+  generateUpworkCatalogPackage,
+  generateDirectWireSOWPackage
 };

@@ -232,6 +232,9 @@
           <a href="#brief" class="desktop-nav-link" data-hash="#brief">
             <span class="icon">📝</span> <span>Submit Brief</span>
           </a>
+          <a href="#lockin" class="desktop-nav-link" data-hash="#lockin">
+            <span class="icon">🔒</span> <span>Sprint Lock-In</span>
+          </a>
           <a href="#invoices" class="desktop-nav-link" data-hash="#invoices">
             <span class="icon">💳</span> <span>Billing & Invoices</span>
           </a>
@@ -239,7 +242,7 @@
             <span class="icon">🎟️</span> <span>Support & Escalation</span>
           </a>
           <a href="#account" class="desktop-nav-link" data-hash="#account">
-            <span class="icon">👤</span> <span>Account & Team</span>
+            <span class="icon">📜</span> <span>Account & Contracts</span>
           </a>
         </nav>
       </div>
@@ -312,6 +315,11 @@
         <span style="font-weight:700; color:#fff; font-size:0.88rem;">Submit Brief</span>
         <span style="font-size:0.72rem; color:var(--text-muted);">Kick off campaign</span>
       </a>
+      <a href="#lockin" class="card-glass" style="padding:0.85rem; text-decoration:none; display:flex; flex-direction:column; gap:0.25rem;" onclick="toggleMobileSheet()">
+        <span style="font-size:1.4rem;">🔒</span>
+        <span style="font-weight:700; color:#fff; font-size:0.88rem;">Sprint Lock-In</span>
+        <span style="font-size:0.72rem; color:var(--text-muted);">Scope & Credentials</span>
+      </a>
       <a href="#invoices" class="card-glass" style="padding:0.85rem; text-decoration:none; display:flex; flex-direction:column; gap:0.25rem;" onclick="toggleMobileSheet()">
         <span style="font-size:1.4rem;">💳</span>
         <span style="font-weight:700; color:#fff; font-size:0.88rem;">Billing & Invoices</span>
@@ -323,9 +331,9 @@
         <span style="font-size:0.72rem; color:var(--text-muted);">2h SLA escalation</span>
       </a>
       <a href="#account" class="card-glass" style="padding:0.85rem; text-decoration:none; display:flex; flex-direction:column; gap:0.25rem;" onclick="toggleMobileSheet()">
-        <span style="font-size:1.4rem;">👤</span>
-        <span style="font-weight:700; color:#fff; font-size:0.88rem;">Account & Team</span>
-        <span style="font-size:0.72rem; color:var(--text-muted);">AM & POC roster</span>
+        <span style="font-size:1.4rem;">📜</span>
+        <span style="font-weight:700; color:#fff; font-size:0.88rem;">Account & Contracts</span>
+        <span style="font-size:0.72rem; color:var(--text-muted);">AM, MSA & Handover</span>
       </a>
     </div>
   </div>
@@ -349,7 +357,11 @@
 
     function clientSignOut() {
       localStorage.removeItem('gro10x_token');
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('gro10x_user');
       localStorage.removeItem('purple_user');
+      sessionStorage.removeItem('jwt_token');
+      document.cookie = 'sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       window.location.href = '/auth';
     }
   </script>

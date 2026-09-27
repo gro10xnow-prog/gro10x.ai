@@ -17,19 +17,96 @@ function mapTicket(t) {
     id: t.id,
     title: t.title,
     description: t.description,
-    submittedBy: t.submitted_by,
-    assignedTo: t.assigned_to,
+    submittedBy: t.submitted_by || t.submittedBy,
+    assignedTo: t.assigned_to || t.assignedTo,
     priority: t.priority || 'Medium',
     status: t.status || 'Open',
     category: t.category || 'General',
-    clientId: t.client_id,
-    resolvedAt: t.resolved_at,
-    createdAt: t.created_at,
-    updatedAt: t.updated_at
+    clientId: t.client_id || t.clientId,
+    projectId: t.project_id || t.projectId || null,
+    isWarranty: t.is_warranty !== undefined ? t.is_warranty : (t.isWarranty || false),
+    warrantyStatus: t.warranty_status || t.warrantyStatus || (t.is_warranty ? 'ACTIVE' : 'NONE'),
+    slaResponseDue: t.sla_response_due || t.slaResponseDue || null,
+    slaResolutionDue: t.sla_resolution_due || t.slaResolutionDue || null,
+    billable: t.billable !== undefined ? t.billable : (t.is_warranty ? false : true),
+    resolvedAt: t.resolved_at || t.resolvedAt,
+    createdAt: t.created_at || t.createdAt,
+    updatedAt: t.updated_at || t.updatedAt
   };
 }
 
-const DEFAULT_TICKETS = [];
+const DEFAULT_TICKETS = [
+  {
+    id: 'TCK-1001',
+    title: 'Color Grading Drift on YouTube Reel #4',
+    description: 'Exported reel #4 has noticeable magenta tint on skin tones compared to approved preview.',
+    submitted_by: 'Pilutics Brand',
+    assigned_to: 'Anika Nower',
+    priority: 'High',
+    status: 'Open',
+    category: 'Creative Revision',
+    client_id: 'client-pilutics',
+    resolved_at: null,
+    created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 2).toISOString()
+  },
+  {
+    id: 'TCK-1002',
+    title: 'Render Farm Server GPU Node Out of Memory',
+    description: 'After Effects GPU renderer crashed during 4K 60fps export batch on node 2.',
+    submitted_by: 'Firoz Uddin Ahmed',
+    assigned_to: 'Firoz Uddin Ahmed',
+    priority: 'Urgent',
+    status: 'In Progress',
+    category: 'IT Issue',
+    client_id: null,
+    resolved_at: null,
+    created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 1).toISOString()
+  },
+  {
+    id: 'TCK-1003',
+    title: 'Brand Portal Asset Download Link Expired',
+    description: 'Client unable to access Google Drive RAW asset folder from brand portal dashboard.',
+    submitted_by: 'Grow Bangla',
+    assigned_to: null,
+    priority: 'Medium',
+    status: 'Open',
+    category: 'Client Request',
+    client_id: 'client-growbangla',
+    resolved_at: null,
+    created_at: new Date(Date.now() - 3600000 * 8).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 8).toISOString()
+  },
+  {
+    id: 'TCK-1004',
+    title: 'Invoice #INV-2026-088 Wire Payment Confirmation',
+    description: 'Client confirmed wire transfer of $3,500; please verify and mark retainer invoice as paid.',
+    submitted_by: 'TechCorp Global',
+    assigned_to: 'Firoz Uddin Ahmed',
+    priority: 'Low',
+    status: 'Resolved',
+    category: 'Billing',
+    client_id: 'client-techcorp',
+    resolved_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+    created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 24).toISOString()
+  },
+  {
+    id: 'TCK-1005',
+    title: 'TikTok Sound License Clearance Documentation',
+    description: 'Submitted commercial license proof for audio track used in TikTok video #12.',
+    submitted_by: 'Bong Hits',
+    assigned_to: 'Anika Nower',
+    priority: 'Medium',
+    status: 'Closed',
+    category: 'General',
+    client_id: 'client-bonghits',
+    resolved_at: new Date(Date.now() - 3600000 * 18).toISOString(),
+    created_at: new Date(Date.now() - 3600000 * 72).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 18).toISOString()
+  }
+];
 
 let inMemoryTickets = [...DEFAULT_TICKETS];
 
@@ -101,10 +178,11 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/tickets — Create a new support ticket
+// POST /api/tickets — Create a new support ticket (with 30-Day Warranty SLA Governance)
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { title, description, category, priority, clientId, submittedBy: customSubmittedBy } = req.body;
+    const { title, description, category, priority, clientId, projectId: reqProjectId, submittedBy: customSubmittedBy } = req.body;
+    const projectId = reqProjectId || req.body.project_id || null;
 
     if (!title) {
       return res.status(400).json({ error: 'Ticket title is required' });
@@ -117,16 +195,64 @@ router.post('/', requireAuth, async (req, res) => {
     // Security: Client callers cannot override their own linkedId
     const resolvedClientId = isClientUser ? req.user.linkedId : (clientId || null);
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // Warranty & SLA Engine Inspection
+    // ──────────────────────────────────────────────────────────────────────────
+    const { calculateWarrantyStatus, findProject } = require('../services/post-delivery');
+    let linkedProject = null;
+    if (projectId) {
+      linkedProject = await findProject(projectId);
+    }
+
+    const warrantyInfo = calculateWarrantyStatus(linkedProject);
+    let isWarranty = false;
+    let warrantyStatus = 'NONE';
+    let slaResponseDue = null;
+    let slaResolutionDue = null;
+    let billable = true;
+    let finalCategory = category || 'General';
+    let finalPriority = priority || 'Medium';
+
+    if (linkedProject) {
+      if (warrantyInfo.isActive) {
+        const isDefectOrRevision = req.body.isWarranty ||
+          (category && (category.includes('Warranty') || category.includes('Creative') || category.includes('Bug') || category.includes('Technical'))) ||
+          req.body.isWarranty === undefined;
+
+        if (isDefectOrRevision) {
+          isWarranty = true;
+          warrantyStatus = 'ACTIVE';
+          billable = false;
+          finalCategory = category && !category.includes('General') ? category : 'Warranty Bug Fix';
+          finalPriority = (priority === 'Urgent') ? 'Urgent' : 'High';
+          slaResponseDue = new Date(Date.now() + 4 * 3600000).toISOString();
+          slaResolutionDue = new Date(Date.now() + 24 * 3600000).toISOString();
+        }
+      } else if (warrantyInfo.badge === 'EXPIRED_WARRANTY') {
+        warrantyStatus = 'EXPIRED';
+        billable = true;
+        if (!category || category === 'Warranty Bug Fix') {
+          finalCategory = 'Out of Warranty Maintenance';
+        }
+      }
+    }
+
     const payload = {
       id: ticketId,
       title: title.trim(),
       description: description || '',
       submitted_by: submittedBy,
       assigned_to: req.body.assignedTo || null,
-      priority: priority || 'Medium',
+      priority: finalPriority,
       status: 'Open',
-      category: category || 'General',
+      category: finalCategory,
       client_id: resolvedClientId || null,
+      project_id: projectId || null,
+      is_warranty: isWarranty,
+      warranty_status: warrantyStatus,
+      sla_response_due: slaResponseDue,
+      sla_resolution_due: slaResolutionDue,
+      billable: billable,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -135,24 +261,48 @@ router.post('/', requireAuth, async (req, res) => {
     const formatted = mapTicket(payload);
 
     if (supabase) {
-      const { error: dbErr } = await supabase.from('tickets').insert([payload]);
+      const basePayload = {
+        id: payload.id,
+        title: payload.title,
+        subject: payload.title,
+        description: payload.description,
+        submitted_by: payload.submitted_by,
+        assigned_to: payload.assigned_to,
+        priority: payload.priority,
+        status: payload.status,
+        category: payload.category,
+        client_id: payload.client_id,
+        created_at: payload.created_at,
+        updated_at: payload.updated_at
+      };
+      const { error: dbErr } = await supabase.from('tickets').insert([basePayload]);
       if (dbErr) console.warn('[Tickets API] insert note:', dbErr.message);
     }
 
     try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
 
-    // Send Telegram Alert to Support / Admin
+    // Send Telegram Alert to Support / Admin / Lead Engineer
     try {
       const adminTgId = process.env.OWNER_TELEGRAM_ID;
       if (adminTgId) {
-        const msg =
-          `🎟️ *New Support Ticket Created*\n\n` +
-          `• Ticket ID: *${payload.id}*\n` +
-          `• Title: *${payload.title}*\n` +
-          `• Submitted By: *${payload.submitted_by}*\n` +
-          `• Category: *${payload.category}*\n` +
-          `• Priority: *${payload.priority}*\n\n` +
-          `*Details:*\n${payload.description || 'No additional details provided.'}`;
+        const msg = isWarranty
+          ? `🛡️ *WARRANTY BUG-FIX TICKET FILED*\n\n` +
+            `• Project: *${linkedProject?.name || payload.project_id}*\n` +
+            `• Ticket ID: *${payload.id}*\n` +
+            `• Title: *${payload.title}*\n` +
+            `• Priority: *${payload.priority}* (4h Response / 24h Resolution SLA)\n` +
+            `• Response SLA Due: *4 Hours*\n` +
+            `• Resolution SLA Due: *24 Hours*\n` +
+            `• Submitted By: *${payload.submitted_by}*\n` +
+            `• Category: *${payload.category}*\n\n` +
+            `*Details:*\n${payload.description || 'No additional details provided.'}`
+          : `🎟️ *New Support Ticket Created*\n\n` +
+            `• Ticket ID: *${payload.id}*\n` +
+            `• Title: *${payload.title}*\n` +
+            `• Submitted By: *${payload.submitted_by}*\n` +
+            `• Category: *${payload.category}*\n` +
+            `• Priority: *${payload.priority}*\n\n` +
+            `*Details:*\n${payload.description || 'No additional details provided.'}`;
 
         sendTelegramNotification(adminTgId, msg, null, true).catch(() => {});
       }
@@ -300,4 +450,113 @@ router.delete('/:id', requireAuth, requireManager, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4: Contractor Defect SLA Breach Holdback Protocol
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/:id/sla-holdback', requireAuth, requireManager, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { holdbackPercent = 15, reason = 'Critical P0 Warranty Defect SLA Breach', contractorId } = req.body;
+
+    let ticket = inMemoryTickets.find(t => t.id === id);
+    if (!ticket && supabase) {
+      try {
+        const { data } = await supabase.from('tickets').select('*').eq('id', id).maybeSingle();
+        if (data) ticket = data;
+      } catch (_) {}
+    }
+
+    if (!ticket) {
+      ticket = {
+        id,
+        title: 'Reported Defect Ticket',
+        priority: 'P0',
+        status: 'Open',
+        assigned_to: contractorId || 'Contractor Specialist'
+      };
+      inMemoryTickets.push(ticket);
+    }
+
+    const assignedContractor = contractorId || ticket.assigned_contractor || ticket.assignedContractor || ticket.assigned_to || ticket.assignedTo || 'Contractor Specialist';
+    const holdbackRecord = {
+      holdbackId: `HB-${Date.now().toString(36).toUpperCase()}`,
+      ticketId: id,
+      contractorId: assignedContractor,
+      holdbackPercent: Number(holdbackPercent),
+      reason,
+      status: 'HELD_IN_ESCROW',
+      remediationRequired: 'Hotfix verification and QA Lead sign-off',
+      appliedAt: new Date().toISOString(),
+      appliedBy: req.user?.name || 'Operations Lead'
+    };
+
+    ticket.slaHoldback = holdbackRecord;
+    ticket.status = 'Escalated - Holdback Applied';
+    ticket.updated_at = new Date().toISOString();
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('tickets').update({
+          status: 'Escalated - Holdback Applied',
+          sla_holdback: holdbackRecord,
+          updated_at: ticket.updated_at
+        }).eq('id', id);
+
+        await supabase.from('sla_holdbacks').upsert({
+          holdback_id: holdbackRecord.holdbackId,
+          ticket_id: id,
+          project_id: ticket.project_id || ticket.projectId || null,
+          contractor_id: assignedContractor,
+          holdback_percent: Number(holdbackPercent),
+          reason,
+          status: 'HELD_IN_ESCROW',
+          remediation_required: holdbackRecord.remediationRequired,
+          applied_at: holdbackRecord.appliedAt,
+          applied_by: holdbackRecord.appliedBy
+        });
+      } catch (_) {}
+    }
+
+    try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
+
+    // Dispatch Telegram alert
+    try {
+      const alertChatId = process.env.ADMIN_TELEGRAM_CHAT_ID || process.env.TELEGRAM_TEAM_GROUP_ID;
+      if (alertChatId) {
+        const alertMsg = `⚠️ *CONTRACTOR SLA HOLDBACK APPLIED*\n\n` +
+          `• Ticket: \`${id}\` (${ticket.title || 'Warranty Defect'})\n` +
+          `• Contractor: *${assignedContractor}*\n` +
+          `• Holdback: *${holdbackPercent}% Milestone Escrow Frozen*\n` +
+          `• Reason: ${reason}\n\n` +
+          `_Release condition: Verified hotfix and QA approval._`;
+        sendTelegramNotification(alertChatId, alertMsg, null, true).catch(() => {});
+      }
+    } catch (_) {}
+
+    try {
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      await emitStakeholderEvent('ticket.sla_breach_holdback', {
+        ticket: { ...ticket, id, holdbackRecord },
+        holdback: holdbackRecord,
+        contractorId: assignedContractor
+      }, {
+        stakeholderId: assignedContractor,
+        stakeholderType: 'contractor'
+      });
+    } catch (_) {}
+
+    return res.status(200).json({
+      ok: true,
+      success: true,
+      ticketId: id,
+      holdback: holdbackRecord
+    });
+  } catch (err) {
+    console.error('POST /api/tickets/:id/sla-holdback error:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
+module.exports.inMemoryTickets = inMemoryTickets;
+

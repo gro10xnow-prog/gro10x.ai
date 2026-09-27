@@ -16,8 +16,39 @@
 
 window.APP_MODULES = window.APP_MODULES || {};
 
-const DigistoreModule = {
+var DigistoreModule = window.DigistoreModule || {
   currentTab: 'orders',
+  getCurrency() {
+    return localStorage.getItem('gro10x_currency') || 'BDT';
+  },
+
+  formatMoney(amount, forceCurrency = null) {
+    const curr = forceCurrency || this.getCurrency();
+    const val = Number(amount) || 0;
+    if (curr === 'USD') {
+      return '$' + Math.round(val / 120).toLocaleString();
+    }
+    return '৳' + Math.round(val).toLocaleString();
+  },
+
+  toggleCurrency() {
+    const next = this.getCurrency() === 'USD' ? 'BDT' : 'USD';
+    this.switchCurrency(next);
+  },
+
+  switchCurrency(curr, skipDispatch = false) {
+    localStorage.setItem('gro10x_currency', curr);
+    if (!skipDispatch) {
+      window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: curr } }));
+    }
+    this.updateKPIs();
+    const toggleBtn = document.getElementById('digistoreCurrencyToggleBtn');
+    if (toggleBtn) {
+      toggleBtn.textContent = curr === 'USD' ? '$ USD Mode' : '৳ BDT Mode';
+    }
+    if (this.currentTab) this.switchTab(this.currentTab);
+  },
+
   orderFilter: 'all',
   productCategoryFilter: 'all',
   orders: [],
@@ -70,6 +101,7 @@ const DigistoreModule = {
     this._keyboardShortcutsInitialized = true;
 
     window.addEventListener('keydown', (e) => {
+      if (window.location.hash !== '#digistore') return;
       const modalsContainer = document.getElementById('digiModalsContainer');
       if (!modalsContainer || !modalsContainer.innerHTML.trim()) return;
 
@@ -95,14 +127,17 @@ const DigistoreModule = {
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
           <div>
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
               <span>🏪</span> DigiVault Commerce Engine
-            </h2>
+            </h1>
             <p style="color: var(--text-muted, #94a3b8); font-size: 14px;">
               Digital subscriptions back-office: order logging, blind WhatsApp procurement, credential delivery vault & renewals.
             </p>
           </div>
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" id="digistoreCurrencyToggleBtn" onclick="DigistoreModule.toggleCurrency()">
+              ${this.getCurrency() === 'USD' ? '$ USD Mode' : '৳ BDT Mode'}
+            </button>
             <button class="btn btn-primary" id="btnNewDigiOrder" style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 16px;">🛒</span> Log New Order (FB / WA)
             </button>
@@ -294,8 +329,8 @@ const DigistoreModule = {
     const badgeOrders = document.getElementById('tabBadgeOrders');
     const badgeDeliv = document.getElementById('tabBadgeDelivery');
 
-    if (elRev) elRev.textContent = `৳${totalRev.toLocaleString()}`;
-    if (elProf) elProf.textContent = `৳${profit.toLocaleString()}`;
+    if (elRev) elRev.textContent = this.formatMoney(totalRev);
+    if (elProf) elProf.textContent = this.formatMoney(profit);
     if (elMargin) elMargin.textContent = `${margin}% Net Margin`;
     if (elDeliv) elDeliv.textContent = pendingDeliv;
     if (elActive) elActive.textContent = activeSubs;
@@ -614,15 +649,14 @@ const DigistoreModule = {
     container.querySelectorAll('.btn-renew-order').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.getAttribute('data-id');
-        if (confirm('Create a renewal order for this subscription?')) {
-          try {
-            await APP_API.post(`/digistore/orders/${id}/renew`);
-            if (window.showToast) window.showToast('Renewal order created!', 'success');
-            await this.loadAllData();
-            this.renderOrdersTab(container);
-          } catch (err) {
-            if (window.showToast) window.showToast('Error creating renewal: ' + err.message, 'error');
-          }
+        try {
+          this.showToast('Creating renewal order...', 'info');
+          await APP_API.post(`/digistore/orders/${id}/renew`);
+          this.showToast('Renewal order created!', 'success');
+          await this.loadAllData();
+          this.renderOrdersTab(container);
+        } catch (err) {
+          this.showToast('Error creating renewal: ' + err.message, 'warning');
         }
       });
     });
@@ -790,6 +824,7 @@ const DigistoreModule = {
 
     try {
       const res = await APP_API.get('/digistore/customers');
+      if (this.currentTab !== 'customers') return;
       const customers = (res && res.data) || [];
 
       const renderTable = (list) => {
@@ -826,35 +861,40 @@ const DigistoreModule = {
                           ${c.telegramChatId ? '<span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 10px;">📱 TG Bot</span>' : ''}
                         </div>
                         <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-                          Member since: ${new Date(c.firstOrderDate).toLocaleDateString('en-GB')}
+                          First seen ${new Date(c.firstOrderAt).toLocaleDateString()}
                         </div>
                       </td>
                       <td style="padding: 14px 16px;">
-                        <div style="font-family: monospace; font-size: 13px; color: #fff;">${c.contact}</div>
-                        ${c.whatsapp && c.whatsapp !== c.contact ? `
-                          <div style="font-size: 11px; color: #25d366;">WA: ${c.whatsapp}</div>
+                        <div style="font-size: 13px; color: #fff; display: flex; align-items: center; gap: 6px;">
+                          <span>📞</span> ${c.contact}
+                        </div>
+                        ${c.whatsapp ? `
+                          <div style="margin-top: 4px;">
+                            <a href="https://wa.me/${c.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" style="color: #25d366; font-size: 11px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                              <span>💬</span> WhatsApp Direct
+                            </a>
+                          </div>
                         ` : ''}
                       </td>
-                      <td style="padding: 14px 16px; font-weight: 700; color: #fff;">
-                        ${c.totalOrders} ${c.totalOrders === 1 ? 'order' : 'orders'}
+                      <td style="padding: 14px 16px;">
+                        <span class="badge" style="background: rgba(255,255,255,0.08); color: #fff; font-weight: 700;">
+                          ${c.totalOrders} orders
+                        </span>
                       </td>
-                      <td style="padding: 14px 16px; font-weight: 800; color: #00df89; font-size: 15px;">
-                        ৳${Number(c.totalSpent).toLocaleString()}
+                      <td style="padding: 14px 16px; font-weight: 700; color: #38bdf8;">
+                        ${this.formatMoney(c.totalSpent)}
                       </td>
-                      <td style="padding: 14px 16px; font-weight: 700; color: #06b6d4;">
-                        +৳${Number(c.totalProfit).toLocaleString()}
+                      <td style="padding: 14px 16px; font-weight: 700; color: #10b981;">
+                        +${this.formatMoney(c.totalProfit)}
                       </td>
                       <td style="padding: 14px 16px;">
-                        <span class="badge" style="background: ${c.activeSubscriptions > 0 ? 'rgba(0, 223, 137, 0.15)' : 'rgba(255,255,255,0.05)'}; color: ${c.activeSubscriptions > 0 ? '#00df89' : '#64748b'};">
-                          ${c.activeSubscriptions} active
+                        <span class="badge" style="background: ${c.activeSubs > 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.05)'}; color: ${c.activeSubs > 0 ? '#10b981' : '#64748b'}; font-weight: 700;">
+                          ${c.activeSubs} Active
                         </span>
                       </td>
                       <td style="padding: 14px 16px; text-align: right;">
-                        <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
-                          <a href="https://wa.me/${(c.whatsapp || c.contact).replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-sm" style="background: rgba(37,211,102,0.15); color: #25d366; text-decoration: none; padding: 5px 10px; font-weight: 600;">
-                            💬 WhatsApp
-                          </a>
-                          <button class="btn btn-sm btn-secondary btn-view-cust-history" data-contact="${c.contact}" style="padding: 5px 10px;">
+                        <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                          <button class="btn btn-sm btn-secondary btn-view-cust-history" data-contact="${c.contact}">
                             📋 History
                           </button>
                         </div>
@@ -869,6 +909,7 @@ const DigistoreModule = {
       };
 
       const tableContainer = container.querySelector('#customersTableContainer');
+      if (!tableContainer || this.currentTab !== 'customers') return;
       tableContainer.innerHTML = renderTable(customers);
 
       const bindActions = () => {
@@ -890,16 +931,22 @@ const DigistoreModule = {
             c.contact.toLowerCase().includes(q) ||
             (c.whatsapp && c.whatsapp.toLowerCase().includes(q))
           );
-          tableContainer.innerHTML = renderTable(filtered);
-          bindActions();
+          if (tableContainer && this.currentTab === 'customers') {
+            tableContainer.innerHTML = renderTable(filtered);
+            bindActions();
+          }
         });
       }
     } catch (err) {
-      container.querySelector('#customersTableContainer').innerHTML = `
-        <div class="card" style="padding: 30px; color: #ef4444; text-align: center;">
-          Error loading CRM: ${err.message}
-        </div>
-      `;
+      if (this.currentTab !== 'customers') return;
+      const tableContainer = container.querySelector('#customersTableContainer');
+      if (tableContainer) {
+        tableContainer.innerHTML = `
+          <div class="card" style="padding: 30px; color: #ef4444; text-align: center;">
+            Error loading CRM: ${err.message}
+          </div>
+        `;
+      }
     }
   },
 
@@ -993,7 +1040,7 @@ const DigistoreModule = {
                   <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     🔗 <strong>Link:</strong> <a href="${actLink}" target="_blank" style="color: #38bdf8;">${actLink}</a>
                   </div>
-                  <button type="button" class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${actLink}'); alert('Link copied!');" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${actLink}'); if(window.DigistoreModule) window.DigistoreModule.showToast('Link copied to clipboard!', 'success');" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
                     📋 Copy
                   </button>
                 </div>
@@ -1107,7 +1154,7 @@ const DigistoreModule = {
           await this.loadAllData();
           this.renderProductsTab(container);
         } catch (err) {
-          alert('Stock update error: ' + err.message);
+          this.showToast('Stock update error: ' + err.message, 'info');
         }
       });
     });
@@ -1379,15 +1426,14 @@ const DigistoreModule = {
     container.querySelectorAll('.btn-delete-vendor').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.getAttribute('data-id');
-        if (confirm('Are you sure you want to remove this supplier?')) {
-          try {
-            await APP_API.delete(`/digistore/vendors/${id}`);
-            alert('Supplier removed successfully.');
-            await this.loadAllData();
-            this.renderVendorsTab(container);
-          } catch (err) {
-            alert('Error deleting supplier: ' + err.message);
-          }
+        try {
+          this.showToast('Removing supplier...', 'info');
+          await APP_API.delete(`/digistore/vendors/${id}`);
+          this.showToast('Supplier removed successfully.', 'success');
+          await this.loadAllData();
+          this.renderVendorsTab(container);
+        } catch (err) {
+          this.showToast('Error deleting supplier: ' + err.message, 'warning');
         }
       });
     });
@@ -1486,7 +1532,7 @@ const DigistoreModule = {
           await this.loadAllData();
           this.renderRenewalsTab(container);
         } catch (err) {
-          alert('Cron Trigger Error: ' + err.message);
+          this.showToast('Cron Trigger Error: ' + err.message, 'info');
         } finally {
           btnCron.disabled = false;
           btnCron.innerHTML = '<span>⚡</span> Run Retention Check Now';
@@ -1499,11 +1545,11 @@ const DigistoreModule = {
         const id = e.currentTarget.getAttribute('data-id');
         try {
           await APP_API.post(`/digistore/orders/${id}/renew`);
-          alert('Renewal order generated successfully!');
+          this.showToast('Renewal order generated successfully!', 'info');
           await this.loadAllData();
           this.renderRenewalsTab(container);
         } catch (err) {
-          alert('Error: ' + err.message);
+          this.showToast('Error: ' + err.message, 'info');
         }
       });
     });
@@ -1595,7 +1641,7 @@ const DigistoreModule = {
     if (!modalContainer) return;
 
     modalContainer.innerHTML = `
-      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div class="modal-backdrop" id="newOrderModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;" onclick="if(event.target === this) { const mc = document.getElementById('digiModalsContainer'); if(mc) mc.innerHTML = ''; }">
         <div class="modal-card" style="background: #131722; border: 1px solid var(--border-subtle); border-radius: 12px; width: 100%; max-width: 540px; padding: 24px; max-height: 90vh; overflow-y: auto;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="font-size: 18px; font-weight: 800; color: #fff;">🛒 Log New Subscription Order</h3>
@@ -1720,12 +1766,12 @@ const DigistoreModule = {
 
       try {
         await APP_API.post('/digistore/orders', payload);
-        alert('Order created successfully!');
+        this.showToast('Order created successfully!', 'info');
         modalContainer.innerHTML = '';
         await this.loadAllData();
         this.switchTab('orders');
       } catch (err) {
-        alert('Error creating order: ' + err.message);
+        this.showToast('Error creating order: ' + err.message, 'info');
       }
     });
   },
@@ -1811,7 +1857,7 @@ const DigistoreModule = {
         btn.textContent = 'Rejected ❌';
         await this.loadAllData();
       } catch (err) {
-        alert('Error rejecting payment: ' + err.message);
+        this.showToast('Error rejecting payment: ' + err.message, 'info');
         btn.disabled = false;
         btn.textContent = 'Confirm Rejection ❌';
       }
@@ -1907,12 +1953,12 @@ const DigistoreModule = {
           window.open(json.data.procurementUrl, '_blank');
         }
 
-        alert('✅ Vendor payment recorded & supplier WhatsApp opened!');
+        this.showToast('✅ Vendor payment recorded & supplier WhatsApp opened!', 'info');
         modalContainer.innerHTML = '';
         await this.loadAllData();
         this.switchTab('orders');
       } catch (err) {
-        alert('Error saving procurement: ' + err.message);
+        this.showToast('Error saving procurement: ' + err.message, 'info');
         btn.disabled = false;
         btn.textContent = '💬 Save Proof & Open Supplier WhatsApp ➔';
       }
@@ -2111,7 +2157,7 @@ const DigistoreModule = {
         btn.textContent = 'Dispatched ✅';
         await this.loadAllData();
       } catch (err) {
-        alert('Error dispatching link: ' + err.message);
+        this.showToast('Error dispatching link: ' + err.message, 'info');
         btn.disabled = false;
         btn.textContent = 'Save Link & Dispatch 🚀';
       }
@@ -2149,7 +2195,7 @@ const DigistoreModule = {
         btn.textContent = 'Delivered ✅';
         await this.loadAllData();
       } catch (err) {
-        alert('Error fulfilling order: ' + err.message);
+        this.showToast('Error fulfilling order: ' + err.message, 'info');
         btn.disabled = false;
         btn.textContent = 'Save & Deliver 🔑';
       }
@@ -2275,7 +2321,7 @@ const DigistoreModule = {
       const btn = document.getElementById('btnSubmitAdminClose');
       const fileInput = document.getElementById('modalClosureProofFile');
       if (!fileInput.files || fileInput.files.length === 0) {
-        return alert('Proof screenshot is mandatory!');
+        return this.showToast('Proof screenshot is mandatory!', 'info');
       }
 
       btn.disabled = true;
@@ -2295,12 +2341,12 @@ const DigistoreModule = {
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Failed to close order');
 
-        alert('✅ Order closed and proof screenshot saved!');
+        this.showToast('✅ Order closed and proof screenshot saved!', 'info');
         modalContainer.innerHTML = '';
         await this.loadAllData();
         this.switchTab('orders');
       } catch (err) {
-        alert('Error closing order: ' + err.message);
+        this.showToast('Error closing order: ' + err.message, 'info');
         btn.disabled = false;
         btn.textContent = '🔒 Save Proof & Close Order';
       }
@@ -2454,12 +2500,12 @@ const DigistoreModule = {
 
       try {
         await APP_API.post('/digistore/products', payload);
-        alert('Product added to catalog!');
+        this.showToast('Product added to catalog!', 'info');
         modalContainer.innerHTML = '';
         await this.loadAllData();
         this.switchTab('products');
       } catch (err) {
-        alert('Error adding product: ' + err.message);
+        this.showToast('Error adding product: ' + err.message, 'info');
       }
     });
   },
@@ -2541,12 +2587,12 @@ const DigistoreModule = {
 
       try {
         await APP_API.post('/digistore/vendors', payload);
-        alert('Supplier added successfully!');
+        this.showToast('Supplier added successfully!', 'info');
         modalContainer.innerHTML = '';
         await this.loadAllData();
         this.switchTab('vendors');
       } catch (err) {
-        alert('Error adding supplier: ' + err.message);
+        this.showToast('Error adding supplier: ' + err.message, 'info');
         btn.disabled = false;
         btn.textContent = 'Save Supplier';
       }
@@ -2629,12 +2675,12 @@ const DigistoreModule = {
 
       try {
         await APP_API.put(`/digistore/vendors/${vendor.id}`, payload);
-        alert('Supplier updated successfully!');
+        this.showToast('Supplier updated successfully!', 'info');
         modalContainer.innerHTML = '';
         await this.loadAllData();
         this.switchTab('vendors');
       } catch (err) {
-        alert('Error updating supplier: ' + err.message);
+        this.showToast('Error updating supplier: ' + err.message, 'info');
         btn.disabled = false;
         btn.textContent = 'Update Supplier';
       }
@@ -2819,15 +2865,13 @@ const DigistoreModule = {
     container.querySelectorAll('.btn-delete-link').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.getAttribute('data-id');
-        if (confirm('Delete this tracked campaign link?')) {
-          try {
-            await APP_API.delete(`/digistore/links/${id}`);
-            this.showToast('Link removed.', 'info');
-            await this.loadAllData();
-            this.renderLinksTab(container);
-          } catch (err) {
-            this.showToast('Delete error: ' + err.message, 'warning');
-          }
+        try {
+          await APP_API.delete(`/digistore/links/${id}`);
+          this.showToast('Link removed.', 'info');
+          await this.loadAllData();
+          this.renderLinksTab(container);
+        } catch (err) {
+          this.showToast('Delete error: ' + err.message, 'warning');
         }
       });
     });
@@ -3390,4 +3434,27 @@ window.APP_MODULES.digistore = async function(container) {
 window.APP_MODULES['digistore.js'] = DigistoreModule;
 window.DigistoreModule = DigistoreModule;
 
+// Helper close methods for automation
+DigistoreModule.closeModal = function() {
+  const mc = document.getElementById('digiModalsContainer');
+  if (mc) mc.innerHTML = '';
+};
 
+window.DIGISTORE_MODULE = DigistoreModule;
+window.switchDigiStoreCurrency = function(curr) {
+  DigistoreModule.switchCurrency(curr);
+};
+window.switchDigistoreCurrency = window.switchDigiStoreCurrency;
+
+// Deduplicated gro10x_currency_changed handler with #digistore route guard
+if (window._digistoreCurrencyHandler) {
+  window.removeEventListener('gro10x_currency_changed', window._digistoreCurrencyHandler);
+}
+window._digistoreCurrencyHandler = function(e) {
+  if (window.location.hash !== '#digistore') return;
+  const curr = e.detail && e.detail.currency;
+  if (curr && DigistoreModule.getCurrency() !== curr) {
+    DigistoreModule.switchCurrency(curr, true);
+  }
+};
+window.addEventListener('gro10x_currency_changed', window._digistoreCurrencyHandler);

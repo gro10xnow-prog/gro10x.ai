@@ -25,7 +25,8 @@ function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = 
 
   if (!targetBot) return false;
 
-  const targetChatId = (chatId === '1708459008' || chatId === '+8801708459008') ? '7754769807' : chatId;
+  const defaultAdminId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_OWNER_CHAT_ID || '7754769807';
+  const targetChatId = (chatId === '1708459008' || chatId === '+8801708459008' || chatId === '7754769807') ? defaultAdminId : (chatId || defaultAdminId);
 
   const options = { parse_mode: 'Markdown' };
   if (inlineKeyboard && inlineKeyboard.length > 0) {
@@ -193,7 +194,8 @@ function sendProposalViewedNotification(proposal = {}) {
     [{ text: '📊 Open Admin Command Center', url: `${baseUrl}/app#proposals` }]
   ];
 
-  return sendTelegramNotification('7754769807', text, inlineKeyboard, true);
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_OWNER_CHAT_ID || '7754769807';
+  return sendTelegramNotification(adminChatId, text, inlineKeyboard, true);
 }
 
 function sendProposalAcceptedNotification(proposal = {}) {
@@ -205,11 +207,14 @@ function sendProposalAcceptedNotification(proposal = {}) {
   const recurring = Number(proposal.recurring_total || proposal.recurringTotal || 0).toLocaleString();
   const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
 
+  const invoiceRef = proposal.invoiceId || proposal.invoice_id ? `\n💳 Settlement Invoice: *${proposal.invoiceId || proposal.invoice_id}* (5% VAT Included)` : '';
+
   const text = `🎉 *PROPOSAL ACCEPTED!* 🚀\n\n` +
     `Client: *${client}*\n` +
     `Project: *${title}* (${propId})\n` +
     `Build Total: *${currency} ${oneTime}*\n` +
-    `Monthly Retainer: *${currency} ${recurring}/mo*\n` +
+    `Monthly Retainer: *${currency} ${recurring}/mo*` +
+    `${invoiceRef}\n` +
     `Accepted At: *${new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })} BST*\n\n` +
     `⚡ Client confirmed acceptance! Open Admin to convert this into an active production project.`;
 
@@ -217,7 +222,8 @@ function sendProposalAcceptedNotification(proposal = {}) {
     [{ text: '🚀 Convert to Project in Admin', url: `${baseUrl}/app#proposals` }]
   ];
 
-  return sendTelegramNotification('7754769807', text, inlineKeyboard, true);
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_OWNER_CHAT_ID || '7754769807';
+  return sendTelegramNotification(adminChatId, text, inlineKeyboard, true);
 }
 
 function sendProposalCallRequestNotification(proposal = {}, contact = {}) {
@@ -239,7 +245,171 @@ function sendProposalCallRequestNotification(proposal = {}, contact = {}) {
     [{ text: '📊 Open Admin Proposals', url: `${baseUrl}/app#proposals` }]
   ];
 
-  return sendTelegramNotification('7754769807', text, inlineKeyboard, true);
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_OWNER_CHAT_ID || '7754769807';
+  return sendTelegramNotification(adminChatId, text, inlineKeyboard, true);
+}
+
+function sendWarrantyActivatedNotification(project = {}, reviewData = {}) {
+  const title = project.name || reviewData.project_name || reviewData.projectName || 'AI Sprint Solution';
+  const client = project.client_name || project.clientName || reviewData.client || 'Client Partner';
+  const approver = reviewData.approved_by || reviewData.approvedBy || 'Client Lead';
+  const rawExpiry = reviewData.warrantyUntil || project.warranty_until || project.warrantyUntil || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const expiryDate = new Date(rawExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+  const projectId = project.id || reviewData.project_id || reviewData.projectId || 'proj-purplebot-01';
+
+  const text = `🎉 *Deliverable Approved & 30-Day Warranty Active!*\n\n` +
+    `Project: *${title}*\n` +
+    `Client: *${client}*\n` +
+    `Approved By: *${approver}*\n\n` +
+    `🛡️ *Your 30-Day Bug-Fix Warranty is now officially active!*\n` +
+    `• Expiry Date: *${expiryDate}* (30 Days)\n` +
+    `• Response SLA: *4h Critical P0* / *24h Standard P1*\n` +
+    `• Warranty Cost: *৳0 (Zero-Cost Bug Resolution Guarantee)*\n\n` +
+    `Need adjustments or notice any defects during this period? You can file a zero-cost warranty ticket directly from your Client Portal.`;
+
+  const inlineKeyboard = [
+    [{ text: '🛡️ Open Warranty Hub', web_app: { url: `${baseUrl}/client#tickets` } }],
+    [{ text: '📄 View IP Handover Shield', url: `${baseUrl}/handover-view.html?id=${projectId}` }]
+  ];
+
+  const targetChatId = project.client_telegram_id || project.clientTelegramId || reviewData.chatId || reviewData.client_telegram_id;
+  if (targetChatId) {
+    return module.exports.sendTelegramNotification(targetChatId, text, inlineKeyboard, false);
+  }
+  return false;
+}
+
+function sendTeamWarrantyAlert(project = {}, reviewData = {}) {
+  const title = project.name || reviewData.project_name || reviewData.projectName || 'AI Sprint Solution';
+  const client = project.client_name || project.clientName || reviewData.client || 'Client Partner';
+  const approver = reviewData.approved_by || reviewData.approvedBy || 'Client Lead';
+  const rawExpiry = reviewData.warrantyUntil || project.warranty_until || project.warrantyUntil || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const expiryDate = new Date(rawExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+  const pod = project.delivery_pod || project.deliveryPod || {};
+  const podName = pod.podName || pod.name || 'MVP Rapid Delivery Pod';
+
+  const text = `🛡️ *WARRANTY ACTIVATED — Engine 2*\n\n` +
+    `Project: *${title}* (${client})\n` +
+    `Approved By: *${approver}*\n` +
+    `Assigned Pod: *${podName}*\n` +
+    `Warranty Closes: *${expiryDate}* (30 Days)\n` +
+    `SLA Commitment: *4h P0 Critical / 24h P1 Standard*\n\n` +
+    `⚡ Project successfully cascaded to Completed state with zero-cost bug warranty governance.`;
+
+  const inlineKeyboard = [
+    [{ text: '📊 Open Engine 2 Studio', url: `${baseUrl}/app#engines` }]
+  ];
+
+  const ownerChatId = process.env.TELEGRAM_OWNER_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID || '7754769807';
+  return module.exports.sendTelegramNotification(ownerChatId, text, inlineKeyboard, true);
+}
+
+function sendSprintDeliveredNotification(project = {}, manifest = {}) {
+  const title = project.name || manifest.projectName || 'AI Sprint Solution';
+  const client = project.client_name || manifest.clientName || 'Client Partner';
+  const pod = project.delivery_pod || manifest.deliveryPod || {};
+  const podName = pod.podName || pod.name || 'MVP Rapid Delivery Pod';
+  const lead = pod.leadEngineer || 'Lead Developer';
+  const velocity = pod.targetVelocityDays || 14;
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+  const projectId = project.id || manifest.projectId || 'proj-purplebot-01';
+
+  const text = `🚀 *Sprint Completed & Deliverables Released!*\n\n` +
+    `Project: *${title}*\n` +
+    `Client: *${client}*\n` +
+    `Delivery Pod: *${podName}* (${velocity}-Day Sprint Target)\n` +
+    `Lead Engineer: *${lead}*\n\n` +
+    `All production deliverables have passed internal QA and are now ready for your review.\n` +
+    `Review your deliverables to sign off and unlock your 30-day bug-fix warranty and IP handover.`;
+
+  const inlineKeyboard = [
+    [{ text: '🎬 Review Deliverables', web_app: { url: `${baseUrl}/client#reviews` } }],
+    [{ text: '🛡️ View Handover Shield', url: `${baseUrl}/handover-view.html?id=${projectId}` }]
+  ];
+
+  const targetChatId = project.client_telegram_id || project.clientTelegramId;
+  if (targetChatId) {
+    return module.exports.sendTelegramNotification(targetChatId, text, inlineKeyboard, false);
+  }
+  return false;
+}
+
+function sendRetainerBurndownAlert(bank = {}, project = {}, logEntry = {}) {
+  const title = project.name || bank.projectName || 'AI Retainer';
+  const client = project.client_name || bank.clientName || 'Client Partner';
+  const isOverage = bank.status === 'critical_overage' || (bank.overageHours || 0) > 0;
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+
+  const text = isOverage
+    ? `🚨 *RETAINER CRITICAL OVERAGE — Engine 2*\n\n` +
+      `Project: *${title}* (${client})\n` +
+      `Logged: *+${logEntry.hours} hrs* by ${logEntry.loggedBy || 'Pod Engineer'}\n` +
+      `Task: "${logEntry.taskDescription || 'Sprint Task'}"\n\n` +
+      `📊 *Capacity Exhausted:*\n` +
+      `• Consumed: *${bank.usedHours} / ${bank.totalAvailableHours} hrs* (${bank.burnRatePercent}%)\n` +
+      `• Overage: *${bank.overageHours} hrs*\n` +
+      `• Billing Rate: *$${bank.hourlyRateUsd || 45}/hr*\n\n` +
+      `⚠️ *Action Required:* Billable capacity exceeded. Review overage with client.`
+    : `⚠️ *RETAINER CAPACITY WARNING — Engine 2*\n\n` +
+      `Project: *${title}* (${client})\n` +
+      `Logged: *+${logEntry.hours} hrs* by ${logEntry.loggedBy || 'Pod Engineer'}\n` +
+      `Task: "${logEntry.taskDescription || 'Sprint Task'}"\n\n` +
+      `📊 *Burndown Status:*\n` +
+      `• Consumed: *${bank.usedHours} / ${bank.totalAvailableHours} hrs* (${bank.burnRatePercent}%)\n` +
+      `• Remaining: *${bank.remainingHours} hrs*\n` +
+      `• Status: *Nearing Capacity (>=75%)*`;
+
+  const inlineKeyboard = [
+    [{ text: '⏳ Retainer Bank in Admin', url: `${baseUrl}/app#engines` }]
+  ];
+
+  const ownerChatId = process.env.TELEGRAM_OWNER_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID || '7754769807';
+  return module.exports.sendTelegramNotification(ownerChatId, text, inlineKeyboard, true);
+}
+
+function sendWarrantyExpiryAlert(project = {}, daysRemaining = 7, isClient = true) {
+  const title = project.name || 'AI Sprint Solution';
+  const client = project.client_name || project.clientName || 'Client Partner';
+  const rawExpiry = project.warranty_until || project.warrantyUntil || new Date();
+  const expiryDate = new Date(rawExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+
+  if (isClient) {
+    const isLastDay = daysRemaining <= 1;
+    const text = isLastDay
+      ? `🚨 *Warranty Final Notice: Expires Tomorrow!*\n\n` +
+        `Project: *${title}*\n` +
+        `Warranty Closes: *${expiryDate}*\n\n` +
+        `Your 30-day bug-fix warranty expires tomorrow. Please perform any final checks on your live solution and submit any defects before coverage closes.`
+      : `⏰ *Warranty Reminder: 7 Days Remaining*\n\n` +
+        `Project: *${title}*\n` +
+        `Warranty Closes: *${expiryDate}*\n\n` +
+        `Your 30-day bug-fix warranty is entering its final week. Need any final bug adjustments before standard maintenance transition? File a ticket in your portal.`;
+
+    const inlineKeyboard = [
+      [{ text: '🛡️ Open Warranty Desk', web_app: { url: `${baseUrl}/client#tickets` } }]
+    ];
+
+    const targetChatId = project.client_telegram_id || project.clientTelegramId;
+    if (targetChatId) {
+      return module.exports.sendTelegramNotification(targetChatId, text, inlineKeyboard, false);
+    }
+    return false;
+  } else {
+    const text = `🔔 *WARRANTY EXPIRY HORIZON (${daysRemaining} Days)*\n\n` +
+      `Project: *${title}* (${client})\n` +
+      `Warranty End Date: *${expiryDate}*\n` +
+      `Status: Scheduled for handover archiving in ${daysRemaining} days.`;
+
+    const inlineKeyboard = [
+      [{ text: '📊 Open Engine 2 Studio', url: `${baseUrl}/app#engines` }]
+    ];
+
+    const ownerChatId = process.env.TELEGRAM_OWNER_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID || '7754769807';
+    return module.exports.sendTelegramNotification(ownerChatId, text, inlineKeyboard, true);
+  }
 }
 
 module.exports = {
@@ -250,6 +420,12 @@ module.exports = {
   sendClientInvoiceNotification,
   sendProposalViewedNotification,
   sendProposalAcceptedNotification,
-  sendProposalCallRequestNotification
+  sendProposalCallRequestNotification,
+  sendWarrantyActivatedNotification,
+  sendTeamWarrantyAlert,
+  sendSprintDeliveredNotification,
+  sendRetainerBurndownAlert,
+  sendWarrantyExpiryAlert
 };
+
 

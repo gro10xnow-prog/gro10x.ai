@@ -26,9 +26,10 @@ async function runPhaseA6(page) {
 
   await tracker.runStep('A6.1', 'Load HR Operations Hub & Verify 4 Summary KPI Scorecards', async () => {
     await page.waitForFunction(() => {
-      const el = document.querySelector('#app-view');
-      return el && (el.textContent.includes('HR Operations') || el.textContent.includes('Team Roster'));
-    }, { timeout: 8000 });
+      const isReady = typeof window.HR_MODULE === 'object' && window.HR_MODULE !== null;
+      const kpis = document.querySelectorAll('.kpi-tile').length >= 4;
+      return isReady && kpis;
+    }, { timeout: 12000 });
 
     const isHrReady = await page.evaluate(() => {
       return typeof window.HR_MODULE === 'object' && window.HR_MODULE !== null;

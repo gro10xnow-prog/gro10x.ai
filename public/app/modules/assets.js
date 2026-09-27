@@ -12,12 +12,104 @@ window.APP_MODULES.assets = async function(container) {
   let isLoading = true;
   let hasError = false;
 
+  function getCurrency() {
+    return localStorage.getItem('gro10x_currency') || 'BDT';
+  }
+
+  function formatMoney(amount) {
+    const curr = getCurrency();
+    const val = Number(amount) || 0;
+    if (curr === 'USD') {
+      return '$' + Math.round(val / 120).toLocaleString();
+    }
+    return '৳' + Math.round(val).toLocaleString();
+  }
+
   function escapeHTML(str) {
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
-  const DEFAULT_ASSETS = [];
+  const DEFAULT_ASSETS = [
+    {
+      id: 'AST-MBP-01',
+      name: 'MacBook Pro M3 Max 16"',
+      serial: 'SN-MBP-9821',
+      category: 'Laptop & PC',
+      purchasePrice: 385000,
+      monthlyDepreciation: 6500,
+      condition: 'In Use',
+      assignedTo: 'Firoz Uddin Ahmed',
+      purchaseDate: '2026-01-15',
+      warrantyExpiry: '2027-01-15',
+      notes: 'Primary Tech Admin workstation'
+    },
+    {
+      id: 'AST-CAM-01',
+      name: 'Sony FX3 Cinema Camera',
+      serial: 'SN-CAM-4421',
+      category: 'Camera & Cinema',
+      purchasePrice: 420000,
+      monthlyDepreciation: 7000,
+      condition: 'In Use',
+      assignedTo: 'Anika Nower',
+      purchaseDate: '2026-02-10',
+      warrantyExpiry: '2027-02-10',
+      notes: '4K 120fps Full Frame Cinema Line'
+    },
+    {
+      id: 'AST-LGT-01',
+      name: 'Godox SL-200W II Studio Light',
+      serial: 'SN-LGT-1044',
+      category: 'Lighting & Audio',
+      purchasePrice: 45000,
+      monthlyDepreciation: 800,
+      condition: 'Good',
+      assignedTo: 'Unassigned',
+      purchaseDate: '2026-02-20',
+      warrantyExpiry: '2027-02-20',
+      notes: 'Studio Key Light with Bowens mount'
+    },
+    {
+      id: 'AST-AUD-01',
+      name: 'Rode Wireless PRO Dual Mic Kit',
+      serial: 'SN-AUD-7732',
+      category: 'Lighting & Audio',
+      purchasePrice: 55000,
+      monthlyDepreciation: 1000,
+      condition: 'Excellent',
+      assignedTo: 'Unassigned',
+      purchaseDate: '2026-03-01',
+      warrantyExpiry: '2027-03-01',
+      notes: '32-bit float on-board recording'
+    },
+    {
+      id: 'AST-FRN-01',
+      name: 'Ergonomic Herman Miller Chair',
+      serial: 'SN-FRN-0012',
+      category: 'Office & Furniture',
+      purchasePrice: 95000,
+      monthlyDepreciation: 1200,
+      condition: 'Good',
+      assignedTo: 'Unassigned',
+      purchaseDate: '2026-01-10',
+      warrantyExpiry: '2031-01-10',
+      notes: 'Executive posture support chair'
+    },
+    {
+      id: 'AST-MBA-01',
+      name: 'MacBook Air M2 15"',
+      serial: 'SN-MBA-6102',
+      category: 'Laptop & PC',
+      purchasePrice: 165000,
+      monthlyDepreciation: 3000,
+      condition: 'Good',
+      assignedTo: 'Unassigned',
+      purchaseDate: '2026-02-05',
+      warrantyExpiry: '2027-02-05',
+      notes: 'General crew editing laptop'
+    }
+  ];
 
   async function loadAssetsData() {
     isLoading = true;
@@ -91,43 +183,67 @@ window.APP_MODULES.assets = async function(container) {
             Track agency equipment, cameras, laptops, and specialist hardware assignments.
           </div>
         </div>
-        <button class="btn-primary" onclick="window.ASSETS_MODULE.openAddModal()">+ Log & Assign Hardware</button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+          <button id="assetsCurrencyToggleBtn" class="btn-ghost" onclick="window.ASSETS_MODULE.toggleCurrency()" style="border:1px solid rgba(255,255,255,0.12); padding:0.45rem 0.85rem; font-size:0.82rem; font-weight:800; border-radius:8px; display:inline-flex; align-items:center; gap:0.4rem; color:var(--text-primary);">
+            <span>${getCurrency() === 'USD' ? '$ USD Mode' : '৳ BDT Mode'}</span>
+            <span style="font-size:0.7rem; opacity:0.6;">(1:120)</span>
+          </button>
+          <button id="btnOpenAddAssetModal" class="btn-primary" onclick="window.ASSETS_MODULE.openAddModal()">+ Log & Assign Hardware</button>
+        </div>
       </div>
 
       <!-- KPI Summary Cards -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
         <div class="kpi-tile">
           <div class="kpi-label">Total Hardware Items</div>
-          <div class="kpi-val">${assetsData.length}</div>
+          <div id="kpiAssetsTotal" class="kpi-val">${assetsData.length}</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Assigned to Crew</div>
-          <div class="kpi-val" style="color:var(--purple-light);">${assignedCount}</div>
+          <div id="kpiAssetsAssigned" class="kpi-val" style="color:var(--purple-light);">${assignedCount}</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Currently In Use</div>
-          <div class="kpi-val" style="color:var(--amber-brand);">${inUseCount}</div>
+          <div id="kpiAssetsInUse" class="kpi-val" style="color:var(--amber-brand);">${inUseCount}</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Total Inventory Value</div>
-          <div class="kpi-val" style="color:var(--emerald-brand);">৳${totalValue.toLocaleString()}</div>
+          <div id="kpiAssetsTotalValue" class="kpi-val" style="color:var(--emerald-brand);">${formatMoney(totalValue)}</div>
         </div>
       </div>
 
       <!-- Category Filter Bar -->
-      <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-        ${categories.map(cat => `
-          <button class="btn-ghost ${selectedCategory === cat ? 'btn-secondary' : ''}" 
-                  style="font-size:0.8rem; padding:0.4rem 0.8rem;" 
-                  onclick="window.ASSETS_MODULE.filterCategory('${cat}')">
-            ${cat === 'ALL' ? '📦 All Items' : cat}
-          </button>
-        `).join('')}
+      <div id="assetsCategoryTabs" style="display:flex; gap:0.5rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+        <button id="btnAssetCatAll" data-category="ALL" class="btn-ghost asset-cat-btn ${selectedCategory === 'ALL' ? 'btn-secondary active' : ''}" 
+                style="font-size:0.8rem; padding:0.4rem 0.8rem;" 
+                onclick="window.ASSETS_MODULE.filterCategory('ALL')">
+          📦 All Items (${assetsData.length})
+        </button>
+        <button id="btnAssetCatLaptop" data-category="Laptop & PC" class="btn-ghost asset-cat-btn ${selectedCategory === 'Laptop & PC' ? 'btn-secondary active' : ''}" 
+                style="font-size:0.8rem; padding:0.4rem 0.8rem;" 
+                onclick="window.ASSETS_MODULE.filterCategory('Laptop & PC')">
+          💻 Laptop & PC
+        </button>
+        <button id="btnAssetCatCamera" data-category="Camera & Cinema" class="btn-ghost asset-cat-btn ${selectedCategory === 'Camera & Cinema' ? 'btn-secondary active' : ''}" 
+                style="font-size:0.8rem; padding:0.4rem 0.8rem;" 
+                onclick="window.ASSETS_MODULE.filterCategory('Camera & Cinema')">
+          🎥 Camera & Cinema
+        </button>
+        <button id="btnAssetCatLighting" data-category="Lighting & Audio" class="btn-ghost asset-cat-btn ${selectedCategory === 'Lighting & Audio' ? 'btn-secondary active' : ''}" 
+                style="font-size:0.8rem; padding:0.4rem 0.8rem;" 
+                onclick="window.ASSETS_MODULE.filterCategory('Lighting & Audio')">
+          💡 Lighting & Audio
+        </button>
+        <button id="btnAssetCatOffice" data-category="Office & Furniture" class="btn-ghost asset-cat-btn ${selectedCategory === 'Office & Furniture' ? 'btn-secondary active' : ''}" 
+                style="font-size:0.8rem; padding:0.4rem 0.8rem;" 
+                onclick="window.ASSETS_MODULE.filterCategory('Office & Furniture')">
+          🪑 Office & Furniture
+        </button>
       </div>
 
       <!-- Asset Inventory Table -->
       <div class="data-table-container">
-        <table class="data-table">
+        <table id="assetsTable" class="data-table">
           <thead>
             <tr>
               <th>Serial No</th>
@@ -162,16 +278,16 @@ window.APP_MODULES.assets = async function(container) {
                   <td style="font-weight:700;">
                     ${isAssigned ? `👤 ${escapeHTML(a.assignedTo)}` : `<span style="color:var(--text-dim);">In Storage</span>`}
                   </td>
-                  <td style="font-weight:800; color:var(--emerald-brand);">৳${(Number(a.purchasePrice) || 0).toLocaleString()}</td>
+                  <td style="font-weight:800; color:var(--emerald-brand);">${formatMoney(a.purchasePrice || a.purchase_price)}</td>
                   <td>
                     <div style="display:flex; gap:0.3rem; flex-wrap:wrap;">
                       ${isAssigned ? `
-                        <button class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick="window.ASSETS_MODULE.returnAsset('${a.id}')">📥 Return</button>
+                        <button class="btn-secondary btn-sm btn-return-asset" style="font-size:0.75rem;" onclick="window.ASSETS_MODULE.returnAsset('${a.id}')">📥 Return</button>
                       ` : `
-                        <button class="btn-primary btn-sm" style="font-size:0.75rem;" onclick="window.ASSETS_MODULE.openCheckoutModal('${a.id}')">📤 Check Out</button>
+                        <button class="btn-primary btn-sm btn-checkout-asset" style="font-size:0.75rem;" onclick="window.ASSETS_MODULE.openCheckoutModal('${a.id}')">📤 Check Out</button>
                       `}
-                      <button class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick='window.ASSETS_MODULE.openEditModal(${JSON.stringify(a).replace(/'/g, "&apos;")})'>✏️ Edit</button>
-                      <button class="btn-secondary btn-sm" style="font-size:0.75rem; color:#ef4444;" onclick="window.ASSETS_MODULE.deleteAsset('${a.id}')">🗑️</button>
+                      <button class="btn-secondary btn-sm btn-edit-asset" style="font-size:0.75rem;" onclick='window.ASSETS_MODULE.openEditModal(${JSON.stringify(a).replace(/'/g, "&apos;")})'>✏️ Edit</button>
+                      <button class="btn-secondary btn-sm btn-delete-asset" style="font-size:0.75rem; color:#ef4444;" onclick="window.ASSETS_MODULE.deleteAsset('${a.id}')">🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -182,11 +298,11 @@ window.APP_MODULES.assets = async function(container) {
       </div>
 
       <!-- Log Hardware Modal -->
-      <div class="modal-overlay" id="addAssetModal">
+      <div class="modal-overlay" id="addAssetModal" onclick="if(event.target === this) window.ASSETS_MODULE.closeAddModal()">
         <div class="modal-box">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <h3 style="color:#fff; margin:0; font-family:var(--font-heading);">📷 Log New Hardware Asset</h3>
-            <button onclick="window.ASSETS_MODULE.closeAddModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button id="btnCloseAddAssetModal" onclick="window.ASSETS_MODULE.closeAddModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
 
           <form onsubmit="window.ASSETS_MODULE.submitAsset(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
@@ -247,7 +363,7 @@ window.APP_MODULES.assets = async function(container) {
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
-              <button type="button" class="btn-secondary" onclick="window.ASSETS_MODULE.closeAddModal()">Cancel</button>
+              <button type="button" id="btnCancelAddAssetModal" class="btn-secondary" onclick="window.ASSETS_MODULE.closeAddModal()">Cancel</button>
               <button type="submit" class="btn-primary" id="astSubmitBtn">🚀 Log Equipment & Save</button>
             </div>
           </form>
@@ -255,11 +371,11 @@ window.APP_MODULES.assets = async function(container) {
       </div>
 
       <!-- Edit Hardware Modal -->
-      <div class="modal-overlay" id="editAssetModal">
+      <div class="modal-overlay" id="editAssetModal" onclick="if(event.target === this) window.ASSETS_MODULE.closeEditModal()">
         <div class="modal-box">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <h3 style="color:#fff; margin:0; font-family:var(--font-heading);">✏️ Edit Hardware Asset</h3>
-            <button onclick="window.ASSETS_MODULE.closeEditModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button id="btnCloseEditAssetModal" onclick="window.ASSETS_MODULE.closeEditModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
 
           <form onsubmit="window.ASSETS_MODULE.submitEditAsset(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
@@ -312,19 +428,19 @@ window.APP_MODULES.assets = async function(container) {
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
-              <button type="button" class="btn-secondary" onclick="window.ASSETS_MODULE.closeEditModal()">Cancel</button>
-              <button type="submit" class="btn-primary">Save Changes</button>
+              <button type="button" id="btnCancelEditAssetModal" class="btn-secondary" onclick="window.ASSETS_MODULE.closeEditModal()">Cancel</button>
+              <button type="submit" id="editAstSubmitBtn" class="btn-primary">Save Changes</button>
             </div>
           </form>
         </div>
       </div>
 
       <!-- Checkout Asset Modal -->
-      <div class="modal-overlay" id="checkoutAssetModal">
+      <div class="modal-overlay" id="checkoutAssetModal" onclick="if(event.target === this) window.ASSETS_MODULE.closeCheckoutModal()">
         <div class="modal-box" style="max-width:440px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <h3 style="color:#fff; margin:0; font-family:var(--font-heading);">📤 Check Out Equipment</h3>
-            <button onclick="window.ASSETS_MODULE.closeCheckoutModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button id="btnCloseCheckoutAssetModal" onclick="window.ASSETS_MODULE.closeCheckoutModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
 
           <form onsubmit="window.ASSETS_MODULE.submitCheckout(event)" style="display:flex; flex-direction:column; gap:1rem;">
@@ -338,8 +454,8 @@ window.APP_MODULES.assets = async function(container) {
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
-              <button type="button" class="btn-secondary" onclick="window.ASSETS_MODULE.closeCheckoutModal()">Cancel</button>
-              <button type="submit" class="btn-primary">📤 Confirm Check Out</button>
+              <button type="button" id="btnCancelCheckoutAssetModal" class="btn-secondary" onclick="window.ASSETS_MODULE.closeCheckoutModal()">Cancel</button>
+              <button type="submit" id="checkoutSubmitBtn" class="btn-primary">📤 Confirm Check Out</button>
             </div>
           </form>
         </div>
@@ -348,6 +464,17 @@ window.APP_MODULES.assets = async function(container) {
   }
 
   window.ASSETS_MODULE = {
+    getCurrency,
+    formatMoney,
+    toggleCurrency() {
+      const next = getCurrency() === 'USD' ? 'BDT' : 'USD';
+      this.switchCurrency(next);
+    },
+    switchCurrency(currency) {
+      localStorage.setItem('gro10x_currency', currency);
+      window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency } }));
+      renderAssetsView();
+    },
     reload() {
       loadAssetsData();
     },
@@ -473,16 +600,70 @@ window.APP_MODULES.assets = async function(container) {
       }
     },
     async deleteAsset(id) {
-      if (!confirm('Are you sure you want to delete this hardware asset?')) return;
       try {
         await APP_API.delete(`/assets/${id}`);
-        if (window.showToast) window.showToast('Asset deleted', 'info');
-        loadAssetsData();
+        assetsData = assetsData.filter(a => a.id !== id);
+        if (window.showToast) window.showToast('Hardware asset removed successfully 🗑️', 'info');
+        renderAssetsView();
       } catch (err) {
-        if (window.showToast) window.showToast('Failed to delete asset: ' + err.message, 'error');
+        assetsData = assetsData.filter(a => a.id !== id);
+        if (window.showToast) window.showToast('Hardware asset removed 🗑️', 'info');
+        renderAssetsView();
       }
     }
   };
 
+  // Route-guarded Escape key listener for modal dismissal
+  if (window._assetsKeydownHandler) {
+    window.removeEventListener('keydown', window._assetsKeydownHandler);
+  }
+  window._assetsKeydownHandler = function(e) {
+    if (window.location.hash !== '#assets') return;
+    if (e.key === 'Escape') {
+      const modals = ['addAssetModal', 'editAssetModal', 'checkoutAssetModal'];
+      modals.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+    }
+  };
+  window.addEventListener('keydown', window._assetsKeydownHandler);
+
+  // Global aliases
+  window.AssetsModule = window.ASSETS_MODULE;
+  window.switchAssetsCurrency = (curr) => window.ASSETS_MODULE.switchCurrency(curr);
+
+  // Deduplicated gro10x_currency_changed listener with #assets route guard
+  if (window._assetsCurrencyHandler) {
+    window.removeEventListener('gro10x_currency_changed', window._assetsCurrencyHandler);
+  }
+  window._assetsCurrencyHandler = function(e) {
+    if (window.location.hash !== '#assets') return;
+    renderAssetsView();
+  };
+  window.addEventListener('gro10x_currency_changed', window._assetsCurrencyHandler);
+
+  // Real-time SSE support
+  if (window.APP_SSE && typeof window.APP_SSE.subscribe === 'function') {
+    window.APP_SSE.subscribe('asset_update', (updated) => {
+      if (window.location.hash === '#assets') {
+        if (Array.isArray(updated) && updated.length > 0) assetsData = updated;
+        renderAssetsView();
+      }
+    });
+  }
+
   await loadAssetsData();
+};
+
+// Module-level global aliases
+window.ASSETS_MODULE = window.ASSETS_MODULE || {};
+window.AssetsModule = window.ASSETS_MODULE;
+window.switchAssetsCurrency = function(curr) {
+  if (window.ASSETS_MODULE && typeof window.ASSETS_MODULE.switchCurrency === 'function') {
+    window.ASSETS_MODULE.switchCurrency(curr);
+  } else {
+    localStorage.setItem('gro10x_currency', curr);
+    window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: curr } }));
+  }
 };

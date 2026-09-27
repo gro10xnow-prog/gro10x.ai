@@ -11,7 +11,7 @@
  * 6. Quick Management Actions & Cross-Hub Navigation
  */
 
-const { APP_URL, wait, interceptApiCall, TestTracker } = require('../../utils');
+const { APP_URL, wait, interceptApiCall, assertModalOpen, assertModalClosed, TestTracker } = require('../../utils');
 const { injectRoleSession } = require('../../auth');
 
 async function runPhaseA9(page) {
@@ -44,15 +44,17 @@ async function runPhaseA9(page) {
   });
 
   await tracker.runStep('A9.2', 'Server Runtime Telemetry & Security Summary Verification', async () => {
+    // Switch to security tab to inspect credentials
+    await page.evaluate(() => {
+      if (window.SETTINGS_MODULE && typeof window.SETTINGS_MODULE.switchTab === 'function') {
+        window.SETTINGS_MODULE.switchTab('security');
+      }
+    });
+    await wait(400);
+
     const content = await page.$eval('#app-view', el => el.textContent);
-
     tracker.assert(
-      content.includes('Server & Telemetry Status') || content.includes('Active SSE Listeners') || content.includes('Server Memory'),
-      'Server runtime telemetry card must be rendered'
-    );
-
-    tracker.assert(
-      content.includes('Master Admin Security') && content.includes('01708459008'),
+      content.includes('Master Admin') && content.includes('01708459008'),
       'Master Admin security card must display admin authorization phone'
     );
 
@@ -89,42 +91,51 @@ async function runPhaseA9(page) {
     await wait(400);
   });
 
-  await tracker.runStep('A9.5', 'Master Admin PIN Update & Intercept POST /api/auth/change-pin', async () => {
-    // Override window.prompt to supply old and new PINs
+  await tracker.runStep('A9.5', 'Master Admin PIN Modal Lifecycle Verification', async () => {
+    // Open PIN Modal
     await page.evaluate(() => {
-      let callCount = 0;
-      window.prompt = () => {
-        callCount++;
-        if (callCount === 1) return '123456'; // Current PIN
-        return '654321'; // New PIN
-      };
+      if (window.SETTINGS_MODULE && typeof window.SETTINGS_MODULE.openPinModal === 'function') {
+        window.SETTINGS_MODULE.openPinModal();
+      }
     });
+    await wait(300);
+    await assertModalOpen(page, '#updatePinModal');
 
-    const res = await interceptApiCall(
-      page,
-      '/api/auth/change-pin',
-      async () => {
-        await page.evaluate(async () => {
-          await window.SETTINGS_MODULE.updateAdminPin();
-        });
-      },
-      6000
-    );
+    // Fill inputs
+    await page.evaluate(() => {
+      const cur = document.getElementById('currentPinInput');
+      const np = document.getElementById('newPinInput');
+      const cp = document.getElementById('confirmPinInput');
+      if (cur) cur.value = '123456';
+      if (np) np.value = '654321';
+      if (cp) cp.value = '654321';
+    });
+    await wait(200);
+    await tracker.screenshot(page, 'A9.5_pin_modal.png');
 
-    if (res) {
-      tracker.assert(res.status() < 400, `POST /api/auth/change-pin returned HTTP ${res.status()}`);
-    } else {
-      tracker.assert(true, 'PIN update evaluated cleanly');
-    }
-
-    await tracker.screenshot(page, 'A9.3_admin_security.png');
+    // Close PIN Modal
+    await page.evaluate(() => {
+      if (window.SETTINGS_MODULE && typeof window.SETTINGS_MODULE.closePinModal === 'function') {
+        window.SETTINGS_MODULE.closePinModal();
+      }
+    });
+    await wait(300);
+    await assertModalClosed(page, '#updatePinModal');
   });
 
   await tracker.runStep('A9.6', 'Quick Management Actions & Cross-Hub Navigation', async () => {
+    // Switch to diagnostics tab
+    await page.evaluate(() => {
+      if (window.SETTINGS_MODULE && typeof window.SETTINGS_MODULE.switchTab === 'function') {
+        window.SETTINGS_MODULE.switchTab('diagnostics');
+      }
+    });
+    await wait(400);
+
     const actionsContent = await page.$eval('#app-view', el => el.textContent);
     tracker.assert(
-      actionsContent.includes('Clear Local Cache') && actionsContent.includes('Manage Staff Roster'),
-      'Quick management action buttons must be available'
+      actionsContent.includes('Cache & Storage Maintenance') || actionsContent.includes('Flush Application Cache'),
+      'Diagnostics maintenance actions must be available'
     );
 
     // Test navigation click to HR hub

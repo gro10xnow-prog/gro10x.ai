@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X Traffic Sentinel</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="sentinel-container">
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="brand-row">
+        <div class="logo-icon">🚦</div>
+        <div>
+          <h1 class="logo-title">Traffic Sentinel</h1>
+          <span class="logo-subtitle">FB Group → Gemini → Telegram</span>
+        </div>
+      </div>
+      <div class="status-pill" id="statusPill">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Idle</span>
+      </div>
+    </header>
+
+    <!-- MASTER TOGGLE -->
+    <section class="toggle-card">
+      <div class="toggle-info">
+        <div class="toggle-title">Live Feed Monitoring</div>
+        <div class="toggle-desc" id="toggleSubtext">Captures new posts as they appear</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="chkMonitoring">
+        <span class="slider round"></span>
+      </label>
+    </section>
+
+    <!-- CHRONOLOGICAL WARNING BANNER -->
+    <div class="alert-banner" id="chronologicalBanner" style="display:none;">
+      <span>⚠️ <b>Notice:</b> Switch Facebook group to <b>"New Posts"</b> (?sorting_setting=CHRONOLOGICAL) to get live reports instead of old highlights.</span>
+      <button class="btn-banner-action" id="btnFixSorting">Fix URL</button>
+    </div>
+
+    <!-- CONFIGURATION SECTION -->
+    <section class="section-card">
+      <div class="section-header">
+        <span class="section-title">⚙️ Backend Configuration</span>
+        <button class="btn-toggle-config" id="btnToggleConfig">Edit</button>
+      </div>
+
+      <div class="config-body" id="configBody">
+        <div class="form-group">
+          <label class="form-label">Backend API Route</label>
+          <input type="text" id="txtApiUrl" class="form-input" placeholder="http://localhost:3000/api/traffic or Vercel URL">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">API Secret Key (x-api-key)</label>
+          <input type="password" id="txtApiKey" class="form-input" placeholder="Enter API secret key">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Target Telegram Chat ID (Optional)</label>
+          <input type="text" id="txtChatId" class="form-input" placeholder="e.g. -10012345678 or leave empty for default">
+        </div>
+
+        <button class="btn-save" id="btnSaveConfig">Save Settings</button>
+      </div>
+    </section>
+
+    <!-- ACTIONS -->
+    <div class="actions-row">
+      <button class="btn-action primary" id="btnScanNow">⚡ Scan Feed Now</button>
+      <button class="btn-action secondary" id="btnClearCache" title="Reset processed post memory">🗑️ Clear Cache (<span id="cacheCount">0</span>)</button>
+    </div>
+
+    <!-- LAST CAPTURED POST CARD -->
+    <section class="section-card">
+      <div class="section-title">📡 Last Captured Post</div>
+      <div class="preview-box" id="previewBox">
+        <div class="empty-preview" id="emptyPreview">No posts captured yet. Turn on monitoring and browse a Facebook traffic group.</div>
+        <div class="post-preview" id="postPreview" style="display:none;">
+          <div class="post-header">
+            <span class="post-author" id="prevAuthor">Author</span>
+            <span class="post-time" id="prevTime">Just now</span>
+          </div>
+          <div class="post-text" id="prevText">Post content snippet...</div>
+          <div class="post-footer">
+            <span class="post-status" id="prevStatus">Sent to Telegram</span>
+            <a href="#" target="_blank" class="post-link" id="prevLink">View on FB ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <span>GRO10X Intelligent Traffic Hub • v1.0.0</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

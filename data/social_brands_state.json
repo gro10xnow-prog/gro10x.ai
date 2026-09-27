@@ -232,7 +232,18 @@
           "metaphorStyle": "Cinematic visual metaphors to illustrate career and business growth"
         }
       },
-      "monthlyFocus": {},
+      "monthlyFocus": {
+        "2026-09": {
+          "year": 2026,
+          "month": "September",
+          "thesis": "Corporate English Mastery Q4 Sprint",
+          "monthKey": "2026-09",
+          "updatedAt": "2026-09-21T20:28:56.403Z",
+          "updatedBy": "Admin",
+          "keyProducts": "",
+          "campaignTags": []
+        }
+      },
       "channels": [
         {
           "id": "gb-youtube",

@@ -27,9 +27,8 @@ async function runPhaseA7(page) {
 
   await tracker.runStep('A7.1', 'Load Support Desk Hub & Verify 4 Summary KPI Scorecards', async () => {
     await page.waitForFunction(() => {
-      const el = document.querySelector('#app-view');
-      return el && (el.textContent.includes('Support Desk') || el.textContent.includes('Support Ticket'));
-    }, { timeout: 8000 });
+      return document.querySelectorAll('.kpi-tile').length >= 4;
+    }, { timeout: 12000 });
 
     const isTicketsReady = await page.evaluate(() => {
       return typeof window.TICKETS_MODULE === 'object' && window.TICKETS_MODULE !== null;

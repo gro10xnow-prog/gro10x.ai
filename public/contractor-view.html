@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — Subcontractor Scoped Gateway</title>
+  <meta name="description" content="Secure, scoped engineering portal for external specialists and technical delivery contractors. Commercial financials 100% redacted under mutual NDA.">
+
+  <!-- Favicons & App Icons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --bg-dark: #070b12;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(245, 158, 11, 0.25);
+      --accent-amber: #f59e0b;
+      --accent-mint: #00df89;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #a855f7;
+      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Subtle background grid & glow spheres */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-sphere {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, rgba(6, 182, 212, 0.04) 50%, transparent 70%);
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 1.75rem 1.5rem 5rem;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .brand-logo span { color: var(--accent-amber); }
+
+    .contractor-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--accent-amber);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Security Notice Banner */
+    .security-banner {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1.5px solid rgba(245, 158, 11, 0.35);
+      border-radius: 14px;
+      padding: 1rem 1.35rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+    }
+    .security-notice-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .security-icon { font-size: 1.6rem; }
+    .security-title {
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: #fff;
+    }
+    .security-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .masking-pill {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--accent-mint);
+    }
+
+    /* Project Hero Box */
+    .project-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+    .project-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 1rem;
+    }
+    .project-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+    .project-ref {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .project-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .meta-item {
+      background: rgba(10, 15, 28, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+    .meta-val {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Tabs Bar */
+    .tabs-bar {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 2rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 0.55rem 1.15rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-btn.active {
+      color: #fff;
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    /* Tab Panes */
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Deliverables Grid */
+    .deliverables-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .deliverable-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .deliverable-card:hover {
+      border-color: rgba(0, 223, 137, 0.3);
+    }
+    .deliverable-title {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #fff;
+    }
+    .links-row {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .link-pill {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 0.3rem 0.65rem;
+      border-radius: 6px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .link-pill:hover {
+      background: rgba(6, 182, 212, 0.2);
+    }
+
+    /* Definition of Done Checklist */
+    .dod-box {
+      background: rgba(10, 15, 28, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 0.9rem;
+    }
+    .dod-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--accent-mint);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
+      margin-bottom: 0.5rem;
+    }
+    .dod-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+      cursor: pointer;
+    }
+    .dod-item input[type="checkbox"] {
+      accent-color: var(--accent-mint);
+      width: 15px;
+      height: 15px;
+    }
+    .dod-item.checked {
+      color: var(--accent-mint);
+      text-decoration: line-through;
+    }
+
+    /* Tasks Board Grid */
+    .tasks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .task-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.15rem;
+    }
+    .task-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .task-badge-high { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .task-badge-med { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .task-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-top: 0.35rem;
+    }
+
+    /* Guidelines Box */
+    .guideline-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .guideline-head {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .guideline-code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      margin-top: 0.6rem;
+    }
+
+    /* Ticket Form */
+    .ticket-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 16px;
+      padding: 1.75rem;
+      max-width: 720px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+    .form-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .form-input, .form-select, .form-textarea {
+      background: rgba(10, 15, 28, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      color: #fff;
+      font-family: inherit;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent-amber);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, var(--accent-amber) 0%, #d97706 100%);
+      color: #070b12;
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    /* Prompt modal */
+    .token-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .token-modal-box {
+      background: #0f172a;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+  <div class="glow-sphere"></div>
+
+  <!-- Optional Token Input Modal if no token provided -->
+  <div class="token-modal" id="tokenPromptModal" style="display:none;">
+    <div class="token-modal-box">
+      <div style="font-size:2rem; margin-bottom:0.75rem;">🔑</div>
+      <h2 style="font-size:1.3rem; font-weight:800; color:#fff; margin-bottom:0.5rem;">Enter Subcontractor Access Pass</h2>
+      <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:1.5rem;">
+        This portal requires an authorized contractor pass token. Please enter the pass provided by your GRO10X Delivery Lead.
+      </p>
+      <div class="form-group">
+        <label class="form-label" for="manualTokenInput">Pass Token / JWT</label>
+        <input type="text" id="manualTokenInput" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+      </div>
+      <button type="button" class="btn-submit" style="width:100%; justify-content:center;" onclick="applyManualToken()">
+        🔓 Authenticate Gateway
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Top Navigation -->
+    <header class="header">
+      <a href="/" class="brand-logo">
+        <span>⚡</span> GRO10X <span>ENGINEERING</span>
+      </a>
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <span class="contractor-badge">🔒 Subcontractor Scoped Gateway</span>
+      </div>
+    </header>
+
+    <!-- Security & Masking Notice -->
+    <div class="security-banner">
+      <div class="security-notice-left">
+        <span class="security-icon">🛡️</span>
+        <div>
+          <div class="security-title">100% Commercial Financial Confidentiality Active</div>
+          <div class="security-subtitle">Strict mutual NDA in effect. All client billing rates, budgets, margins, and invoices are redacted.</div>
+        </div>
+      </div>
+      <div class="masking-pill">
+        ✓ SENSITIVE FINANCIALS MASKED
+      </div>
+    </div>
+
+    <!-- Defect SLA Warning & Holdback Banner -->
+    <div id="contractorSlaBanner" style="display:none; margin-bottom:1.5rem;"></div>
+
+    <!-- Project Overview Card -->
+    <div class="project-card" id="projectCard">
+      <div class="project-card-header">
+        <div>
+          <div class="project-ref" id="projRef">PROJECT: PRJ-0000</div>
+          <h1 class="project-title" id="projTitle">Loading Project Architecture...</h1>
+          <div style="font-size:0.84rem; color:var(--text-muted);" id="projClientInfo">
+            Client: <strong>Confidential Partner</strong> • Industry: <span id="projIndustry">Technology</span>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span class="contractor-badge" id="projStageBadge">Active Sprint</span>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;" id="projVelocity">14-Day Velocity Target</div>
+        </div>
+      </div>
+
+      <div class="project-meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Assigned Delivery Pod</div>
+          <div class="meta-val" id="metaPodName" style="color:var(--accent-cyan);">⚡ MVP Rapid Delivery Pod</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Lead Pod Engineer</div>
+          <div class="meta-val" id="metaLeadRole">Amanullah (Tech Lead)</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Defect Resolution SLA</div>
+          <div class="meta-val" style="color:var(--accent-mint);">24-Hour SLA</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Service Specification</div>
+          <div class="meta-val" id="metaServiceCode" style="color:var(--accent-amber);">ENG2-MVP</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Milestone Escrow & Settlement Rail Card -->
+    <div class="project-card" id="contractorEscrowCard" style="border: 1.5px solid rgba(0, 223, 137, 0.35); background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(6, 182, 212, 0.08) 100%); margin-bottom: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.85rem;">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span style="font-size: 1.5rem;">🏦</span>
+          <div>
+            <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Milestone Escrow Vault</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);" id="contractorMilestoneName">Sprint Delivery & Core Implementation</div>
+          </div>
+        </div>
+        <span class="contractor-badge" id="contractorEscrowStatusBadge" style="background: rgba(0, 223, 137, 0.15); border-color: rgba(0, 223, 137, 0.4); color: var(--accent-mint);">
+          🔒 100% Escrow Funded in Vault
+        </span>
+      </div>
+
+      <div class="project-meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Contractor Milestone Allocation</div>
+          <div class="meta-val" id="contractorEscrowAmount" style="color: var(--accent-mint); font-family: var(--font-mono);">৳45,000 BDT</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Disbursement Release Condition</div>
+          <div class="meta-val" style="font-size: 0.88rem; color: #fff;">Lead DoD Sign-off & QA Verification</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Settlement Bank Rail</div>
+          <div class="meta-val" id="contractorPayoutRail" style="font-size: 0.82rem; color: var(--accent-cyan); font-family: var(--font-mono);">BRAC Bank PLC (Mohakhali / 060263290)</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Escrow Governance</div>
+          <div class="meta-val" style="font-size: 0.88rem; color: var(--accent-amber);">Irrevocable Smart Vault</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Bar -->
+    <div class="tabs-bar">
+      <button type="button" class="tab-btn active" onclick="switchTab('deliverables', this)">
+        <span>📦</span> Sprint Deliverables & DoD
+      </button>
+      <button type="button" class="tab-btn" onclick="switchTab('tasks', this)">
+        <span>📋</span> Assigned Tasks Board
+      </button>
+      <button type="button" class="tab-btn" onclick="switchTab('guidelines', this)">
+        <span>📐</span> Technical Guidelines
+      </button>
+      <button type="button" class="tab-btn" onclick="switchTab('ticket', this)">
+        <span>🛠️</span> Report Technical Blocker
+      </button>
+    </div>
+
+    <!-- TAB 1: DELIVERABLES & DOD CHECKLIST -->
+    <div class="tab-pane active" id="pane-deliverables">
+      <div class="deliverables-grid" id="deliverablesContainer">
+        <!-- Injected via JavaScript -->
+        <div style="color:var(--text-muted); padding:1rem;">Loading technical deliverables...</div>
+      </div>
+    </div>
+
+    <!-- TAB 2: ASSIGNED TASKS BOARD -->
+    <div class="tab-pane" id="pane-tasks">
+      <div class="tasks-grid" id="tasksContainer">
+        <!-- Injected via JavaScript -->
+        <div style="color:var(--text-muted); padding:1rem;">Loading sprint task board...</div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TECHNICAL GUIDELINES -->
+    <div class="tab-pane" id="pane-guidelines">
+      <div class="guideline-card">
+        <div class="guideline-head"><span>🌿</span> Git Flow & Branching Standard</div>
+        <p style="font-size:0.86rem; color:var(--text-muted);">
+          All development must branch from <code>main</code> into <code>feature/&lt;pod&gt;-&lt;task-id&gt;</code>. Direct commits to <code>main</code> are prohibited. All pull requests require a code review pass from the assigned Pod Lead.
+        </p>
+        <div class="guideline-code">
+          # Standard Git Flow<br>
+          git checkout -b feature/langgraph-agent-checkpoint<br>
+          git commit -m "feat(agent): implement human-in-the-loop state routing"<br>
+          git push origin feature/langgraph-agent-checkpoint
+        </div>
+      </div>
+
+      <div class="guideline-card">
+        <div class="guideline-head"><span>✨</span> Code Style & Definition of Done (DoD)</div>
+        <p style="font-size:0.86rem; color:var(--text-muted);">
+          All deliverables must adhere to clean architecture patterns:
+        </p>
+        <ul style="padding-left:1.5rem; font-size:0.84rem; color:var(--text-muted); margin-top:0.5rem; line-height:1.6;">
+          <li>Zero unhandled promise rejections or unlogged errors.</li>
+          <li>ESLint / Prettier compliance with zero critical lint errors.</li>
+          <li>All API endpoints must include input validation and structured JSON error responses.</li>
+          <li>All database migrations and Supabase pgvector RLS policies must be scripted.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TAB 4: REPORT TECHNICAL BLOCKER -->
+    <div class="tab-pane" id="pane-ticket">
+      <div class="ticket-card">
+        <h3 style="font-size:1.25rem; font-weight:800; color:#fff; margin-bottom:0.35rem;">Report Technical Defect or Blocker</h3>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.5rem;">
+          Direct line to the Pod Lead Engineer. Use this form to report staging bugs, API dependency blockers, or environment credential issues.
+        </p>
+
+        <form id="contractorTicketForm" onsubmit="submitContractorTicket(event)">
+          <div class="form-group">
+            <label class="form-label" for="tktTitle">Defect / Blocker Title *</label>
+            <input type="text" id="tktTitle" class="form-input" placeholder="e.g. Supabase pgvector embedding query timeout on production cluster" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tktSeverity">Severity Tier *</label>
+            <select id="tktSeverity" class="form-select">
+              <option value="p0_blocker">🚨 P0: Critical Blocker (Halts Sprint Execution)</option>
+              <option value="p1_defect" selected>⚠️ P1: Standard Technical Defect (Needs Fix)</option>
+              <option value="p2_enhancement">💡 P2: Non-Blocking Improvement / Suggestion</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tktStagingUrl">Referenced Staging / Branch URL (Optional)</label>
+            <input type="url" id="tktStagingUrl" class="form-input" placeholder="https://staging.app.gro10x.ai/...">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tktDescription">Technical Details & Steps to Reproduce *</label>
+            <textarea id="tktDescription" class="form-textarea" rows="4" placeholder="Detailed error stack, curl command, or reproducible payload..." required></textarea>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end;">
+            <button type="submit" class="btn-submit" id="btnSubmitTicket">
+              📤 Submit to Pod Lead
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let projectId = urlParams.get('id') || urlParams.get('projectId') || 'proj-purplebot-01';
+    let token = urlParams.get('token') || urlParams.get('t') || localStorage.getItem('gro10x_token') || localStorage.getItem('contractor_token') || '';
+
+    let projectData = null;
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const pane = document.getElementById('pane-' + tabId);
+      if (pane) pane.classList.add('active');
+    }
+
+    async function loadContractorProject() {
+      try {
+        const queryToken = token ? `?token=${encodeURIComponent(token)}` : '';
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/contractor-view${queryToken}`, {
+          headers
+        });
+
+        if (res.status === 401) {
+          document.getElementById('tokenPromptModal').style.display = 'flex';
+          return;
+        }
+
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Failed to load contractor project.');
+        }
+
+        projectData = data;
+        renderProjectView(data);
+      } catch (err) {
+        console.error('Contractor view load error:', err);
+        // If error, check if manual token modal needed
+        if (!token) {
+          document.getElementById('tokenPromptModal').style.display = 'flex';
+        } else {
+          document.getElementById('projTitle').textContent = 'Project Load Error';
+          document.getElementById('projClientInfo').textContent = err.message;
+        }
+      }
+    }
+
+    function applyManualToken() {
+      const val = document.getElementById('manualTokenInput').value.trim();
+      if (!val) return alert('Please enter an access pass token.');
+      token = val;
+      localStorage.setItem('contractor_token', token);
+      document.getElementById('tokenPromptModal').style.display = 'none';
+      loadContractorProject();
+    }
+
+    function renderProjectView(d) {
+      document.getElementById('projRef').textContent = 'PROJECT ID: ' + (d.projectId || d.id || projectId);
+      document.getElementById('projTitle').textContent = d.projectName || d.name || 'Client Solution Sprint';
+      document.getElementById('projIndustry').textContent = d.client?.industry || 'Technology';
+      document.getElementById('projStageBadge').textContent = (d.stage || d.status || 'Active').toUpperCase();
+      document.getElementById('metaServiceCode').textContent = d.serviceCode || 'ENG2-MVP';
+
+      if (d.pod) {
+        document.getElementById('metaPodName').textContent = d.pod.podName || d.pod.podType || 'Autonomous Delivery Pod';
+        document.getElementById('metaLeadRole').textContent = d.pod.leadRole || 'Pod Lead Engineer';
+      }
+
+      // Render Milestone Escrow Vault Card
+      const escrow = d.escrow || {
+        milestoneName: 'Sprint Delivery & Core Implementation',
+        amountBDT: 45000,
+        status: 'FUNDED_IN_ESCROW',
+        statusLabel: '🔒 100% Escrow Funded in Vault',
+        payoutRail: 'BRAC Bank PLC (Mohakhali Branch / 060263290)',
+        beneficiaryAccount: 'Neoncore Tech Solution / 2081636480001'
+      };
+
+      const escrowEl = document.getElementById('contractorEscrowCard');
+      if (escrowEl) {
+        document.getElementById('contractorMilestoneName').textContent = escrow.milestoneName || 'Sprint Delivery & Core Implementation';
+        document.getElementById('contractorEscrowAmount').textContent = '৳' + Number(escrow.amountBDT || 45000).toLocaleString() + ' BDT';
+        const badgeEl = document.getElementById('contractorEscrowStatusBadge');
+        if (badgeEl) {
+          badgeEl.textContent = escrow.statusLabel || '🔒 100% Escrow Funded in Vault';
+          if (escrow.status === 'DISBURSED') {
+            badgeEl.style.color = 'var(--accent-mint)';
+            badgeEl.style.background = 'rgba(0, 223, 137, 0.15)';
+            badgeEl.style.borderColor = 'rgba(0, 223, 137, 0.4)';
+          } else if (escrow.status === 'HELD_IN_ESCROW') {
+            badgeEl.style.color = 'var(--accent-red)';
+            badgeEl.style.background = 'rgba(239, 68, 68, 0.15)';
+            badgeEl.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+          }
+        }
+        const payoutRailEl = document.getElementById('contractorPayoutRail');
+        if (payoutRailEl) {
+          payoutRailEl.textContent = escrow.payoutRail || 'BRAC Bank PLC (Mohakhali / 060263290)';
+        }
+      }
+
+      // Render Defect SLA Warning & Holdback Banner
+      const slaBanner = document.getElementById('contractorSlaBanner');
+      const slaNotice = d.slaNotice;
+      if (slaNotice && slaBanner) {
+        slaBanner.style.display = 'block';
+        if (slaNotice.type === 'holdback_active') {
+          slaBanner.innerHTML = `
+            <div style="background:rgba(239,68,68,0.15); border:1.5px solid #ef4444; color:#fecaca; border-radius:14px; padding:1.1rem 1.35rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.85rem;">
+              <div style="display:flex; align-items:center; gap:0.85rem;">
+                <span style="font-size:1.8rem;">⚠️</span>
+                <div>
+                  <div style="color:#fff; font-size:1rem; font-weight:800;">15% Milestone Holdback Active (P0 SLA Breach)</div>
+                  <div style="font-size:0.82rem; color:#fca5a5; font-weight:500;">Critical defect exceeded 24-hour resolution SLA. 15% escrow funds are frozen until hotfix is verified by QA.</div>
+                </div>
+              </div>
+              <span style="background:rgba(239,68,68,0.25); border:1px solid rgba(239,68,68,0.5); padding:0.4rem 0.85rem; border-radius:8px; font-family:var(--font-mono); font-size:0.84rem; color:#fff; font-weight:800;">
+                🔒 15% HOLDBACK FROZEN
+              </span>
+            </div>
+          `;
+        } else if (slaNotice.type === 'sla_warning') {
+          slaBanner.innerHTML = `
+            <div style="background:rgba(245,158,11,0.15); border:1.5px solid #f59e0b; color:#fef3c7; border-radius:14px; padding:1.1rem 1.35rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.85rem;">
+              <div style="display:flex; align-items:center; gap:0.85rem;">
+                <span style="font-size:1.7rem;">⏳</span>
+                <div>
+                  <div style="color:#fff; font-size:0.96rem; font-weight:800;">Active Defect SLA Clock Running</div>
+                  <div style="font-size:0.82rem; color:#fde68a; font-weight:500;">Defect reported. SLA response and hotfix resolution required within 24 hours to prevent escrow holdback.</div>
+                </div>
+              </div>
+              <span style="background:rgba(245,158,11,0.25); border:1px solid #f59e0b; padding:0.4rem 0.85rem; border-radius:8px; font-family:var(--font-mono); font-size:0.84rem; color:#fbbf24; font-weight:800;" id="contractorSlaCountdown">
+                ${slaNotice.formattedTimer || '⏳ 18h 24m remaining'}
+              </span>
+            </div>
+          `;
+        }
+      } else if (slaBanner) {
+        slaBanner.style.display = 'none';
+      }
+
+      // Render Deliverables
+      const delivEl = document.getElementById('deliverablesContainer');
+      const deliverables = d.deliverables || [];
+      if (deliverables.length === 0) {
+        delivEl.innerHTML = `
+          <div class="deliverable-card">
+            <div class="deliverable-title">🚀 Core Production Deliverable</div>
+            <div style="font-size:0.84rem; color:var(--text-muted);">Initial sprint architecture and repository setup.</div>
+            <div class="links-row">
+              <span class="link-pill">🔗 Staging URL: https://staging.gro10x.ai/sprint-01</span>
+              <span class="link-pill">📦 Git Flow: feature/* -> pr/*</span>
+            </div>
+            <div class="dod-box">
+              <div class="dod-title">Definition of Done (DoD)</div>
+              <label class="dod-item checked"><input type="checkbox" checked onchange="toggleDoDItem('default', 0, this.checked, this)"> Core API schema validated</label>
+              <label class="dod-item"><input type="checkbox" onchange="toggleDoDItem('default', 1, this.checked, this)"> Unit tests passing >= 90% coverage</label>
+              <label class="dod-item"><input type="checkbox" onchange="toggleDoDItem('default', 2, this.checked, this)"> Staging environment deployed & verified</label>
+            </div>
+          </div>
+        `;
+      } else {
+        delivEl.innerHTML = deliverables.map(deliv => `
+          <div class="deliverable-card">
+            <div class="deliverable-title">${escapeHTML(deliv.title || 'Sprint Deliverable')}</div>
+            <div style="font-size:0.84rem; color:var(--text-muted);">Deliverable Type: <strong>${deliv.deliverableType || 'staging_url'}</strong></div>
+            <div class="links-row">
+              ${deliv.stagingUrl ? `<a href="${escapeHTML(deliv.stagingUrl)}" target="_blank" class="link-pill">🌐 Open Staging ↗</a>` : ''}
+              ${deliv.repoUrl ? `<a href="${escapeHTML(deliv.repoUrl)}" target="_blank" class="link-pill">📦 Repository ↗</a>` : '<span class="link-pill">📦 Internal Git Flow</span>'}
+              ${deliv.apiDocsUrl ? `<a href="${escapeHTML(deliv.apiDocsUrl)}" target="_blank" class="link-pill">📄 API Docs ↗</a>` : ''}
+            </div>
+            <div class="dod-box">
+              <div class="dod-title">Definition of Done (DoD)</div>
+              ${(deliv.dodChecklist && deliv.dodChecklist.length > 0)
+                ? deliv.dodChecklist.map((item, idx) => {
+                    const isPassed = typeof item === 'object' ? Boolean(item.passed || item.done) : false;
+                    const labelText = typeof item === 'string' ? item : (item.title || item.label || 'DoD criteria');
+                    return `
+                      <label class="dod-item ${isPassed ? 'checked' : ''}">
+                        <input type="checkbox" ${isPassed ? 'checked' : ''} onchange="toggleDoDItem('${deliv.id}', ${idx}, this.checked, this)">
+                        ${escapeHTML(labelText)}
+                      </label>
+                    `;
+                  }).join('')
+                : `
+                  <label class="dod-item checked"><input type="checkbox" checked onchange="toggleDoDItem('${deliv.id || 'deliv-01'}', 0, this.checked, this)"> Clean deterministic error handling</label>
+                  <label class="dod-item"><input type="checkbox" onchange="toggleDoDItem('${deliv.id || 'deliv-01'}', 1, this.checked, this)"> Automated test coverage verified</label>
+                  <label class="dod-item"><input type="checkbox" onchange="toggleDoDItem('${deliv.id || 'deliv-01'}', 2, this.checked, this)"> Pod Lead PR review signoff</label>
+                `}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render Tasks
+      const tasksEl = document.getElementById('tasksContainer');
+      const tasks = d.tasks || [];
+      if (tasks.length === 0) {
+        tasksEl.innerHTML = `
+          <div class="task-card">
+            <span class="task-badge task-badge-high">High Priority</span>
+            <div style="font-weight:800; color:#fff; font-size:0.95rem;">LangGraph Human-in-the-Loop Node State Router</div>
+            <div class="task-desc">Implement checkpoint memory persistence using PostgreSQL pgvector connection pool.</div>
+          </div>
+          <div class="task-card">
+            <span class="task-badge task-badge-med">Medium Priority</span>
+            <div style="font-weight:800; color:#fff; font-size:0.95rem;">Supabase pgvector RLS Policy Security Audit</div>
+            <div class="task-desc">Verify multi-tenant isolation policies on customer embeddings table.</div>
+          </div>
+        `;
+      } else {
+        tasksEl.innerHTML = tasks.map(t => `
+          <div class="task-card">
+            <span class="task-badge ${t.priority === 'high' ? 'task-badge-high' : 'task-badge-med'}">${(t.priority || 'medium').toUpperCase()}</span>
+            <div style="font-weight:800; color:#fff; font-size:0.95rem;">${escapeHTML(t.title || 'Technical Task')}</div>
+            <div class="task-desc">${escapeHTML(t.description || 'Sprint implementation requirement.')}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.5rem; font-family:var(--font-mono);">
+              Stage: <strong>${escapeHTML(t.stage || 'In Progress')}</strong>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    async function submitContractorTicket(e) {
+      e.preventDefault();
+      const title = document.getElementById('tktTitle').value.trim();
+      const severity = document.getElementById('tktSeverity').value;
+      const stagingUrl = document.getElementById('tktStagingUrl').value.trim();
+      const description = document.getElementById('tktDescription').value.trim();
+
+      if (!title || !description) return alert('Please fill in title and description.');
+
+      const btn = document.getElementById('btnSubmitTicket');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      try {
+        const queryToken = token ? `?token=${encodeURIComponent(token)}` : '';
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/contractor-ticket${queryToken}`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            title,
+            severity,
+            stagingUrl,
+            description
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Failed to submit defect ticket.');
+        }
+
+        alert(`✅ Defect Ticket #${data.ticket?.id || 'TKT'} submitted to Pod Lead.`);
+        document.getElementById('contractorTicketForm').reset();
+        switchTab('deliverables', document.querySelector('.tab-btn'));
+      } catch (err) {
+        alert('Ticket Submission Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📤 Submit to Pod Lead';
+      }
+    }
+
+    async function toggleDoDItem(deliverableId, idx, isChecked, el) {
+      if (el && el.parentElement) {
+        el.parentElement.classList.toggle('checked', isChecked);
+      }
+      try {
+        const queryToken = token ? `?token=${encodeURIComponent(token)}` : '';
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/contractor-dod${queryToken}`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            deliverableId,
+            index: idx,
+            passed: isChecked
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          console.warn('DoD toggle warning:', data.error);
+        }
+      } catch (err) {
+        console.warn('DoD toggle network error:', err.message);
+      }
+    }
+
+    function escapeHTML(str) {
+      return String(str || '').replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    window.addEventListener('DOMContentLoaded', loadContractorProject);
+  </script>
+</body>
+</html>

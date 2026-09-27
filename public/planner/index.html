@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlannerQueenGro · Daily & Weekly Planners #1 (Interactive Edition)</title>
+  <link rel="stylesheet" href="/planner/planner.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+
+  <!-- Top App Navigation & Action Controls -->
+  <header class="planner-topbar no-print">
+    <div class="brand-badge">
+      <span class="brand-logo">PlannerQueenGro</span>
+      <span class="sku-tag">SKU: PLA-14 · Edition 1.0</span>
+    </div>
+    <div class="topbar-actions">
+      <div class="sync-status" id="syncStatus">
+        <span class="sync-dot"></span>
+        <span id="syncStatusText">Auto-Saved Locally</span>
+      </div>
+      <button class="btn-action" id="btnExportJson" title="Backup your planner data as JSON">
+        <span>💾 Backup</span>
+      </button>
+      <button class="btn-action" id="btnResetData" title="Reset current inputs">
+        <span>🔄 Reset</span>
+      </button>
+      <button class="btn-action" id="btnAiCoachTopbar" title="Open AI Focus Coach Morning Briefing" style="background: linear-gradient(135deg, #FAF3E8 0%, #FFFFFF 100%); border-color: var(--primary-plum); color: var(--primary-plum); font-weight: 700;">
+        <span>✨ AI Coach</span>
+      </button>
+      <a href="/my-portal" class="btn-action" target="_blank" title="Open Customer Vault & Credit Wallet" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+        <span>👑 My Vault</span>
+      </a>
+      <a href="/dce/track" class="btn-action" target="_blank" title="Track Physical Shipment or Order Status" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+        <span>🔍 Track Order</span>
+      </a>
+      <a href="/dce/store" class="btn-action" target="_blank" title="PlannerQueen Store, Add-ons & Ring Binders" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+        <span>🛍️ Store</span>
+      </a>
+      <button class="btn-action btn-primary" id="btnPrintPdf" title="Compile and print pristine 16-page PDF">
+        <span>🖨️ Print / Save PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Planner Workspace (Dual Binder Layout) -->
+  <main class="planner-workspace">
+    
+    <!-- Viewport Container for the 16 Spreads -->
+    <div class="spread-viewport" id="spreadViewport">
+
+      <!-- ====================================================================
+           TAB 1: INDEX & ESSENTIALS (Spreads 1, 2, 3)
+           ==================================================================== -->
+      <section class="tab-content" id="tab-index">
+        
+        <!-- SPREAD 1: Cover & Owner Registration -->
+        <article class="spread-page cover-spread" id="spread-1">
+          <div class="cover-brand-seal">✨</div>
+          <div>
+            <h1 class="cover-title">Daily &amp; Weekly Planners #1</h1>
+            <p class="cover-subtitle">Aesthetic Intentional System for Productivity, Routine &amp; Life Planning</p>
+          </div>
+
+          <div class="owner-card">
+            <h4>This Planner Belongs To</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <div>
+                <label style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Name</label>
+                <input type="text" id="owner_name" class="clean-input-line" placeholder="Enter your full name...">
+              </div>
+              <div>
+                <label style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Primary Purpose / Intention</label>
+                <input type="text" id="owner_intention" class="clean-input-line" placeholder="e.g. Focus, Clarity, Health, Balance...">
+              </div>
+              <div>
+                <label style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Planning Year / Period</label>
+                <input type="text" id="owner_period" class="clean-input-line" placeholder="2026 – 2027">
+              </div>
+              <div style="margin-top: 0.4rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem;">
+                <span style="color: var(--primary-plum); font-weight: 700;">👑 Verified License: PLA-14</span>
+                <a href="/my-portal" target="_blank" style="color: var(--primary-plum); text-decoration: underline; font-weight: 600;">Customer Vault &amp; GroCredits ↗</a>
+              </div>
+            </div>
+          </div>
+
+          <p class="cover-license">
+            © 2026 PlannerQueenGro. All Rights Reserved. Personal Use License · Interactive Web &amp; Print Companion.
+          </p>
+        </article>
+
+        <!-- SPREAD 2: System Quick-Start & Daily Planning Rituals -->
+        <article class="spread-page" id="spread-2">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>How To Use This Planner &amp; Daily Planning Rituals</h2>
+              <p>Structure your morning intention, daytime execution, and evening reset</p>
+            </div>
+            <span class="spread-badge-num">Spread 02 of 16</span>
+          </div>
+
+          <div class="grid-3" style="margin-bottom: 1.5rem;">
+            <div class="planner-card">
+              <div class="planner-card-header">
+                <span>1. Morning Intention</span>
+                <span>☀️</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+                Spend 5 minutes before screens to identify your Top 3 Needle-Movers and align with your gratitude prompt.
+              </p>
+              <textarea id="ritual_morning_notes" rows="4" placeholder="My morning routine intention &amp; mantra..."></textarea>
+            </div>
+
+            <div class="planner-card">
+              <div class="planner-card-header">
+                <span>2. Time-Blocked Focus</span>
+                <span>⏱️</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+                Cluster tasks into deep work blocks between 6:00 AM and 9:00 PM. Tackle your Must-Do item first.
+              </p>
+              <textarea id="ritual_focus_notes" rows="4" placeholder="My daily deep work rules &amp; boundaries..."></textarea>
+            </div>
+
+            <div class="planner-card">
+              <div class="planner-card-header">
+                <span>3. Evening Reset</span>
+                <span>🌙</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+                Power off notifications 60 min before bed, celebrate today's #1 win, and draft tomorrow's top priority.
+              </p>
+              <textarea id="ritual_evening_notes" rows="4" placeholder="My wind-down habit anchor..."></textarea>
+            </div>
+          </div>
+
+          <div class="planner-card" style="background: #FFFFFF; border-left: 4px solid var(--accent-sage);">
+            <div class="planner-card-header">
+              <span>Weekly Sunday Reset Routine (15-Minute Blueprint)</span>
+              <span>🌿</span>
+            </div>
+            <div class="grid-3">
+              <label class="custom-check"><input type="checkbox" id="reset_step1"> <span>Clear inbox &amp; brain dump lingering tasks</span></label>
+              <label class="custom-check"><input type="checkbox" id="reset_step2"> <span>Review upcoming bills &amp; weekly cash flow</span></label>
+              <label class="custom-check"><input type="checkbox" id="reset_step3"> <span>Schedule top 3 non-negotiables in calendar</span></label>
+            </div>
+          </div>
+        </article>
+
+        <!-- SPREAD 3: Master Index & Annual Calendar Matrix -->
+        <article class="spread-page" id="spread-3">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Master Index &amp; Annual Calendar Matrix</h2>
+              <p>High-level annual visibility, quarterly milestone checkpoints, and quick links</p>
+            </div>
+            <span class="spread-badge-num">Spread 03 of 16</span>
+          </div>
+
+          <div class="grid-4" style="margin-bottom: 1.5rem;" id="yearMiniGrids">
+            <!-- 12 mini month blocks rendered dynamically -->
+          </div>
+
+          <div class="grid-2">
+            <div class="planner-card">
+              <div class="planner-card-header">
+                <span>Annual Key Milestones &amp; Events</span>
+                <span>🎯</span>
+              </div>
+              <textarea id="annual_milestones" rows="4" placeholder="Major events, travel, launches, and celebrations for this year..."></textarea>
+            </div>
+            <div class="planner-card">
+              <div class="planner-card-header">
+                <span>Quarterly Theme Anchors</span>
+                <span>🧭</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <input type="text" id="theme_q1" placeholder="Q1 (Jan–Mar): Foundation &amp; Clarity">
+                <input type="text" id="theme_q2" placeholder="Q2 (Apr–Jun): Momentum &amp; Growth">
+                <input type="text" id="theme_q3" placeholder="Q3 (Jul–Sep): Optimization &amp; Health">
+                <input type="text" id="theme_q4" placeholder="Q4 (Oct–Dec): Harvest &amp; Reflection">
+              </div>
+            </div>
+          </div>
+
+          <!-- Official Companion Ecosystem & Quick Links -->
+          <div class="planner-card" style="margin-top: 1.5rem; background: linear-gradient(135deg, #FAF6F0 0%, #FFFFFF 100%); border-left: 4px solid var(--primary-plum);">
+            <div class="planner-card-header">
+              <span style="font-weight: 800; color: var(--primary-plum);">👑 Official Companion Ecosystem &amp; Support Hub</span>
+              <span>⚡</span>
+            </div>
+            <div class="grid-3" style="gap: 1rem; margin-top: 0.5rem;">
+              <a href="/my-portal" target="_blank" style="text-decoration: none; color: inherit; display: block; background: #FFFFFF; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; transition: transform 0.15s;">
+                <div style="font-weight: 800; color: var(--primary-plum); font-size: 0.9rem; margin-bottom: 0.2rem;">👑 Customer Vault</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Access 200 GroCredits, printable vector PDF &amp; Canva templates.</div>
+              </a>
+              <a href="/dce/track" target="_blank" style="text-decoration: none; color: inherit; display: block; background: #FFFFFF; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; transition: transform 0.15s;">
+                <div style="font-weight: 800; color: #0284c7; font-size: 0.9rem; margin-bottom: 0.2rem;">🔍 Order &amp; Delivery Tracker</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Track physical binder shipments or lookup receipt by email.</div>
+              </a>
+              <a href="/dce/store" target="_blank" style="text-decoration: none; color: inherit; display: block; background: #FFFFFF; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; transition: transform 0.15s;">
+                <div style="font-weight: 800; color: #d97706; font-size: 0.9rem; margin-bottom: 0.2rem;">🛍️ Store &amp; Physical Add-ons</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Order luxury linen binders, stickers, and page refills.</div>
+              </a>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 2: VISION & SPRINTS (Spreads 4, 15)
+           ==================================================================== -->
+      <section class="tab-content" id="tab-vision" style="display: none;">
+        
+        <!-- SPREAD 4: Quarterly Focus Map & OKR Roadmaps -->
+        <article class="spread-page" id="spread-4">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Quarterly Focus Map &amp; 90-Day Sprint Roadmaps</h2>
+              <p>Translate high-level aspirations into 4 quarterly needle-mover execution maps</p>
+            </div>
+            <span class="spread-badge-num">Spread 04 of 16</span>
+          </div>
+
+          <div class="grid-2">
+            <div class="planner-card" style="border-top: 4px solid var(--primary-plum);">
+              <div class="planner-card-header">
+                <span>Q1 Sprint Map (Jan – Mar)</span>
+                <span class="habit-streak-badge">Focus</span>
+              </div>
+              <input type="text" id="q1_primary_goal" placeholder="Primary Q1 Outcome..." style="font-weight: 700; margin-bottom: 0.5rem;">
+              <textarea id="q1_top_outcomes" rows="3" placeholder="Top 3 needle-mover milestones..."></textarea>
+              <input type="text" id="q1_reward" placeholder="Reward upon completion..." style="margin-top: 0.5rem; font-size: 0.8rem;">
+            </div>
+
+            <div class="planner-card" style="border-top: 4px solid var(--accent-sage);">
+              <div class="planner-card-header">
+                <span>Q2 Sprint Map (Apr – Jun)</span>
+                <span class="habit-streak-badge">Build</span>
+              </div>
+              <input type="text" id="q2_primary_goal" placeholder="Primary Q2 Outcome..." style="font-weight: 700; margin-bottom: 0.5rem;">
+              <textarea id="q2_top_outcomes" rows="3" placeholder="Top 3 needle-mover milestones..."></textarea>
+              <input type="text" id="q2_reward" placeholder="Reward upon completion..." style="margin-top: 0.5rem; font-size: 0.8rem;">
+            </div>
+
+            <div class="planner-card" style="border-top: 4px solid var(--accent-rose);">
+              <div class="planner-card-header">
+                <span>Q3 Sprint Map (Jul – Sep)</span>
+                <span class="habit-streak-badge">Scale</span>
+              </div>
+              <input type="text" id="q3_primary_goal" placeholder="Primary Q3 Outcome..." style="font-weight: 700; margin-bottom: 0.5rem;">
+              <textarea id="q3_top_outcomes" rows="3" placeholder="Top 3 needle-mover milestones..."></textarea>
+              <input type="text" id="q3_reward" placeholder="Reward upon completion..." style="margin-top: 0.5rem; font-size: 0.8rem;">
+            </div>
+
+            <div class="planner-card" style="border-top: 4px solid var(--primary-plum-hover);">
+              <div class="planner-card-header">
+                <span>Q4 Sprint Map (Oct – Dec)</span>
+                <span class="habit-streak-badge">Mastery</span>
+              </div>
+              <input type="text" id="q4_primary_goal" placeholder="Primary Q4 Outcome..." style="font-weight: 700; margin-bottom: 0.5rem;">
+              <textarea id="q4_top_outcomes" rows="3" placeholder="Top 3 needle-mover milestones..."></textarea>
+              <input type="text" id="q4_reward" placeholder="Reward upon completion..." style="margin-top: 0.5rem; font-size: 0.8rem;">
+            </div>
+          </div>
+        </article>
+
+        <!-- SPREAD 15: 90-Day Vision & Milestone Review -->
+        <article class="spread-page" id="spread-15">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>90-Day Vision &amp; Milestone Review</h2>
+              <p>Anchor your emotional core motivation, reflect on obstacles, and calibrate next phase</p>
+            </div>
+            <span class="spread-badge-num">Spread 15 of 16</span>
+          </div>
+
+          <div class="grid-2" style="margin-bottom: 1.5rem;">
+            <div class="planner-card">
+              <div class="planner-card-header">
+                <span>Core Motivation ("Why This Matters")</span>
+                <span>🔥</span>
+              </div>
+              <textarea id="vision_why_matters" rows="4" placeholder="When motivation runs low, remind yourself why this outcome transforms your life..."></textarea>
+            </div>
+
+            <div class="planner-card">
+              <div class="planner-card-header">
+                <span>Obstacle &amp; Contingency Solution Matrix</span>
+                <span>🛡️</span>
+              </div>
+              <textarea id="vision_contingency" rows="4" placeholder="If [Obstacle happens], then I will [Specific contingency action]..."></textarea>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="planner-card">
+              <div class="planner-card-header"><span>Day 30 Review</span></div>
+              <textarea id="review_day30" rows="3" placeholder="Wins, metrics, adjustments..."></textarea>
+            </div>
+            <div class="planner-card">
+              <div class="planner-card-header"><span>Day 60 Review</span></div>
+              <textarea id="review_day60" rows="3" placeholder="Wins, metrics, adjustments..."></textarea>
+            </div>
+            <div class="planner-card">
+              <div class="planner-card-header"><span>Day 90 Review</span></div>
+              <textarea id="review_day90" rows="3" placeholder="Final sprint harvest &amp; rewards..."></textarea>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 3: MONTHLY (Spread 5)
+           ==================================================================== -->
+      <section class="tab-content" id="tab-monthly" style="display: none;">
+        
+        <!-- SPREAD 5: Monthly Intentions & Calendar Overview -->
+        <article class="spread-page" id="spread-5">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Monthly Intentions &amp; Calendar Overview</h2>
+              <p>5-week open undated master calendar grid, habit anchors, and upcoming bills</p>
+            </div>
+            <span class="spread-badge-num">Spread 05 of 16</span>
+          </div>
+
+          <div class="grid-3" style="margin-bottom: 1.5rem;">
+            <div class="planner-card">
+              <div class="planner-card-header"><span>Top 3 Needle-Movers</span><span>🎯</span></div>
+              <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <input type="text" id="month_priority_1" placeholder="1. Non-negotiable outcome...">
+                <input type="text" id="month_priority_2" placeholder="2. Important project milestone...">
+                <input type="text" id="month_priority_3" placeholder="3. Habit or health target...">
+              </div>
+            </div>
+
+            <div class="planner-card">
+              <div class="planner-card-header"><span>Monthly Mantra &amp; Focus</span><span>✨</span></div>
+              <textarea id="month_mantra" rows="3" placeholder="What feeling or mindset will guide this month?"></textarea>
+            </div>
+
+            <div class="planner-card">
+              <div class="planner-card-header"><span>Upcoming Bills Due</span><span>💳</span></div>
+              <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <label class="custom-check"><input type="checkbox" id="bill_check1"> <input type="text" id="bill_text1" placeholder="Rent / Mortgage ($Due)" style="padding: 0.2rem;"></label>
+                <label class="custom-check"><input type="checkbox" id="bill_check2"> <input type="text" id="bill_text2" placeholder="Utilities / Internet ($Due)" style="padding: 0.2rem;"></label>
+                <label class="custom-check"><input type="checkbox" id="bill_check3"> <input type="text" id="bill_text3" placeholder="Subscriptions / Cloud ($Due)" style="padding: 0.2rem;"></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Open 5x7 Calendar Grid -->
+          <div class="planner-card" style="background: #FFFFFF;">
+            <div class="planner-card-header">
+              <span>Open Master Calendar Grid (Undated)</span>
+              <span style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted);">Click any cell to type reminders or dates</span>
+            </div>
+            <div class="calendar-grid-container" id="monthlyGrid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 4: WEEKLY SPREADS (Spreads 6, 7)
+           ==================================================================== -->
+      <section class="tab-content" id="tab-weekly" style="display: none;">
+        
+        <!-- SPREAD 6: Weekly Master Plan (Part 1: Mon–Thu) -->
+        <article class="spread-page" id="spread-6">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Weekly Master Plan (Part 1: Mon – Thu)</h2>
+              <p>Top 3 non-negotiables with vertical 6:00 AM – 9:00 PM hourly schedule</p>
+            </div>
+            <span class="spread-badge-num">Spread 06 of 16</span>
+          </div>
+
+          <div class="planner-card" style="margin-bottom: 1.25rem;">
+            <div class="planner-card-header"><span>Weekly Top 3 Non-Negotiables</span><span>⭐</span></div>
+            <div class="grid-3">
+              <input type="text" id="week_goal_1" placeholder="1. Key project delivery...">
+              <input type="text" id="week_goal_2" placeholder="2. High-impact client/team item...">
+              <input type="text" id="week_goal_3" placeholder="3. Personal well-being milestone...">
+            </div>
+          </div>
+
+          <div class="grid-4" id="weeklyColumnsMonThu">
+            <!-- Mon, Tue, Wed, Thu columns rendered dynamically -->
+          </div>
+        </article>
+
+        <!-- SPREAD 7: Weekly Master Plan (Part 2: Fri–Sun & Reset) -->
+        <article class="spread-page" id="spread-7">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Weekly Master Plan (Part 2: Fri – Sun &amp; Reset)</h2>
+              <p>Weekend flow, 7-day meal planning matrix, grocery list, and weekly reflection</p>
+            </div>
+            <span class="spread-badge-num">Spread 07 of 16</span>
+          </div>
+
+          <div class="grid-2">
+            <!-- Fri - Sun Columns -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="planner-card" style="border-left: 4px solid var(--primary-plum);">
+                <div class="planner-card-header"><span>Friday Flow</span></div>
+                <textarea id="schedule_fri" rows="3" placeholder="Key deliverables, wrap-ups, weekend transition..."></textarea>
+              </div>
+              <div class="planner-card" style="border-left: 4px solid var(--accent-sage);">
+                <div class="planner-card-header"><span>Saturday Recharge</span></div>
+                <textarea id="schedule_sat" rows="3" placeholder="Family, nature, personal creative projects..."></textarea>
+              </div>
+              <div class="planner-card" style="border-left: 4px solid var(--accent-rose);">
+                <div class="planner-card-header"><span>Sunday Reset</span></div>
+                <textarea id="schedule_sun" rows="3" placeholder="Meal prep, weekly review, next week calendar scan..."></textarea>
+              </div>
+            </div>
+
+            <!-- Meal Plan & Reflection -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="planner-card">
+                <div class="planner-card-header"><span>7-Day Meal Planning Matrix</span><span>🥗</span></div>
+                <textarea id="weekly_meal_plan" rows="5" placeholder="Breakfast, Lunch, Dinner ideas for the week ahead..."></textarea>
+              </div>
+
+              <div class="planner-card">
+                <div class="planner-card-header"><span>Segmented Grocery Checklist</span><span>🛒</span></div>
+                <textarea id="weekly_groceries" rows="4" placeholder="Produce, Proteins, Pantry Essentials..."></textarea>
+              </div>
+
+              <div class="planner-card" style="background: #FFFFFF;">
+                <div class="planner-card-header"><span>Weekly Win Review</span><span>🏆</span></div>
+                <textarea id="weekly_reflection" rows="3" placeholder="What worked well this week? What will I adjust next week?"></textarea>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 5: DAILY EXECUTION & RITUALS (Spreads 8, 9)
+           ==================================================================== -->
+      <section class="tab-content" id="tab-daily" style="display: none;">
+        
+        <!-- SPREAD 8: Daily Focused Execution Matrix -->
+        <article class="spread-page" id="spread-8">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Daily Focused Execution Matrix</h2>
+              <p>6:00 AM – 9:00 PM timeline, Eisenhower priority triage, water tracker, and gratitude</p>
+            </div>
+            <span class="spread-badge-num">Spread 08 of 16</span>
+          </div>
+
+          <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <label style="font-weight: 700; font-size: 0.85rem;">Date:</label>
+              <input type="date" id="daily_date" style="width: auto;">
+            </div>
+            <div style="flex: 1; min-width: 240px;">
+              <input type="text" id="daily_intention" placeholder="Daily Intention / Focus Mantra...">
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Left Column: 6 AM - 9 PM Timeline -->
+            <div class="planner-card" style="background: #FFFFFF;">
+              <div class="planner-card-header">
+                <span>Hourly Time-Blocking (6 AM – 9 PM)</span>
+                <span>⏱️</span>
+              </div>
+              <div class="timeblock-timeline" id="dailyTimeline">
+                <!-- 16 time slots generated dynamically -->
+              </div>
+            </div>
+
+            <!-- Right Column: Eisenhower Triage & Wellness -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              
+              <!-- Gemini AI Focus Coach Card -->
+              <div class="planner-card no-print" style="background: linear-gradient(135deg, #FCF8F3 0%, #FFFFFF 100%); border: 1.5px solid var(--primary-plum);">
+                <div class="planner-card-header">
+                  <span style="font-weight: 700; color: var(--primary-plum);">✨ Gemini AI Focus Coach</span>
+                  <span style="font-size: 0.72rem; font-weight: 700; background: #EAE0E7; color: var(--primary-plum); padding: 2px 8px; border-radius: 4px;">10 Credits / Briefing</span>
+                </div>
+                <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                  Synthesizes your daily intention, Must-Do priorities, and energy spectrum into an actionable executive briefing.
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                  <div style="font-size: 0.82rem; color: var(--primary-plum); font-weight: 600;" id="plannerCreditStatus">
+                    ⚡ Balance: <span id="plannerCreditBal">200</span> GroCredits
+                  </div>
+                  <button type="button" class="btn-action btn-primary" id="btnTriggerAiCoach" style="padding: 0.4rem 0.9rem; font-size: 0.82rem;">
+                    <span>✨ Generate Morning Briefing</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Eisenhower Priority Grid -->
+              <div class="planner-card">
+                <div class="planner-card-header"><span>Eisenhower Priority Triage</span><span>⚡</span></div>
+                
+                <div style="margin-bottom: 0.6rem;">
+                  <span style="font-size: 0.74rem; font-weight: 700; color: var(--accent-rose); text-transform: uppercase;">Must Do (High Impact)</span>
+                  <input type="text" id="eisen_must1" placeholder="Crucial deliverable #1..." style="margin-top: 0.2rem;">
+                  <input type="text" id="eisen_must2" placeholder="Crucial deliverable #2..." style="margin-top: 0.2rem;">
+                </div>
+
+                <div style="margin-bottom: 0.6rem;">
+                  <span style="font-size: 0.74rem; font-weight: 700; color: var(--primary-plum); text-transform: uppercase;">Should Do (Medium Impact)</span>
+                  <input type="text" id="eisen_should1" placeholder="Important task..." style="margin-top: 0.2rem;">
+                  <input type="text" id="eisen_should2" placeholder="Secondary priority..." style="margin-top: 0.2rem;">
+                </div>
+
+                <div>
+                  <span style="font-size: 0.74rem; font-weight: 700; color: var(--accent-sage); text-transform: uppercase;">Could Do (Low Urgency)</span>
+                  <input type="text" id="eisen_could1" placeholder="Nice to have if time permits..." style="margin-top: 0.2rem;">
+                </div>
+              </div>
+
+              <!-- Water Tracker & Gratitude -->
+              <div class="planner-card">
+                <div class="planner-card-header"><span>Hydration (8 Cups)</span><span>💧</span></div>
+                <div class="water-tracker-row" id="waterTracker">
+                  <!-- 8 water droplets rendered dynamically -->
+                </div>
+                <div style="margin-top: 1rem;">
+                  <label style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Daily Gratitude &amp; Win of the Day</label>
+                  <textarea id="daily_gratitude" rows="3" placeholder="Today, I am grateful for... and my proudest win was..."></textarea>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </article>
+
+        <!-- SPREAD 9: Daily Morning & Evening Anchor Rituals -->
+        <article class="spread-page" id="spread-9">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Daily Morning &amp; Evening Anchor Rituals</h2>
+              <p>Consistent start-of-day energizers, evening wind-down routine, and energy check-in</p>
+            </div>
+            <span class="spread-badge-num">Spread 09 of 16</span>
+          </div>
+
+          <div class="grid-2">
+            <!-- Morning Stack -->
+            <div class="planner-card" style="border-top: 4px solid var(--accent-sage);">
+              <div class="planner-card-header"><span>Morning Energizer Stack</span><span>🌅</span></div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                <label class="custom-check"><input type="checkbox" id="morning_water"> <span>Hydrate with 500ml water &amp; minerals</span></label>
+                <label class="custom-check"><input type="checkbox" id="morning_light"> <span>Natural sunlight exposure (10–15 min)</span></label>
+                <label class="custom-check"><input type="checkbox" id="morning_movement"> <span>Gentle movement / stretch / brisk walk</span></label>
+                <label class="custom-check"><input type="checkbox" id="morning_mindset"> <span>Mindset alignment &amp; Top 3 priorities review</span></label>
+                <label class="custom-check"><input type="checkbox" id="morning_deepwork"> <span>Begin first 90-min deep work sprint</span></label>
+              </div>
+            </div>
+
+            <!-- Evening Stack -->
+            <div class="planner-card" style="border-top: 4px solid var(--primary-plum);">
+              <div class="planner-card-header"><span>Evening Wind-Down Checklist</span><span>🌙</span></div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                <label class="custom-check"><input type="checkbox" id="evening_screens"> <span>Screens off 60 minutes before sleep</span></label>
+                <label class="custom-check"><input type="checkbox" id="evening_desk"> <span>Reset desk &amp; write tomorrow's #1 task</span></label>
+                <label class="custom-check"><input type="checkbox" id="evening_tea"> <span>Herbal tea or reading (fiction/quiet)</span></label>
+                <label class="custom-check"><input type="checkbox" id="evening_gratitude"> <span>Log 1 win &amp; thankfulness reflection</span></label>
+                <label class="custom-check"><input type="checkbox" id="evening_rest"> <span>Consistent sleep time window</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="planner-card" style="margin-top: 1.25rem; background: #FFFFFF;">
+            <div class="planner-card-header">
+              <span>Daily Energy &amp; Mood Spectrum</span>
+              <span id="energyLabel" style="font-size: 0.85rem; font-weight: 700; color: var(--primary-plum);">Level 4 — High Vibrancy</span>
+            </div>
+            <input type="range" id="energy_slider" min="1" max="5" value="4" style="width: 100%; accent-color: var(--primary-plum);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--text-subtle); margin-top: 0.35rem;">
+              <span>1: Exhausted / Low</span>
+              <span>2: Sluggish</span>
+              <span>3: Balanced</span>
+              <span>4: Vibrant</span>
+              <span>5: Peak Flow</span>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 6: HABITS MATRIX (Spread 10)
+           ==================================================================== -->
+      <section class="tab-content" id="tab-habits" style="display: none;">
+        
+        <!-- SPREAD 10: 30-Day Habit Matrix & Consistency Streak Tracker -->
+        <article class="spread-page" id="spread-10">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>30-Day Habit Matrix &amp; Consistency Streak Tracker</h2>
+              <p>20 customizable habit rows across 31 check-bubbles with live streak calculation</p>
+            </div>
+            <span class="spread-badge-num">Spread 10 of 16</span>
+          </div>
+
+          <!-- Overall Habit Score Card -->
+          <div class="grid-3" style="margin-bottom: 1.25rem;">
+            <div class="kpi-card">
+              <div class="kpi-card-label">Monthly Consistency</div>
+              <div class="kpi-card-value positive" id="habitConsistencyRate">0%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-label">Total Checks Completed</div>
+              <div class="kpi-card-value" id="habitTotalChecks">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-label">Best Active Streak</div>
+              <div class="kpi-card-value" id="habitBestStreak">0 Days</div>
+            </div>
+          </div>
+
+          <!-- The Habit Matrix Table -->
+          <div class="planner-card" style="background: #FFFFFF; overflow-x: auto;">
+            <table class="habit-matrix-table" id="habitTable">
+              <thead>
+                <tr>
+                  <th class="habit-name-col">Habit Focus (20 Rows)</th>
+                  <!-- Days 1 to 31 rendered dynamically -->
+                </tr>
+              </thead>
+              <tbody id="habitTableBody">
+                <!-- Habit rows rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 7: FINANCES (Spread 12)
+           ==================================================================== -->
+      <section class="tab-content" id="tab-finances" style="display: none;">
+        
+        <!-- SPREAD 12: Monthly Financial Health Snapshot -->
+        <article class="spread-page" id="spread-12">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Monthly Cash Flow, Expenses &amp; Savings Tracker</h2>
+              <p>Track recurring fixed bills, daily variable expenses, and net savings rate live</p>
+            </div>
+            <span class="spread-badge-num">Spread 12 of 16</span>
+          </div>
+
+          <!-- Live KPI Summary Cards -->
+          <div class="kpi-cards-grid">
+            <div class="kpi-card">
+              <div class="kpi-card-label">Total Income</div>
+              <input type="number" id="fin_income" value="5000" class="clean-input-line" style="font-size: 1.4rem; font-weight: 700; color: var(--primary-plum); text-align: center;">
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-label">Fixed Recurring Bills</div>
+              <div class="kpi-card-value" id="fin_fixed_total">$0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-label">Variable Expenses</div>
+              <div class="kpi-card-value" id="fin_var_total">$0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-label">Net Projected Savings</div>
+              <div class="kpi-card-value positive" id="fin_net_savings">$0</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Fixed Recurring Bills Checklist -->
+            <div class="planner-card" style="background: #FFFFFF;">
+              <div class="planner-card-header">
+                <span>Fixed Recurring Bills</span>
+                <span class="habit-streak-badge">Check when paid</span>
+              </div>
+              <div id="fixedBillsList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <!-- 6 fixed bill rows rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Variable Daily Expense Log -->
+            <div class="planner-card" style="background: #FFFFFF;">
+              <div class="planner-card-header">
+                <span>Variable Daily Expense Log</span>
+                <button class="btn-action" id="btnAddExpense" style="padding: 0.2rem 0.5rem; font-size: 0.74rem;">+ Add Row</button>
+              </div>
+              <div id="variableExpensesList" style="display: flex; flex-direction: column; gap: 0.45rem; max-height: 380px; overflow-y: auto;">
+                <!-- Expense rows -->
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 8: LIFE, WELLNESS & NOTES (Spreads 11, 13, 14, 16)
+           ==================================================================== -->
+      <section class="tab-content" id="tab-life" style="display: none;">
+        
+        <!-- SPREAD 11: Master Project Planner & Sprint Roadmap -->
+        <article class="spread-page" id="spread-11">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Master Project Planner &amp; Sprint Roadmap</h2>
+              <p>Break complex initiatives into 3 execution phases with 15-point action milestones</p>
+            </div>
+            <span class="spread-badge-num">Spread 11 of 16</span>
+          </div>
+
+          <div class="planner-card" style="margin-bottom: 1.25rem;">
+            <div class="grid-3">
+              <div>
+                <label style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted);">Project Title</label>
+                <input type="text" id="project_title" placeholder="e.g. Q4 Growth Launch">
+              </div>
+              <div>
+                <label style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted);">Target Launch Date</label>
+                <input type="date" id="project_deadline">
+              </div>
+              <div>
+                <label style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted);">Key Success Metric</label>
+                <input type="text" id="project_kpi" placeholder="e.g. 500 Active Users">
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="planner-card" style="border-top: 4px solid var(--primary-plum);">
+              <div class="planner-card-header"><span>Phase 1: Foundation</span></div>
+              <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <label class="custom-check"><input type="checkbox" id="p1_task1"> <input type="text" id="p1_txt1" placeholder="Define scope &amp; requirements"></label>
+                <label class="custom-check"><input type="checkbox" id="p1_task2"> <input type="text" id="p1_txt2" placeholder="Resource allocation"></label>
+                <label class="custom-check"><input type="checkbox" id="p1_task3"> <input type="text" id="p1_txt3" placeholder="Initial prototype review"></label>
+              </div>
+            </div>
+
+            <div class="planner-card" style="border-top: 4px solid var(--accent-sage);">
+              <div class="planner-card-header"><span>Phase 2: Build &amp; QA</span></div>
+              <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <label class="custom-check"><input type="checkbox" id="p2_task1"> <input type="text" id="p2_txt1" placeholder="Core asset production"></label>
+                <label class="custom-check"><input type="checkbox" id="p2_task2"> <input type="text" id="p2_txt2" placeholder="Internal QA &amp; stress test"></label>
+                <label class="custom-check"><input type="checkbox" id="p2_task3"> <input type="text" id="p2_txt3" placeholder="Feedback remediation"></label>
+              </div>
+            </div>
+
+            <div class="planner-card" style="border-top: 4px solid var(--accent-rose);">
+              <div class="planner-card-header"><span>Phase 3: Launch</span></div>
+              <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <label class="custom-check"><input type="checkbox" id="p3_task1"> <input type="text" id="p3_txt1" placeholder="Distribution channels ready"></label>
+                <label class="custom-check"><input type="checkbox" id="p3_task2"> <input type="text" id="p3_txt2" placeholder="Launch announcement"></label>
+                <label class="custom-check"><input type="checkbox" id="p3_task3"> <input type="text" id="p3_txt3" placeholder="Post-launch retrospective"></label>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- SPREAD 13: Monthly Wellness & Self-Care Audit -->
+        <article class="spread-page" id="spread-13">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Monthly Wellness &amp; Self-Care Audit</h2>
+              <p>4-dimension wellness wheel with interactive score sliders and self-care menu</p>
+            </div>
+            <span class="spread-badge-num">Spread 13 of 16</span>
+          </div>
+
+          <div class="grid-2">
+            <!-- 4-Dimension Wellness Sliders -->
+            <div class="planner-card" style="background: #FFFFFF;">
+              <div class="planner-card-header"><span>4-Dimension Balance Wheel</span><span>🧭</span></div>
+              
+              <div style="margin-bottom: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700;">
+                  <span>Physical (Movement, Sleep, Nutrition)</span>
+                  <span id="score_phys_lbl">8/10</span>
+                </div>
+                <input type="range" id="wheel_phys" min="1" max="10" value="8" style="width: 100%; accent-color: var(--accent-sage);">
+              </div>
+
+              <div style="margin-bottom: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700;">
+                  <span>Emotional (Relationships, Peace, Joy)</span>
+                  <span id="score_emot_lbl">7/10</span>
+                </div>
+                <input type="range" id="wheel_emot" min="1" max="10" value="7" style="width: 100%; accent-color: var(--accent-rose);">
+              </div>
+
+              <div style="margin-bottom: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700;">
+                  <span>Mental (Curiosity, Growth, Boundaried Focus)</span>
+                  <span id="score_ment_lbl">9/10</span>
+                </div>
+                <input type="range" id="wheel_ment" min="1" max="10" value="9" style="width: 100%; accent-color: var(--primary-plum);">
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700;">
+                  <span>Spiritual (Purpose, Values Alignment, Gratitude)</span>
+                  <span id="score_spir_lbl">8/10</span>
+                </div>
+                <input type="range" id="wheel_spir" min="1" max="10" value="8" style="width: 100%; accent-color: var(--accent-sage);">
+              </div>
+            </div>
+
+            <!-- Self-Care Menu -->
+            <div class="planner-card">
+              <div class="planner-card-header"><span>Self-Care Ideas Menu</span><span>🌿</span></div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.6rem;">
+                <div><strong>15-Minute:</strong> Fresh air walk, herbal tea without phone, box breathing.</div>
+                <div><strong>30-Minute:</strong> Epsom salt bath, long journal brain-dump, yoga flow.</div>
+                <div><strong>Full Day:</strong> Nature escape, offline day with book, museum or art gallery visit.</div>
+                <textarea id="wellness_notes" rows="3" placeholder="My self-care non-negotiables for this month..."></textarea>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- SPREAD 14: Visual Bookshelf Tracker -->
+        <article class="spread-page" id="spread-14">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Book Log &amp; Professional Growth Tracker</h2>
+              <p>Visual 12-book shelf with interactive 5-star ratings and key takeaway notes</p>
+            </div>
+            <span class="spread-badge-num">Spread 14 of 16</span>
+          </div>
+
+          <div class="bookshelf-grid" id="bookshelfGrid">
+            <!-- 12 book cards rendered dynamically -->
+          </div>
+        </article>
+
+        <!-- SPREAD 16: Creative Brain Dump & Dot Grid Notes -->
+        <article class="spread-page" id="spread-16">
+          <div class="spread-header">
+            <div class="spread-title-group">
+              <h2>Ideas, Mind Maps &amp; 5mm Dot Grid Notes</h2>
+              <p>Unstructured creative thinking, meeting notes, project sketches, and brain dump</p>
+            </div>
+            <span class="spread-badge-num">Spread 16 of 16</span>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <input type="text" id="notes_subject" placeholder="Note Subject / Project Tag..." style="font-weight: 700; width: 60%;">
+            <input type="date" id="notes_date" style="width: 40%;">
+          </div>
+
+          <div class="dot-grid-canvas">
+            <textarea id="dot_notes_body" class="dot-grid-textarea" placeholder="Start typing your unstructured thoughts, sketches, ideas, and brainstorms here..."></textarea>
+          </div>
+        </article>
+
+      </section>
+
+    </div>
+
+    <!-- Side Tab Bar (Desktop GoodNotes-Style Navigation) -->
+    <aside class="side-tab-bar no-print">
+      <button class="side-tab active" data-tab="tab-index">
+        <span class="tab-icon">📖</span> <span>Index</span>
+      </button>
+      <button class="side-tab" data-tab="tab-vision">
+        <span class="tab-icon">🧭</span> <span>Vision</span>
+      </button>
+      <button class="side-tab" data-tab="tab-monthly">
+        <span class="tab-icon">📅</span> <span>Monthly</span>
+      </button>
+      <button class="side-tab" data-tab="tab-weekly">
+        <span class="tab-icon">🗓️</span> <span>Weekly</span>
+      </button>
+      <button class="side-tab" data-tab="tab-daily">
+        <span class="tab-icon">☀️</span> <span>Daily</span>
+      </button>
+      <button class="side-tab" data-tab="tab-habits">
+        <span class="tab-icon">🌱</span> <span>Habits</span>
+      </button>
+      <button class="side-tab" data-tab="tab-finances">
+        <span class="tab-icon">💳</span> <span>Finances</span>
+      </button>
+      <button class="side-tab" data-tab="tab-life">
+        <span class="tab-icon">🌿</span> <span>Life &amp; Notes</span>
+      </button>
+    </aside>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-nav-bar no-print">
+    <button class="mobile-tab-btn active" data-tab="tab-index">
+      <span class="tab-icon">📖</span> <span>Index</span>
+    </button>
+    <button class="mobile-tab-btn" data-tab="tab-daily">
+      <span class="tab-icon">☀️</span> <span>Daily</span>
+    </button>
+    <button class="mobile-tab-btn" data-tab="tab-weekly">
+      <span class="tab-icon">🗓️</span> <span>Week</span>
+    </button>
+    <button class="mobile-tab-btn" data-tab="tab-habits">
+      <span class="tab-icon">🌱</span> <span>Habits</span>
+    </button>
+    <button class="mobile-tab-btn" data-tab="tab-finances">
+      <span class="tab-icon">💳</span> <span>Money</span>
+    </button>
+    <button class="mobile-tab-btn" data-tab="tab-life">
+      <span class="tab-icon">🌿</span> <span>Life</span>
+    </button>
+  </nav>
+
+  <!-- AI COACH BRIEFING MODAL -->
+  <div id="aiCoachModal" class="coach-modal-overlay" style="display: none;">
+    <div class="coach-modal-card">
+      <div class="coach-modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.4rem;">👑</span>
+          <h3 style="font-family: var(--font-heading); color: var(--primary-plum); margin: 0; font-size: 1.15rem;">Morning Executive Coaching Briefing</h3>
+        </div>
+        <button class="coach-modal-close" id="btnCloseAiModal">&times;</button>
+      </div>
+      <div class="coach-modal-body" id="aiModalContent">
+        <div class="coach-loading" id="aiModalLoading" style="display: none; text-align: center; padding: 2rem;">
+          <div style="font-size: 2rem; margin-bottom: 0.75rem;">✨</div>
+          <p style="font-weight: 600; color: var(--primary-plum);">Synthesizing your optimal focus blueprint...</p>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Reviewing intention, priorities, and energy spectrum...</p>
+        </div>
+        <div id="aiModalResult"></div>
+      </div>
+      <div class="coach-modal-footer">
+        <span style="font-size: 0.82rem; color: var(--text-muted);">Deducted 10 GroCredits · Powered by Gemini · <a href="/my-portal" target="_blank" style="color: var(--primary-plum); text-decoration: underline; font-weight: 600;">Top Up in My Vault ↗</a></span>
+        <button class="btn-action btn-primary" id="btnDismissAiModal">Apply to My Day</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/planner/planner.js"></script>
+</body>
+</html>

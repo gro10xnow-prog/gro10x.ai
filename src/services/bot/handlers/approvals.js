@@ -108,8 +108,9 @@ async function handlePendingApprovals(teamBot, msg) {
   }
 
   // Add Portal Deep Link
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
   inlineKeyboard.push([
-    { text: '🌐 Open Web Admin Hub', url: 'https://gro10x-ai.vercel.app/app' }
+    { text: '🌐 Open Web Workspace', url: `${baseUrl}/workspace` }
   ]);
 
   teamBot.sendMessage(chatId, text, {

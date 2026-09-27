@@ -40,7 +40,7 @@ window.CREW_MODULES.leaves = async function(container) {
           <h1 style="font-size:1.5rem; font-weight:800; font-family:var(--font-heading); margin:0 0 0.3rem;">🌴 Leave Requests & PTO</h1>
           <div style="font-size:0.88rem; color:var(--text-muted);">Apply for leave and track review status.</div>
         </div>
-        <button class="btn-primary" onclick="window.CREW_LEAVES.openModal()">+ Apply for Leave</button>
+        <button id="crewApplyLeaveBtn" class="btn-primary" onclick="window.CREW_LEAVES.openModal()">+ Apply for Leave</button>
       </div>
 
       <!-- PTO Allowance Summary Cards -->

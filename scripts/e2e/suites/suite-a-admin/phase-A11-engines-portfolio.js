@@ -21,7 +21,7 @@ async function runPhaseA11(page) {
   // Ensure owner session is loaded
   await injectRoleSession(page, 'owner');
 
-  await tracker.runStep('A11.1', '5-Engine Growth Operations Cockpit (#engines)', async () => {
+  await tracker.runStep('A11.1', '5-Engine Growth Operations Cockpit & Engine 2 Autonomous Pods (#engines)', async () => {
     await page.goto(APP_URL + '#engines', { waitUntil: 'networkidle2' });
     await wait(1200);
 
@@ -41,20 +41,78 @@ async function runPhaseA11(page) {
       '5-Engine Growth Cockpit must display ARR run rate and performance metrics'
     );
 
-    // Test revenue logging modal via prompt mock
+    // Assert Engine 2 Autonomous Delivery Pods
+    tracker.assert(
+      content.includes('MVP Rapid Delivery Pod') &&
+      content.includes('Enterprise Automation Pod') &&
+      content.includes('Programmatic Creative AI Pod'),
+      'Engine 2 must render all 3 Autonomous Delivery Pods (MVP, Enterprise, Creative)'
+    );
+
+    // Assert Retainer Hours Banking & Margin Guardrail
+    tracker.assert(
+      content.includes('Monthly Retainer Banking') &&
+      (content.includes('GROSS MARGIN') || content.includes('Gross Margin')),
+      'Engine 2 must render Monthly Retainer Banking and Gross Margin telemetry'
+    );
+
+    // Assert Subcontractor Scoped Gateway (Confidentiality Shield)
+    tracker.assert(
+      content.includes('Subcontractor Scoped Gateway') || content.includes('Financial Confidentiality Shield'),
+      'Engine 2 must render Subcontractor Confidentiality Shield'
+    );
+
+    // Test COGS Modal Lifecycle
     await page.evaluate(() => {
-      let callCount = 0;
-      window.prompt = () => {
-        callCount++;
-        if (callCount === 1) return '1'; // Engine 1: Micro-SaaS
-        return '500'; // $500 USD
-      };
+      window.EnginesModule.openCOGSModal('proj-purplebot-01');
     });
+    await wait(400);
+
+    const isCogsModalOpen = await page.evaluate(() => {
+      const m = document.getElementById('enginesCOGSModal');
+      return m && m.style.display !== 'none';
+    });
+    tracker.assert(isCogsModalOpen, '#enginesCOGSModal must open upon openCOGSModal() call');
+
+    // Close COGS Modal
+    await page.evaluate(() => {
+      window.EnginesModule.closeModals();
+    });
+    await wait(300);
+
+    // Test Retainer Hours Modal Lifecycle
+    await page.evaluate(() => {
+      window.EnginesModule.openLogRetainerModal('proj-purplebot-01');
+    });
+    await wait(400);
+
+    const isRetainerModalOpen = await page.evaluate(() => {
+      const m = document.getElementById('enginesLogRetainerModal');
+      return m && m.style.display !== 'none';
+    });
+    tracker.assert(isRetainerModalOpen, '#enginesLogRetainerModal must open upon openLogRetainerModal() call');
 
     await page.evaluate(() => {
-      window.EnginesModule.openLogRevenueModal();
+      window.EnginesModule.closeModals();
     });
-    await wait(500);
+    await wait(300);
+
+    // Test Contractor Pass Modal Lifecycle
+    await page.evaluate(() => {
+      window.EnginesModule.openContractorPassModal('proj-purplebot-01');
+    });
+    await wait(400);
+
+    const isPassModalOpen = await page.evaluate(() => {
+      const m = document.getElementById('enginesContractorPassModal');
+      return m && m.style.display !== 'none';
+    });
+    tracker.assert(isPassModalOpen, '#enginesContractorPassModal must open upon openContractorPassModal() call');
+
+    await page.evaluate(() => {
+      window.EnginesModule.closeModals();
+    });
+    await wait(300);
 
     await tracker.screenshot(page, 'A11.1_engines_cockpit.png');
   });
@@ -233,7 +291,10 @@ async function runPhaseA11(page) {
       return items.map(el => el.getAttribute('href'));
     });
 
-    const allPresent = ALL_ADMIN_ROUTES.every(route => sidebarHrefs.includes(route));
+    const allPresent = ALL_ADMIN_ROUTES.every(route => {
+      if (route === '#digistore') return sidebarHrefs.includes('#digistore') || sidebarHrefs.includes('/dce');
+      return sidebarHrefs.includes(route);
+    });
     tracker.assert(allPresent, `All 22 Admin OS tabs are present in sidebar navigation (${sidebarHrefs.length} total)`);
   });
 

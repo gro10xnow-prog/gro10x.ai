@@ -69,6 +69,19 @@ const proposalsRoutes = require('./proposals');
 const digistoreRoutes = require('./digistore');
 const digivaultWebhookRoutes = require('./digivault-webhook');
 const socialBrandsRoutes = require('./socialBrands');
+const dceRoutes = require('./dce-catalog');
+const dceOrdersRoutes = require('./dce-orders');
+const dceWebhooksRoutes = require('./dce-webhooks');
+const dceFulfillmentRoutes = require('./dce-fulfillment');
+const dceHelpdeskRoutes = require('./dce-helpdesk');
+const dceSettlementsRoutes = require('./dce-settlements');
+const dcePromotionsRoutes = require('./dce-promotions');
+const dceAffiliatesRoutes = require('./dce-affiliates');
+const affiliatesRoutes = require('./affiliates');
+const portalRoutes = require('./portal');
+const trafficRoutes = require('./traffic');
+const catalogRoutes = require('./catalog');
+const webhooksRoutes = require('./webhooks');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -186,10 +199,20 @@ router.use('/proposals', proposalsRoutes);
 router.use('/digistore', digistoreRoutes);
 router.use('/digivault-webhook', digivaultWebhookRoutes);
 router.use('/social-brands', socialBrandsRoutes);
-router.use('/public/proposals', (req, res, next) => {
-  req.url = '/public' + req.url;
-  proposalsRoutes(req, res, next);
-});
+router.use('/dce/orders', dceOrdersRoutes);
+router.use('/dce/webhooks', dceWebhooksRoutes);
+router.use('/dce/fulfillment', dceFulfillmentRoutes);
+router.use('/dce/helpdesk', dceHelpdeskRoutes);
+router.use('/dce/settlements', dceSettlementsRoutes);
+router.use('/dce/promotions', dcePromotionsRoutes);
+router.use('/dce/affiliates', dceAffiliatesRoutes);
+router.use('/affiliates', affiliatesRoutes);
+router.use('/dce', dceRoutes);
+router.use('/portal', portalRoutes);
+router.use('/traffic', trafficRoutes);
+router.use('/catalog', catalogRoutes);
+router.use('/public/proposals', proposalsRoutes);
+router.use('/webhooks', webhooksRoutes);
 
 // Public Client Phone Check (used by chat widget — rate-limited & safe)
 router.get('/public/client-check', asyncHandler(async (req, res) => {
@@ -218,6 +241,13 @@ router.get('/services', asyncHandler(async (req, res) => {
     } catch (err) {}
   }
   return ok(res, DEFAULT_SERVICES);
+}));
+
+// Public / Client Testimonials Showcase Endpoint
+router.get('/testimonials', asyncHandler(async (req, res) => {
+  const { getPublicTestimonials } = require('../services/post-delivery');
+  const testimonials = await getPublicTestimonials();
+  return res.json(testimonials);
 }));
 
 // Full DB State Snapshot (Admin only)

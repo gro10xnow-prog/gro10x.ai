@@ -181,14 +181,87 @@ router.post('/:id/verify', requireAuth, requireManager, async (req, res) => {
       if (retry.error) console.warn('[Payments API] Supabase update note:', retry.error.message);
     }
 
-    // Mark invoice as Paid
+    // Mark invoice as Paid in both memory and Supabase
     const receiptId = `REC-${(log.invoice_id || '2026-001').replace('INV-', '')}`;
+    let invoiceRecord = null;
     if (log.invoice_id) {
-      await supabase.from('invoices').update({
-        status: 'Paid',
-        paid_date: new Date().toISOString().split('T')[0],
-        notes: `Verified ${log.payment_method || 'Corporate Bank Wire'} Payment (Ref: ${log.trx_id}) by ${verifiedBy} | Receipt: ${receiptId}`
-      }).eq('id', log.invoice_id);
+      const { inMemoryInvoices } = require('./invoices');
+      const memIdx = inMemoryInvoices.findIndex(i => i.id === log.invoice_id);
+      const paidDate = new Date().toISOString().split('T')[0];
+      const noteStr = `Verified ${log.payment_method || 'Corporate Bank Wire'} Payment (Ref: ${log.trx_id}) by ${verifiedBy} | Receipt: ${receiptId} [Rail: BRAC Bank Limited]`;
+
+      if (memIdx !== -1) {
+        inMemoryInvoices[memIdx] = {
+          ...inMemoryInvoices[memIdx],
+          status: 'Paid',
+          paid_date: paidDate,
+          paidDate,
+          paid_at: new Date().toISOString(),
+          notes: noteStr
+        };
+        invoiceRecord = inMemoryInvoices[memIdx];
+      }
+
+      if (isSupabaseConfigured()) {
+        try {
+          const { data: dbData } = await supabase.from('invoices').update({
+            status: 'Paid',
+            paid_date: paidDate,
+            notes: noteStr,
+            updated_at: new Date().toISOString()
+          }).eq('id', log.invoice_id).select();
+
+          if (dbData && dbData[0]) {
+            invoiceRecord = { ...(invoiceRecord || {}), ...dbData[0] };
+            if (memIdx !== -1) inMemoryInvoices[memIdx] = invoiceRecord;
+          }
+        } catch (_) {}
+      }
+
+      // Partner & Affiliate Commission Accrual on Verified Paid Invoices
+      try {
+        const pRef = invoiceRecord?.projectRef || invoiceRecord?.project_ref;
+        const { findProject } = require('../services/post-delivery');
+        let linkedProject = pRef ? await findProject(pRef) : null;
+        let linkedProposal = null;
+        if (pRef) {
+          try {
+            const { inMemoryProposals } = require('./proposals');
+            if (Array.isArray(inMemoryProposals)) linkedProposal = inMemoryProposals.find(p => p.id === pRef);
+          } catch (_) {}
+        }
+        const affRef = invoiceRecord?.affiliateId || invoiceRecord?.refCode || invoiceRecord?.affiliate_id || invoiceRecord?.ref_code ||
+                       linkedProject?.affiliateId || linkedProject?.affiliate_id ||
+                       linkedProposal?.affiliate_id || linkedProposal?.affiliateId;
+        if (affRef) {
+          const { creditAffiliateCommission } = require('./affiliates');
+          const invType = (invoiceRecord?.invoiceType || invoiceRecord?.invoice_type || '').toLowerCase();
+          const isRetainer = invType.includes('retainer') || (invoiceRecord?.projectName && invoiceRecord.projectName.toLowerCase().includes('retainer'));
+          const baseAmount = Number(invoiceRecord?.subtotal != null ? invoiceRecord.subtotal : (invoiceRecord?.amount || log.amount || 0));
+          await creditAffiliateCommission(affRef, {
+            amount: baseAmount,
+            invoiceId: log.invoice_id,
+            projectId: pRef,
+            projectName: invoiceRecord?.projectName || linkedProject?.name || linkedProposal?.project_title || 'Client Project',
+            dealType: isRetainer ? 'monthly_retainer_recurring' : 'sprint_closed'
+          });
+        }
+      } catch (retAffErr) {
+        console.warn('[Payments Verify Affiliate Note]:', retAffErr.message);
+      }
+
+      // Emit canonical stakeholder event
+      try {
+        const { emitStakeholderEvent } = require('../services/stakeholder-events');
+        await emitStakeholderEvent('invoice.paid', {
+          invoice: invoiceRecord || { id: log.invoice_id, amount: log.amount },
+          paymentLog: log,
+          receiptId
+        }, {
+          stakeholderId: log.client_id,
+          stakeholderType: 'client'
+        });
+      } catch (_) {}
     }
 
     broadcast('payment_update', [{ id, verified: true, receiptId }]);

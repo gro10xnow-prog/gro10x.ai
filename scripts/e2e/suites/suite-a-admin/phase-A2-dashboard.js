@@ -93,7 +93,8 @@ async function runPhaseA2(page) {
         window.SOCIAL_MODULE.switchView('content_os');
       }
     });
-    await wait(500);
+    await page.waitForFunction(() => document.getElementById('inpBrandMonthlyThesis') !== null, { timeout: 8000 }).catch(() => {});
+    await wait(300);
 
     const testThesis = 'Q3 AI Automation & Enterprise Scale Protocol';
 
@@ -139,11 +140,15 @@ async function runPhaseA2(page) {
         window.SOCIAL_MODULE.openPostModal('grow-bangla');
       }
     });
-    await wait(500);
+    await page.waitForFunction(() => {
+      const m = document.getElementById('postModal');
+      return m && (m.classList.contains('active') || m.style.display === 'flex');
+    }, { timeout: 8000 }).catch(() => {});
+    await wait(300);
 
     const isModalActive = await page.evaluate(() => {
       const m = document.getElementById('postModal');
-      return m ? m.classList.contains('active') : false;
+      return m ? (m.classList.contains('active') || m.style.display === 'flex') : false;
     });
     tracker.assert(isModalActive, '#postModal must have .active class when opened');
 

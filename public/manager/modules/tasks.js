@@ -14,7 +14,8 @@ window.MANAGER_MODULES.tasks = async function(container) {
   let searchQuery = '';
 
   async function loadTasks() {
-    allTasks = await MANAGER_API.get('/tasks').catch(() => []);
+    const res = await MANAGER_API.get('/tasks').catch(() => []);
+    allTasks = Array.isArray(res) ? res : (res?.tasks || res?.data || []);
     render();
   }
 
@@ -68,10 +69,10 @@ window.MANAGER_MODULES.tasks = async function(container) {
 
       <!-- Filter Pills -->
       <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; overflow-x:auto; padding-bottom:0.25rem;">
-        <button class="filter-pill ${currentFilter === 'all' ? 'active' : ''}" onclick="window.MGR_TASKS.setFilter('all')">
+        <button id="mgrTaskFilterAll" class="filter-pill ${currentFilter === 'all' ? 'active' : ''}" onclick="window.MGR_TASKS.setFilter('all')">
           All Tasks (${allTasks.length})
         </button>
-        <button class="filter-pill ${currentFilter === 'active' ? 'active' : ''}" onclick="window.MGR_TASKS.setFilter('active')">
+        <button id="mgrTaskFilterActive" class="filter-pill ${currentFilter === 'active' ? 'active' : ''}" onclick="window.MGR_TASKS.setFilter('active')">
           ⚡ Active Pipeline (${activeCount})
         </button>
         <button class="filter-pill ${currentFilter === 'review' ? 'active' : ''}" onclick="window.MGR_TASKS.setFilter('review')">

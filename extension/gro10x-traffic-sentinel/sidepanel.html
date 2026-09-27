@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X Traffic Sentinel</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="sentinel-app">
+    <!-- APP HEADER -->
+    <header class="app-header">
+      <div class="brand-row">
+        <div class="logo-icon">🚦</div>
+        <div>
+          <h1 class="logo-title">Traffic Sentinel</h1>
+          <span class="logo-subtitle">FB Group → Gemini → Telegram</span>
+        </div>
+      </div>
+      <div class="tab-badge" id="activeDomainBadge">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="domain-text" id="statusText">Checking...</span>
+      </div>
+    </header>
+
+    <!-- NAVIGATION TABS (Like VEO3 Style) -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="control">Control</button>
+      <button class="nav-tab" data-tab="alerts">Alerts (<span id="alertsCountBadge">0</span>)</button>
+      <button class="nav-tab" data-tab="settings">Settings</button>
+      <button class="nav-tab" data-tab="logs">Logs</button>
+    </nav>
+
+    <!-- CHRONOLOGICAL WARNING BANNER -->
+    <div class="alert-banner" id="chronologicalBanner" style="display:none;">
+      <div class="banner-content">
+        <span class="banner-icon">⚠️</span>
+        <div class="banner-text">
+          <b>Notice:</b> Group is showing "Top Posts". Switch to <b>"New Posts"</b> to get live reports.
+        </div>
+      </div>
+      <button class="btn-banner-action" id="btnFixSorting">Fix URL Now</button>
+    </div>
+
+    <!-- TAB 1: CONTROL PANEL -->
+    <div class="tab-pane active" id="pane-control">
+      <!-- MASTER TOGGLE CARD -->
+      <section class="control-card">
+        <div class="card-left">
+          <div class="control-title">Live Feed Monitoring</div>
+          <div class="control-subtext" id="toggleSubtext">Captures new posts as they appear</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="chkMonitoring">
+          <span class="slider round"></span>
+        </label>
+      </section>
+
+      <!-- KPI STRIP -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiSeenCount">0</div>
+          <div class="kpi-label">Scanned Posts</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiAlertsCount">0</div>
+          <div class="kpi-label">Dispatched Alerts</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiFilteredCount">0</div>
+          <div class="kpi-label">AI Filtered</div>
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="actions-grid">
+        <button class="btn-primary-action" id="btnScanNow">
+          <span>⚡ Scan Feed Now</span>
+        </button>
+        <button class="btn-secondary-action" id="btnTestPing" title="Send immediate test message to Telegram">
+          <span>🔔 Test Bot Ping</span>
+        </button>
+        <button class="btn-secondary-action" id="btnTestAlert" title="Run a real sample traffic report through Gemini AI to Telegram">
+          <span>🧪 Test Sample Alert</span>
+        </button>
+        <button class="btn-secondary-action" id="btnClearCache" title="Clear seen posts so current visible posts are re-scanned">
+          <span>🗑️ Reset Memory</span>
+        </button>
+      </div>
+
+      <!-- CURRENT / LAST CAPTURED POST -->
+      <section class="section-card">
+        <div class="section-header">
+          <span class="section-title">📡 Latest Captured Post</span>
+          <span class="section-tag" id="lastCapturedTag">Idle</span>
+        </div>
+        <div class="preview-box" id="previewBox">
+          <div class="empty-preview" id="emptyPreview">
+            No posts captured yet. Make sure monitoring is ON and you're on a Facebook traffic group tab.
+          </div>
+          <div class="post-card-body" id="postPreview" style="display:none;">
+            <div class="post-card-meta">
+              <span class="post-author" id="prevAuthor">Author</span>
+              <span class="post-time" id="prevTime">Just now</span>
+            </div>
+            <div class="post-snippet" id="prevText">Content snippet...</div>
+            <div class="post-ai-summary" id="prevAiSummary" style="display:none;">
+              <b>💡 Gemini:</b> <span id="prevAiSummaryText"></span>
+            </div>
+            <div class="post-card-footer">
+              <span class="badge-status" id="prevStatus">Sent to Telegram</span>
+              <div class="card-footer-links">
+                <button class="btn-card-copy" id="btnCopySinglePost" title="Copy this post">📋 Copy</button>
+                <a href="#" target="_blank" class="link-fb" id="prevLink">View on Facebook ↗</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIVE ACTIVITY STREAM (PROMINENT ON MAIN CONTROL TAB) -->
+      <section class="section-card">
+        <div class="section-header">
+          <div class="header-with-beacon">
+            <span class="pulse-beacon" id="beaconDot"></span>
+            <span class="section-title">📟 Live Activity Stream</span>
+          </div>
+          <div class="logs-header-actions">
+            <span class="activity-ticker" id="activityTicker">Watching feed...</span>
+            <button class="btn-text-action" id="btnClearLogsControl">Clear</button>
+          </div>
+        </div>
+        <div class="logs-console control-logs-console" id="logsConsoleControl">
+          <div class="empty-logs">Connecting to live feed stream...</div>
+        </div>
+      </section>
+
+      <!-- COPY DIAGNOSTIC REPORT BUTTON -->
+      <button class="btn-report-action" id="btnCopyReport" title="Copy full status and logs to clipboard to share in chat">
+        📋 Copy Diagnostic Report to Clipboard
+      </button>
+    </div>
+
+    <!-- TAB 2: RECENT ALERTS STREAM -->
+    <div class="tab-pane" id="pane-alerts">
+      <div class="alerts-header">
+        <span class="alerts-title">Session Alert Feed</span>
+        <button class="btn-text-action" id="btnClearAlerts">Clear All</button>
+      </div>
+      <div class="alerts-stream" id="alertsStream">
+        <div class="empty-alerts" id="emptyAlertsMsg">No alerts captured in this session yet.</div>
+      </div>
+    </div>
+
+    <!-- TAB 3: SETTINGS -->
+    <div class="tab-pane" id="pane-settings">
+      <section class="settings-card">
+        <h3 class="settings-title">⚙️ Backend &amp; Telegram Setup</h3>
+
+        <div class="form-group">
+          <label class="form-label">Backend API Route</label>
+          <input type="text" id="txtApiUrl" class="form-input" placeholder="http://localhost:3000/api/traffic">
+          <span class="input-hint">Local: <code>http://localhost:3000/api/traffic</code> | Vercel: <code>https://your-domain.vercel.app/api/traffic</code></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">API Secret Key (x-api-key)</label>
+          <input type="password" id="txtApiKey" class="form-input" placeholder="Enter API secret key">
+          <span class="input-hint">Must match <code>API_SECRET_KEY</code> in server <code>.env</code></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Target Telegram Chat ID</label>
+          <input type="text" id="txtChatId" class="form-input" placeholder="e.g. 7754769807 or channel ID">
+          <span class="input-hint">Pre-configured to your Telegram ID (Firoz)</span>
+        </div>
+
+        <button class="btn-save" id="btnSaveSettings">Save All Settings</button>
+      </section>
+
+      <section class="settings-card info-card">
+        <h3 class="settings-title">🤖 Active Bot</h3>
+        <div class="bot-info-row">
+          <span class="bot-label">Bot Username:</span>
+          <a href="https://t.me/jonosarthebangladeshbot" target="_blank" class="bot-link">@jonosarthebangladeshbot</a>
+        </div>
+        <div class="bot-info-row">
+          <span class="bot-label">Facebook Group:</span>
+          <a href="https://www.facebook.com/groups/608459192604436/?sorting_setting=CHRONOLOGICAL" target="_blank" class="bot-link">Traffic Alert BD (608459192604436)</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 4: LIVE LOGS -->
+    <div class="tab-pane" id="pane-logs">
+      <div class="logs-header">
+        <span class="logs-title">System Activity Log</span>
+        <div class="logs-header-actions">
+          <button class="btn-text-action" id="btnCopyLogs">📋 Copy Logs</button>
+          <button class="btn-text-action" id="btnClearLogs">Clear</button>
+        </div>
+      </div>
+      <div class="logs-console" id="logsConsole">
+        <div class="log-entry info"><span class="log-time">[00:00:00]</span> Traffic Sentinel initialized.</div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <span>GRO10X Traffic Sentinel v1.5.0 • Multi-Engine AI Ecosystem</span>
+    </footer>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

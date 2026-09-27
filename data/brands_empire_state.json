@@ -106,7 +106,7 @@
       "actualGross": 0,
       "productsLive": 13,
       "productsTarget": 100,
-      "totalListingFeesCharged": 483.6
+      "totalListingFeesCharged": 571.2
     },
     {
       "id": 2,
@@ -1189,11 +1189,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL BRIEF\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenCo | Niche: Productivity & Life Planning\nProduct: Daily & Weekly Planners #1 — PlannerQueenCo Style\nBrand Colors: Primary #8B5A7A, Background #FAF3E8, Secondary #7D9B76, Highlight #C4887C, Dark #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist botanical luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD LIFESTYLE (MAIN ETSY THUMBNAIL) (Primary Listing Hero)\nScene Description: Professional studio flat-lay photography of an iPad Pro in portrait orientation displaying the aesthetic digital cover of \"Daily & Weekly Planners #1 — PlannerQueenCo Style\" by PlannerQueenCo. Resting on a luxurious warm cream (#FAF3E8) desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed, clean editorial look.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #2 — FLAT LAY COVER & CLEAN AESTHETICS (Cover Showcase)\nScene Description: Overhead top-down camera angle of \"Daily & Weekly Planners #1 — PlannerQueenCo Style\" digital cover printed on luxury textured matte paper or displayed on a tablet. Bordered with aesthetic lifestyle items in brand colors (#8B5A7A, #7D9B76), soft linen napkin, and neutral ceramic mug. Clean white space, crisp typography in Playfair Display + Lato.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #3 — DAILY SCHEDULE PAGE CLOSE-UP WITH PEN (Feature Deep-Dive)\nScene Description: Macro angle angled view of the Daily Focused Execution page from \"Daily & Weekly Planners #1 — PlannerQueenCo Style\". A gold pen rests across the 6:00 AM – 9:00 PM hourly schedule box. Clear readable section headers: \"Top Priorities\", \"Eisenhower Matrix\", \"Water Intake\". Soft depth of field, bright warm daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #4 — WEEKLY MASTER SPREAD OPEN ON DESK (Spread View)\nScene Description: Two-page open spread of the Weekly Master Plan from \"Daily & Weekly Planners #1 — PlannerQueenCo Style\" lying flat on a modern scandinavian oak desk. Coffee cup with latte art in background, reading glasses, pastel highlighter. Clean vertical columns from Monday to Sunday clearly visible.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #5 — 30-DAY HABIT MATRIX IN ACTIVE USE (Gamification & Results)\nScene Description: High-resolution perspective shot focusing on the 30-Day Habit Matrix page. Several circular check-bubbles are neatly filled in with soft pastel ink (#7D9B76), displaying a satisfying streak. Inspiring, motivating, aesthetic productivity aesthetic.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #6 — HANDS-IN-FRAME WRITING LIFESTYLE SHOT (Human Connection & Scale)\nScene Description: First-person point-of-view photo of a well-manicured female hand holding an elegant fine-tip pen, actively writing notes into the \"Daily & Weekly Planners #1 — PlannerQueenCo Style\" planner. Soft knit sweater sleeve, cozy warm morning ambience, diffused window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #7 — 10-PAGES FANNED-OUT BUNDLE SHOWCASE (Value & Scope Showcase)\nScene Description: All core pages of \"Daily & Weekly Planners #1 — PlannerQueenCo Style\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet all together. Badge banner overlay style: \"Complete 10-Spread Productivity System\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #8 — 90-DAY VISION & FINANCIAL SPREAD (Transformation & Goals)\nScene Description: Clean angled shot of the 90-Day Goal Roadmap and Monthly Cash Flow pages side by side. Professional planner setup with minimal gold paperclips, clean calculator, and motivational quote card. High aspiration value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #9 — FULL AESTHETIC DESK AERIAL LIFESTYLE (Aspirational Lifestyle)\nScene Description: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A and #FAF3E8.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #10 — INSTANT DOWNLOAD & DEVICE COMPATIBILITY (Etsy Purchase Reassurance)\nScene Description: Clean split-screen graphic displaying a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all showing the matching \"Daily & Weekly Planners #1 — PlannerQueenCo Style\" layout. Prominent aesthetic text badge: \"Instant Digital Download · GoodNotes · Notability · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette (#8B5A7A, #FAF3E8) across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
-        "updatedAt": "2026-09-07T11:16:19.020Z",
-        "approvedAt": "2026-09-07T11:16:18.430Z",
-        "approvedBy": "GRO-TEST",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2026-12-23T23:19:02.272Z",
+        "updatedAt": "2026-09-20T21:45:34.217Z",
+        "approvedAt": "2026-09-20T21:45:33.838Z",
+        "approvedBy": "GRO-015",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-01/mockups/1787698746294_1_Habit_matrix_streak_in_use_202608251805.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wMS9tb2NrdXBzLzE3ODc2OTg3NDYyOTRfMV9IYWJpdF9tYXRyaXhfc3RyZWFrX2luX3VzZV8yMDI2MDgyNTE4MDUuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc2OTg3NDcsImV4cCI6MTc4ODMwMzU0N30.8rT4cOk6B07XKAtjtEa1B34Nm2cN4v-KKFAGEH0fVaQ",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-01/mockups/1787698753933_2_Overhead_view_of_desk_workspace_202608251805.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wMS9tb2NrdXBzLzE3ODc2OTg3NTM5MzNfMl9PdmVyaGVhZF92aWV3X29mX2Rlc2tfd29ya3NwYWNlXzIwMjYwODI1MTgwNS5qcGVnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4NzY5ODc1NSwiZXhwIjoxNzg4MzAzNTU1fQ.fcQmfCvUUUX_vRSVk5AP7Wc4KBIj2TAocU6gRVeNslw",
@@ -1207,18 +1207,18 @@
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-01/mockups/1787698831852_10_Weekly_master_spread_on_desk_202608251805.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wMS9tb2NrdXBzLzE3ODc2OTg4MzE4NTJfMTBfV2Vla2x5X21hc3Rlcl9zcHJlYWRfb25fZGVza18yMDI2MDgyNTE4MDUuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc2OTg4MzIsImV4cCI6MTc4ODMwMzYzMn0.DNJjna6NARDnIoP5g8Wp5ZwiLUR1czNwqxgI1ApM4pE"
         ],
         "retailPrice": 7.49,
-        "submittedAt": "2026-09-07T11:15:40.016Z",
+        "submittedAt": "2026-09-20T21:45:22.259Z",
         "submittedBy": "Digital Brand Manager",
         "mockupsCount": 10,
         "etsyListingId": 4562683744,
-        "studioPercent": 100,
+        "studioPercent": 80,
         "liveListingUrl": "https://www.etsy.com/listing/4562683744/daily-and-weekly-planners-1",
         "seoDescription": "✨ Welcome to PlannerQueenCo — Productivity & Life Planning\n\nUpgrade your routine with the **Daily & Weekly Planners #1 — PlannerQueenCo Style**.\n\n📦 WHAT IS INCLUDED:\n• High-resolution interactive PDF / Assets\n• Easy setup guide & tutorial links\n• Commercial & personal use flexibility\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your files from Etsy Purchases.\n3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n💌 Need help or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 7.49,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "adminRevisionNote": "Please enhance the cover slide lighting.",
         "listingFeeCharged": 0.2,
-        "revisionRequestedAt": "2026-09-07T11:15:59.256Z"
+        "revisionRequestedAt": "2026-09-20T21:45:29.737Z"
       },
       {
         "seo": {
@@ -1705,11 +1705,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL BRIEF\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenCo | Niche: Productivity & Life Planning\nProduct: Daily & Weekly Planners #2 — PlannerQueenCo Style\nBrand Colors: Primary #8B5A7A, Background #FAF3E8, Secondary #7D9B76, Highlight #C4887C, Dark #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist botanical luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD LIFESTYLE (MAIN ETSY THUMBNAIL) (Primary Listing Hero)\nScene Description: Professional studio flat-lay photography of an iPad Pro in portrait orientation displaying the aesthetic digital cover of \"Daily & Weekly Planners #2 — PlannerQueenCo Style\" by PlannerQueenCo. Resting on a luxurious warm cream (#FAF3E8) desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed, clean editorial look.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #2 — FLAT LAY COVER & CLEAN AESTHETICS (Cover Showcase)\nScene Description: Overhead top-down camera angle of \"Daily & Weekly Planners #2 — PlannerQueenCo Style\" digital cover printed on luxury textured matte paper or displayed on a tablet. Bordered with aesthetic lifestyle items in brand colors (#8B5A7A, #7D9B76), soft linen napkin, and neutral ceramic mug. Clean white space, crisp typography in Playfair Display + Lato.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #3 — DAILY SCHEDULE PAGE CLOSE-UP WITH PEN (Feature Deep-Dive)\nScene Description: Macro angle angled view of the Daily Focused Execution page from \"Daily & Weekly Planners #2 — PlannerQueenCo Style\". A gold pen rests across the 6:00 AM – 9:00 PM hourly schedule box. Clear readable section headers: \"Top Priorities\", \"Eisenhower Matrix\", \"Water Intake\". Soft depth of field, bright warm daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #4 — WEEKLY MASTER SPREAD OPEN ON DESK (Spread View)\nScene Description: Two-page open spread of the Weekly Master Plan from \"Daily & Weekly Planners #2 — PlannerQueenCo Style\" lying flat on a modern scandinavian oak desk. Coffee cup with latte art in background, reading glasses, pastel highlighter. Clean vertical columns from Monday to Sunday clearly visible.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #5 — 30-DAY HABIT MATRIX IN ACTIVE USE (Gamification & Results)\nScene Description: High-resolution perspective shot focusing on the 30-Day Habit Matrix page. Several circular check-bubbles are neatly filled in with soft pastel ink (#7D9B76), displaying a satisfying streak. Inspiring, motivating, aesthetic productivity aesthetic.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #6 — HANDS-IN-FRAME WRITING LIFESTYLE SHOT (Human Connection & Scale)\nScene Description: First-person point-of-view photo of a well-manicured female hand holding an elegant fine-tip pen, actively writing notes into the \"Daily & Weekly Planners #2 — PlannerQueenCo Style\" planner. Soft knit sweater sleeve, cozy warm morning ambience, diffused window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #7 — 10-PAGES FANNED-OUT BUNDLE SHOWCASE (Value & Scope Showcase)\nScene Description: All core pages of \"Daily & Weekly Planners #2 — PlannerQueenCo Style\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet all together. Badge banner overlay style: \"Complete 10-Spread Productivity System\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #8 — 90-DAY VISION & FINANCIAL SPREAD (Transformation & Goals)\nScene Description: Clean angled shot of the 90-Day Goal Roadmap and Monthly Cash Flow pages side by side. Professional planner setup with minimal gold paperclips, clean calculator, and motivational quote card. High aspiration value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #9 — FULL AESTHETIC DESK AERIAL LIFESTYLE (Aspirational Lifestyle)\nScene Description: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A and #FAF3E8.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #10 — INSTANT DOWNLOAD & DEVICE COMPATIBILITY (Etsy Purchase Reassurance)\nScene Description: Clean split-screen graphic displaying a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all showing the matching \"Daily & Weekly Planners #2 — PlannerQueenCo Style\" layout. Prominent aesthetic text badge: \"Instant Digital Download · GoodNotes · Notability · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette (#8B5A7A, #FAF3E8) across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-26T09:27:25.116Z",
         "approvedAt": "2026-08-27T12:41:05.473Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-02/mockups/1787730558871_1_Binder_showing_financial_goals_m____202608261347.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wMi9tb2NrdXBzLzE3ODc3MzA1NTg4NzFfMV9CaW5kZXJfc2hvd2luZ19maW5hbmNpYWxfZ29hbHNfbV9fX18yMDI2MDgyNjEzNDcuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc3MzA1NjAsImV4cCI6MTc4ODMzNTM2MH0.YbkGQ1xDwZ90sxYuJkPViVRQsScLHFGJGcdu2URzDnc",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-02/mockups/1787730567005_2_Comparing_A4_and_Letter_planners_202608261347.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wMi9tb2NrdXBzLzE3ODc3MzA1NjcwMDVfMl9Db21wYXJpbmdfQTRfYW5kX0xldHRlcl9wbGFubmVyc18yMDI2MDgyNjEzNDcuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc3MzA1NjcsImV4cCI6MTc4ODMzNTM2N30.iebbrGWGpS2lx2WnjkSkZpfuZXdxCOVpIR462vR9qeU",
@@ -1731,7 +1731,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4562903974/daily-and-weekly-planners-2",
         "seoDescription": "✨ Welcome to PlannerQueenCo — Productivity & Life Planning\n\nUpgrade your routine with the **Daily & Weekly Planners #2 — PlannerQueenCo Style**.\n\n📦 WHAT IS INCLUDED:\n• High-resolution interactive PDF / Assets\n• Easy setup guide & tutorial links\n• Commercial & personal use flexibility\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your files from Etsy Purchases.\n3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n💌 Need help or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 9.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -2212,11 +2212,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL BRIEF\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenCo | Niche: Productivity & Life Planning\nProduct: ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\nBrand Colors: Primary #8B5A7A, Background #FAF3E8, Secondary #7D9B76, Highlight #C4887C, Dark #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist botanical luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD LIFESTYLE (MAIN ETSY THUMBNAIL) (Primary Listing Hero)\nScene Description: Professional studio flat-lay photography of an iPad Pro in portrait orientation displaying the aesthetic digital cover of \"ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\" by PlannerQueenCo. Resting on a luxurious warm cream (#FAF3E8) desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed, clean editorial look.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #2 — FLAT LAY COVER & CLEAN AESTHETICS (Cover Showcase)\nScene Description: Overhead top-down camera angle of \"ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\" digital cover printed on luxury textured matte paper or displayed on a tablet. Bordered with aesthetic lifestyle items in brand colors (#8B5A7A, #7D9B76), soft linen napkin, and neutral ceramic mug. Clean white space, crisp typography in Playfair Display + Lato.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #3 — DAILY SCHEDULE PAGE CLOSE-UP WITH PEN (Feature Deep-Dive)\nScene Description: Macro angle angled view of the Daily Focused Execution page from \"ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\". A gold pen rests across the 6:00 AM – 9:00 PM hourly schedule box. Clear readable section headers: \"Top Priorities\", \"Eisenhower Matrix\", \"Water Intake\". Soft depth of field, bright warm daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #4 — WEEKLY MASTER SPREAD OPEN ON DESK (Spread View)\nScene Description: Two-page open spread of the Weekly Master Plan from \"ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\" lying flat on a modern scandinavian oak desk. Coffee cup with latte art in background, reading glasses, pastel highlighter. Clean vertical columns from Monday to Sunday clearly visible.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #5 — 30-DAY HABIT MATRIX IN ACTIVE USE (Gamification & Results)\nScene Description: High-resolution perspective shot focusing on the 30-Day Habit Matrix page. Several circular check-bubbles are neatly filled in with soft pastel ink (#7D9B76), displaying a satisfying streak. Inspiring, motivating, aesthetic productivity aesthetic.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #6 — HANDS-IN-FRAME WRITING LIFESTYLE SHOT (Human Connection & Scale)\nScene Description: First-person point-of-view photo of a well-manicured female hand holding an elegant fine-tip pen, actively writing notes into the \"ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\" planner. Soft knit sweater sleeve, cozy warm morning ambience, diffused window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #7 — 10-PAGES FANNED-OUT BUNDLE SHOWCASE (Value & Scope Showcase)\nScene Description: All core pages of \"ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet all together. Badge banner overlay style: \"Complete 10-Spread Productivity System\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #8 — 90-DAY VISION & FINANCIAL SPREAD (Transformation & Goals)\nScene Description: Clean angled shot of the 90-Day Goal Roadmap and Monthly Cash Flow pages side by side. Professional planner setup with minimal gold paperclips, clean calculator, and motivational quote card. High aspiration value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #9 — FULL AESTHETIC DESK AERIAL LIFESTYLE (Aspirational Lifestyle)\nScene Description: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A and #FAF3E8.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #10 — INSTANT DOWNLOAD & DEVICE COMPATIBILITY (Etsy Purchase Reassurance)\nScene Description: Clean split-screen graphic displaying a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all showing the matching \"ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\" layout. Prominent aesthetic text badge: \"Instant Digital Download · GoodNotes · Notability · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette (#8B5A7A, #FAF3E8) across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-26T11:38:24.546Z",
         "approvedAt": "2026-08-27T12:41:05.473Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-03/mockups/1787741866800_1_Comparing_two_planner_sizes_202608261656.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wMy9tb2NrdXBzLzE3ODc3NDE4NjY4MDBfMV9Db21wYXJpbmdfdHdvX3BsYW5uZXJfc2l6ZXNfMjAyNjA4MjYxNjU2LmpwZWciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg3NzQxODY4LCJleHAiOjE3ODgzNDY2Njh9.DCSz1wm3EcbbL_boehicPimE4juluDXgNLXfLwDA2es",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-03/mockups/1787741878183_2_Desk_workspace_with_planner_and_202608261656.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wMy9tb2NrdXBzLzE3ODc3NDE4NzgxODNfMl9EZXNrX3dvcmtzcGFjZV93aXRoX3BsYW5uZXJfYW5kXzIwMjYwODI2MTY1Ni5qcGVnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4Nzc0MTg3OSwiZXhwIjoxNzg4MzQ2Njc5fQ.lHg5RZieTgf6E2iTEtXiBd0qi0t2denNYoc9Ovyk3ks",
@@ -2238,7 +2238,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4562964296/adhd-friendly-low-dopamine-and-low",
         "seoDescription": "✨ Welcome to PlannerQueenCo — Productivity & Life Planning\n\nUpgrade your routine with the **ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner**.\n\n📦 WHAT IS INCLUDED:\n• High-resolution interactive PDF / Assets\n• Easy setup guide & tutorial links\n• Commercial & personal use flexibility\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your files from Etsy Purchases.\n3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n💌 Need help or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 8.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -2710,11 +2710,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL BRIEF\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: Teacher & Student Weekly Academic Lesson & Study Planner\nBrand Colors: Primary #8B5A7A, Background #FAF3E8, Secondary #7D9B76, Highlight #C4887C, Dark #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist botanical luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD LIFESTYLE (MAIN ETSY THUMBNAIL) (Primary Listing Hero)\nScene Description: Professional studio flat-lay photography of an iPad Pro in portrait orientation displaying the aesthetic digital cover of \"Teacher & Student Weekly Academic Lesson & Study Planner\" by PlannerQueenGro. Resting on a luxurious warm cream (#FAF3E8) desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed, clean editorial look.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #2 — FLAT LAY COVER & CLEAN AESTHETICS (Cover Showcase)\nScene Description: Overhead top-down camera angle of \"Teacher & Student Weekly Academic Lesson & Study Planner\" digital cover printed on luxury textured matte paper or displayed on a tablet. Bordered with aesthetic lifestyle items in brand colors (#8B5A7A, #7D9B76), soft linen napkin, and neutral ceramic mug. Clean white space, crisp typography in Playfair Display + Lato.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #3 — DAILY SCHEDULE PAGE CLOSE-UP WITH PEN (Feature Deep-Dive)\nScene Description: Macro angle angled view of the Daily Focused Execution page from \"Teacher & Student Weekly Academic Lesson & Study Planner\". A gold pen rests across the 6:00 AM – 9:00 PM hourly schedule box. Clear readable section headers: \"Top Priorities\", \"Eisenhower Matrix\", \"Water Intake\". Soft depth of field, bright warm daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #4 — WEEKLY MASTER SPREAD OPEN ON DESK (Spread View)\nScene Description: Two-page open spread of the Weekly Master Plan from \"Teacher & Student Weekly Academic Lesson & Study Planner\" lying flat on a modern scandinavian oak desk. Coffee cup with latte art in background, reading glasses, pastel highlighter. Clean vertical columns from Monday to Sunday clearly visible.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #5 — 30-DAY HABIT MATRIX IN ACTIVE USE (Gamification & Results)\nScene Description: High-resolution perspective shot focusing on the 30-Day Habit Matrix page. Several circular check-bubbles are neatly filled in with soft pastel ink (#7D9B76), displaying a satisfying streak. Inspiring, motivating, aesthetic productivity aesthetic.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #6 — HANDS-IN-FRAME WRITING LIFESTYLE SHOT (Human Connection & Scale)\nScene Description: First-person point-of-view photo of a well-manicured female hand holding an elegant fine-tip pen, actively writing notes into the \"Teacher & Student Weekly Academic Lesson & Study Planner\" planner. Soft knit sweater sleeve, cozy warm morning ambience, diffused window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #7 — 10-PAGES FANNED-OUT BUNDLE SHOWCASE (Value & Scope Showcase)\nScene Description: All core pages of \"Teacher & Student Weekly Academic Lesson & Study Planner\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet all together. Badge banner overlay style: \"Complete 10-Spread Productivity System\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #8 — 90-DAY VISION & FINANCIAL SPREAD (Transformation & Goals)\nScene Description: Clean angled shot of the 90-Day Goal Roadmap and Monthly Cash Flow pages side by side. Professional planner setup with minimal gold paperclips, clean calculator, and motivational quote card. High aspiration value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #9 — FULL AESTHETIC DESK AERIAL LIFESTYLE (Aspirational Lifestyle)\nScene Description: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A and #FAF3E8.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nMOCKUP #10 — INSTANT DOWNLOAD & DEVICE COMPATIBILITY (Etsy Purchase Reassurance)\nScene Description: Clean split-screen graphic displaying a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all showing the matching \"Teacher & Student Weekly Academic Lesson & Study Planner\" layout. Prominent aesthetic text badge: \"Instant Digital Download · GoodNotes · Notability · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette (#8B5A7A, #FAF3E8) across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-26T13:53:38.647Z",
         "approvedAt": "2026-08-27T12:41:05.473Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-04/mockups/1787751365802_1_30-Day_Habit_Matrix_Tracker_Mockup_202608261931.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wNC9tb2NrdXBzLzE3ODc3NTEzNjU4MDJfMV8zMC1EYXlfSGFiaXRfTWF0cml4X1RyYWNrZXJfTW9ja3VwXzIwMjYwODI2MTkzMS5qcGVnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4Nzc1MTM2NywiZXhwIjoxNzg4MzU2MTY3fQ.joiMjMrfbd31EOHOyNEwBo3REY6DlGuLlhrVzXJLvyE",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-04/mockups/1787751380149_2_Comparing_printable_planner_and_____202608261931.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wNC9tb2NrdXBzLzE3ODc3NTEzODAxNDlfMl9Db21wYXJpbmdfcHJpbnRhYmxlX3BsYW5uZXJfYW5kX19fX18yMDI2MDgyNjE5MzEuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc3NTEzODEsImV4cCI6MTc4ODM1NjE4MX0.J3BAJUwpBIBVvXyeoaVFjku4d_n6xHbSMxXEt2k5eN4",
@@ -2735,7 +2735,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4563030934/teacher-and-student-weekly-academic",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nUpgrade your routine with the **Teacher & Student Weekly Academic Lesson & Study Planner**.\n\n📦 WHAT IS INCLUDED:\n• High-resolution interactive PDF / Assets\n• Easy setup guide & tutorial links\n• Commercial & personal use flexibility\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your files from Etsy Purchases.\n3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n💌 Need help or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 9.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -3336,11 +3336,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (HOME_FAMILY)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"Busy Mom Household & Family Command Center Weekly Spread\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD PRO FLAT-LAY (MAIN ETSY LISTING THUMBNAIL) (Primary Listing Hero)\nPrompt: Professional studio flat-lay photography of an iPad Pro in 3:4 portrait orientation displaying the clean aesthetic cover of \"Busy Mom Household & Family Command Center Weekly Spread\" by PlannerQueenGro. Resting on a luxurious warm cream desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed commercial photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — OPEN TWO-PAGE MASTER SPREAD OVERVIEW (Spread Showcase)\nPrompt: Two-page open spread of \"Busy Mom Household & Family Command Center Weekly Spread\" lying flat on a modern scandinavian oak desk. Ceramic coffee mug with latte art in background, reading glasses, pastel highlighter. Clean vertical daily/weekly columns clearly readable. 3:4 portrait format.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — LIFESTYLE POV WRITING & PLANNING IN CAFE (Human Connection & Scale)\nPrompt: First-person point-of-view photo of a well-manicured hand holding an elegant fine-tip pen, actively writing notes into \"Busy Mom Household & Family Command Center Weekly Spread\". Soft knit cozy sweater sleeve, warm morning ambience, diffused natural window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — MACRO CLOSE-UP ON HABIT & TASK TRACKING SPREAD (Feature Deep-Dive)\nPrompt: Macro angled close-up view of the primary tracking spread from \"Busy Mom Household & Family Command Center Weekly Spread\". A gold pen rests across the grid with delicate checkmarks. High-resolution crisp typography, soft depth of field, bright daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING 3D BUNDLE STACK (Value & Scope Showcase)\nPrompt: All core pages of \"Busy Mom Household & Family Command Center Weekly Spread\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet together. Subtle realistic drop shadows.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — DESK AERIAL OVERVIEW WORKSPACE (Aspirational Lifestyle)\nPrompt: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — INSTANT DOWNLOAD & DEVICE STACK (Etsy Purchase Reassurance)\nPrompt: Clean graphic showing a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all displaying matching layouts from \"Busy Mom Household & Family Command Center Weekly Spread\". Aesthetic badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 90-DAY GOAL & FINANCIAL FLOW SPREAD (Transformation & Goals)\nPrompt: Clean angled shot of the 90-Day Goal Roadmap and Cash Flow pages side by side. Minimal gold paperclips, clean calculator, and motivational quote card. High aspirational value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — PRINTABLE A4 / US LETTER COMPARISON (Print Flexibility)\nPrompt: Crisp photo of printed planner pages held in hands or pinned to an aesthetic moodboard. Clean white borders, premium matte paper texture, crisp lines.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER TRANSFORMATION REVIEW CARD (Social Proof Showcase)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"Busy Mom Household & Family Command Center Weekly Spread\", and quote: \"Completely transformed my daily routine and focus.\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-27T17:05:44.458Z",
         "approvedAt": "2026-09-07T11:19:25.450Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-05/mockups/1787845081289_1_Digital_devices_and_printable_paper_202608272136.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wNS9tb2NrdXBzLzE3ODc4NDUwODEyODlfMV9EaWdpdGFsX2RldmljZXNfYW5kX3ByaW50YWJsZV9wYXBlcl8yMDI2MDgyNzIxMzYuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc4NDUwODMsImV4cCI6MTc4ODQ0OTg4M30.GPkSEOklEYIJr0oFicSHpFjJWiqhTimcmHbOTlIxYtU",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-05/mockups/1787845097062_2_Gold_pen_on_habit_tracker_202608272136.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wNS9tb2NrdXBzLzE3ODc4NDUwOTcwNjJfMl9Hb2xkX3Blbl9vbl9oYWJpdF90cmFja2VyXzIwMjYwODI3MjEzNi5qcGVnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4Nzg0NTA5OCwiZXhwIjoxNzg4NDQ5ODk4fQ.us5UGqcGW44QQ4bWU8w3ywMpR4RVaMYkoCI1BKylfGc",
@@ -3362,7 +3362,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4563765241/busy-mom-household-and-family-command",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nTransform your daily routine with the **Busy Mom Household & Family Command Center Weekly Spread**.\n\n📦 WHAT IS INCLUDED (10-Page System):\n• High-Resolution Vector Printable PDF (US Letter & A4)\n• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes)\n• Official Single-User Anti-Piracy License Pass\n• Bonus Canva / Notion Quick-Start Setup Guide\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your PDF files from Etsy Purchases.\n3. Import to iPad/tablet or print immediately at home!\n\n💌 Need assistance or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 9.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -3960,11 +3960,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (WELLNESS)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"Wellness, Fitness & Daily Meal Prep Schedule Planner\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD PRO FLAT-LAY (MAIN ETSY LISTING THUMBNAIL) (Primary Listing Hero)\nPrompt: Professional studio flat-lay photography of an iPad Pro in 3:4 portrait orientation displaying the clean aesthetic cover of \"Wellness, Fitness & Daily Meal Prep Schedule Planner\" by PlannerQueenGro. Resting on a luxurious warm cream desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed commercial photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — OPEN TWO-PAGE MASTER SPREAD OVERVIEW (Spread Showcase)\nPrompt: Two-page open spread of \"Wellness, Fitness & Daily Meal Prep Schedule Planner\" lying flat on a modern scandinavian oak desk. Ceramic coffee mug with latte art in background, reading glasses, pastel highlighter. Clean vertical daily/weekly columns clearly readable. 3:4 portrait format.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — LIFESTYLE POV WRITING & PLANNING IN CAFE (Human Connection & Scale)\nPrompt: First-person point-of-view photo of a well-manicured hand holding an elegant fine-tip pen, actively writing notes into \"Wellness, Fitness & Daily Meal Prep Schedule Planner\". Soft knit cozy sweater sleeve, warm morning ambience, diffused natural window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — MACRO CLOSE-UP ON HABIT & TASK TRACKING SPREAD (Feature Deep-Dive)\nPrompt: Macro angled close-up view of the primary tracking spread from \"Wellness, Fitness & Daily Meal Prep Schedule Planner\". A gold pen rests across the grid with delicate checkmarks. High-resolution crisp typography, soft depth of field, bright daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING 3D BUNDLE STACK (Value & Scope Showcase)\nPrompt: All core pages of \"Wellness, Fitness & Daily Meal Prep Schedule Planner\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet together. Subtle realistic drop shadows.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — DESK AERIAL OVERVIEW WORKSPACE (Aspirational Lifestyle)\nPrompt: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — INSTANT DOWNLOAD & DEVICE STACK (Etsy Purchase Reassurance)\nPrompt: Clean graphic showing a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all displaying matching layouts from \"Wellness, Fitness & Daily Meal Prep Schedule Planner\". Aesthetic badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 90-DAY GOAL & FINANCIAL FLOW SPREAD (Transformation & Goals)\nPrompt: Clean angled shot of the 90-Day Goal Roadmap and Cash Flow pages side by side. Minimal gold paperclips, clean calculator, and motivational quote card. High aspirational value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — PRINTABLE A4 / US LETTER COMPARISON (Print Flexibility)\nPrompt: Crisp photo of printed planner pages held in hands or pinned to an aesthetic moodboard. Clean white borders, premium matte paper texture, crisp lines.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER TRANSFORMATION REVIEW CARD (Social Proof Showcase)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"Wellness, Fitness & Daily Meal Prep Schedule Planner\", and quote: \"Completely transformed my daily routine and focus.\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-26T15:14:28.368Z",
         "approvedAt": "2026-08-27T12:41:05.472Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-06/mockups/1787754496445_1_Customer_transformation_review_c____202608262026.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wNi9tb2NrdXBzLzE3ODc3NTQ0OTY0NDVfMV9DdXN0b21lcl90cmFuc2Zvcm1hdGlvbl9yZXZpZXdfY19fX18yMDI2MDgyNjIwMjYuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc3NTQ0OTcsImV4cCI6MTc4ODM1OTI5N30.Q7jj0hmYMMYDRLxqe_n-QINMb86LBCzs49wGIKBdyJ4",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-06/mockups/1787754513564_2_Digital_planner_mockup_display_202608262026.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wNi9tb2NrdXBzLzE3ODc3NTQ1MTM1NjRfMl9EaWdpdGFsX3BsYW5uZXJfbW9ja3VwX2Rpc3BsYXlfMjAyNjA4MjYyMDI2LmpwZWciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg3NzU0NTE0LCJleHAiOjE3ODgzNTkzMTR9.2bTLf3FIJPoe9JeWyc2_MhIiqpZoscxMIlUy2XjMa6c",
@@ -3986,7 +3986,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4563050247/wellness-fitness-and-daily-meal-prep",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nUpgrade your routine with the **Wellness, Fitness & Daily Meal Prep Schedule Planner**.\n\n📦 WHAT IS INCLUDED:\n• High-resolution interactive PDF / Assets\n• Easy setup guide & tutorial links\n• Commercial & personal use flexibility\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your files from Etsy Purchases.\n3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n💌 Need help or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 9.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -4582,11 +4582,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (BUSINESS)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"Solopreneur 90-Day Quarterly Sprint Execution Daily Planner\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD PRO FLAT-LAY (MAIN ETSY LISTING THUMBNAIL) (Primary Listing Hero)\nPrompt: Professional studio flat-lay photography of an iPad Pro in 3:4 portrait orientation displaying the clean aesthetic cover of \"Solopreneur 90-Day Quarterly Sprint Execution Daily Planner\" by PlannerQueenGro. Resting on a luxurious warm cream desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed commercial photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — OPEN TWO-PAGE MASTER SPREAD OVERVIEW (Spread Showcase)\nPrompt: Two-page open spread of \"Solopreneur 90-Day Quarterly Sprint Execution Daily Planner\" lying flat on a modern scandinavian oak desk. Ceramic coffee mug with latte art in background, reading glasses, pastel highlighter. Clean vertical daily/weekly columns clearly readable. 3:4 portrait format.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — LIFESTYLE POV WRITING & PLANNING IN CAFE (Human Connection & Scale)\nPrompt: First-person point-of-view photo of a well-manicured hand holding an elegant fine-tip pen, actively writing notes into \"Solopreneur 90-Day Quarterly Sprint Execution Daily Planner\". Soft knit cozy sweater sleeve, warm morning ambience, diffused natural window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — MACRO CLOSE-UP ON HABIT & TASK TRACKING SPREAD (Feature Deep-Dive)\nPrompt: Macro angled close-up view of the primary tracking spread from \"Solopreneur 90-Day Quarterly Sprint Execution Daily Planner\". A gold pen rests across the grid with delicate checkmarks. High-resolution crisp typography, soft depth of field, bright daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING 3D BUNDLE STACK (Value & Scope Showcase)\nPrompt: All core pages of \"Solopreneur 90-Day Quarterly Sprint Execution Daily Planner\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet together. Subtle realistic drop shadows.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — DESK AERIAL OVERVIEW WORKSPACE (Aspirational Lifestyle)\nPrompt: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — INSTANT DOWNLOAD & DEVICE STACK (Etsy Purchase Reassurance)\nPrompt: Clean graphic showing a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all displaying matching layouts from \"Solopreneur 90-Day Quarterly Sprint Execution Daily Planner\". Aesthetic badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 90-DAY GOAL & FINANCIAL FLOW SPREAD (Transformation & Goals)\nPrompt: Clean angled shot of the 90-Day Goal Roadmap and Cash Flow pages side by side. Minimal gold paperclips, clean calculator, and motivational quote card. High aspirational value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — PRINTABLE A4 / US LETTER COMPARISON (Print Flexibility)\nPrompt: Crisp photo of printed planner pages held in hands or pinned to an aesthetic moodboard. Clean white borders, premium matte paper texture, crisp lines.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER TRANSFORMATION REVIEW CARD (Social Proof Showcase)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"Solopreneur 90-Day Quarterly Sprint Execution Daily Planner\", and quote: \"Completely transformed my daily routine and focus.\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-26T20:09:10.089Z",
         "approvedAt": "2026-08-27T12:41:05.472Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-07/mockups/1787766019106_1_Devices_displaying_digital_plann____202608262135.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wNy9tb2NrdXBzLzE3ODc3NjYwMTkxMDZfMV9EZXZpY2VzX2Rpc3BsYXlpbmdfZGlnaXRhbF9wbGFubl9fX18yMDI2MDgyNjIxMzUuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc3NjYwMjEsImV4cCI6MTc4ODM3MDgyMX0.EagrE3bv2BTs0O-B_4UTFP4s1y8MJD5SiCegbz-weyk",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-07/mockups/1787766034441_2_Goal_roadmap_and_cash_flow_202608262135.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wNy9tb2NrdXBzLzE3ODc3NjYwMzQ0NDFfMl9Hb2FsX3JvYWRtYXBfYW5kX2Nhc2hfZmxvd18yMDI2MDgyNjIxMzUuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc3NjYwMzYsImV4cCI6MTc4ODM3MDgzNn0.xU9rcsH2cqnvgdmaT9XODK7AOFWtEA29l7rVCNAo0fM",
@@ -4608,7 +4608,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4563246510/solopreneur-90-day-quarterly-sprint",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nUpgrade your routine with the **Solopreneur 90-Day Quarterly Sprint Execution Daily Planner**.\n\n📦 WHAT IS INCLUDED:\n• High-resolution interactive PDF / Assets\n• Easy setup guide & tutorial links\n• Commercial & personal use flexibility\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your files from Etsy Purchases.\n3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n💌 Need help or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 14.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -5207,11 +5207,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (GOALS_HABITS)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"Mindful Morning & Evening Routine Reflection Journal\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD PRO FLAT-LAY (MAIN ETSY LISTING THUMBNAIL) (Primary Listing Hero)\nPrompt: Professional studio flat-lay photography of an iPad Pro in 3:4 portrait orientation displaying the clean aesthetic cover of \"Mindful Morning & Evening Routine Reflection Journal\" by PlannerQueenGro. Resting on a luxurious warm cream desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed commercial photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — OPEN TWO-PAGE MASTER SPREAD OVERVIEW (Spread Showcase)\nPrompt: Two-page open spread of \"Mindful Morning & Evening Routine Reflection Journal\" lying flat on a modern scandinavian oak desk. Ceramic coffee mug with latte art in background, reading glasses, pastel highlighter. Clean vertical daily/weekly columns clearly readable. 3:4 portrait format.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — LIFESTYLE POV WRITING & PLANNING IN CAFE (Human Connection & Scale)\nPrompt: First-person point-of-view photo of a well-manicured hand holding an elegant fine-tip pen, actively writing notes into \"Mindful Morning & Evening Routine Reflection Journal\". Soft knit cozy sweater sleeve, warm morning ambience, diffused natural window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — MACRO CLOSE-UP ON HABIT & TASK TRACKING SPREAD (Feature Deep-Dive)\nPrompt: Macro angled close-up view of the primary tracking spread from \"Mindful Morning & Evening Routine Reflection Journal\". A gold pen rests across the grid with delicate checkmarks. High-resolution crisp typography, soft depth of field, bright daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING 3D BUNDLE STACK (Value & Scope Showcase)\nPrompt: All core pages of \"Mindful Morning & Evening Routine Reflection Journal\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet together. Subtle realistic drop shadows.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — DESK AERIAL OVERVIEW WORKSPACE (Aspirational Lifestyle)\nPrompt: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — INSTANT DOWNLOAD & DEVICE STACK (Etsy Purchase Reassurance)\nPrompt: Clean graphic showing a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all displaying matching layouts from \"Mindful Morning & Evening Routine Reflection Journal\". Aesthetic badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 90-DAY GOAL & FINANCIAL FLOW SPREAD (Transformation & Goals)\nPrompt: Clean angled shot of the 90-Day Goal Roadmap and Cash Flow pages side by side. Minimal gold paperclips, clean calculator, and motivational quote card. High aspirational value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — PRINTABLE A4 / US LETTER COMPARISON (Print Flexibility)\nPrompt: Crisp photo of printed planner pages held in hands or pinned to an aesthetic moodboard. Clean white borders, premium matte paper texture, crisp lines.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER TRANSFORMATION REVIEW CARD (Social Proof Showcase)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"Mindful Morning & Evening Routine Reflection Journal\", and quote: \"Completely transformed my daily routine and focus.\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-27T18:43:16.679Z",
         "approvedAt": "2026-09-07T11:19:25.450Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-08/mockups/1787852161291_1_Digital_journal_with_devices_dis____202608272335.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wOC9tb2NrdXBzLzE3ODc4NTIxNjEyOTFfMV9EaWdpdGFsX2pvdXJuYWxfd2l0aF9kZXZpY2VzX2Rpc19fX18yMDI2MDgyNzIzMzUuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc4NTIxNjIsImV4cCI6MTc4ODQ1Njk2Mn0.8wr1mSlp9X75CLiNeca8Q-G_73b8f_lXRQ_-v-QE3sQ",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-08/mockups/1787852175970_2_Goal_roadmap_and_cash_flow_202608272335.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wOC9tb2NrdXBzLzE3ODc4NTIxNzU5NzBfMl9Hb2FsX3JvYWRtYXBfYW5kX2Nhc2hfZmxvd18yMDI2MDgyNzIzMzUuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc4NTIxNzcsImV4cCI6MTc4ODQ1Njk3N30.QD_CDNXc6kSKxWps5y120R5mmQeJUhGo29VDWlFirws",
@@ -5233,7 +5233,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4563822525/mindful-morning-and-evening-routine",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nTransform your daily routine with the **Mindful Morning & Evening Routine Reflection Journal**.\n\n📦 WHAT IS INCLUDED (10-Page System):\n• High-Resolution Vector Printable PDF (US Letter & A4)\n• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes)\n• Official Single-User Anti-Piracy License Pass\n• Bonus Canva / Notion Quick-Start Setup Guide\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your PDF files from Etsy Purchases.\n3. Import to iPad/tablet or print immediately at home!\n\n💌 Need assistance or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 9.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -5829,11 +5829,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (PLANNERS)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"Undated Minimalist 365-Day Digital GoodNotes Tablet Planner\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD PRO FLAT-LAY (MAIN ETSY LISTING THUMBNAIL) (Primary Listing Hero)\nPrompt: Professional studio flat-lay photography of an iPad Pro in 3:4 portrait orientation displaying the clean aesthetic cover of \"Undated Minimalist 365-Day Digital GoodNotes Tablet Planner\" by PlannerQueenGro. Resting on a luxurious warm cream desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed commercial photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — OPEN TWO-PAGE MASTER SPREAD OVERVIEW (Spread Showcase)\nPrompt: Two-page open spread of \"Undated Minimalist 365-Day Digital GoodNotes Tablet Planner\" lying flat on a modern scandinavian oak desk. Ceramic coffee mug with latte art in background, reading glasses, pastel highlighter. Clean vertical daily/weekly columns clearly readable. 3:4 portrait format.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — LIFESTYLE POV WRITING & PLANNING IN CAFE (Human Connection & Scale)\nPrompt: First-person point-of-view photo of a well-manicured hand holding an elegant fine-tip pen, actively writing notes into \"Undated Minimalist 365-Day Digital GoodNotes Tablet Planner\". Soft knit cozy sweater sleeve, warm morning ambience, diffused natural window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — MACRO CLOSE-UP ON HABIT & TASK TRACKING SPREAD (Feature Deep-Dive)\nPrompt: Macro angled close-up view of the primary tracking spread from \"Undated Minimalist 365-Day Digital GoodNotes Tablet Planner\". A gold pen rests across the grid with delicate checkmarks. High-resolution crisp typography, soft depth of field, bright daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING 3D BUNDLE STACK (Value & Scope Showcase)\nPrompt: All core pages of \"Undated Minimalist 365-Day Digital GoodNotes Tablet Planner\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet together. Subtle realistic drop shadows.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — DESK AERIAL OVERVIEW WORKSPACE (Aspirational Lifestyle)\nPrompt: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — INSTANT DOWNLOAD & DEVICE STACK (Etsy Purchase Reassurance)\nPrompt: Clean graphic showing a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all displaying matching layouts from \"Undated Minimalist 365-Day Digital GoodNotes Tablet Planner\". Aesthetic badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 90-DAY GOAL & FINANCIAL FLOW SPREAD (Transformation & Goals)\nPrompt: Clean angled shot of the 90-Day Goal Roadmap and Cash Flow pages side by side. Minimal gold paperclips, clean calculator, and motivational quote card. High aspirational value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — PRINTABLE A4 / US LETTER COMPARISON (Print Flexibility)\nPrompt: Crisp photo of printed planner pages held in hands or pinned to an aesthetic moodboard. Clean white borders, premium matte paper texture, crisp lines.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER TRANSFORMATION REVIEW CARD (Social Proof Showcase)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"Undated Minimalist 365-Day Digital GoodNotes Tablet Planner\", and quote: \"Completely transformed my daily routine and focus.\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-27T20:40:20.852Z",
         "approvedAt": "2026-09-07T11:19:25.449Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-09/mockups/1787862498118_1_Devices_displaying_digital_plann____202608280227.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wOS9tb2NrdXBzLzE3ODc4NjI0OTgxMThfMV9EZXZpY2VzX2Rpc3BsYXlpbmdfZGlnaXRhbF9wbGFubl9fX18yMDI2MDgyODAyMjcuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc4NjI1MDAsImV4cCI6MTc4ODQ2NzMwMH0.zUoFfJZD_PZa2zMa-bTSxlE592cuT9clrai5S5vTUiA",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-09/mockups/1787862513542_2_Digital_planner_pages_fanned_out_202608280227.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0wOS9tb2NrdXBzLzE3ODc4NjI1MTM1NDJfMl9EaWdpdGFsX3BsYW5uZXJfcGFnZXNfZmFubmVkX291dF8yMDI2MDgyODAyMjcuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc4NjI1MTUsImV4cCI6MTc4ODQ2NzMxNX0.YVnzt015PIDXL6Pc3QE4hkPoINZW_YMMmCO-QXWqChk",
@@ -5855,7 +5855,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4563915422/undated-minimalist-365-day-digital",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nTransform your daily routine, streamline your productivity, and achieve your goals with the **Undated Minimalist 365-Day Digital GoodNotes Tablet Planner**.\n\n📋 COMPLETE 10-PAGE SPREAD BREAKDOWN (WHAT'S INSIDE):\n• Page 1: Minimalist Aesthetic Cover & Personalization Index\n• Page 2: Quick Start Guide & Daily Planning Rituals\n• Page 3: Master Index & Hyperlinked Navigation Matrix\n• Page 4: Monthly Goals & Intentions Roadmap\n• Page 5: Weekly Master Schedule & Priority Matrix\n• Page 6: Daily Focused Execution & Time-Blocking Layout\n• Page 7: Monthly Income, Expenses & Budget Tracker\n• Page 8: 30-Day Habit Matrix & Routine Consistency Tracker\n• Page 9: Weekly Reflection, Wins & Mindful Reset\n• Page 10: Ideas, Mind Maps & Dot Grid Notes\n\n📦 WHAT IS INCLUDED & COMPATIBILITY:\n• High-Resolution Vector Printable PDF (US Letter & A4 Print-Ready 300 DPI)\n• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes, iPad)\n• Clean Minimalist Typography & Eye-Friendly Color Palette\n• Official Single-User Anti-Piracy License Pass\n• Bonus Canva / Notion Quick-Start Setup Guide\n\n⚡ HOW IT WORKS:\n1. Complete your purchase on Etsy.\n2. Instantly download your PDF files from Etsy Purchases.\n3. Import into GoodNotes / tablet app or print immediately at home!\n\n🔒 LICENSE & USAGE:\nFor personal use only. Reselling, sharing, or commercial redistribution is strictly prohibited.\n\n💌 Need assistance or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 14.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -6452,11 +6452,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (PLANNERS)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"The Master Life Management All-Inclusive Daily & Weekly Mega Bundle\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO IPAD PRO FLAT-LAY (MAIN ETSY LISTING THUMBNAIL) (Primary Listing Hero)\nPrompt: Professional studio flat-lay photography of an iPad Pro in 3:4 portrait orientation displaying the clean aesthetic cover of \"The Master Life Management All-Inclusive Daily & Weekly Mega Bundle\" by PlannerQueenGro. Resting on a luxurious warm cream desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed commercial photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — OPEN TWO-PAGE MASTER SPREAD OVERVIEW (Spread Showcase)\nPrompt: Two-page open spread of \"The Master Life Management All-Inclusive Daily & Weekly Mega Bundle\" lying flat on a modern scandinavian oak desk. Ceramic coffee mug with latte art in background, reading glasses, pastel highlighter. Clean vertical daily/weekly columns clearly readable. 3:4 portrait format.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — LIFESTYLE POV WRITING & PLANNING IN CAFE (Human Connection & Scale)\nPrompt: First-person point-of-view photo of a well-manicured hand holding an elegant fine-tip pen, actively writing notes into \"The Master Life Management All-Inclusive Daily & Weekly Mega Bundle\". Soft knit cozy sweater sleeve, warm morning ambience, diffused natural window light.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — MACRO CLOSE-UP ON HABIT & TASK TRACKING SPREAD (Feature Deep-Dive)\nPrompt: Macro angled close-up view of the primary tracking spread from \"The Master Life Management All-Inclusive Daily & Weekly Mega Bundle\". A gold pen rests across the grid with delicate checkmarks. High-resolution crisp typography, soft depth of field, bright daylight.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING 3D BUNDLE STACK (Value & Scope Showcase)\nPrompt: All core pages of \"The Master Life Management All-Inclusive Daily & Weekly Mega Bundle\" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet together. Subtle realistic drop shadows.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — DESK AERIAL OVERVIEW WORKSPACE (Aspirational Lifestyle)\nPrompt: Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in #8B5A7A.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — INSTANT DOWNLOAD & DEVICE STACK (Etsy Purchase Reassurance)\nPrompt: Clean graphic showing a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all displaying matching layouts from \"The Master Life Management All-Inclusive Daily & Weekly Mega Bundle\". Aesthetic badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 90-DAY GOAL & FINANCIAL FLOW SPREAD (Transformation & Goals)\nPrompt: Clean angled shot of the 90-Day Goal Roadmap and Cash Flow pages side by side. Minimal gold paperclips, clean calculator, and motivational quote card. High aspirational value.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — PRINTABLE A4 / US LETTER COMPARISON (Print Flexibility)\nPrompt: Crisp photo of printed planner pages held in hands or pinned to an aesthetic moodboard. Clean white borders, premium matte paper texture, crisp lines.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER TRANSFORMATION REVIEW CARD (Social Proof Showcase)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"The Master Life Management All-Inclusive Daily & Weekly Mega Bundle\", and quote: \"Completely transformed my daily routine and focus.\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-27T21:59:08.462Z",
         "approvedAt": "2026-09-07T11:19:25.449Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-10/mockups/1787865954038_1_Core_pages_fanned_out_stack_202608280325.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0xMC9tb2NrdXBzLzE3ODc4NjU5NTQwMzhfMV9Db3JlX3BhZ2VzX2Zhbm5lZF9vdXRfc3RhY2tfMjAyNjA4MjgwMzI1LmpwZWciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg3ODY1OTU0LCJleHAiOjE3ODg0NzA3NTR9.tO0gzVvXRJl4yWobj-PBjPGXuAj59DLjCDjJjHd_Eoc",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-10/mockups/1787865969819_2_Devices_displaying_digital_plann____202608280325.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0xMC9tb2NrdXBzLzE3ODc4NjU5Njk4MTlfMl9EZXZpY2VzX2Rpc3BsYXlpbmdfZGlnaXRhbF9wbGFubl9fX18yMDI2MDgyODAzMjUuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc4NjU5NzIsImV4cCI6MTc4ODQ3MDc3Mn0.U7r9QS84O_XTAU7l7ZECR6zgu3DEmD9ykTm1A8Vj1sw",
@@ -6478,7 +6478,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4563955854/the-master-life-management-all-inclusive",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nTransform your daily routine, streamline your productivity, and achieve your goals with the **The Master Life Management All-Inclusive Daily & Weekly Mega Bundle**.\n\n📋 COMPLETE 18-PAGE SPREAD BREAKDOWN (WHAT'S INSIDE):\n• Page 1: Minimalist Aesthetic Cover & Personalization Index\n• Page 2: Quick Start Guide & Daily Planning Rituals\n• Page 3: Master Index & Hyperlinked Navigation Matrix\n• Page 4: Monthly Goals & Intentions Roadmap\n• Page 5: Weekly Master Schedule & Priority Matrix\n• Page 6: Daily Focused Execution & Time-Blocking Layout\n• Page 7: Monthly Income, Expenses & Budget Tracker\n• Page 8: 30-Day Habit Matrix & Routine Consistency Tracker\n• Page 9: Weekly Reflection, Wins & Mindful Reset\n• Page 10: Ideas, Mind Maps & Dot Grid Notes\n\n📦 WHAT IS INCLUDED & COMPATIBILITY:\n• High-Resolution Vector Printable PDF (US Letter & A4 Print-Ready 300 DPI)\n• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes, iPad)\n• Clean Minimalist Typography & Eye-Friendly Color Palette\n• Official Single-User Anti-Piracy License Pass\n• Bonus Canva / Notion Quick-Start Setup Guide\n\n⚡ HOW IT WORKS:\n1. Complete your purchase on Etsy.\n2. Instantly download your PDF files from Etsy Purchases.\n3. Import into GoodNotes / tablet app or print immediately at home!\n\n🔒 LICENSE & USAGE:\nFor personal use only. Reselling, sharing, or commercial redistribution is strictly prohibited.\n\n💌 Need assistance or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 14.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -7103,11 +7103,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (FINANCE)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"Zero-Based Budgeting & Monthly Cash Flow Master Spread\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO LUXURY FINANCIAL IPAD FLAT-LAY (MAIN THUMBNAIL) (Hero Listing Thumbnail)\nPrompt: Professional flat-lay photo in 3:4 portrait ratio of an iPad Pro displaying the cover of \"Zero-Based Budgeting & Monthly Cash Flow Master Spread\" by PlannerQueenGro. Resting on a luxury cream desk beside a sleek gold calculator, leather notebook, and brass pen in warm morning sunlight. 8k commercial listing photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — ZERO-BASED MONTHLY BUDGET MASTER SPREAD (Spread Showcase)\nPrompt: Open two-page spread view of the Zero-Based Monthly Budget from \"Zero-Based Budgeting & Monthly Cash Flow Master Spread\" on oak desk. Coffee cup with latte art in background, reading glasses, pastel highlighter. Clean vertical columns clearly visible.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — HANDS WRITING IN DEBT SNOWBALL PAYOFF TRACKER (Human Interaction)\nPrompt: First-person POV photo of hands holding a fine pen, filling in debt payoff milestone thermometer in \"Zero-Based Budgeting & Monthly Cash Flow Master Spread\". Empowering financial wellness feeling.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — SINKING FUNDS & CASH ENVELOPES MACRO CLOSE-UP (Feature Deep-Dive)\nPrompt: Macro close-up shot of the Cash Envelopes and Sinking Funds page with clear balance entries. High-resolution typography, soft depth of field.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING FINANCIAL SYSTEM STACK (Value Showcase)\nPrompt: All 20 core pages of \"Zero-Based Budgeting & Monthly Cash Flow Master Spread\" fanned out in a 3D isometric stack showing Budget, Cash Flow, Bills Calendar, Debt Tracker, and Net Worth Dashboard together.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — WEALTH DESK AERIAL LIFESTYLE (Aspirational Lifestyle)\nPrompt: Overhead flat lay of an executive desk: planner tablet centered, laptop open with investment charts, small succulent, scented candle, notebook, and ceramic dish.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — NET WORTH & ANNUAL INCOME DASHBOARD SPREAD (Transformation Feature)\nPrompt: Clean angled shot of the Net Worth Dashboard and Annual Income Planner pages side by side. Minimalist gold paperclips, clean calculator, and motivational quote card.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 10K EMERGENCY FUND SAVINGS CHALLENGE SPREAD (Gamification Feature)\nPrompt: Perspective shot of the 100-Block Emergency Fund Savings Challenge page with half the blocks neatly colored in pastel green ink (#7D9B76). Inspiring momentum.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — INSTANT DOWNLOAD & DEVICE STACK (Buyer Reassurance)\nPrompt: Split graphic showing iPhone, iPad tablet with Apple Pencil, and printable A4 budget sheet all showing matching \"Zero-Based Budgeting & Monthly Cash Flow Master Spread\" layout. Badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER FINANCIAL FREEDOM REVIEW CARD (Social Proof)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"Zero-Based Budgeting & Monthly Cash Flow Master Spread\", and quote: \"Paid off $8,000 of debt in 6 months using this exact budget spread!\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-28T18:57:18.436Z",
         "approvedAt": "2026-09-07T11:19:25.449Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-11/mockups/1787937563220_1_Budget_spreadsheet_pages_fanned_out_202608282318.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0xMS9tb2NrdXBzLzE3ODc5Mzc1NjMyMjBfMV9CdWRnZXRfc3ByZWFkc2hlZXRfcGFnZXNfZmFubmVkX291dF8yMDI2MDgyODIzMTguanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc5Mzc1NjQsImV4cCI6MTc4ODU0MjM2NH0.zNJ_b83SHSPM0SFBwvdrDQ_Re-f3E8BjeFXWwVOBruQ",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-11/mockups/1787937579236_2_Cash_envelopes_and_sinking_funds_202608282318.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0xMS9tb2NrdXBzLzE3ODc5Mzc1NzkyMzZfMl9DYXNoX2VudmVsb3Blc19hbmRfc2lua2luZ19mdW5kc18yMDI2MDgyODIzMTguanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc5Mzc1ODAsImV4cCI6MTc4ODU0MjM4MH0.BZS4HGpBbKJ-Hf9u6cJ1ZamRfmoS5UYFLqiQb13fnNA",
@@ -7129,7 +7129,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4564450785/zero-based-budgeting-and-monthly-cash",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nTransform your daily routine, streamline your productivity, and achieve your goals with the **Zero-Based Budgeting & Monthly Cash Flow Master Spread**.\n\n📋 COMPLETE 20-PAGE SPREAD BREAKDOWN (WHAT'S INSIDE):\n• Page 1: THE ULTIMATE FINANCIAL FREEDOM & WEALTH PLANNER — High-resolution printable layout\n• Page 2: Zero-Based Budgeting Method & Guide — High-resolution printable layout\n• Page 3: ANNUAL NET WORTH & WEALTH DASHBOARD — High-resolution printable layout\n• Page 4: Annual Income & Side Hustle Matrix — High-resolution printable layout\n• Page 5: Monthly Zero-Based Budget Spread — High-resolution printable layout\n• Page 6: Recurring Bills & Auto-Pay Calendar — High-resolution printable layout\n• Page 7: Daily Spending & Transaction Log (Days 1-15) — High-resolution printable layout\n• Page 8: Daily Spending & Transaction Log (Days 16-31) — High-resolution printable layout\n• Page 9: CASH ENVELOPES & SINKING FUNDS TRACKER — High-resolution printable layout\n• Page 10: Debt Snowball & Payoff Accelerator — High-resolution printable layout\n• Page 11: EMERGENCY FUND 10K MILESTONE TRACKER — High-resolution printable layout\n• Page 12: 52-Week Tiered Savings Challenge — High-resolution printable layout\n• Page 13: 30-Day No-Spend Challenge Matrix — High-resolution printable layout\n• Page 14: Investment Portfolio & Retirement Log — High-resolution printable layout\n• Page 15: Charitable Donations & Tax Receipts Log — High-resolution printable layout\n• Page 16: Home Office & Business Write-Offs Log — High-resolution printable layout\n• Page 17: Medical & Health Savings (HSA/FSA) Expense Log — High-resolution printable layout\n• Page 18: Monthly Financial Review & Budget Audit — High-resolution printable layout\n• Page 19: Financial Vision Board & Dream Milestones — High-resolution printable layout\n• Page 20: Financial Calculations & Notes Grid — High-resolution printable layout\n\n📦 WHAT IS INCLUDED & COMPATIBILITY:\n• High-Resolution Vector Printable PDF (US Letter & A4 Print-Ready 300 DPI)\n• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes, iPad)\n• Clean Minimalist Typography & Eye-Friendly Color Palette\n• Official Single-User Anti-Piracy License Pass\n• Bonus Canva / Notion Quick-Start Setup Guide\n\n⚡ HOW IT WORKS:\n1. Complete your purchase on Etsy.\n2. Instantly download your PDF files from Etsy Purchases.\n3. Import into GoodNotes / tablet app or print immediately at home!\n\n🔒 LICENSE & USAGE:\nFor personal use only. Reselling, sharing, or commercial redistribution is strictly prohibited.\n\n💌 Need assistance or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 9.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -7754,11 +7754,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (FINANCE)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"50/30/20 Rule Annual Income & Expense Ledger\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO LUXURY FINANCIAL IPAD FLAT-LAY (MAIN THUMBNAIL) (Hero Listing Thumbnail)\nPrompt: Professional flat-lay photo in 3:4 portrait ratio of an iPad Pro displaying the cover of \"50/30/20 Rule Annual Income & Expense Ledger\" by PlannerQueenGro. Resting on a luxury cream desk beside a sleek gold calculator, leather notebook, and brass pen in warm morning sunlight. 8k commercial listing photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — ZERO-BASED MONTHLY BUDGET MASTER SPREAD (Spread Showcase)\nPrompt: Open two-page spread view of the Zero-Based Monthly Budget from \"50/30/20 Rule Annual Income & Expense Ledger\" on oak desk. Coffee cup with latte art in background, reading glasses, pastel highlighter. Clean vertical columns clearly visible.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — HANDS WRITING IN DEBT SNOWBALL PAYOFF TRACKER (Human Interaction)\nPrompt: First-person POV photo of hands holding a fine pen, filling in debt payoff milestone thermometer in \"50/30/20 Rule Annual Income & Expense Ledger\". Empowering financial wellness feeling.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — SINKING FUNDS & CASH ENVELOPES MACRO CLOSE-UP (Feature Deep-Dive)\nPrompt: Macro close-up shot of the Cash Envelopes and Sinking Funds page with clear balance entries. High-resolution typography, soft depth of field.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING FINANCIAL SYSTEM STACK (Value Showcase)\nPrompt: All 20 core pages of \"50/30/20 Rule Annual Income & Expense Ledger\" fanned out in a 3D isometric stack showing Budget, Cash Flow, Bills Calendar, Debt Tracker, and Net Worth Dashboard together.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — WEALTH DESK AERIAL LIFESTYLE (Aspirational Lifestyle)\nPrompt: Overhead flat lay of an executive desk: planner tablet centered, laptop open with investment charts, small succulent, scented candle, notebook, and ceramic dish.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — NET WORTH & ANNUAL INCOME DASHBOARD SPREAD (Transformation Feature)\nPrompt: Clean angled shot of the Net Worth Dashboard and Annual Income Planner pages side by side. Minimalist gold paperclips, clean calculator, and motivational quote card.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 10K EMERGENCY FUND SAVINGS CHALLENGE SPREAD (Gamification Feature)\nPrompt: Perspective shot of the 100-Block Emergency Fund Savings Challenge page with half the blocks neatly colored in pastel green ink (#7D9B76). Inspiring momentum.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — INSTANT DOWNLOAD & DEVICE STACK (Buyer Reassurance)\nPrompt: Split graphic showing iPhone, iPad tablet with Apple Pencil, and printable A4 budget sheet all showing matching \"50/30/20 Rule Annual Income & Expense Ledger\" layout. Badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER FINANCIAL FREEDOM REVIEW CARD (Social Proof)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"50/30/20 Rule Annual Income & Expense Ledger\", and quote: \"Paid off $8,000 of debt in 6 months using this exact budget spread!\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.055Z",
         "updatedAt": "2026-08-28T19:11:50.145Z",
         "approvedAt": "2026-09-07T11:19:25.449Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.055Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-12/mockups/1787942771061_1_Budget_ledger_pages_fanned_out_202608290045.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0xMi9tb2NrdXBzLzE3ODc5NDI3NzEwNjFfMV9CdWRnZXRfbGVkZ2VyX3BhZ2VzX2Zhbm5lZF9vdXRfMjAyNjA4MjkwMDQ1LmpwZWciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg3OTQyNzcyLCJleHAiOjE3ODg1NDc1NzJ9.aDX-kpjpLAGH3KudPvZfmEC4ST3tQi0vM3yeFhQry3M",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-12/mockups/1787942786233_2_Budget_planner_on_desk_202608290045.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0xMi9tb2NrdXBzLzE3ODc5NDI3ODYyMzNfMl9CdWRnZXRfcGxhbm5lcl9vbl9kZXNrXzIwMjYwODI5MDA0NS5qcGVnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4Nzk0Mjc4NywiZXhwIjoxNzg4NTQ3NTg3fQ.5LRgN7tlwAU4qrBPITqYQM7EUJ6weUJJ_zCNkiKO9KA",
@@ -7780,7 +7780,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4564459539/503020-rule-annual-income-and-expense",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nTransform your daily routine, streamline your productivity, and achieve your goals with the **50/30/20 Rule Annual Income & Expense Ledger**.\n\n📋 COMPLETE 20-PAGE SPREAD BREAKDOWN (WHAT'S INSIDE):\n• Page 1: 50/30/20 Rule Annual Income & Expense Ledger · Master Financial Edition — High-resolution printable layout\n• Page 2: 50/30/20 Rule Method & Guide — High-resolution printable layout\n• Page 3: Annual Net Worth & Wealth Dashboard — High-resolution printable layout\n• Page 4: Annual Income & Side Hustle Matrix — High-resolution printable layout\n• Page 5: Monthly 50/30/20 Budget Spread — High-resolution printable layout\n• Page 6: RECURRING BILLS & AUTO-PAY CALENDAR — High-resolution printable layout\n• Page 7: DAILY SPENDING & TRANSACTION LOG (DAYS 1-15) — High-resolution printable layout\n• Page 8: Daily Spending & Transaction Log (Days 16-31) — High-resolution printable layout\n• Page 9: Cash Envelopes & Sinking Funds Tracker — High-resolution printable layout\n• Page 10: Debt Snowball & Payoff Accelerator — High-resolution printable layout\n• Page 11: Emergency Fund 10k Milestone Tracker — High-resolution printable layout\n• Page 12: 52-Week Savings Challenge Matrix — High-resolution printable layout\n• Page 13: 30-Day No-Spend Challenge Matrix — High-resolution printable layout\n• Page 14: Investment Portfolio & Retirement Log — High-resolution printable layout\n• Page 15: Charitable Donations & Tax Receipts Log — High-resolution printable layout\n• Page 16: Home Office & Business Write-Offs Log — High-resolution printable layout\n• Page 17: Medical & Health Savings (HSA/FSA) Expense Log — High-resolution printable layout\n• Page 18: MONTHLY FINANCIAL REVIEW & BUDGET AUDIT — High-resolution printable layout\n• Page 19: FINANCIAL VISION BOARD & DREAM MILESTONES — High-resolution printable layout\n• Page 20: Financial Calculations & Notes Grid — High-resolution printable layout\n\n📦 WHAT IS INCLUDED & COMPATIBILITY:\n• High-Resolution Vector Printable PDF (US Letter & A4 Print-Ready 300 DPI)\n• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes, iPad)\n• Clean Minimalist Typography & Eye-Friendly Color Palette\n• Official Single-User Anti-Piracy License Pass\n• Bonus Canva / Notion Quick-Start Setup Guide\n\n⚡ HOW IT WORKS:\n1. Complete your purchase on Etsy.\n2. Instantly download your PDF files from Etsy Purchases.\n3. Import into GoodNotes / tablet app or print immediately at home!\n\n🔒 LICENSE & USAGE:\nFor personal use only. Reselling, sharing, or commercial redistribution is strictly prohibited.\n\n💌 Need assistance or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 9.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.055,
         "listingFeeCharged": 0.2
       },
       {
@@ -8461,11 +8461,11 @@
           "masterMockupPrompt": "BRAND & MOCKUP VISUAL PRODUCTION BRIEF (FINANCE)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nBrand: PlannerQueenGro | Niche: Productivity & Life Planning\nProduct: \"Debt Snowball & Avalanche Payoff Visual Progress Thermometer\"\nBrand Colors: #8B5A7A, #FAF3E8, #7D9B76, #C4887C, #2E2E2E\nTypography: Playfair Display + Lato\nAesthetic Style: Minimalist luxury, warm natural morning lighting, clean editorial depth.\n\nINSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\nGenerate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\nMOCKUP #1 — HERO LUXURY FINANCIAL IPAD FLAT-LAY (MAIN THUMBNAIL) (Hero Listing Thumbnail)\nPrompt: Professional flat-lay photo in 3:4 portrait ratio of an iPad Pro displaying the cover of \"Debt Snowball & Avalanche Payoff Visual Progress Thermometer\" by PlannerQueenGro. Resting on a luxury cream desk beside a sleek gold calculator, leather notebook, and brass pen in warm morning sunlight. 8k commercial listing photo.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #2 — ZERO-BASED MONTHLY BUDGET MASTER SPREAD (Spread Showcase)\nPrompt: Open two-page spread view of the Zero-Based Monthly Budget from \"Debt Snowball & Avalanche Payoff Visual Progress Thermometer\" on oak desk. Coffee cup with latte art in background, reading glasses, pastel highlighter. Clean vertical columns clearly visible.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #3 — HANDS WRITING IN DEBT SNOWBALL PAYOFF TRACKER (Human Interaction)\nPrompt: First-person POV photo of hands holding a fine pen, filling in debt payoff milestone thermometer in \"Debt Snowball & Avalanche Payoff Visual Progress Thermometer\". Empowering financial wellness feeling.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #4 — SINKING FUNDS & CASH ENVELOPES MACRO CLOSE-UP (Feature Deep-Dive)\nPrompt: Macro close-up shot of the Cash Envelopes and Sinking Funds page with clear balance entries. High-resolution typography, soft depth of field.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #5 — 20-PAGE CASCADING FINANCIAL SYSTEM STACK (Value Showcase)\nPrompt: All 20 core pages of \"Debt Snowball & Avalanche Payoff Visual Progress Thermometer\" fanned out in a 3D isometric stack showing Budget, Cash Flow, Bills Calendar, Debt Tracker, and Net Worth Dashboard together.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #6 — WEALTH DESK AERIAL LIFESTYLE (Aspirational Lifestyle)\nPrompt: Overhead flat lay of an executive desk: planner tablet centered, laptop open with investment charts, small succulent, scented candle, notebook, and ceramic dish.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #7 — NET WORTH & ANNUAL INCOME DASHBOARD SPREAD (Transformation Feature)\nPrompt: Clean angled shot of the Net Worth Dashboard and Annual Income Planner pages side by side. Minimalist gold paperclips, clean calculator, and motivational quote card.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #8 — 10K EMERGENCY FUND SAVINGS CHALLENGE SPREAD (Gamification Feature)\nPrompt: Perspective shot of the 100-Block Emergency Fund Savings Challenge page with half the blocks neatly colored in pastel green ink (#7D9B76). Inspiring momentum.\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #9 — INSTANT DOWNLOAD & DEVICE STACK (Buyer Reassurance)\nPrompt: Split graphic showing iPhone, iPad tablet with Apple Pencil, and printable A4 budget sheet all showing matching \"Debt Snowball & Avalanche Payoff Visual Progress Thermometer\" layout. Badge: \"Instant Digital Download · GoodNotes · Print at Home\".\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nMOCKUP #10 — CUSTOMER FINANCIAL FREEDOM REVIEW CARD (Social Proof)\nPrompt: Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"Debt Snowball & Avalanche Payoff Visual Progress Thermometer\", and quote: \"Paid off $8,000 of debt in 6 months using this exact budget spread!\"\nAspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n\nOUTPUT GUIDELINES:\n• Process all 10 mockup scenes one by one in sequence\n• Maintain consistent brand color palette across all images\n• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n"
         },
         "etsyState": "active",
-        "expiresAt": "2027-01-05T11:55:27.550Z",
+        "expiresAt": "2027-01-09T21:10:24.054Z",
         "updatedAt": "2026-08-29T09:38:58.183Z",
         "approvedAt": "2026-09-07T11:19:25.449Z",
         "approvedBy": "Admin",
-        "expiryDate": "2027-01-05T11:55:27.550Z",
+        "expiryDate": "2027-01-09T21:10:24.054Z",
         "mockupUrls": [
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-13/mockups/1787992440932_1_Cash_envelopes_macro_close-up_202608291433.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0xMy9tb2NrdXBzLzE3ODc5OTI0NDA5MzJfMV9DYXNoX2VudmVsb3Blc19tYWNyb19jbG9zZS11cF8yMDI2MDgyOTE0MzMuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc5OTI0NDIsImV4cCI6MTc4ODU5NzI0Mn0.sri4AZkXPnJjW24CTI8n9JR9pQa470c2UX6z2NVMxq8",
           "https://rlgsckzqieikjercfwan.supabase.co/storage/v1/object/sign/product-vault/brands/1/PLA-13/mockups/1787992454263_2_Customer_financial_freedom_revie____202608291433.jpeg?token=eyJraWQiOiJmZTZiNzNjYi1mZjAzLTRhNmYtOTVhYy0wZThkNmZhMzY0NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LXZhdWx0L2JyYW5kcy8xL1BMQS0xMy9tb2NrdXBzLzE3ODc5OTI0NTQyNjNfMl9DdXN0b21lcl9maW5hbmNpYWxfZnJlZWRvbV9yZXZpZV9fX18yMDI2MDgyOTE0MzMuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODc5OTI0NTYsImV4cCI6MTc4ODU5NzI1Nn0.vOOLF9N8NStQLn-Ea3EQtFsnPxs45SixPhAiysMIcQo",
@@ -8487,7 +8487,7 @@
         "liveListingUrl": "https://www.etsy.com/listing/4564775767/debt-snowball-and-avalanche-payoff",
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nTransform your daily routine, streamline your productivity, and achieve your goals with the **Debt Snowball & Avalanche Payoff Visual Progress Thermometer**.\n\n📋 COMPLETE 23-PAGE SPREAD BREAKDOWN (WHAT'S INSIDE):\n• Page 1: Debt Snowball & Avalanche Payoff Visual Progress Thermometer · Master Financial Edition — High-resolution printable layout\n• Page 2: Zero-Based Budgeting Method & Guide — High-resolution printable layout\n• Page 3: Annual Net Worth & Wealth Dashboard — High-resolution printable layout\n• Page 4: Monthly Zero-Based Budget Spread — High-resolution printable layout\n• Page 5: Annual Income & Side Hustle Matrix — High-resolution printable layout\n• Page 6: Recurring Bills & Auto-Pay Calendar — High-resolution printable layout\n• Page 7: Daily Spending & Transaction Log (Days 1–15) — High-resolution printable layout\n• Page 8: Daily Spending & Transaction Log (Days 16–31) — High-resolution printable layout\n• Page 9: Cash Envelopes & Sinking Funds Tracker (Part 1) - PlannerQueenGro — High-resolution printable layout\n• Page 10: Cash Envelopes & Sinking Funds Tracker (Part 2) — High-resolution printable layout\n• Page 11: Debt Snowball & Payoff Accelerator — High-resolution printable layout\n• Page 12: Emergency Fund 10K Milestone Tracker — High-resolution printable layout\n• Page 13: Debt Elimination Visual Progress Thermometer — High-resolution printable layout\n• Page 14: 52-Week Tiered Savings Challenge (Weeks 27–52) — High-resolution printable layout\n• Page 15: 52-Week Tiered Savings Challenge (Weeks 1–26) — High-resolution printable layout\n• Page 16: 30-Day No-Spend Challenge Matrix — High-resolution printable layout\n• Page 17: Investment Portfolio & Retirement Log — High-resolution printable layout\n• Page 18: Charitable Donations & Tax Receipts Log — High-resolution printable layout\n• Page 19: Home Office & Business Write-Offs Log — High-resolution printable layout\n• Page 20: Medical & Health Savings (HSA/FSA) Expense Log — High-resolution printable layout\n• Page 21: Monthly Financial Review & Budget Audit — High-resolution printable layout\n• Page 22: Financial Vision Board & Dream Milestones — High-resolution printable layout\n• Page 23: Financial Calculations & Notes Grid — High-resolution printable layout\n\n📦 WHAT IS INCLUDED & COMPATIBILITY:\n• High-Resolution Vector Printable PDF (US Letter & A4 Print-Ready 300 DPI)\n• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes, iPad)\n• Clean Minimalist Typography & Eye-Friendly Color Palette\n• Official Single-User Anti-Piracy License Pass\n• Bonus Canva / Notion Quick-Start Setup Guide\n\n⚡ HOW IT WORKS:\n1. Complete your purchase on Etsy.\n2. Instantly download your PDF files from Etsy Purchases.\n3. Import into GoodNotes / tablet app or print immediately at home!\n\n🔒 LICENSE & USAGE:\nFor personal use only. Reselling, sharing, or commercial redistribution is strictly prohibited.\n\n💌 Need assistance or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 9.99,
-        "endingTimestamp": 1799150127.55,
+        "endingTimestamp": 1799529024.054,
         "listingFeeCharged": 0.2
       },
       {
@@ -34455,6 +34455,99 @@
         "submittedAt": "2026-08-31T10:28:35.563Z",
         "submittedBy": "Digital Brand Manager",
         "seoDescription": "Instant download digital planner with hyperlinked tabs for GoodNotes and Notability."
+      },
+      {
+        "code": "PLA-101",
+        "hero": false,
+        "name": "Autumn Coffee Junk Journal Kit: Shabby Chic Ephemera (Digital) - Printable Daily & Weekly Planner - PlannerQueenGro PDF",
+        "price": 7.49,
+        "format": "Digital PDF",
+        "status": "SEO Ready",
+        "seoTags": [
+          "digital planner",
+          "printable kit",
+          "instant download",
+          "goodnotes template",
+          "notion template",
+          "aesthetic printable",
+          "daily life organizer",
+          "pdf download",
+          "undated tracker",
+          "ipad journal",
+          "lifestyle system",
+          "commercial license",
+          "plannerqueengro"
+        ],
+        "category": "Daily & Weekly Planners",
+        "seoTitle": "Autumn Coffee Junk Journal Kit: Shabby Chic Ephemera (Digital) - Printable Daily & Weekly Planner - PlannerQueenGro PDF",
+        "blueprint": {
+          "concept": "Adapted digital product based on Autumn Coffee Junk Journal Kit: Shabby Chic Ephemera (Digital) (etsy.com). Formatted for PlannerQueenGro aesthetic.",
+          "keyFeatures": [
+            "High-converting layout with brand typography and harmonious palette",
+            "Tablet hyperlinked tabs + printable US Letter & A4 vector spreads",
+            "Clean buyer onboarding guide with instant digital download delivery"
+          ],
+          "deliverableFormat": "Digital PDF + GoodNotes Template"
+        },
+        "createdAt": "2026-09-11T13:52:58.694Z",
+        "updatedAt": "2026-09-11T13:52:58.694Z",
+        "mockupUrls": [
+          "https://i.etsystatic.com/47062856/r/il/964bb9/6715164785/il_1080xN.6715164785_8yqz.jpg",
+          "https://i.etsystatic.com/47062856/r/il/964bb9/6715164785/il_794xN.6715164785_8yqz.jpg",
+          "https://i.etsystatic.com/47062856/r/il/f3aef0/5435431364/il_794xN.5435431364_inkh.jpg",
+          "https://i.etsystatic.com/47062856/r/il/07f64c/5435431366/il_794xN.5435431366_d9fv.jpg",
+          "https://i.etsystatic.com/47062856/r/il/eb20fd/5483559251/il_794xN.5483559251_gqnk.jpg",
+          "https://i.etsystatic.com/47062856/r/il/11c330/5435431376/il_794xN.5435431376_53su.jpg",
+          "https://i.etsystatic.com/47062856/r/il/a6611d/5435431384/il_794xN.5435431384_1qfk.jpg",
+          "https://i.etsystatic.com/47062856/r/il/42c6f4/5483559243/il_794xN.5483559243_gci0.jpg"
+        ],
+        "sourceDomain": "etsy.com",
+        "inspirationUrl": "https://www.etsy.com/listing/1572453332/autumn-coffee-junk-journal-kit-shabby?ls=r&ref=web_listing_page_collection_recs_v2-1&sr_prefetch=0&pf_from=listing&pro=1&sts=1&dd=1&content_source=6789155b184d52a9b4d1963adb1c14ff%253ALT5793c49cac41193c95b937bc4e2742745b71d8ca&logging_key=6789155b184d52a9b4d1963adb1c14ff%3ALT5793c49cac41193c95b937bc4e2742745b71d8ca",
+        "seoDescription": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✨ AUTUMN COFFEE JUNK JOURNAL KIT: SHABBY CHIC EPHEMERA (DIGITAL) by PLANNERQUEENGRO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🌟 TRANSFORM YOUR ROUTINE WITH THIS COMPREHENSIVE SYSTEM\nEngineered exclusively for Productivity & Life Planning enthusiasts, this premium digital package provides instant structure, aesthetic clarity, and proven productivity.\n\n📦 WHAT YOU RECEIVE:\n• High-Resolution Vector PDF (US Letter & A4 formats)\n• Hyperlinked interactive navigation for GoodNotes, Notability & iPad tablets\n• Detailed setup guide & video walkthrough\n\n⚡ INSTANT DOWNLOAD:\nYour files are accessible immediately upon checkout. No waiting, no physical shipping costs.\n\n🔒 Anti-Piracy & Commercial License: Single-user license included.",
+        "sourceSuggestionId": "f9613a29-e4b9-4ebe-ac33-dca30f4323db",
+        "inspirationScreenshot": ""
+      },
+      {
+        "code": "PLA-102",
+        "hero": false,
+        "name": "Modern Habit Matrix Daily Life Planner - Printable Daily & Weekly Planner - PlannerQueenGro PDF",
+        "price": 8.5,
+        "format": "Digital PDF",
+        "status": "SEO Ready",
+        "seoTags": [
+          "digital planner",
+          "printable kit",
+          "instant download",
+          "goodnotes template",
+          "notion template",
+          "aesthetic printable",
+          "daily life organizer",
+          "pdf download",
+          "undated tracker",
+          "ipad journal",
+          "lifestyle system",
+          "commercial license",
+          "plannerqueengro"
+        ],
+        "category": "Daily & Weekly Planners",
+        "seoTitle": "Modern Habit Matrix Daily Life Planner - Printable Daily & Weekly Planner - PlannerQueenGro PDF",
+        "blueprint": {
+          "concept": "Adapted digital product based on Modern Habit Matrix Daily Life Planner (etsy.com). Formatted for PlannerQueenGro aesthetic.",
+          "keyFeatures": [
+            "High-converting layout with brand typography and harmonious palette",
+            "Tablet hyperlinked tabs + printable US Letter & A4 vector spreads",
+            "Clean buyer onboarding guide with instant digital download delivery"
+          ],
+          "deliverableFormat": "Digital PDF + GoodNotes Template"
+        },
+        "createdAt": "2026-09-11T13:55:50.467Z",
+        "updatedAt": "2026-09-11T13:55:50.467Z",
+        "mockupUrls": [],
+        "sourceDomain": "etsy.com",
+        "inspirationUrl": "https://www.etsy.com/listing/5544332211/modern-habit-matrix-planner",
+        "seoDescription": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✨ MODERN HABIT MATRIX DAILY LIFE PLANNER by PLANNERQUEENGRO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🌟 TRANSFORM YOUR ROUTINE WITH THIS COMPREHENSIVE SYSTEM\nEngineered exclusively for Productivity & Life Planning enthusiasts, this premium digital package provides instant structure, aesthetic clarity, and proven productivity.\n\n📦 WHAT YOU RECEIVE:\n• High-Resolution Vector PDF (US Letter & A4 formats)\n• Hyperlinked interactive navigation for GoodNotes, Notability & iPad tablets\n• Detailed setup guide & video walkthrough\n\n⚡ INSTANT DOWNLOAD:\nYour files are accessible immediately upon checkout. No waiting, no physical shipping costs.\n\n🔒 Anti-Piracy & Commercial License: Single-user license included.",
+        "sourceSuggestionId": "e2ea6340-679a-4c39-b0ae-198d233510dc",
+        "inspirationScreenshot": ""
       }
     ],
     "2": [
@@ -35366,8 +35459,363 @@
         "name": "Canva Social Media Kits #1 — TinyDesks Studio Style",
         "price": 12,
         "format": "Digital PDF",
-        "status": "Draft",
-        "category": "Canva Social Media Kits"
+        "status": "Blueprint Ready",
+        "category": "Canva Social Media Kits",
+        "blueprint": {
+          "prompt": "Generate a cohesive 20-page digital product document titled 'Canva Social Media Kits #1 — TinyDesks Studio Style' designed for intentional professionals and solo agency owners. Format: 3:4 portrait aspect ratio. Aesthetic: Sharp, executive, ultra-clean, results-focused. Color Palette: Forest green primary accent (#2D6A4F), warm off-white background tint (#F5F0E8), deep forest secondary accent (#1B4332), mint highlight (#D8F3DC), and dark charcoal text (#212529). Typography style: Bold geometric headers (Syne) paired with ultra-clean modern body text (Inter). The document covers master studio covers, quick-start onboarding guides, brand pillar mapping, content calendar matrices, multi-slide thought leadership carousels, executive quote posts, data breakdown infographics, case study templates, promotional launch graphics, story engagement prompts, batch productivity trackers, copywriting swipe files, KPI dashboards, brand style guides, and executive note pages. STRICT NEGATIVE CONSTRAINT: NEVER paint page numbers, page indices, or numeric prefixes (such as 'PAGE 1', 'Page 2', 'Spread 3') anywhere onto the visual artwork or layouts.",
+          "geometry": "1080px x 1350px",
+          "typography": "Syne + Inter",
+          "mockupsList": [
+            {
+              "type": "Primary Thumbnail",
+              "scene": "A top-down flat lay on a matte #212529 dark slate desk. Features an open matte gold iPad displaying a #F5F0E8 Canva template interface, a sleek black wireless mouse, a minimalist ceramic espresso cup with dark espresso, a brass pen, and subtle sprigs of eucalyptus representing #2D6A4F. Ultra-sharp focus, editorial commercial lighting, 3:4 portrait ratio.",
+              "title": "Executive Desk Flat Lay",
+              "number": 1
+            },
+            {
+              "type": "Lifestyle Context",
+              "scene": "A high-end home office workspace for a solo agency founder. A clean light oak desk holds a large external monitor showing vibrant #1B4332 and #D8F3DC social media grid layouts. In the foreground, an iPhone resting on a leather stand showcases a carousel post template. Warm natural morning light from a side window, editorial interior photography style, 3:4 portrait ratio.",
+              "title": "Solo Agency Founder Workspace",
+              "number": 2
+            },
+            {
+              "type": "Infographic Slide",
+              "scene": "A clean graphic design layout featuring the brand colors #2D6A4F, #F5F0E8, #1B4332, #D8F3DC, and #212529 displayed as crisp overlapping geometric color blocks. Large bold Syne typography displays the title 'TinyDesks Studio Style' paired with clean Inter body copy. Minimalist, high-end graphic design portfolio aesthetic, 3:4 portrait ratio.",
+              "title": "Brand Palette & Typography Showcase",
+              "number": 3
+            },
+            {
+              "type": "Feature Detail",
+              "scene": "A pristine mockup of a smartphone screen floating against a solid #F5F0E8 backdrop, displaying a seamless 3-slide Instagram carousel made with the Canva kit. The design features sharp #212529 text, #2D6A4F accent blocks, and professional B2B layout structures. Soft drop shadows, studio lighting, 3:4 portrait ratio.",
+              "title": "Instagram Carousel Grid Preview",
+              "number": 4
+            },
+            {
+              "type": "Use Case",
+              "scene": "An upscale meeting setup: a sleek MacBook Pro rests on a dark walnut table, displaying a modern social media strategy slide from the TinyDesks Studio kit. Next to the laptop is a closed moleskine notebook in #1B4332 with an embossed gold foil logo, and a sleek matte black pen. Professional B2B consulting atmosphere, 3:4 portrait ratio.",
+              "title": "Client Pitch Deck Presentation",
+              "number": 5
+            },
+            {
+              "type": "Process Showcase",
+              "scene": "An overhead shot of a modern content creator batch-editing graphics on a laptop. The screen shows a Canva browser window with a grid of 20+ cohesive social media templates utilizing the #D8F3DC and #2D6A4F color scheme. Surrounding props include a minimalist planner pad and a glass of sparkling water with lime. Crisp daylight, 3:4 portrait ratio.",
+              "title": "Batch Content Creation Workflow",
+              "number": 6
+            },
+            {
+              "type": "Format Variety",
+              "scene": "Two smartphones standing vertically side-by-side on a textured #F5F0E8 concrete pedestal. The left phone displays a vertical Instagram Story template with bold Syne headings, and the right phone shows a clean vertical Reel cover. Studio spotlighting, razor-sharp edge definition, executive aesthetic, 3:4 portrait ratio.",
+              "title": "Reel & Story Template Spotlight",
+              "number": 7
+            },
+            {
+              "type": "Results Focused",
+              "scene": "A sophisticated workspace vignette featuring an open tablet showing high-converting social media templates alongside a sleek minimalist calculator and printed analytics charts on #F5F0E8 paper. Deep #1B4332 and #2D6A4F tones dominate the scene, exuding professionalism and high ROI, 3:4 portrait ratio.",
+              "title": "Solo Agency Growth Metrics & Templates",
+              "number": 8
+            },
+            {
+              "type": "Feature List",
+              "scene": "An organized graphic flat lay on a #212529 surface showing stacked digital asset icons representing 50+ Canva templates, custom icons, and brand guidelines. Clean Inter typography lists key features like 'Fully Customizable' and 'Zero Design Skills Needed'. High-contrast modern infographic style, 3:4 portrait ratio.",
+              "title": "What's Included Bundle Breakdown",
+              "number": 9
+            },
+            {
+              "type": "Call to Action",
+              "scene": "A clean, inviting final slide mockup featuring a minimalist laptop screen displaying a 'Thank You & Instant Download Access' confirmation page from TinyDesks Studio. Accented by a fresh monstera leaf in a #2D6A4F ceramic pot and a warm desk lamp casting a soft glow. Welcoming and executive, 3:4 portrait ratio.",
+              "title": "Instant Access & Download Guide",
+              "number": 10
+            }
+          ],
+          "videoPrompt": "A 10-second high-end promotional video for TinyDesks Studio Canva Social Media Kits, structured for an Etsy listing: [0-2s] Close-up macro shot of a sleek matte gold tablet sliding into frame on a dark slate desk, revealing a stunning social media template in #2D6A4F and #F5F0E8. [2-4s] Dynamic smooth zoom-out revealing the full solo agency founder workspace with soft morning light hitting a minimalist coffee cup and modern monitor. [4-6s] Rapid screen recording montage showing mouse clicks effortlessly swapping colors and text inside the Canva editor using Syne and Inter fonts. [6-8s] Clean transition to a smartphone mockup cycling through 3 distinct Instagram carousel designs with fluid slide animations. [8-10s] Final crisp title card on a #212529 background displaying the brand name 'TinyDesks Studio' in bold gold lettering with the text 'Instant Download' below. Ultra-clean, executive pacing, professional motion graphics.",
+          "categoryName": "Daily, Weekly & Life Productivity Planners",
+          "documentSpecs": {
+            "margins": "64px",
+            "pageCount": 20,
+            "dimensions": "1080px x 1350px",
+            "typography": {
+              "bodyFont": "Inter",
+              "accentFont": "Inter",
+              "headingFont": "Syne"
+            },
+            "colorSystem": {
+              "darkText": "#212529",
+              "highlight": "#D8F3DC",
+              "primaryAccent": "#2D6A4F",
+              "backgroundTint": "#F5F0E8",
+              "secondaryAccent": "#1B4332"
+            }
+          },
+          "pageBreakdown": [
+            {
+              "title": "Master Studio Cover",
+              "purpose": "First impression and high-end brand alignment for social media kits.",
+              "section": "Cover",
+              "elements": [
+                "Brand Name header: TinyDesks Studio",
+                "Primary Title in Syne: Canva Social Media Kits #1",
+                "Sub-headline: TinyDesks Studio Style",
+                "Minimalist architectural framing lines",
+                "Solid #F5F0E8 background with #212529 text"
+              ],
+              "pageNumber": 1,
+              "layoutSpecs": "Bold typography-driven layout utilizing Syne heading over a clean background tint."
+            },
+            {
+              "title": "Quick-Start Guide",
+              "purpose": "Ensure seamless onboarding for buyers and eliminate support queries.",
+              "section": "Onboarding",
+              "elements": [
+                "Step 1: Accessing your Canva templates via secure link",
+                "Step 2: Customizing color palettes and brand fonts",
+                "Step 3: Swapping out high-end lifestyle mockups",
+                "Step 4: Exporting for Instagram and LinkedIn feeds",
+                "Troubleshooting FAQs and support contact details"
+              ],
+              "pageNumber": 2,
+              "layoutSpecs": "Multi-column layout with numbered step blocks and high-contrast icons."
+            },
+            {
+              "title": "Brand Pillar Mapping",
+              "purpose": "Define core content themes aligned with executive solo-agency systems.",
+              "section": "Strategy",
+              "elements": [
+                "Core Pillar 1: Executive Thought Leadership",
+                "Core Pillar 2: Systems & Workflow Automation",
+                "Core Pillar 3: Case Studies & Client Wins",
+                "Core Pillar 4: Promotional & Offer Launches",
+                "Pillar alignment checklist for monthly planning"
+              ],
+              "pageNumber": 3,
+              "layoutSpecs": "Four quadrant grid system with bold category headers."
+            },
+            {
+              "title": "Audience Pain Point Matrix",
+              "purpose": "Map client challenges directly to high-converting social hooks.",
+              "section": "Strategy",
+              "elements": [
+                "Target Audience Persona characteristics",
+                "Primary Pain Point identification blocks",
+                "Direct Solution Mapping formulas",
+                "Hook text generator prompts"
+              ],
+              "pageNumber": 4,
+              "layoutSpecs": "Comparative two-column structured data table."
+            },
+            {
+              "title": "Monthly Content Calendar Matrix",
+              "purpose": "High-level visual scheduling of 30 days of high-impact content.",
+              "section": "Execution",
+              "elements": [
+                "Monthly thematic focus input field",
+                "Daily content format indicators (Carousel, Reel, Static, Story)",
+                "Weekly review milestones",
+                "Key promotional date markers"
+              ],
+              "pageNumber": 5,
+              "layoutSpecs": "7-column calendar grid with color-coded content types."
+            },
+            {
+              "title": "Weekly Campaign Blueprint",
+              "purpose": "Break down weekly execution into manageable solo-agency tasks.",
+              "section": "Execution",
+              "elements": [
+                "Monday: Thought Leadership Carousel framework",
+                "Wednesday: Social Proof / Case Study spotlight",
+                "Friday: High-conversion Offer and CTA drop",
+                "Weekend: Engagement and community nurturing tasks"
+              ],
+              "pageNumber": 6,
+              "layoutSpecs": "Linear timeline layout broken down by Monday through Sunday."
+            },
+            {
+              "title": "Thought Leadership Carousels",
+              "purpose": "Multi-slide swipeable frameworks designed for maximum save rates.",
+              "section": "Templates",
+              "elements": [
+                "Hook slide template with oversized bold typography",
+                "Value breakdown body slide layouts",
+                "Actionable summary slide with strong call-to-action",
+                "Swipe indicator visual cues"
+              ],
+              "pageNumber": 7,
+              "layoutSpecs": "Modular 3-slide visual mockup grid with clear directional arrows."
+            },
+            {
+              "title": "Executive Quote & Insight Posts",
+              "purpose": "Establish authority and share bite-sized philosophical frameworks.",
+              "section": "Templates",
+              "elements": [
+                "Prominent quotation styling using Syne font",
+                "Author credential subtext bar",
+                "Subtle framing borders in #2D6A4F",
+                "Engagement prompt footer"
+              ],
+              "pageNumber": 8,
+              "layoutSpecs": "Asymmetrical text alignment layout with ample negative space."
+            },
+            {
+              "title": "Data & Framework Breakdowns",
+              "purpose": "Visualizing complex business metrics and workflow systems.",
+              "section": "Templates",
+              "elements": [
+                "Large percentage/metric stat block",
+                "Three-step horizontal process flow",
+                "Clean bulleted takeaway list",
+                "Source attribution line"
+              ],
+              "pageNumber": 9,
+              "layoutSpecs": "Infographic-style structured layout with distinct stat callouts."
+            },
+            {
+              "title": "Case Study & Testimonial Spotlights",
+              "purpose": "Build trust and social proof through clean, verified transformations.",
+              "section": "Templates",
+              "elements": [
+                "Client avatar placeholder ring",
+                "Verified testimonial quotation box",
+                "Before and after result stat pills",
+                "Call-to-action link reference"
+              ],
+              "pageNumber": 10,
+              "layoutSpecs": "Split-screen layout with quote card and metric achievements."
+            },
+            {
+              "title": "Promotional Launch Graphics",
+              "purpose": "Drive conversions for digital products, courses, or services.",
+              "section": "Templates",
+              "elements": [
+                "Urgency banner header",
+                "Core offer title block in Syne",
+                "Feature list checkmarks",
+                "High-contrast 'Enroll Now / Shop Now' button graphic"
+              ],
+              "pageNumber": 11,
+              "layoutSpecs": "High-impact central focal point with badge overlays and bold typography."
+            },
+            {
+              "title": "Interactive Story Prompts",
+              "purpose": "Boost Instagram/LinkedIn story engagement using native sticker spaces.",
+              "section": "Templates",
+              "elements": [
+                "Poll question container design",
+                "Q&A slider background template",
+                "Behind-the-scenes photo placeholder frame",
+                "Tap-through arrow indicators"
+              ],
+              "pageNumber": 12,
+              "layoutSpecs": "Vertical mobile-optimized story canvas layout."
+            },
+            {
+              "title": "Batch Creation Productivity Tracker",
+              "purpose": "Streamline content creation sessions for busy professionals and moms.",
+              "section": "Workflows",
+              "elements": [
+                "Batching session timer goals",
+                "Idea generation to final export checklist",
+                "Asset collection log (images, links, copy)",
+                "Completion progress bar"
+              ],
+              "pageNumber": 13,
+              "layoutSpecs": "Checklist-heavy productivity dashboard layout."
+            },
+            {
+              "title": "Copywriting Swipe File & Hooks",
+              "purpose": "Store high-converting hooks and copywriting frameworks in one place.",
+              "section": "Workflows",
+              "elements": [
+                "Curiosity hook templates",
+                "Direct-benefit headline formulas",
+                "Contrarian take idea starters",
+                "Custom notes input fields"
+              ],
+              "pageNumber": 14,
+              "layoutSpecs": "Categorized card grid for quick copywriting retrieval."
+            },
+            {
+              "title": "Monthly Performance KPI Dashboard",
+              "purpose": "Track social media growth metrics and ROI on content output.",
+              "section": "Analytics",
+              "elements": [
+                "Follower growth tracking block",
+                "Engagement rate percentage card",
+                "Top-performing post identification table",
+                "Action items for the upcoming month"
+              ],
+              "pageNumber": 15,
+              "layoutSpecs": "Metric card layout with trend comparison indicators."
+            },
+            {
+              "title": "Content Audit & Optimization",
+              "purpose": "Review past performance to refine the solo-agency social system.",
+              "section": "Analytics",
+              "elements": [
+                "Content format winner analysis",
+                "Posting time optimization tracker",
+                "Audience feedback synthesis notes",
+                "Next iteration strategy adjustments"
+              ],
+              "pageNumber": 16,
+              "layoutSpecs": "Structured audit worksheet table with rating scales."
+            },
+            {
+              "title": "Color & Typography Brand Guide",
+              "purpose": "Maintain brand consistency across all Canva templates.",
+              "section": "Resources",
+              "elements": [
+                "Hex code swatches (#2D6A4F, #F5F0E8, #1B4332, #D8F3DC, #212529)",
+                "Heading font display: Syne",
+                "Body font display: Inter",
+                "Visual hierarchy rules"
+              ],
+              "pageNumber": 17,
+              "layoutSpecs": "Palette swatch display alongside typography hierarchy examples."
+            },
+            {
+              "title": "Canva Shortcut & Efficiency Hacks",
+              "purpose": "Speed up template customization for high-efficiency operators.",
+              "section": "Resources",
+              "elements": [
+                "Essential keyboard shortcuts list",
+                "Bulk create feature instructions",
+                "Brand kit setup checklist",
+                "Quick export settings guide"
+              ],
+              "pageNumber": 18,
+              "layoutSpecs": "Two-column cheat sheet with shortcut keys and workflow tips."
+            },
+            {
+              "title": "Executive Notes & Brainstorming",
+              "purpose": "Provide open canvas space for unstructured strategic planning.",
+              "section": "Notes",
+              "elements": [
+                "Date and topic header line",
+                "High-end dotted grid pattern",
+                "Bottom action item extraction box"
+              ],
+              "pageNumber": 19,
+              "layoutSpecs": "Clean dotted grid layout with minimalist header bar."
+            },
+            {
+              "title": "Studio Closing & Next Steps",
+              "purpose": "Encourage reviews, community joining, and ongoing brand loyalty.",
+              "section": "Outro",
+              "elements": [
+                "Thank you message from TinyDesks Studio",
+                "Invitation to join the private creator community",
+                "Review reminder call-to-action",
+                "Copyright and brand sign-off"
+              ],
+              "pageNumber": 20,
+              "layoutSpecs": "Centered minimalist typography layout with generous negative space."
+            }
+          ],
+          "targetAudience": "Intentional professionals, busy moms, students, and productivity enthusiasts",
+          "googleFlowPrompt": "Generate a cohesive 20-page digital product document titled 'Canva Social Media Kits #1 — TinyDesks Studio Style' designed for intentional professionals and solo agency owners. Format: 3:4 portrait aspect ratio. Aesthetic: Sharp, executive, ultra-clean, results-focused. Color Palette: Forest green primary accent (#2D6A4F), warm off-white background tint (#F5F0E8), deep forest secondary accent (#1B4332), mint highlight (#D8F3DC), and dark charcoal text (#212529). Typography style: Bold geometric headers (Syne) paired with ultra-clean modern body text (Inter). The document covers master studio covers, quick-start onboarding guides, brand pillar mapping, content calendar matrices, multi-slide thought leadership carousels, executive quote posts, data breakdown infographics, case study templates, promotional launch graphics, story engagement prompts, batch productivity trackers, copywriting swipe files, KPI dashboards, brand style guides, and executive note pages. STRICT NEGATIVE CONSTRAINT: NEVER paint page numbers, page indices, or numeric prefixes (such as 'PAGE 1', 'Page 2', 'Spread 3') anywhere onto the visual artwork or layouts.",
+          "masterMockupPrompt": "A comprehensive collection of 10 photorealistic Etsy listing mockups for Canva Social Media Kits by TinyDesks Studio, featuring an executive color palette of deep forest green, off-white, slate black, and mint (#2D6A4F, #F5F0E8, #1B4332, #D8F3DC, #212529) with Syne and Inter typography styles, all formatted in 3:4 portrait ratio: [1] Executive desk flat lay with matte gold tablet and espresso cup on slate desk. [2] Solo agency founder home office workspace with monitor and natural morning light. [3] Brand palette and typography graphic showcase with geometric color blocks. [4] Smartphone mockup displaying seamless Instagram carousel grid on solid off-white background. [5] Client pitch deck presentation on MacBook Pro with dark walnut table and embossed notebook. [6] Batch content creation workflow overhead shot showing Canva grid of 20+ templates. [7] Two vertical smartphones on concrete pedestal showing Story and Reel cover templates. [8] Growth metrics and high-converting templates setup with minimalist calculator. [9] Bundle breakdown infographic flat lay with clean feature text on dark slate surface. [10] Instant access download screen on laptop with warm desk lamp and ceramic plant. Commercial editorial photography style, ultra-sharp focus, 8k resolution, --ar 3:4"
+        },
+        "updatedAt": "2026-09-16T09:10:05.122Z",
+        "studioPercent": 20
       },
       {
         "code": "TIN-02",
@@ -45300,7 +45748,7 @@
         "approved": true,
         "bonusUsd": 75,
         "targetPct": 70,
-        "updatedAt": "2026-09-07T11:16:40.587Z"
+        "updatedAt": "2026-09-11T12:37:52.329Z"
       }
     }
   }

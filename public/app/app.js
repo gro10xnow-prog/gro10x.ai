@@ -34,6 +34,8 @@
   };
 
   const loadedModules = {};
+  const moduleLoadPromises = {};
+  let routeNavSeq = 0;
 
   document.addEventListener('DOMContentLoaded', async () => {
     await validateServerSession();
@@ -182,12 +184,57 @@
     setInterval(updateSidebarBadges, 45000);
   }
 
+  // Global Cross-Module Modal Dispatchers
+  window.openNewInvoiceModal = function() {
+    sessionStorage.setItem('gro10x_pending_action', 'open_invoice_modal');
+    if (window.location.hash === '#finance') {
+      if (window.FINANCE_MODULE && typeof window.FINANCE_MODULE.openNewInvoiceModal === 'function') {
+        sessionStorage.removeItem('gro10x_pending_action');
+        window.FINANCE_MODULE.openNewInvoiceModal();
+      }
+    } else {
+      window.location.hash = '#finance';
+    }
+  };
+
+  window.openNewTaskModal = function() {
+    sessionStorage.setItem('gro10x_pending_action', 'open_task_modal');
+    if (window.location.hash === '#kanban') {
+      if (window.KANBAN_MODULE && typeof window.KANBAN_MODULE.openNewTaskModal === 'function') {
+        sessionStorage.removeItem('gro10x_pending_action');
+        window.KANBAN_MODULE.openNewTaskModal();
+      }
+    } else {
+      window.location.hash = '#kanban';
+    }
+  };
+
+  // Global Cross-Module Currency Switchers
+  window.switchDigiStoreCurrency = function(curr) {
+    if (window.DigistoreModule && typeof window.DigistoreModule.switchCurrency === 'function') {
+      window.DigistoreModule.switchCurrency(curr);
+    }
+  };
+  window.switchDigistoreCurrency = window.switchDigiStoreCurrency;
+
+  window.switchDBMCurrency = function(curr) {
+    if (window.DBMModule && typeof window.DBMModule.switchCurrency === 'function') {
+      window.DBMModule.switchCurrency(curr);
+    }
+  };
+  window.switchDbmCurrency = window.switchDBMCurrency;
+
+  window.switchReviewsCurrency = function(curr) {
+    return curr || 'USD';
+  };
+
   function initRouter() {
     window.addEventListener('hashchange', handleRoute);
     handleRoute(); // Boot current hash or default
   }
 
   async function handleRoute() {
+    const currentSeq = ++routeNavSeq;
     let hash = window.location.hash;
     if (!hash) {
       const user = window.CURRENT_USER || {};
@@ -236,7 +283,11 @@
       // Lazy load module script if not already loaded
       if (!loadedModules[routeInfo.module]) {
         await loadModuleScript(routeInfo.module);
-        loadedModules[routeInfo.module] = true;
+      }
+
+      if (currentSeq !== routeNavSeq) {
+        // Navigation superseded by newer route change
+        return;
       }
 
       // Execute module render method
@@ -249,6 +300,23 @@
       if (typeof renderFn === 'function') {
         viewContainer.innerHTML = '';
         await renderFn(viewContainer);
+
+        if (currentSeq !== routeNavSeq) return;
+
+        // Process any cross-module pending actions (e.g. from Executive Overview or Command Palette)
+        try {
+          const pendingAction = sessionStorage.getItem('gro10x_pending_action');
+          if (pendingAction) {
+            sessionStorage.removeItem('gro10x_pending_action');
+            if (pendingAction === 'open_task_modal' && window.KANBAN_MODULE?.openNewTaskModal) {
+              window.KANBAN_MODULE.openNewTaskModal();
+            } else if ((pendingAction === 'open_invoice_modal' || pendingAction === 'open_invoice') && window.FINANCE_MODULE?.openNewInvoiceModal) {
+              window.FINANCE_MODULE.openNewInvoiceModal();
+            }
+          }
+        } catch (pendingErr) {
+          console.warn('[GRO10X Router] Pending action handler note:', pendingErr);
+        }
       } else {
         console.error(`[PurpleOS Router] Module function missing for '${moduleName}'. Available:`, Object.keys(window.APP_MODULES || {}));
         viewContainer.innerHTML = `
@@ -260,6 +328,7 @@
         `;
       }
     } catch (err) {
+      if (currentSeq !== routeNavSeq) return;
       console.error(`[PurpleOS Router] Error loading route ${hash}:`, err);
       viewContainer.innerHTML = `
         <div class="card-glass" style="text-align:center; padding:3rem;">
@@ -273,19 +342,40 @@
   }
 
   function loadModuleScript(moduleFile) {
-    return new Promise((resolve, reject) => {
+    if (loadedModules[moduleFile]) return Promise.resolve();
+    if (moduleLoadPromises[moduleFile]) return moduleLoadPromises[moduleFile];
+
+    const moduleName = moduleFile.replace('.js', '');
+    if (window.APP_MODULES && (window.APP_MODULES[moduleName] || window.APP_MODULES[moduleFile])) {
+      loadedModules[moduleFile] = true;
+      return Promise.resolve();
+    }
+
+    if (document.querySelector(`script[data-module="${moduleFile}"]`)) {
+      loadedModules[moduleFile] = true;
+      return Promise.resolve();
+    }
+
+    moduleLoadPromises[moduleFile] = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `/app/modules/${moduleFile}?v=${Date.now()}`;
+      script.setAttribute('data-module', moduleFile);
+      script.src = `/app/modules/${moduleFile}?v=3.0`;
       script.onload = () => {
+        loadedModules[moduleFile] = true;
+        delete moduleLoadPromises[moduleFile];
         console.log(`[PurpleOS Router] Script loaded successfully: /app/modules/${moduleFile}`);
         resolve();
       };
       script.onerror = (e) => {
+        delete moduleLoadPromises[moduleFile];
+        delete loadedModules[moduleFile];
         console.error(`[PurpleOS Router] Failed script load event for /app/modules/${moduleFile}`, e);
         reject(new Error(`Could not load /app/modules/${moduleFile}`));
       };
       document.body.appendChild(script);
     });
+
+    return moduleLoadPromises[moduleFile];
   }
 
   // Global Toast Notification Helper
@@ -394,6 +484,7 @@
       { type: 'Navigation', icon: '⚙️', title: 'Workspace Settings & API', hash: '#settings' },
       // Quick Actions
       { type: 'Action', icon: '🛍️', title: 'Open Brand Command Center', action: () => { window.location.hash = '#brands'; } },
+      { type: 'Action', icon: '⚡', title: 'Launch Digital Commerce Engine (DCE)', action: () => window.open('/dce', '_blank') },
       { type: 'Action', icon: '💼', title: 'Open Investor & Capital Partner Hub', action: () => window.open('/investors.html', '_blank') },
       { type: 'Action', icon: '📥', title: 'Bulk Import Tasks & Projects (CSV)', action: () => { window.location.hash = '#kanban'; setTimeout(() => window.KANBAN_MODULE?.openImportModal(), 400); } },
       { type: 'Action', icon: '✨', title: 'Open Live Ops Health Center', action: () => window.openOpsHealthModal() },

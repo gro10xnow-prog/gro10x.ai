@@ -63,22 +63,25 @@ async function runPhaseD5(page) {
     await tracker.screenshot(page, 'D5.2_miniapp_amount_due.png');
   });
 
-  await tracker.runStep('D5.3', 'Payment Method Switcher (bKash, Nagad, Bank, Rocket chips)', async () => {
-    const chips = await page.evaluate(() => {
-      const pmChips = document.querySelectorAll('.payment-method-grid .pm-chip');
-      if (typeof window.selectPayMethod === 'function') {
-        window.selectPayMethod('nagad');
-      }
-      const nagadSelected = document.getElementById('pmNagad')?.classList.contains('selected');
-      return { count: pmChips.length, nagadSelected };
+  await tracker.runStep('D5.3', 'Corporate Banking Settlement Rail (BRAC Bank PLC)', async () => {
+    const bankChip = await page.evaluate(() => {
+      const pmBank = document.getElementById('pmBank');
+      const isSelected = pmBank ? pmBank.classList.contains('selected') : false;
+      const label = pmBank?.textContent || '';
+      return {
+        exists: pmBank !== null,
+        isSelected,
+        hasBrac: label.includes('BRAC Bank') || label.includes('Corporate Bank')
+      };
     });
 
-    tracker.assert(chips.count === 4, 'Must offer 4 payment gateways (bKash, Nagad, Bank, Rocket)');
-    tracker.assert(chips.nagadSelected, 'Selecting Nagad method should update selected state');
-    await tracker.screenshot(page, 'D5.3_miniapp_nagad_selected.png');
+    tracker.assert(bankChip.exists, '#pmBank payment method chip must exist');
+    tracker.assert(bankChip.isSelected, 'Corporate Bank wire transfer must be selected');
+    tracker.assert(bankChip.hasBrac, 'Corporate settlement rail must reference BRAC Bank Limited');
+    await tracker.screenshot(page, 'D5.3_miniapp_bank_selected.png');
   });
 
-  await tracker.runStep('D5.4', 'Payment Instructions Box & Dynamic Account Information', async () => {
+  await tracker.runStep('D5.4', 'Payment Instructions Box & BRAC Bank Institutional Settlement Details', async () => {
     const instructions = await page.evaluate(() => {
       const box = document.getElementById('paymentInstructions');
       const text = document.getElementById('payInstrText')?.innerText || '';
@@ -86,7 +89,12 @@ async function runPhaseD5(page) {
     });
 
     tracker.assert(instructions.hasBox, 'Payment instructions card must exist');
-    tracker.assert(instructions.text.includes('Nagad') || instructions.text.includes('01708-459008'), 'Instructions must show correct gateway details');
+    tracker.assert(
+      instructions.text.includes('Neoncore Tech Solution') &&
+      instructions.text.includes('2081636480001') &&
+      instructions.text.includes('060263290'),
+      'Instructions must display official BRAC Bank details (Neoncore Tech Solution, 2081636480001, Mohakhali / 060263290)'
+    );
   });
 
   await tracker.runStep('D5.5', 'Transaction Reference & Payment Date Form Entry', async () => {

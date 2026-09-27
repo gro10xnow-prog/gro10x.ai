@@ -975,11 +975,49 @@
         });
         const data = await res.json();
         if (data.success) {
-          closeModal('acceptModal');
-          showToast('🎉 Proposal Accepted! Our team has been notified.');
+          const onboardingUrl = data.onboardingUrl || `/client#lockin?specId=${data.specId || ''}`;
+          const modalInner = document.querySelector('#acceptModal .modal-card');
+          if (modalInner) {
+            const invoiceLink = data.invoiceUrl || '/client#invoices';
+            const invoiceBadge = data.invoiceId ? `
+              <div style="display:inline-block; padding:6px 14px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:var(--primary); font-size:13px; font-weight:600; margin-bottom:18px;">
+                💳 Settlement Invoice <strong>#${escapeHTML(data.invoiceId)}</strong> (5% VAT Included) Generated
+              </div>
+            ` : '';
+
+            modalInner.innerHTML = `
+              <div style="text-align:center; padding:10px 0;">
+                <div style="font-size:48px; margin-bottom:12px;">🎉</div>
+                <h3 class="modal-title" style="color:var(--primary); font-size:24px;">Proposal Accepted & Locked!</h3>
+                ${invoiceBadge}
+                <p class="modal-desc" style="font-size:15px; line-height:1.6; color:#e2e8f0; margin-bottom:24px;">
+                  Your dedicated <strong>Project Lock-In & Handover Cockpit</strong> has been provisioned. 
+                  Proceed to verify technical contacts, inspect scope boundaries, and settle the initial milestone deposit.
+                </p>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                  <a href="${onboardingUrl}" class="btn btn-primary" style="display:flex; justify-content:center; align-items:center; gap:8px; text-decoration:none; padding:14px 20px; font-size:15px;">
+                    <span>🚀</span> Enter Project Handover Cockpit ➔
+                  </a>
+                  <a href="${invoiceLink}" class="btn" style="display:flex; justify-content:center; align-items:center; gap:8px; text-decoration:none; padding:12px 20px; font-size:14px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:var(--primary);">
+                    <span>💳</span> View Corporate Settlement Invoice ➔
+                  </a>
+                  <button class="btn btn-outline" onclick="closeModal('acceptModal'); downloadProposalPDF();" style="display:flex; justify-content:center; align-items:center; gap:8px;">
+                    <span>📥</span> Download Signed SOW PDF
+                  </button>
+                </div>
+              </div>
+            `;
+          } else {
+            closeModal('acceptModal');
+          }
+          showToast('🎉 Proposal Accepted! Onboarding Cockpit provisioned.');
           document.getElementById('proposalStatusBadge').textContent = 'Accepted';
           document.getElementById('proposalStatusBadge').classList.add('accepted');
-          document.getElementById('btnAcceptProposal').style.display = 'none';
+          const acceptBtn = document.getElementById('btnAcceptProposal');
+          if (acceptBtn) {
+            acceptBtn.innerHTML = '<span>🔒</span> Handover Cockpit';
+            acceptBtn.onclick = () => window.location.href = onboardingUrl;
+          }
         }
       } catch (e) {
         showToast('Error recording acceptance', true);

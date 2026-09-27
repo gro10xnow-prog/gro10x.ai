@@ -268,8 +268,9 @@ async function handleManagerLeaveApprovals(teamBot, msg) {
       });
     }
 
+    const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
     inlineKeyboard.push([
-      { text: '🌐 Open Web Manager Portal', url: 'https://gro10x-ai.vercel.app/manager' }
+      { text: '🌐 Open Web Workspace', url: `${baseUrl}/workspace#operations` }
     ]);
 
     teamBot.sendMessage(chatId, text, {

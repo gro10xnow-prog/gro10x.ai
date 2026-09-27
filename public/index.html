@@ -69,6 +69,7 @@
       <nav class="pb-nav-links" id="desktopNavLinks">
         <a href="#capabilities" class="pb-nav-link">AI Capabilities</a>
         <a href="#services" class="pb-nav-link">AI Services</a>
+        <a href="/ai-audit" class="pb-nav-link" style="color:#00df89; font-weight:700;">⚡ AI Audit</a>
         <a href="#roadmap" class="pb-nav-link">Scaling Roadmap</a>
         <a href="#pricing" class="pb-nav-link">Pricing</a>
         <a href="#contact" class="pb-nav-link">Contact</a>
@@ -104,6 +105,7 @@
         </div>
         <a href="#capabilities" class="pb-mobile-link" onclick="closeMobileMenu()">AI Capabilities</a>
         <a href="#services" class="pb-mobile-link" onclick="closeMobileMenu()">AI Services</a>
+        <a href="/ai-audit" class="pb-mobile-link" style="color:#00df89; font-weight:700;" onclick="closeMobileMenu()">⚡ AI Readiness Audit</a>
         <a href="#roadmap" class="pb-mobile-link" onclick="closeMobileMenu()">Scaling Roadmap</a>
         <a href="#pricing" class="pb-mobile-link" onclick="closeMobileMenu()">Pricing & Retainers</a>
         <a href="#contact" class="pb-mobile-link" onclick="closeMobileMenu()">Contact Us</a>
@@ -144,8 +146,11 @@
           <button onclick="openLeadModal('AI Transactional Setup ($1,500)')" class="pb-btn-primary pb-btn-lg">
             🚀 Book AI Setup (<span data-curr-usd="$1,500" data-curr-bdt="৳175,000">$1,500</span>)
           </button>
+          <a href="/ai-audit" class="pb-btn-secondary pb-btn-lg" style="border-color: rgba(0, 223, 137, 0.45); background: rgba(0, 223, 137, 0.08); color: #00df89;">
+            📊 Free AI Diagnostic Audit
+          </a>
           <a href="#capabilities" class="pb-btn-secondary pb-btn-lg">
-            ⚡ Explore AI Capabilities
+            ⚡ Explore Capabilities
           </a>
           <button onclick="openGroBot('General Inquiry')" class="pb-btn-ghost pb-btn-lg">
             <span>Live AI Assistant</span>
@@ -570,6 +575,25 @@
 
           </div>
 
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION: VERIFIED CLIENT TESTIMONIALS SHOWCASE -->
+    <section class="pb-section" id="testimonials" style="background: rgba(15,23,42,0.4); border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06);">
+      <div class="pb-container">
+        
+        <div class="pb-section-header">
+          <span class="pb-pill-tag">VERIFIED SOCIAL PROOF</span>
+          <h2 class="pb-section-title">Endorsed by Enterprise Leaders & Founders</h2>
+          <p class="pb-section-desc">
+            Direct post-acceptance reviews and Net Promoter Scores (NPS) harvested following verified sprint milestone sign-offs.
+          </p>
+        </div>
+
+        <div id="indexTestimonialsGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; margin-top:2.5rem;">
+          <!-- Loaded dynamically via /api/reviews/testimonials/showcase -->
         </div>
 
       </div>

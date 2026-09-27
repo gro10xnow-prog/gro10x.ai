@@ -1,0 +1,465 @@
+{
+  "customers": {
+    "CUST-KO8YIBU": {
+      "id": "CUST-KO8YIBU",
+      "email": "test.creator.1789155059713@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-11T19:30:59.811Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-HWFBES2": {
+      "id": "CUST-HWFBES2",
+      "email": "test.creator.1789155073831@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-11T19:31:13.963Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-GJT3WUC": {
+      "id": "CUST-GJT3WUC",
+      "email": "test.creator.1789155090272@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-11T19:31:30.378Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-IZUKR64": {
+      "id": "CUST-IZUKR64",
+      "email": "test.creator.1789155133152@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-11T19:32:13.256Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-ZCRUYOJ": {
+      "id": "CUST-ZCRUYOJ",
+      "email": "creator.demo@plannerqueengro.com",
+      "name": "Elena (VIP Creator)",
+      "createdAt": "2026-09-11T19:36:17.278Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-LEZT7CC": {
+      "id": "CUST-LEZT7CC",
+      "email": "test.creator.1789155718485@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-11T19:41:58.580Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-LPEBYZQ": {
+      "id": "CUST-LPEBYZQ",
+      "email": "test.creator.1789425259138@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-14T22:34:19.246Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-JOLE144": {
+      "id": "CUST-JOLE144",
+      "email": "test.creator.1789596106728@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-16T22:01:46.842Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-ZT4JWT5": {
+      "id": "CUST-ZT4JWT5",
+      "email": "test.creator.1789937971374@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-20T20:59:31.528Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-8VV4B5W": {
+      "id": "CUST-8VV4B5W",
+      "email": "test.creator.1789940817032@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-20T21:46:57.153Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-9P0QSB2": {
+      "id": "CUST-9P0QSB2",
+      "email": "test.creator.1790526326759@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-09-27T16:25:27.192Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    }
+  },
+  "wallets": {
+    "CUST-KO8YIBU": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-HWFBES2": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-GJT3WUC": {
+      "balance": 200,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-IZUKR64": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-ZCRUYOJ": {
+      "balance": 130,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-LEZT7CC": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-LPEBYZQ": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-JOLE144": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-ZT4JWT5": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-8VV4B5W": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-9P0QSB2": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    }
+  },
+  "transactions": {
+    "CUST-KO8YIBU": [
+      {
+        "id": "TXN-1789155063130",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-11T19:31:03.130Z"
+      },
+      {
+        "id": "TXN-1789155059811",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-11T19:30:59.811Z"
+      }
+    ],
+    "CUST-HWFBES2": [
+      {
+        "id": "TXN-1789155075116",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-11T19:31:15.116Z"
+      },
+      {
+        "id": "TXN-1789155073963",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-11T19:31:13.963Z"
+      }
+    ],
+    "CUST-GJT3WUC": [
+      {
+        "id": "TXN-1789155090378",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-11T19:31:30.378Z"
+      }
+    ],
+    "CUST-IZUKR64": [
+      {
+        "id": "TXN-1789155144995",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-11T19:32:24.995Z"
+      },
+      {
+        "id": "TXN-1789155133256",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-11T19:32:13.256Z"
+      }
+    ],
+    "CUST-ZCRUYOJ": [
+      {
+        "id": "TXN-1790023663120",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-21T20:47:43.120Z"
+      },
+      {
+        "id": "TXN-1789983378144",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-21T09:36:18.144Z"
+      },
+      {
+        "id": "TXN-1789975871135",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-21T07:31:11.135Z"
+      },
+      {
+        "id": "TXN-1789974807587",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-21T07:13:27.587Z"
+      },
+      {
+        "id": "TXN-1789974002422",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-21T07:00:02.422Z"
+      },
+      {
+        "id": "TXN-1789973668357",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-21T06:54:28.357Z"
+      },
+      {
+        "id": "TXN-1789973581763",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-21T06:53:01.763Z"
+      },
+      {
+        "id": "TXN-1789155377278",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-11T19:36:17.278Z"
+      }
+    ],
+    "CUST-LEZT7CC": [
+      {
+        "id": "TXN-1789155724917",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-11T19:42:04.917Z"
+      },
+      {
+        "id": "TXN-1789155718580",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-11T19:41:58.580Z"
+      }
+    ],
+    "CUST-LPEBYZQ": [
+      {
+        "id": "TXN-1789425271224",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-14T22:34:31.224Z"
+      },
+      {
+        "id": "TXN-1789425259246",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-14T22:34:19.246Z"
+      }
+    ],
+    "CUST-JOLE144": [
+      {
+        "id": "TXN-1789596119938",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-16T22:01:59.938Z"
+      },
+      {
+        "id": "TXN-1789596106842",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-16T22:01:46.842Z"
+      }
+    ],
+    "CUST-ZT4JWT5": [
+      {
+        "id": "TXN-1789937981390",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-20T20:59:41.390Z"
+      },
+      {
+        "id": "TXN-1789937971528",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-20T20:59:31.528Z"
+      }
+    ],
+    "CUST-8VV4B5W": [
+      {
+        "id": "TXN-1789940827526",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-20T21:47:07.526Z"
+      },
+      {
+        "id": "TXN-1789940817153",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-20T21:46:57.153Z"
+      }
+    ],
+    "CUST-9P0QSB2": [
+      {
+        "id": "TXN-1790526341458",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-09-27T16:25:41.458Z"
+      },
+      {
+        "id": "TXN-1790526327192",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-09-27T16:25:27.192Z"
+      }
+    ]
+  },
+  "states": {
+    "CUST-KO8YIBU": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-11T19:31:03.140Z"
+      }
+    },
+    "CUST-HWFBES2": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-11T19:31:15.129Z"
+      }
+    },
+    "CUST-GJT3WUC": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-11T19:31:45.410Z"
+      }
+    },
+    "CUST-IZUKR64": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-11T19:32:25.006Z"
+      }
+    },
+    "CUST-LEZT7CC": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-11T19:42:04.944Z"
+      }
+    },
+    "CUST-LPEBYZQ": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-14T22:34:31.239Z"
+      }
+    },
+    "CUST-JOLE144": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-16T22:01:59.963Z"
+      }
+    },
+    "CUST-ZT4JWT5": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-20T20:59:41.416Z"
+      }
+    },
+    "CUST-8VV4B5W": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-20T21:47:07.547Z"
+      }
+    },
+    "CUST-9P0QSB2": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-09-27T16:25:41.467Z"
+      }
+    }
+  }
+}

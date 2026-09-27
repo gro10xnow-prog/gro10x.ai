@@ -269,6 +269,14 @@ window.APP_SSE = {
     };
   },
 
+  on(eventType, callback) {
+    return this.subscribe(eventType, callback);
+  },
+
+  addEventListener(eventType, callback) {
+    return this.subscribe(eventType, callback);
+  },
+
   onAny(callback) {
     this._anyListeners.push(callback);
     if (!this._source) this.init();

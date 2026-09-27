@@ -219,7 +219,7 @@ async function runPhaseA3(page) {
     await tracker.screenshot(page, 'A3.5_review_room_studio.png');
   });
 
-  await tracker.runStep('A3.7', 'Review Room Media Filtering (Video, Image, PDF)', async () => {
+  await tracker.runStep('A3.7', 'Review Room Media Filtering (Video, Staging Apps, All)', async () => {
     // 1. Filter Video
     await page.evaluate(() => {
       window.REVIEWS_MODULE.filter('video');
@@ -228,13 +228,13 @@ async function runPhaseA3(page) {
     let isVideoActive = await page.$eval('#pill-video', el => el.classList.contains('active'));
     tracker.assert(isVideoActive, '#pill-video must have .active class');
 
-    // 2. Filter Image
+    // 2. Filter Staging
     await page.evaluate(() => {
-      window.REVIEWS_MODULE.filter('image');
+      window.REVIEWS_MODULE.filter('staging');
     });
     await wait(400);
-    let isImageActive = await page.$eval('#pill-image', el => el.classList.contains('active'));
-    tracker.assert(isImageActive, '#pill-image must have .active class');
+    let isStagingActive = await page.$eval('#pill-staging', el => el.classList.contains('active'));
+    tracker.assert(isStagingActive, '#pill-staging must have .active class');
 
     // 3. Reset All
     await page.evaluate(() => {
@@ -258,27 +258,27 @@ async function runPhaseA3(page) {
       return m && m.classList.contains('active');
     }, { timeout: 8000 });
 
-    // Populate review inputs
+    // Populate review inputs with valid values
     await page.evaluate(() => {
       const name = document.getElementById('nrProjectName');
       if (name) name.value = 'E2E Creative Master Cut v3';
       const client = document.getElementById('nrClient');
       if (client) {
-        if (client.options && client.options.length > 0) {
-          client.selectedIndex = 0;
+        if (client.options && client.options.length > 1) {
+          client.selectedIndex = 1;
         } else {
-          client.value = 'Chillox Bangladesh';
+          client.innerHTML = '<option value="Apex Global Enterprises">Apex Global Enterprises</option>';
+          client.selectedIndex = 0;
         }
       }
-      const type = document.getElementById('nrMediaType');
-      if (type) type.value = 'video';
-      const url = document.getElementById('nrMediaUrl');
-      if (url) url.value = 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-sky-in-a-sunset-26070-large.mp4';
+      const type = document.getElementById('nrDeliverableType');
+      if (type) type.value = 'staging_url';
+      const stagingUrl = document.getElementById('nrStagingUrl');
+      if (stagingUrl) stagingUrl.value = 'https://staging.clientapp.gro10x.ai';
     });
 
     await wait(300);
-    await tracker.screenshot(page, 'A3.6_review_approval_flow.png');
-
+    await tracker.screenshot(page, 'A3.8_review_submission_modal.png');
 
     // Intercept POST /api/reviews
     const res = await interceptApiCall(

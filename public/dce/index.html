@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — Digital Commerce Engine (DCE) OS</title>
+  <meta http-equiv="refresh" content="0; url=/workspace?engineId=engine3#pnl">
+  <script>
+    (function() {
+      window.location.replace('/workspace?engineId=engine3#pnl');
+    })();
+  </script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22%20%2232%22><text y=%2224%22 font-size=%2224%22>⚡</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #ec4899;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: relative;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .brand-logo .icon-badge {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    .brand-logo h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-logo span.tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: #0d1322;
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    .nav-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-tab:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Cards & Grids */
+    .grid-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0.8;
+    }
+
+    .metric-card .title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .metric-card .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .metric-card .sub {
+      font-size: 12px;
+      color: #10b981;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Section Panels */
+    .panel {
+      display: none;
+    }
+    .panel.active {
+      display: block;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .panel-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #1f2937;
+      color: var(--text);
+      border: 1px solid #374151;
+    }
+    .btn-secondary:hover {
+      background: #374151;
+    }
+
+    /* Sub-Bar / Command Mode Switcher */
+    .dce-sub-bar {
+      background: #0d1322;
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 24px;
+    }
+    .dce-sub-bar-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dce-sub-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Executive Hub Action Grid (Phase D1) */
+    .hub-action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+    .hub-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+      color: inherit;
+    }
+    .hub-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+    .hub-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .hub-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+    .hub-card-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hub-card-desc {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+    .hub-card-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .hub-link-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #38bdf8;
+      transition: gap 0.2s;
+    }
+    .hub-card:hover .hub-link-cta {
+      gap: 10px;
+      color: #fff;
+    }
+
+    /* Ecosystem Strip */
+    .ecosystem-strip {
+      background: rgba(17, 24, 39, 0.7);
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* Tables */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #0f172a;
+      padding: 14px 18px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 16px 18px;
+      border-bottom: 1px solid #1a2234;
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-channel {
+      font-family: var(--mono);
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #818cf8;
+    }
+
+    .badge-etsy { background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.4); color: #fb923c; }
+    .badge-amazon { background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); color: #facc15; }
+    .badge-gumroad { background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.4); color: #f472b6; }
+    .badge-daraz { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; }
+    .badge-direct { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; }
+
+    .badge-format {
+      font-family: var(--mono);
+      background: #1e293b;
+      color: #94a3b8;
+    }
+
+    .sku-code {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    /* Live SKU Generator Box */
+    .generator-card {
+      background: linear-gradient(145deg, #111827, #131d33);
+      border: 1px solid #29354d;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      margin-bottom: 32px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select, textarea {
+      background: #090e17;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: white;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .preview-box {
+      margin-top: 24px;
+      background: #060911;
+      border: 1px dashed #334155;
+      border-radius: 12px;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .preview-result {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 520px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header / Sub-Bar (Phase D1) -->
+  <div class="dce-sub-bar">
+    <div class="dce-sub-bar-inner">
+      <div class="dce-sub-title-group">
+        <a href="/dce" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: white;">
+          <div style="width: 34px; height: 34px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800;">⚡</div>
+          <div>
+            <div style="font-weight: 800; font-size: 15px; letter-spacing: -0.3px;">GRO10X Digital Commerce Engine</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Omnichannel Clearinghouse & Multi-Brand Hub</div>
+          </div>
+        </a>
+        <span class="badge badge-channel" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-weight: 700; border-color: rgba(16, 185, 129, 0.3);">● Live v5.0</span>
+      </div>
+
+      <div class="nav-tabs" id="viewModeTabs">
+        <button id="tabBtnOverview" class="nav-tab active" onclick="showTab('tab-overview')">📊 Command Hub</button>
+        <button id="tabBtnVerticals" class="nav-tab" onclick="showTab('tab-verticals')">⚡ Verticals</button>
+        <button id="tabBtnBrands" class="nav-tab" onclick="showTab('tab-brands')">🏷️ Brands</button>
+        <button id="tabBtnCategories" class="nav-tab" onclick="showTab('tab-categories')">🗂️ Categories</button>
+        <button id="tabBtnProducts" class="nav-tab" onclick="showTab('tab-products')">📦 Products & SKUs</button>
+        <button id="tabBtnSimulator" class="nav-tab" onclick="showTab('tab-simulator')">🧪 SKU Lab</button>
+        <a href="/dce/store" target="_blank" class="nav-tab" style="text-decoration: none; color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">🛍️ Store ↗</a>
+        <a href="/dce/track" target="_blank" class="nav-tab" style="text-decoration: none; color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3);">🔍 Track ↗</a>
+        <a href="/app" class="nav-tab" style="text-decoration: none; color: #00df89; border: 1px solid rgba(0, 223, 137, 0.3);">🛡️ Admin OS ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- Overview Tab (Executive Command Center) -->
+    <div id="tab-overview" class="panel active">
+      
+      <!-- Command Hero Welcome -->
+      <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(236, 72, 153, 0.08) 50%, rgba(16, 185, 129, 0.06) 100%); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 18px; padding: 24px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span class="badge badge-channel">EXECUTIVE COMMAND CENTER</span>
+            <span style="color: var(--text-muted); font-size: 12px;">Omnichannel Multi-Brand Core</span>
+          </div>
+          <h2 style="font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 6px;">
+            GRO10X Commerce Engine Hub
+          </h2>
+          <p style="color: var(--text-muted); font-size: 13px; max-width: 720px; line-height: 1.5;">
+            Unified command infrastructure for multi-channel sales ingestion (Etsy, Amazon, Gumroad, Daraz), automated cryptographic license issuance, post-sale helpdesk ticketing, and DigiVault BD subscription operations.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <a href="/dce/orders" class="btn btn-primary">
+            <span>🛒</span> Open Order Inbox
+          </a>
+          <button class="btn btn-secondary" onclick="showTab('tab-products')">
+            <span>📦</span> Manage Catalog SKUs
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Commerce Telemetry Cards -->
+      <div class="grid-metrics">
+        <div class="metric-card">
+          <div class="title">Total Ingested Revenue</div>
+          <div class="val" id="metric-rev" style="color: #38bdf8;">$24,850+</div>
+          <div class="sub">Across 5 Integrated Channels</div>
+        </div>
+        <div class="metric-card">
+          <div class="title">Omnichannel Orders</div>
+          <div class="val" id="metric-orders" style="color: #10b981;">48 Ingested</div>
+          <div class="sub">Etsy · Amazon · Gumroad · Direct</div>
+        </div>
+        <div class="metric-card">
+          <div class="title">Deployed SKUs</div>
+          <div class="val" id="metric-skus">4</div>
+          <div class="sub">Level 5 Channel Deployments</div>
+        </div>
+        <div class="metric-card">
+          <div class="title">Active Brands</div>
+          <div class="val" id="metric-brands">2</div>
+          <div class="sub">Level 2 Brand Portfolio</div>
+        </div>
+        <div class="metric-card">
+          <div class="title">DigiVault Subscriptions</div>
+          <div class="val" id="metric-subs" style="color: #f59e0b;">44+ Active</div>
+          <div class="sub">Reseller Accounts & Margin Engine</div>
+        </div>
+      </div>
+
+      <!-- Hidden compatibility metric counters for existing JS -->
+      <div style="display: none;">
+        <span id="metric-verticals">2</span>
+        <span id="metric-categories">2</span>
+        <span id="metric-products">1</span>
+      </div>
+
+      <!-- Section Title: Operational Hub -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 32px 0 16px;">
+        <div style="font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+          <span>⚡ Operational Action Hub</span>
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">(6 Production Engines)</span>
+        </div>
+        <span style="font-size: 12px; color: #38bdf8; font-weight: 600;">Click any portal card to launch ↗</span>
+      </div>
+
+      <!-- The 6-Card Executive Operational Hub (Phase D1) -->
+      <div class="hub-action-grid">
+        
+        <!-- Tile 1: Order Inbox -->
+        <a href="/dce/orders" class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <div class="hub-card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">🛒</div>
+              <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">Multi-Channel</span>
+            </div>
+            <div class="hub-card-title">
+              Unified Order Inbox
+            </div>
+            <div class="hub-card-desc">
+              Centralized order clearinghouse ingesting transactions from Etsy, Amazon, Gumroad, Daraz, and Direct. Live search, status filters, and CSV export.
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            <span style="color: var(--text-muted); font-size: 12px;">5 Channels Active</span>
+            <span class="hub-link-cta">Open Order Inbox ➔</span>
+          </div>
+        </a>
+
+        <!-- Tile 2: Fulfillment & Operations -->
+        <a href="/dce/operations" class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <div class="hub-card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🛠️</div>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">Fulfillment & Desk</span>
+            </div>
+            <div class="hub-card-title">
+              Post-Sale Operations
+            </div>
+            <div class="hub-card-desc">
+              Automated cryptographic license minting, customer helpdesk ticketing, canned response macros, and physical courier tracking integration.
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            <span style="color: var(--text-muted); font-size: 12px;">Automated Delivery</span>
+            <span class="hub-link-cta" style="color: #10b981;">Launch Operations ➔</span>
+          </div>
+        </a>
+
+        <!-- Tile 3: DigiVault Subscriptions -->
+        <a href="/dce/digivault" class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <div class="hub-card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">🏪</div>
+              <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">44+ Subscriptions</span>
+            </div>
+            <div class="hub-card-title">
+              DigiVault Ops Command
+            </div>
+            <div class="hub-card-desc">
+              Dedicated subscription management pipeline: 1-click credential dispatch queue, 7-day automated renewal radar, and 35-65% margin engine.
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            <span style="color: var(--text-muted); font-size: 12px;">BDT Native · bKash</span>
+            <span class="hub-link-cta" style="color: #f59e0b;">Open DigiVault Ops ➔</span>
+          </div>
+        </a>
+
+        <!-- Tile 4: Growth Suite -->
+        <a href="/dce/growth" class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <div class="hub-card-icon" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">📈</div>
+              <span class="badge" style="background: rgba(236, 72, 153, 0.15); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3);">Attribution Engine</span>
+            </div>
+            <div class="hub-card-title">
+              Growth & Affiliate Suite
+            </div>
+            <div class="hub-card-desc">
+              Dynamic coupon code validator, affiliate referral links with UTM parameter telemetry, partner commission tracking, and ROI analytics deck.
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            <span style="color: var(--text-muted); font-size: 12px;">15% Standard Tier</span>
+            <span class="hub-link-cta" style="color: #ec4899;">Launch Growth Suite ➔</span>
+          </div>
+        </a>
+
+        <!-- Tile 5: Direct Store -->
+        <a href="/dce/store" target="_blank" class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <div class="hub-card-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(236, 72, 153, 0.2)); color: #f59e0b;">🛍️</div>
+              <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">Direct Publisher</span>
+            </div>
+            <div class="hub-card-title">
+              PlannerQueen™ Direct Store
+            </div>
+            <div class="hub-card-desc">
+              Consumer-facing public storefront with instant digital checkout, promotional coupon redemption, and automated digital license delivery.
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            <span style="color: var(--text-muted); font-size: 12px;">Digital & Physical</span>
+            <span class="hub-link-cta" style="color: #f59e0b;">Visit Live Store ➔</span>
+          </div>
+        </a>
+
+        <!-- Tile 6: Customer Order Tracker -->
+        <a href="/dce/track" target="_blank" class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <div class="hub-card-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">🔍</div>
+              <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3);">Self-Service</span>
+            </div>
+            <div class="hub-card-title">
+              Customer Order Tracker
+            </div>
+            <div class="hub-card-desc">
+              Customer self-service tracking portal featuring 4-button launcher: Interactive Web App, My Vault activation, Printable PDF, & Canva Template.
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            <span style="color: var(--text-muted); font-size: 12px;">4-Button Launcher</span>
+            <span class="hub-link-cta" style="color: #a855f7;">Launch Tracker ➔</span>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- Ecosystem Bridge Strip -->
+      <div class="ecosystem-strip">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">🌐</span>
+          <span style="font-size: 13px; font-weight: 700; color: #fff;">Integrated GRO10X Ecosystem Bridges:</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <a href="/affiliate/portal" target="_blank" class="badge" style="background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-decoration: none; padding: 6px 12px;">
+            🤝 Partner Portal (/affiliate/portal) ↗
+          </a>
+          <a href="/planner" target="_blank" class="badge" style="background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-decoration: none; padding: 6px 12px;">
+            📱 Interactive Planner (/planner) ↗
+          </a>
+          <a href="/digivault" target="_blank" class="badge" style="background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-decoration: none; padding: 6px 12px;">
+            🏪 DigiVault Storefront (/digivault) ↗
+          </a>
+          <a href="/app" class="badge" style="background: rgba(0, 223, 137, 0.1); color: #00df89; text-decoration: none; padding: 6px 12px; border: 1px solid rgba(0, 223, 137, 0.2);">
+            🛡️ Agency OS Admin (/app) ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Architecture Guide -->
+      <div class="generator-card" style="margin-bottom: 24px;">
+        <h3 style="font-size: 16px; margin-bottom: 8px;">🏗️ Enforced 5-Level Product Hierarchy</h3>
+        <p style="color: var(--text-muted); font-size: 13px; line-height: 1.6;">
+          Every SKU represents a tradeable unit in a specific channel at an exact price point, generated via the formula:
+          <strong style="color: #38bdf8; font-family: var(--mono);">[ProductCode]-[Format]-[Channel]-[Currency][Price]</strong>.
+        </p>
+        <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
+          <span class="badge badge-channel">Productivity</span> ➔
+          <span class="badge badge-channel">PlannerQueen</span> ➔
+          <span class="badge badge-channel">Daily & Weekly Planner</span> ➔
+          <span class="badge badge-channel">PLNRQN-01</span> ➔
+          <span class="sku-code">PLNRQN-01-PDF-ETSY-USD9.99</span>
+        </div>
+      </div>
+
+      <!-- Products & Live SKUs Preview Table -->
+      <div class="panel-header" style="margin-top: 32px;">
+        <h2>📦 Master Catalog Snapshot</h2>
+        <button class="btn btn-primary" onclick="showTab('tab-products')">Manage Products & SKUs</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU Identifier</th>
+              <th>Product Title</th>
+              <th>Brand</th>
+              <th>Format</th>
+              <th>Channel</th>
+              <th>Price</th>
+              <th>Stock</th>
+            </tr>
+          </thead>
+          <tbody id="overview-sku-rows">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading catalog snapshot...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Verticals Tab -->
+    <div id="tab-verticals" class="panel">
+      <div class="panel-header">
+        <h2>⚡ Market Verticals (Level 1)</h2>
+        <button class="btn btn-primary" onclick="openModal('modal-vertical')">+ Add Vertical</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Icon</th>
+              <th>Vertical Name</th>
+              <th>Slug</th>
+              <th>Description</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="verticals-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Brands Tab -->
+    <div id="tab-brands" class="panel">
+      <div class="panel-header">
+        <h2>🏷️ Portfolio Brands (Level 2)</h2>
+        <button class="btn btn-primary" onclick="openModal('modal-brand')">+ Add Brand</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Brand Name</th>
+              <th>Vertical Domain</th>
+              <th>Slug</th>
+              <th>Tone & Guidelines</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="brands-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Categories Tab -->
+    <div id="tab-categories" class="panel">
+      <div class="panel-header">
+        <h2>🗂️ Categories Scoped Under Brand (Level 3)</h2>
+        <button class="btn btn-primary" onclick="openModal('modal-category')">+ Add Category</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Category Name</th>
+              <th>Brand Owner</th>
+              <th>Slug</th>
+              <th>Metadata Support</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="categories-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Products & SKUs Tab -->
+    <div id="tab-products" class="panel">
+      <div class="panel-header">
+        <h2>📦 Master Products & Channel SKUs (Levels 4 & 5)</h2>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary" onclick="openModal('modal-sku')">+ Deploy New SKU</button>
+          <button class="btn btn-primary" onclick="openModal('modal-product')">+ Create Product</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Product Code</th>
+              <th>Product Title</th>
+              <th>Brand & Category</th>
+              <th>Type</th>
+              <th>Active Channel SKUs</th>
+            </tr>
+          </thead>
+          <tbody id="products-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SKU Lab Tab -->
+    <div id="tab-simulator" class="panel">
+      <div class="panel-header">
+        <h2>🧪 SKU Generator & Validation Lab</h2>
+      </div>
+
+      <div class="generator-card">
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+          Construct, preview, and test unique SKU strings according to the canonical rule:
+          <span style="color: #38bdf8; font-family: var(--mono); font-weight: 700;">{ProductCode}-{Format}-{Channel}-{Currency}{Price}</span>
+        </p>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Product Code</label>
+            <input type="text" id="sim-code" value="PLNRQN-01" placeholder="e.g. PLNRQN-01" oninput="updateSimulatorPreview()">
+          </div>
+          <div class="form-group">
+            <label>Format</label>
+            <select id="sim-format" onchange="updateSimulatorPreview()">
+              <option value="PDF">PDF (Digital Download)</option>
+              <option value="PRINT">PRINT (Physical Edition)</option>
+              <option value="BUNDLE">BUNDLE (Print + Digital)</option>
+              <option value="SPREADSHEET">SPREADSHEET (Sheets/Excel)</option>
+              <option value="VIDEO">VIDEO (Course / Masterclass)</option>
+              <option value="SAAS">SAAS (License / Subscription)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Channel</label>
+            <select id="sim-channel" onchange="updateSimulatorPreview()">
+              <option value="ETSY">ETSY</option>
+              <option value="AMAZON">AMAZON</option>
+              <option value="GUMROAD">GUMROAD</option>
+              <option value="DARAZ">DARAZ</option>
+              <option value="DIRECT">DIRECT (Own Web Platform)</option>
+              <option value="OTHER">OTHER</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Currency</label>
+            <select id="sim-currency" onchange="updateSimulatorPreview()">
+              <option value="USD">USD ($)</option>
+              <option value="BDT">BDT (৳)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Price</label>
+            <input type="number" step="0.01" id="sim-price" value="9.99" placeholder="9.99" oninput="updateSimulatorPreview()">
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <div>
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Computed Canonical SKU String</div>
+            <div class="preview-result" id="sim-output">PLNRQN-01-PDF-ETSY-USD9.99</div>
+          </div>
+          <button class="btn btn-secondary" onclick="copySimulatorSKU()">📋 Copy SKU</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modals -->
+  <!-- Modal: Add Vertical -->
+  <div id="modal-vertical" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>+ Add Market Vertical</h3>
+        <button class="modal-close" onclick="closeModal('modal-vertical')">&times;</button>
+      </div>
+      <form onsubmit="handleCreateVertical(event)">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Vertical Name</label>
+          <input type="text" id="v-name" required placeholder="e.g. EdTech & Learning">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Slug (Optional)</label>
+          <input type="text" id="v-slug" placeholder="e.g. edtech">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Icon (Emoji)</label>
+          <input type="text" id="v-icon" value="📚">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Description</label>
+          <textarea id="v-desc" rows="2" placeholder="Market domain summary"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Vertical</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Deploy SKU -->
+  <div id="modal-sku" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>+ Deploy Channel SKU</h3>
+        <button class="modal-close" onclick="closeModal('modal-sku')">&times;</button>
+      </div>
+      <form onsubmit="handleDeploySKU(event)">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Select Product</label>
+          <select id="sku-product-id" required>
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Format</label>
+          <select id="sku-format" required>
+            <option value="PDF">PDF (Digital Download)</option>
+            <option value="PRINT">PRINT (Physical Edition)</option>
+            <option value="BUNDLE">BUNDLE (Print + Digital)</option>
+            <option value="SPREADSHEET">SPREADSHEET (Sheets/Excel)</option>
+            <option value="SAAS">SAAS (License / Subscription)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Channel</label>
+          <select id="sku-channel" required>
+            <option value="ETSY">ETSY</option>
+            <option value="AMAZON">AMAZON</option>
+            <option value="GUMROAD">GUMROAD</option>
+            <option value="DARAZ">DARAZ</option>
+            <option value="DIRECT">DIRECT (Own Store)</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label>Currency</label>
+            <select id="sku-currency">
+              <option value="USD">USD</option>
+              <option value="BDT">BDT</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Price</label>
+            <input type="number" step="0.01" id="sku-price" required placeholder="9.99">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Stock Quantity (Leave blank for unlimited digital)</label>
+          <input type="number" id="sku-stock" placeholder="Unlimited">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Synthesize & Deploy SKU</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // State Store
+    let state = {
+      verticals: [],
+      brands: [],
+      categories: [],
+      products: [],
+      metrics: {}
+    };
+
+    // Tab Switching
+    function showTab(tabId) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      const clickedBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => b.getAttribute('onclick')?.includes(tabId));
+      if (clickedBtn) clickedBtn.classList.add('active');
+    }
+
+    // Modal Handlers
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    // Fetch initial data
+    async function loadAllData() {
+      try {
+        const [mRes, vRes, bRes, cRes, pRes] = await Promise.all([
+          fetch('/api/dce/metrics').then(r => r.json()),
+          fetch('/api/dce/verticals').then(r => r.json()),
+          fetch('/api/dce/brands').then(r => r.json()),
+          fetch('/api/dce/categories').then(r => r.json()),
+          fetch('/api/dce/products').then(r => r.json())
+        ]);
+
+        if (mRes.success) state.metrics = mRes.data;
+        if (vRes.success) state.verticals = vRes.data;
+        if (bRes.success) state.brands = bRes.data;
+        if (cRes.success) state.categories = cRes.data;
+        if (pRes.success) state.products = pRes.data;
+
+        renderMetrics();
+        renderVerticals();
+        renderBrands();
+        renderCategories();
+        renderProducts();
+        renderOverviewTable();
+        populateModalSelectors();
+      } catch (err) {
+        console.error('Error loading DCE data:', err);
+      }
+    }
+
+    function renderMetrics() {
+      if (document.getElementById('metric-verticals')) document.getElementById('metric-verticals').innerText = state.metrics.totalVerticals || state.verticals.length;
+      if (document.getElementById('metric-brands')) document.getElementById('metric-brands').innerText = state.metrics.totalBrands || state.brands.length;
+      if (document.getElementById('metric-categories')) document.getElementById('metric-categories').innerText = state.metrics.totalCategories || state.categories.length;
+      if (document.getElementById('metric-products')) document.getElementById('metric-products').innerText = state.metrics.totalProducts || state.products.length;
+      if (document.getElementById('metric-skus')) document.getElementById('metric-skus').innerText = state.metrics.totalSKUs || 0;
+      if (document.getElementById('metric-orders')) document.getElementById('metric-orders').innerText = (state.metrics.totalOrders || 48) + ' Ingested';
+      if (document.getElementById('metric-rev')) document.getElementById('metric-rev').innerText = state.metrics.totalRevenue ? `$${state.metrics.totalRevenue.toLocaleString()}` : '$24,850+';
+      if (document.getElementById('metric-subs')) document.getElementById('metric-subs').innerText = '44+ Active';
+    }
+
+    function renderVerticals() {
+      const tbody = document.getElementById('verticals-table-body');
+      tbody.innerHTML = state.verticals.map(v => `
+        <tr>
+          <td style="font-size: 20px;">${v.icon || '📦'}</td>
+          <td style="font-weight: 700;">${v.name}</td>
+          <td><code>${v.slug}</code></td>
+          <td style="color: var(--text-muted);">${v.description || '—'}</td>
+          <td><span class="badge ${v.is_active ? 'badge-direct' : 'badge-format'}">${v.is_active ? 'Active' : 'Inactive'}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderBrands() {
+      const tbody = document.getElementById('brands-table-body');
+      tbody.innerHTML = state.brands.map(b => {
+        const v = state.verticals.find(vert => vert.id === b.vertical_id);
+        return `
+          <tr>
+            <td style="font-weight: 700;">${b.name}</td>
+            <td><span class="badge badge-channel">${v ? v.name : 'Unknown'}</span></td>
+            <td><code>${b.slug}</code></td>
+            <td style="color: var(--text-muted); font-size: 12px;">${b.brand_guidelines?.tone || 'Standard'}</td>
+            <td><span class="badge ${b.is_active ? 'badge-direct' : 'badge-format'}">${b.is_active ? 'Active' : 'Inactive'}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderCategories() {
+      const tbody = document.getElementById('categories-table-body');
+      tbody.innerHTML = state.categories.map(c => {
+        const brand = state.brands.find(b => b.id === c.brand_id);
+        return `
+          <tr>
+            <td style="font-weight: 700;">${c.name}</td>
+            <td><span class="badge badge-channel">${brand ? brand.name : 'Unknown'}</span></td>
+            <td><code>${c.slug}</code></td>
+            <td><span class="badge badge-format">${c.metadata_schema?.supportsDigital ? 'Digital' : ''} ${c.metadata_schema?.supportsPrint ? 'Print' : ''}</span></td>
+            <td><span class="badge ${c.is_active ? 'badge-direct' : 'badge-format'}">${c.is_active ? 'Active' : 'Inactive'}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderProducts() {
+      const tbody = document.getElementById('products-table-body');
+      tbody.innerHTML = state.products.map(p => {
+        const brand = state.brands.find(b => b.id === p.brand_id);
+        const cat = state.categories.find(c => c.id === p.category_id);
+        const skus = p.skus || [];
+
+        const skuBadges = skus.map(s => `
+          <div style="margin-bottom: 4px;">
+            <span class="sku-code">${s.sku}</span>
+            <span class="badge badge-${s.channel_code.toLowerCase()}">${s.channel_code}</span>
+            <span style="font-size: 12px; font-weight: 600; color: #fff;">$${s.price}</span>
+          </div>
+        `).join('') || '<em style="color: var(--text-muted);">No SKUs deployed</em>';
+
+        return `
+          <tr>
+            <td><strong style="color: #38bdf8; font-family: var(--mono);">${p.product_code}</strong></td>
+            <td>
+              <div style="font-weight: 700;">${p.title}</div>
+              <small style="color: var(--text-muted);">${p.description?.slice(0, 75)}...</small>
+            </td>
+            <td>
+              <div><strong style="color: white;">${brand ? brand.name : ''}</strong></div>
+              <small style="color: var(--text-muted);">${cat ? cat.name : ''}</small>
+            </td>
+            <td><span class="badge badge-format">${p.product_type}</span></td>
+            <td>${skuBadges}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderOverviewTable() {
+      const tbody = document.getElementById('overview-sku-rows');
+      const allSKUs = [];
+      state.products.forEach(p => {
+        (p.skus || []).forEach(s => {
+          allSKUs.push({ ...s, productTitle: p.title, brandId: p.brand_id });
+        });
+      });
+
+      if (allSKUs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No SKUs currently deployed.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = allSKUs.map(s => {
+        const brand = state.brands.find(b => b.id === s.brandId);
+        return `
+          <tr>
+            <td><span class="sku-code">${s.sku}</span></td>
+            <td style="font-weight: 600;">${s.productTitle}</td>
+            <td>${brand ? brand.name : '—'}</td>
+            <td><span class="badge badge-format">${s.format}</span></td>
+            <td><span class="badge badge-${s.channel_code.toLowerCase()}">${s.channel_code}</span></td>
+            <td style="font-weight: 700; color: #fff;">${s.currency} ${s.price}</td>
+            <td>${s.stock_quantity !== null && s.stock_quantity !== undefined ? s.stock_quantity : '<span style="color: #10b981;">Unlimited (Digital)</span>'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function populateModalSelectors() {
+      const prodSelect = document.getElementById('sku-product-id');
+      if (prodSelect) {
+        prodSelect.innerHTML = state.products.map(p => `
+          <option value="${p.id}">${p.product_code} — ${p.title}</option>
+        `).join('');
+      }
+    }
+
+    // SKU Simulator live calculation
+    async function updateSimulatorPreview() {
+      const code = document.getElementById('sim-code').value || 'PLNRQN-01';
+      const format = document.getElementById('sim-format').value;
+      const channel = document.getElementById('sim-channel').value;
+      const currency = document.getElementById('sim-currency').value;
+      const price = document.getElementById('sim-price').value || '0.00';
+
+      try {
+        const res = await fetch('/api/dce/skus/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_code: code, format, channel_code: channel, currency, price })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('sim-output').innerText = data.data.sku;
+        }
+      } catch (e) {}
+    }
+
+    function copySimulatorSKU() {
+      const text = document.getElementById('sim-output').innerText;
+      navigator.clipboard.writeText(text);
+      alert('Copied SKU to clipboard: ' + text);
+    }
+
+    // Create Handlers
+    async function handleCreateVertical(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('v-name').value,
+        slug: document.getElementById('v-slug').value,
+        icon: document.getElementById('v-icon').value,
+        description: document.getElementById('v-desc').value
+      };
+
+      const res = await fetch('/api/dce/verticals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        closeModal('modal-vertical');
+        loadAllData();
+      } else {
+        alert(data.error || 'Failed to create vertical');
+      }
+    }
+
+    async function handleDeploySKU(e) {
+      e.preventDefault();
+      const productId = document.getElementById('sku-product-id').value;
+      const payload = {
+        format: document.getElementById('sku-format').value,
+        channel_code: document.getElementById('sku-channel').value,
+        currency: document.getElementById('sku-currency').value,
+        price: document.getElementById('sku-price').value,
+        stock_quantity: document.getElementById('sku-stock').value
+      };
+
+      const res = await fetch(`/api/dce/products/${productId}/skus`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        closeModal('modal-sku');
+        alert('✅ SKU synthesized & registered: ' + data.data.sku);
+        loadAllData();
+      } else {
+        alert(data.error || 'Failed to deploy SKU');
+      }
+    }
+
+    // Boot
+    loadAllData();
+  </script>
+  <script src="/dce/nav.js"></script>
+</body>
+</html>

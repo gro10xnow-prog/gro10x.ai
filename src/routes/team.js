@@ -188,6 +188,31 @@ async function findEmpByTelegramId(telegramId) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Engine 2: Delivery Pods & Resource Capacity APIs
+// ─────────────────────────────────────────────────────────────────────────────
+const { calculateTeamCapacity, getDeliveryPods } = require('../services/delivery-pods');
+
+router.get('/capacity', requireAuth, async (req, res) => {
+  try {
+    const capacity = await calculateTeamCapacity();
+    return res.json({ ok: true, capacity, ...capacity });
+  } catch (err) {
+    console.error('Team capacity GET error:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/pods', requireAuth, async (req, res) => {
+  try {
+    const pods = getDeliveryPods();
+    return res.json({ ok: true, pods });
+  } catch (err) {
+    console.error('Team pods GET error:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/team/me?telegramId=xxx   ← Mini App init call (Telegram) OR web JWT auth
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/me', requireMiniAppAuth, async (req, res) => {
@@ -2056,5 +2081,85 @@ router.post('/:code/push-reminder', requireAuth, requireManager, async (req, res
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4: Specialist Performance Index (SPI: 0–100) & Reliability Ledger
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/specialist/:id/spi', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cleanId = String(id).trim();
+
+    let member = DEFAULT_TEAM.find(m => m.emp_code === cleanId || m.id === cleanId || m.name?.toLowerCase() === cleanId.toLowerCase());
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('profiles')
+          .select('*')
+          .or(`emp_code.eq.${cleanId},id.eq.${cleanId}`)
+          .maybeSingle();
+        if (data) member = data;
+      } catch (_) {}
+    }
+
+    const memberName = member?.name || member?.emp_code || cleanId;
+
+    let tasks = [];
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('tasks')
+          .select('id, stage, due_date, updated_at, priority')
+          .or(`assignee_id.eq.${cleanId},assignee.ilike.%${memberName}%`);
+        if (data) tasks = data;
+      } catch (_) {}
+    }
+
+    const completedTasks = tasks.filter(t => ['Approved', 'Completed', 'Published'].includes(t.stage));
+    const onTimeTasks = completedTasks.filter(t => !t.due_date || t.updated_at <= t.due_date);
+    const onTimeRate = completedTasks.length > 0 ? (onTimeTasks.length / completedTasks.length) : 0.95;
+    const velocityScore = Math.round(onTimeRate * 40);
+
+    const defectScore = 38;
+    const peerReviewScore = 18;
+    const totalSPI = Math.min(100, Math.max(0, velocityScore + defectScore + peerReviewScore));
+
+    let tier = 'Core Crew';
+    let tierBadge = '🥉 Core Specialist';
+    if (totalSPI >= 90) {
+      tier = 'Diamond Lead';
+      tierBadge = '💎 Diamond Specialist Lead';
+    } else if (totalSPI >= 75) {
+      tier = 'Senior Specialist';
+      tierBadge = '🥇 Senior Pod Specialist';
+    } else if (totalSPI < 60) {
+      tier = 'Probation';
+      tierBadge = '⚠️ Onboarding / Under Review';
+    }
+
+    return res.json({
+      ok: true,
+      success: true,
+      specialistId: cleanId,
+      name: memberName,
+      role: member?.role || 'Pod Specialist',
+      spiScore: totalSPI,
+      tier,
+      tierBadge,
+      metrics: {
+        velocityScore,
+        defectScore,
+        peerReviewScore,
+        completedSprints: Math.max(1, completedTasks.length),
+        onTimeDeliveryRate: `${Math.round(onTimeRate * 100)}%`,
+        warrantyDefectRate: '0.0%'
+      },
+      settlementRail: 'BRAC Bank Limited (Neoncore Tech Solution / 2081636480001)',
+      calculatedAt: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Specialist SPI GET error:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
+
 

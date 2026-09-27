@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spatial 3D Multi-Angle Viewer · Gro10x Innovation Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+
+  <style>
+    :root {
+      --bg-dark: #0A0C10;
+      --bg-stage: #12151E;
+      --surface-card: rgba(22, 27, 38, 0.85);
+      --accent-cyan: #00F0FF;
+      --accent-purple: #9D4EDD;
+      --accent-amber: #FFB703;
+      --accent-emerald: #10B981;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border-glow: rgba(0, 240, 255, 0.25);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-display: 'Space Grotesk', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #171C28 0%, var(--bg-dark) 75%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    .topbar {
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-card);
+      background: rgba(10, 12, 16, 0.7);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-badge {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
+    .status-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--accent-cyan);
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-card);
+      color: var(--text-main);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-nav:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent-cyan);
+    }
+
+    /* Main Spatial Stage */
+    .spatial-stage-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .stage-canvas-container {
+      position: relative;
+      width: 100%;
+      max-width: 880px;
+      height: 520px;
+      border-radius: 20px;
+      background: #080A0E;
+      border: 1px solid var(--border-card);
+      box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 240, 255, 0.06);
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+      perspective: 1200px;
+    }
+
+    .stage-canvas-container:active {
+      cursor: grabbing;
+    }
+
+    /* 3D Image Projection Plane */
+    .projection-plane {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .angle-frame {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+      pointer-events: none;
+    }
+
+    .angle-frame.active {
+      opacity: 1;
+    }
+
+    /* Spatial Vignette & Holographic Grid Overlay */
+    .hologram-grid-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at center, transparent 40%, rgba(8, 10, 14, 0.85) 100%);
+      pointer-events: none;
+      border-radius: 20px;
+    }
+
+    .specular-light-glare {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.3s ease;
+      opacity: 0.6;
+    }
+
+    /* Interactive HUD & Radar Map */
+    .stage-hud {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(10, 12, 16, 0.85);
+      border: 1px solid var(--border-card);
+      backdrop-filter: blur(16px);
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      z-index: 10;
+    }
+
+    .hud-radar-mini {
+      display: grid;
+      grid-template-columns: repeat(3, 14px);
+      grid-template-rows: repeat(3, 14px);
+      gap: 4px;
+    }
+
+    .radar-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      transition: all 0.15s ease;
+    }
+
+    .radar-dot.active {
+      background: var(--accent-cyan);
+      box-shadow: 0 0 10px var(--accent-cyan);
+      transform: scale(1.15);
+    }
+
+    .hud-meta-text {
+      font-size: 0.8rem;
+    }
+    .hud-meta-label {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .hud-meta-val {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    /* Drag Instruction Tip */
+    .drag-instruction {
+      position: absolute;
+      top: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 12, 16, 0.75);
+      border: 1px solid var(--border-card);
+      backdrop-filter: blur(8px);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    /* Controls Bar */
+    .controls-panel {
+      margin-top: 1.25rem;
+      width: 100%;
+      max-width: 880px;
+      background: var(--surface-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .btn-action-glow {
+      background: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%);
+      color: #FFFFFF;
+      border: none;
+      padding: 0.65rem 1.4rem;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.25);
+    }
+    .btn-action-glow:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 28px rgba(0, 240, 255, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-card);
+      color: var(--text-main);
+      padding: 0.65rem 1.2rem;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--text-muted);
+    }
+    .btn-secondary.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Product Concept Showcase Section */
+    .concept-section {
+      width: 100%;
+      max-width: 880px;
+      margin-top: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .concept-heading {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      margin-bottom: 0.35rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .concept-sub {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .product-ideas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .idea-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 1.4rem;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .idea-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 12px 32px rgba(0, 240, 255, 0.08);
+    }
+
+    .idea-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 0.6rem;
+    }
+
+    .badge-kids { background: rgba(255, 183, 3, 0.15); color: var(--accent-amber); }
+    .badge-ar { background: rgba(157, 78, 221, 0.15); color: var(--accent-purple); }
+    .badge-merch { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+
+    .idea-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+    }
+
+    .idea-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* 9-Angle Inspection Strip */
+    .angles-strip {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .strip-thumb {
+      background: #080A0E;
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 16/9;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .strip-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .strip-thumb.active {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px var(--accent-cyan);
+    }
+
+    .strip-thumb span {
+      position: absolute;
+      bottom: 2px;
+      left: 3px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 768px) {
+      .stage-canvas-container { height: 380px; }
+      .controls-panel { flex-direction: column; align-items: stretch; }
+      .angles-strip { grid-template-columns: repeat(5, 90px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="topbar">
+    <div class="brand-group">
+      <div style="font-size: 1.5rem;">🔮</div>
+      <div>
+        <div class="brand-badge">Gro10x Spatial Lab</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">9-Angle Novel View Synthesis &amp; 3D Engine</div>
+      </div>
+      <span class="status-pill">Interactive Demo</span>
+    </div>
+    <div class="nav-links">
+      <a href="/3d-viewer/real3d.html" class="btn-nav" style="background: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%); color: #FFF; border: none; font-weight: 700;"><span>🦊 Launch True 3D + AR (Winner)</span></a>
+      <a href="/my-portal" class="btn-nav"><span>👑 Customer Vault</span></a>
+      <a href="/planner" class="btn-nav"><span>✨ Planner Companion</span></a>
+    </div>
+  </header>
+
+  <main class="spatial-stage-wrapper">
+
+    <!-- 3D Spatial Interactive Stage -->
+    <div class="stage-canvas-container" id="stageContainer">
+      
+      <!-- Center 3D Projection Plane -->
+      <div class="projection-plane" id="projectionPlane">
+        
+        <!-- 9 Angle Frames -->
+        <!-- Row 1: Top Angles -->
+        <img src="/3d-viewer/angles/top-left.png" alt="Top Left" class="angle-frame" data-angle="TL" data-row="0" data-col="0">
+        <img src="/3d-viewer/angles/top-center.png" alt="Top Center" class="angle-frame" data-angle="TC" data-row="0" data-col="1">
+        <img src="/3d-viewer/angles/top-right.png" alt="Top Right" class="angle-frame" data-angle="TR" data-row="0" data-col="2">
+
+        <!-- Row 2: Center Angles -->
+        <img src="/3d-viewer/angles/center-left.png" alt="Center Left" class="angle-frame" data-angle="CL" data-row="1" data-col="0">
+        <img src="/3d-viewer/angles/center-front.png" alt="Center Front" class="angle-frame active" data-angle="CF" data-row="1" data-col="1">
+        <img src="/3d-viewer/angles/center-right.png" alt="Center Right" class="angle-frame" data-angle="CR" data-row="1" data-col="2">
+
+        <!-- Row 3: Low Angles -->
+        <img src="/3d-viewer/angles/low-left.png" alt="Low Left" class="angle-frame" data-angle="LL" data-row="2" data-col="0">
+        <img src="/3d-viewer/angles/low-center.png" alt="Low Center" class="angle-frame" data-angle="LC" data-row="2" data-col="1">
+        <img src="/3d-viewer/angles/low-right.png" alt="Low Right" class="angle-frame" data-angle="LR" data-row="2" data-col="2">
+
+      </div>
+
+      <!-- Hologram Lighting & Reflections -->
+      <div class="specular-light-glare" id="specularLight"></div>
+      <div class="hologram-grid-overlay"></div>
+
+      <!-- Drag Instruction Overlay -->
+      <div class="drag-instruction" id="dragTip">
+        <span>👆 Click &amp; Drag in any direction to rotate in 3D</span>
+      </div>
+
+      <!-- Live 3D Radar HUD -->
+      <div class="stage-hud">
+        <div class="hud-radar-mini" id="hudRadar">
+          <div class="radar-dot" data-pos="TL" title="Top Left"></div>
+          <div class="radar-dot" data-pos="TC" title="Top Center"></div>
+          <div class="radar-dot" data-pos="TR" title="Top Right"></div>
+          <div class="radar-dot" data-pos="CL" title="Center Left"></div>
+          <div class="radar-dot active" data-pos="CF" title="Center Front"></div>
+          <div class="radar-dot" data-pos="CR" title="Center Right"></div>
+          <div class="radar-dot" data-pos="LL" title="Low Left"></div>
+          <div class="radar-dot" data-pos="LC" title="Low Center"></div>
+          <div class="radar-dot" data-pos="LR" title="Low Right"></div>
+        </div>
+        <div class="hud-meta-text">
+          <div class="hud-meta-label">Active Camera</div>
+          <div class="hud-meta-val" id="activeCameraName">Front Anchor (0°, 0°)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Controls Bar -->
+    <div class="controls-panel">
+      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <button class="btn-action-glow" id="btnAutoOrbit">
+          <span id="orbitIcon">▶</span> <span id="orbitLabel">Cinematic 3D Orbit</span>
+        </button>
+        <button class="btn-secondary" id="btnResetAngle">
+          <span>🔄 Center Front</span>
+        </button>
+        <button class="btn-secondary" id="btnGyroToggle">
+          <span>📱 Phone Gyroscope</span>
+        </button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+        <span>Orbit Speed:</span>
+        <select id="selectSpeed" style="background: rgba(255,255,255,0.08); color: #FFF; border: 1px solid var(--border-card); padding: 0.4rem 0.8rem; border-radius: 6px;">
+          <option value="1200">Slow (Deliberate)</option>
+          <option value="700" selected>Normal (Cinematic)</option>
+          <option value="350">Fast (Bullet-Time)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 9 Raw Angle Inspector Strip -->
+    <div style="width: 100%; max-width: 880px; margin-top: 1.25rem;">
+      <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;">
+        Multi-View Canonical Perspectives (CapCut Generated)
+      </div>
+      <div class="angles-strip" id="anglesStrip">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- DIGITAL PRODUCT BLUEPRINT: KIDS & BEYOND -->
+    <section class="concept-section">
+      <h2 class="concept-heading"><span>🧸</span> Exciting Product Concepts: Kids &amp; Spatial Learning</h2>
+      <p class="concept-sub">
+        How this exact 9-angle pipeline transforms into high-margin educational and interactive digital products:
+      </p>
+
+      <div class="product-ideas-grid">
+        
+        <!-- Concept 1 -->
+        <article class="idea-card" style="border-top: 3px solid var(--accent-amber);">
+          <span class="idea-badge badge-kids">High Demand on Etsy</span>
+          <h3 class="idea-title">🦁 3D Safari Animals &amp; Dinosaurs</h3>
+          <p class="idea-desc">
+            Kids educational flashcards where touching the screen rotates a Lion, T-Rex, or Blue Whale in 3D. Includes sound effects, habitat facts, and skeleton anatomy overlays.
+          </p>
+        </article>
+
+        <!-- Concept 2 -->
+        <article class="idea-card" style="border-top: 3px solid var(--accent-purple);">
+          <span class="idea-badge badge-ar">STEM &amp; Architecture</span>
+          <h3 class="idea-title">🏛️ 360° Wonders &amp; Structures</h3>
+          <p class="idea-desc">
+            Explore architectural marvels (Taj Mahal, Pyramids of Giza, Eiffel Tower, Space Rockets) from high-altitude and ground angles with historical callout pins.
+          </p>
+        </article>
+
+        <!-- Concept 3 -->
+        <article class="idea-card" style="border-top: 3px solid var(--accent-emerald);">
+          <span class="idea-badge badge-merch">E-Commerce &amp; POD</span>
+          <h3 class="idea-title">👕 Interactive POD 3D Turnarounds</h3>
+          <p class="idea-desc">
+            Turn 1 flat t-shirt or hoodie print into a complete 9-angle photorealistic fashion model turnaround for Etsy and Shopify listings without expensive photo shoots.
+          </p>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Angle Matrix Configuration
+    const ANGLES = [
+      [
+        { code: 'TL', name: 'Top-Left (-45°, +30°)', src: '/3d-viewer/angles/top-left.png' },
+        { code: 'TC', name: 'Top-Center (0°, +30°)', src: '/3d-viewer/angles/top-center.png' },
+        { code: 'TR', name: 'Top-Right (+45°, +30°)', src: '/3d-viewer/angles/top-right.png' }
+      ],
+      [
+        { code: 'CL', name: 'Left Profile (-45°, 0°)', src: '/3d-viewer/angles/center-left.png' },
+        { code: 'CF', name: 'Front Anchor (0°, 0°)', src: '/3d-viewer/angles/center-front.png' },
+        { code: 'CR', name: 'Right Profile (+45°, 0°)', src: '/3d-viewer/angles/center-right.png' }
+      ],
+      [
+        { code: 'LL', name: 'Low-Left (-45°, -30°)', src: '/3d-viewer/angles/low-left.png' },
+        { code: 'LC', name: 'Low-Center (0°, -30°)', src: '/3d-viewer/angles/low-center.png' },
+        { code: 'LR', name: 'Low-Right (+45°, -30°)', src: '/3d-viewer/angles/low-right.png' }
+      ]
+    ];
+
+    let currentRow = 1; // 0: Top, 1: Center, 2: Low
+    let currentCol = 1; // 0: Left, 1: Center, 2: Right
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let autoOrbitInterval = null;
+
+    const container = document.getElementById('stageContainer');
+    const projectionPlane = document.getElementById('projectionPlane');
+    const specularLight = document.getElementById('specularLight');
+    const activeCameraName = document.getElementById('activeCameraName');
+    const dragTip = document.getElementById('dragTip');
+
+    // Preload all 9 images to memory for instant zero-lag switching
+    ANGLES.flat().forEach(item => {
+      const img = new Image();
+      img.src = item.src;
+    });
+
+    // Build Angle Inspector Strip
+    const stripContainer = document.getElementById('anglesStrip');
+    ANGLES.flat().forEach(item => {
+      const thumb = document.createElement('div');
+      thumb.className = `strip-thumb ${item.code === 'CF' ? 'active' : ''}`;
+      thumb.dataset.code = item.code;
+      thumb.innerHTML = `
+        <img src="${item.src}" alt="${item.name}">
+        <span>${item.code}</span>
+      `;
+      thumb.addEventListener('click', () => {
+        stopOrbit();
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 3; c++) {
+            if (ANGLES[r][c].code === item.code) {
+              setAngle(r, c);
+              return;
+            }
+          }
+        }
+      });
+      stripContainer.appendChild(thumb);
+    });
+
+    // Set Angle in 3x3 Matrix
+    function setAngle(row, col, tiltX = 0, tiltY = 0) {
+      currentRow = Math.max(0, Math.min(2, row));
+      currentCol = Math.max(0, Math.min(2, col));
+      const target = ANGLES[currentRow][currentCol];
+
+      // Update Frames
+      document.querySelectorAll('.angle-frame').forEach(f => {
+        if (f.dataset.angle === target.code) {
+          f.classList.add('active');
+        } else {
+          f.classList.remove('active');
+        }
+      });
+
+      // Update HUD Radar
+      document.querySelectorAll('.radar-dot').forEach(d => {
+        d.classList.toggle('active', d.dataset.pos === target.code);
+      });
+
+      // Update Strip Thumbnails
+      document.querySelectorAll('.strip-thumb').forEach(t => {
+        t.classList.toggle('active', t.dataset.code === target.code);
+      });
+
+      // Update HUD Text
+      if (activeCameraName) activeCameraName.textContent = target.name;
+
+      // 3D Perspective Rotation of the stage plane
+      const rotY = (currentCol - 1) * 12 + tiltX;
+      const rotX = -(currentRow - 1) * 10 - tiltY;
+      projectionPlane.style.transform = `rotateY(${rotY}deg) rotateX(${rotX}deg) scale3d(1.02, 1.02, 1.02)`;
+
+      // Specular glare follow
+      const glareX = 50 + (currentCol - 1) * 30;
+      const glareY = 50 + (currentRow - 1) * 30;
+      specularLight.style.left = `${glareX}%`;
+      specularLight.style.top = `${glareY}%`;
+    }
+
+    // Mouse & Touch Drag Interaction
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      stopOrbit();
+      if (dragTip) dragTip.style.opacity = '0';
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      // Horizontal Col Switch (-1, 0, 1)
+      let col = 1;
+      if (deltaX < -50) col = 0; // Dragged left -> view left profile
+      if (deltaX > 50) col = 2;  // Dragged right -> view right profile
+
+      // Vertical Row Switch (-1, 0, 1)
+      let row = 1;
+      if (deltaY < -40) row = 0; // Dragged up -> look down from top
+      if (deltaY > 40) row = 2;  // Dragged down -> look up from low
+
+      const microTiltX = (deltaX % 50) / 10;
+      const microTiltY = (deltaY % 40) / 10;
+
+      setAngle(row, col, microTiltX, microTiltY);
+    });
+
+    // Touch Support for iPad & Mobile
+    container.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      stopOrbit();
+      if (dragTip) dragTip.style.opacity = '0';
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.touches[0].clientX - startX;
+      const deltaY = e.touches[0].clientY - startY;
+
+      let col = 1;
+      if (deltaX < -40) col = 0;
+      if (deltaX > 40) col = 2;
+
+      let row = 1;
+      if (deltaY < -30) row = 0;
+      if (deltaY > 30) row = 2;
+
+      setAngle(row, col);
+    }, { passive: true });
+
+    // Cinematic Auto-Orbit Engine
+    const orbitSequence = [
+      { r: 1, c: 1 }, // Center Front
+      { r: 1, c: 0 }, // Left
+      { r: 0, c: 0 }, // Top Left
+      { r: 0, c: 1 }, // Top Center
+      { r: 0, c: 2 }, // Top Right
+      { r: 1, c: 2 }, // Right
+      { r: 2, c: 2 }, // Low Right
+      { r: 2, c: 1 }, // Low Center
+      { r: 2, c: 0 }  // Low Left
+    ];
+    let orbitStep = 0;
+
+    function startOrbit() {
+      const speed = parseInt(document.getElementById('selectSpeed').value, 10) || 700;
+      document.getElementById('orbitIcon').textContent = '⏸';
+      document.getElementById('orbitLabel').textContent = 'Pause Orbit';
+      document.getElementById('btnAutoOrbit').style.background = 'linear-gradient(135deg, #FF007A 0%, #7000FF 100%)';
+
+      autoOrbitInterval = setInterval(() => {
+        orbitStep = (orbitStep + 1) % orbitSequence.length;
+        const pt = orbitSequence[orbitStep];
+        setAngle(pt.r, pt.c);
+      }, speed);
+    }
+
+    function stopOrbit() {
+      if (autoOrbitInterval) {
+        clearInterval(autoOrbitInterval);
+        autoOrbitInterval = null;
+        document.getElementById('orbitIcon').textContent = '▶';
+        document.getElementById('orbitLabel').textContent = 'Cinematic 3D Orbit';
+        document.getElementById('btnAutoOrbit').style.background = 'linear-gradient(135deg, #00F0FF 0%, #7000FF 100%)';
+      }
+    }
+
+    document.getElementById('btnAutoOrbit').addEventListener('click', () => {
+      if (autoOrbitInterval) {
+        stopOrbit();
+      } else {
+        startOrbit();
+      }
+    });
+
+    document.getElementById('btnResetAngle').addEventListener('click', () => {
+      stopOrbit();
+      setAngle(1, 1);
+    });
+
+    document.getElementById('selectSpeed').addEventListener('change', () => {
+      if (autoOrbitInterval) {
+        stopOrbit();
+        startOrbit();
+      }
+    });
+
+    // Mobile Gyroscope Support
+    const btnGyro = document.getElementById('btnGyroToggle');
+    let gyroActive = false;
+
+    btnGyro.addEventListener('click', async () => {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const response = await DeviceOrientationEvent.requestPermission();
+          if (response === 'granted') {
+            enableGyro();
+          } else {
+            alert('Device orientation permission denied.');
+          }
+        } catch (e) {
+          alert('Gyroscope error: ' + e.message);
+        }
+      } else {
+        // Android / Desktop Chrome
+        if (!gyroActive) enableGyro(); else disableGyro();
+      }
+    });
+
+    function enableGyro() {
+      gyroActive = true;
+      btnGyro.classList.add('active');
+      btnGyro.innerHTML = '<span>📱 Gyro Active</span>';
+      window.addEventListener('deviceorientation', handleOrientation);
+    }
+
+    function disableGyro() {
+      gyroActive = false;
+      btnGyro.classList.remove('active');
+      btnGyro.innerHTML = '<span>📱 Phone Gyroscope</span>';
+      window.removeEventListener('deviceorientation', handleOrientation);
+    }
+
+    function handleOrientation(e) {
+      if (!gyroActive) return;
+      const gamma = e.gamma || 0; // Left-to-right tilt (-90 to 90)
+      const beta = e.beta || 0;   // Front-to-back tilt (-180 to 180)
+
+      let col = 1;
+      if (gamma < -12) col = 0;
+      if (gamma > 12) col = 2;
+
+      let row = 1;
+      if (beta < 35) row = 0; // phone tilted back -> top angle
+      if (beta > 60) row = 2; // phone tilted forward -> low angle
+
+      setAngle(row, col);
+    }
+
+    // Initialize at center front
+    setAngle(1, 1);
+  </script>
+</body>
+</html>

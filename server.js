@@ -31,25 +31,58 @@ const ALLOWED_ORIGINS = Array.from(new Set([
 ]));
 
 const app = express();
+app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
 // Validate Environment Variables on Startup
 const { validateEnvironment } = require('./src/utils/env');
 try { validateEnvironment(); } catch (e) { console.warn('[ENV] Boot Note:', e.message); }
 
-// Enable Security Headers Middleware
+// Request ID & Tracing Middleware
+const requestIdMiddleware = require('./src/middleware/requestId');
+app.use(requestIdMiddleware);
+
+// Enable Production-Grade Security Headers Middleware
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Content-Security-Policy', "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self' https://web.telegram.org https://*.telegram.org;");
-  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  res.setHeader('X-Download-Options', 'noopen');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+
+  // HSTS: Enforce HTTPS in production or behind secure reverse proxy
+  if (process.env.NODE_ENV === 'production' || req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; " +
+    "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org; " +
+    "connect-src 'self' https: wss: ws:;"
+  );
+  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=(), payment=(self)');
   next();
 });
 
-// Enable GZIP / Brotli compression for static responses & JSON APIs
-app.use(compression());
+// Response Time Header & Performance Metric Telemetry
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    try {
+      if (!res.headersSent) {
+        res.setHeader('X-Response-Time', `${duration}ms`);
+      }
+    } catch (_) {}
+  });
+  next();
+});
+
+// Enable GZIP / Brotli compression for static responses & JSON APIs (>= 1KB)
+app.use(compression({ threshold: 1024 }));
 
 // Sentry Error Tracking Initialization (if DSN provided)
 let Sentry = null;
@@ -87,11 +120,33 @@ try {
   initDigiVaultBot();
 } catch (e) { console.warn('[DigiVault Bot] Init note:', e.message); }
 
-// Initialize DigiVault Retention Cron Worker
-try {
-  const { initDigiVaultCron } = require('./src/services/digivault-cron');
-  initDigiVaultCron();
-} catch (e) { console.warn('[DigiVault Cron] Init note:', e.message); }
+// Initialize Background Interval Cron Workers (only when running as a persistent server, not serverless/imported)
+if (require.main === module && !process.env.VERCEL) {
+  try {
+    const { initDigiVaultCron } = require('./src/services/digivault-cron');
+    initDigiVaultCron();
+  } catch (e) { console.warn('[DigiVault Cron] Init note:', e.message); }
+
+  try {
+    const { initDCERenewalCron } = require('./src/services/dce-renewal-cron');
+    initDCERenewalCron();
+  } catch (e) { console.warn('[DCE Renewal Cron] Init note:', e.message); }
+
+  try {
+    const { initWarrantyCron } = require('./src/services/warranty-cron');
+    initWarrantyCron();
+  } catch (e) { console.warn('[Warranty Cron] Init note:', e.message); }
+
+  try {
+    const { initDefectEscalationCron } = require('./src/services/defect-escalation-cron');
+    initDefectEscalationCron();
+  } catch (e) { console.warn('[Defect SLA Cron] Init note:', e.message); }
+
+  try {
+    const { initWeeklyExecutiveCron } = require('./src/services/weekly-executive-cron');
+    initWeeklyExecutiveCron();
+  } catch (e) { console.warn('[Weekly Executive Cron] Init note:', e.message); }
+}
 
 // Eagerly initialize Supabase Realtime pub/sub on boot (cross-pod synchronization)
 try {
@@ -143,6 +198,20 @@ app.use(subdomainRouter);
 
 // SSE Endpoint for real-time synchronization
 app.get(['/api/sync', '/sync', '/api/events', '/api/sse'], requireAuth, sseHandler);
+app.post(['/api/sync/broadcast', '/sync/broadcast'], requireAuth, (req, res) => {
+  const { eventType, data, role, clientId, empCode } = req.body || {};
+  const sse = require('./src/services/sse');
+  if (clientId) {
+    sse.broadcastToClient(eventType || 'test', data || {}, Array.isArray(clientId) ? clientId : [clientId]);
+  } else if (role) {
+    sse.broadcastToRole(eventType || 'test', data || {}, role);
+  } else if (empCode) {
+    sse.broadcastToEmployee(eventType || 'test', data || {}, Array.isArray(empCode) ? empCode : [empCode]);
+  } else {
+    sse.broadcast(eventType || 'test', data || {});
+  }
+  res.json({ success: true, timestamp: new Date().toISOString() });
+});
 
 // Bot Status Health Check
 app.get(['/api/bot-status', '/bot-status'], requireAuth, async (req, res) => {
@@ -161,6 +230,51 @@ app.get(['/api/bot-status', '/bot-status'], requireAuth, async (req, res) => {
     teamBotInfo: teamInfo,
     clientBot: client ? 'active' : 'null',
     clientBotInfo: clientInfo,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Cloud & Container Liveness Probe (Kubernetes / Render / AWS ECS / Docker)
+app.get(['/healthz', '/livez', '/health'], (req, res) => {
+  const { isShuttingDown } = require('./src/utils/shutdown');
+  if (isShuttingDown && isShuttingDown()) {
+    return res.status(503).json({ status: 'shutting_down', timestamp: new Date().toISOString() });
+  }
+  return res.status(200).json({
+    status: 'ok',
+    uptimeSeconds: Math.round(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Deep Cloud Readiness Probe (Validates Supabase database connection and service latency)
+app.get(['/readyz', '/ready'], async (req, res) => {
+  const { isShuttingDown } = require('./src/utils/shutdown');
+  if (isShuttingDown && isShuttingDown()) {
+    return res.status(503).json({ status: 'not_ready', reason: 'shutting_down' });
+  }
+
+  const { supabase, isSupabaseConfigured } = require('./src/services/supabase');
+  let dbStatus = 'Offline';
+  let dbLatencyMs = null;
+
+  if (isSupabaseConfigured()) {
+    const t0 = Date.now();
+    try {
+      const { error } = await supabase.from('profiles').select('id').limit(1);
+      dbLatencyMs = Date.now() - t0;
+      dbStatus = error ? 'Degraded' : 'Connected';
+    } catch (_) {
+      dbStatus = 'Error';
+      dbLatencyMs = Date.now() - t0;
+    }
+  }
+
+  const isReady = dbStatus === 'Connected';
+  return res.status(isReady ? 200 : 503).json({
+    status: isReady ? 'ready' : 'degraded',
+    dbConnection: dbStatus,
+    dbLatencyMs: dbLatencyMs !== null ? dbLatencyMs : 0,
     timestamp: new Date().toISOString()
   });
 });
@@ -321,12 +435,105 @@ app.use('/app', express.static(path.join(__dirname, 'public/app'), {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   }
 }));
-app.use('/dbm', express.static(path.join(__dirname, 'public/dbm'), {
+
+
+// Unified Multi-Engine Web Workspace (Phase 2)
+app.get(['/workspace', '/workspace/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/workspace/index.html'));
+});
+app.use('/workspace', express.static(path.join(__dirname, 'public/workspace'), {
   setHeaders: (res) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   }
 }));
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
+
+// Interactive Digital Planner & Micro-Product Route (Phase 1)
+app.get(['/planner', '/planner/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/planner/index.html'));
+});
+app.use('/planner', express.static(path.join(__dirname, 'public/planner')));
+
+// Universal Customer Portal & Credit Wallet (Phase 2)
+app.get(['/my-portal', '/my-portal/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/my-portal/index.html'));
+});
+app.use('/my-portal', express.static(path.join(__dirname, 'public/my-portal')));
+
+// Etsy Buyer Delivery Certificate Sheet (Phase 2)
+app.get(['/delivery', '/delivery/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/delivery/index.html'));
+});
+app.use('/delivery', express.static(path.join(__dirname, 'public/delivery')));
+
+// Interactive 3D Multi-Angle Spatial Engine & Product Lab
+app.use('/3d-viewer', express.static(path.join(__dirname, 'public/3d-viewer')));
+app.get(['/3d-viewer', '/3d-viewer/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/3d-viewer/index.html'));
+});
+app.get(['/real3d', '/real3d/', '/kids-3d', '/kids-3d/', '/3d-viewer/kids'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/3d-viewer/real3d.html'));
+});
+
+// DigiVault BD Storefront — Premium Digital Subscriptions (Bangla market)
+app.get(['/digivault', '/digivault/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/digivault/index.html'));
+});
+app.use('/digivault', express.static(path.join(__dirname, 'public/digivault')));
+
+// PlannerQueen product vault — redirect to interactive planner
+app.get(['/vault/plannerqueen', '/vault/:slug'], (req, res) => {
+  res.redirect('/planner');
+});
+
+// Client Portal Modules - strict no-cache to ensure immediate updates in browser sessions
+app.use('/client/modules', express.static(path.join(__dirname, 'public/client/modules'), {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+}));
+
+// Phase 5: Consolidated Workstation Redirects (Decommissioned Standalone Internal Portals)
+// Placed before express.static so Express doesn't issue a 301 trailing slash redirect
+app.get(['/crew', '/crew/', '/crew/*', '/team', '/staff'], (req, res) => {
+  res.redirect(302, '/workspace#tasks');
+});
+
+app.get(['/manager', '/manager/', '/manager/*', '/manager-portal'], (req, res) => {
+  res.redirect(302, '/workspace#overview');
+});
+
+app.get(['/dbm', '/dbm/', '/dbm/*', '/dbm-portal'], (req, res) => {
+  res.redirect(302, '/workspace?engineId=engine3#deliverables');
+});
+
+// Canonical Public Commerce & Customer Endpoints
+app.get(['/dce/track', '/track', '/dce-track'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dce/track.html'));
+});
+
+app.get(['/dce/store', '/store', '/dce-store'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dce/store.html'));
+});
+
+app.get(['/affiliate/portal', '/dce/affiliate', '/affiliate'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dce/affiliate.html'));
+});
+
+app.get(['/dce', '/dce/', '/dce/orders', '/dce-orders', '/dce/operations', '/dce-operations', '/dce/growth', '/dce-growth', '/dce/digivault', '/dce-digivault', '/dce-portal'], (req, res) => {
+  res.redirect(302, '/workspace?engineId=engine3#pnl');
+});
+
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    } else if (/\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+  }
+}));
 
 // Explicit Multi-Portal Routes (Phase C Architecture)
 app.get('/', (req, res) => {
@@ -341,17 +548,23 @@ app.get(['/app', '/admin', '/dashboard', '/os'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/app/index.html'));
 });
 
-app.get(['/dbm', '/dbm-portal'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/dbm/index.html'));
+
+
+// Standalone Affiliate Short Link Redirect Handler
+app.get('/r/:shortCode', async (req, res) => {
+  try {
+    const { recordClickAndResolve } = require('./src/services/dce-affiliates');
+    const result = await recordClickAndResolve(req.params.shortCode);
+    if (result && result.destinationUrl) {
+      // Set attribution cookie for 30 days
+      res.cookie('dce_ref', result.shortCode, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: false });
+      return res.redirect(result.destinationUrl);
+    }
+  } catch (e) {}
+  return res.redirect('/workspace?engineId=engine3#pnl');
 });
 
-app.get(['/manager', '/manager-portal'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/manager/index.html'));
-});
 
-app.get(['/team', '/crew', '/staff'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/crew/index.html'));
-});
 
 app.get(['/partners', '/partners.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/partners.html'));
@@ -369,7 +582,20 @@ app.get(['/proposal', '/proposal.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/proposal.html'));
 });
 
-app.get(['/team-miniapp', '/crew-app'], (req, res) => {
+// Engine 2 Document & Stakeholder View Routes
+app.get(['/msa-view', '/msa-view.html', '/msa'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/msa-view.html'));
+});
+
+app.get(['/handover-view', '/handover-view.html', '/handover'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/handover-view.html'));
+});
+
+app.get(['/invoice-view', '/invoice-view.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/invoice-view.html'));
+});
+
+app.get(['/transit', '/transit/', '/team-miniapp', '/crew-app'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/team-miniapp.html'));
 });
 
@@ -383,6 +609,16 @@ app.get(['/onboarding', '/team-onboarding'], (req, res) => {
 
 app.get(['/sprint', '/sprint.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/sprint.html'));
+});
+
+// Engine 2 Inbound AI Readiness Diagnostic Scorecard
+app.get(['/ai-audit', '/ai-audit.html', '/audit'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/ai-audit.html'));
+});
+
+// Engine 2 Subcontractor Scoped Gateway & Masked Mini Portal
+app.get(['/contractor-view', '/contractor-view.html', '/contractor'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/contractor-view.html'));
 });
 
 app.get(['/docs', '/overview'], (req, res) => {
@@ -442,11 +678,14 @@ app.use(errorHandler);
 
 // Start Express Server (only when run directly, not when imported by Vercel serverless handler)
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`\n==================================================`);
     console.log(`⚡ GRO10X OS Platform running at: http://localhost:${PORT}`);
     console.log(`==================================================\n`);
   });
+
+  const { setupGracefulShutdown } = require('./src/utils/shutdown');
+  setupGracefulShutdown(server);
 }
 
 module.exports = app;

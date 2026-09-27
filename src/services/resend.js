@@ -304,6 +304,173 @@ async function sendTicketResolutionEmail({ clientEmail, clientName, ticketTitle,
   return sendEmail({ to: clientEmail, subject, html });
 }
 
+/**
+ * Send DCE Digital Product Delivery Email
+ */
+async function sendDigitalDeliveryEmail({ customerEmail, customerName, brandName, productTitle, sku, licenseKey, downloadUrl, expiresAt }) {
+  if (!customerEmail || !customerEmail.includes('@')) {
+    return { success: false, reason: 'No valid customer email' };
+  }
+  const name = customerName || 'Valued Customer';
+  const brand = brandName || 'GRO10X Brand';
+  const expiryText = expiresAt ? new Date(expiresAt).toLocaleDateString() : 'Lifetime Access';
+  const url = downloadUrl || 'https://gro10x.ai/dce/download';
+  const subject = `🎉 Your ${brand} Order is Ready — Download Inside!`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0b0f19; color: #f3f4f6; padding: 32px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 36px;">⚡</span>
+        <h1 style="color: #6366f1; margin: 8px 0 0 0; font-size: 24px;">${brand}</h1>
+        <p style="color: #9ca3af; font-size: 13px; margin: 4px 0 0 0;">Digital Asset Delivery</p>
+      </div>
+
+      <div style="background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <h2 style="color: #10b981; font-size: 18px; margin-top: 0;">Order Confirmed & Ready ✅</h2>
+        <p style="color: #e5e7eb; font-size: 15px;">Hi <strong>${name}</strong>,</p>
+        <p style="color: #9ca3af; font-size: 14px;">Your digital product <strong>"${productTitle || 'Digital Order'}"</strong> is ready for instant download.</p>
+
+        <div style="background: #090e17; border: 1px dashed #374151; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <div style="margin-bottom: 8px; font-size: 13px; color: #9ca3af;">
+            <strong style="color: #f3f4f6;">📦 SKU Code:</strong> <code style="color: #38bdf8; font-family: monospace;">${sku || 'N/A'}</code>
+          </div>
+          <div style="margin-bottom: 8px; font-size: 13px; color: #9ca3af;">
+            <strong style="color: #f3f4f6;">🔑 License Key:</strong> <code style="color: #ec4899; font-family: monospace;">${licenseKey || 'AUTO-ACTIVATED'}</code>
+          </div>
+          <div style="font-size: 13px; color: #9ca3af;">
+            <strong style="color: #f3f4f6;">⏰ Access Horizon:</strong> <span style="color: #10b981;">${expiryText}</span>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${url}" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; display: inline-block;">
+            📥 Download / Access Your Product
+          </a>
+        </div>
+
+        <p style="color: #6b7280; font-size: 12px; text-align: center; margin-top: 16px;">
+          Need help? Reply to this email or visit our helpdesk.
+        </p>
+      </div>
+
+      <div style="font-size: 12px; color: #6b7280; text-align: center;">
+        <p style="margin: 0;">${brand} • Powered by GRO10X Digital Commerce Engine</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({ to: customerEmail, subject, html });
+}
+
+/**
+ * Send DCE License Renewal Reminder Email
+ */
+async function sendRenewalReminderEmail({ customerEmail, customerName, brandName, productTitle, sku, daysRemaining, renewalUrl }) {
+  if (!customerEmail || !customerEmail.includes('@')) {
+    return { success: false, reason: 'No valid customer email' };
+  }
+  const name = customerName || 'Valued Customer';
+  const brand = brandName || 'GRO10X Brand';
+  const url = renewalUrl || 'https://gro10x.ai/dce/renew';
+  const subject = `⏳ Your ${brand} Access Expires in ${daysRemaining} Days — Renew Now`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0b0f19; color: #f3f4f6; padding: 32px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 36px;">⏳</span>
+        <h1 style="color: #f59e0b; margin: 8px 0 0 0; font-size: 24px;">${brand} Renewal</h1>
+        <p style="color: #9ca3af; font-size: 13px; margin: 4px 0 0 0;">Subscription Retention Alert</p>
+      </div>
+
+      <div style="background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <h2 style="color: #f59e0b; font-size: 18px; margin-top: 0;">Access Expiring Soon ⚠️</h2>
+        <p style="color: #e5e7eb; font-size: 15px;">Hi <strong>${name}</strong>,</p>
+        <p style="color: #9ca3af; font-size: 14px;">Your subscription for <strong>"${productTitle || 'Digital License'}"</strong> (${sku || ''}) will expire in <strong>${daysRemaining} days</strong>.</p>
+        
+        <p style="color: #9ca3af; font-size: 14px;">Renew today to ensure uninterrupted access to all templates, updates, and cloud vault assets.</p>
+
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${url}" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; display: inline-block;">
+            🔄 1-Click Renew Subscription
+          </a>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; color: #6b7280; text-align: center;">
+        <p style="margin: 0;">${brand} • Powered by GRO10X Digital Commerce Engine</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({ to: customerEmail, subject, html });
+}
+
+/**
+ * Send Service Case Study & Architecture Blueprint Delivery Email upon Lead Capture
+ */
+async function sendServiceAssetDeliveryEmail({ email, contactPerson, serviceName, productCode, slidesUrl, blueprintUrl, audioUrl }) {
+  if (!email || !email.includes('@') || email.includes('lead.com')) {
+    return { success: false, reason: 'Invalid or placeholder email' };
+  }
+
+  const name = contactPerson || 'there';
+  const svcName = serviceName || 'AI Growth Sprint Architecture';
+  const subject = `Your Requested Architecture Blueprint & Case Study: ${svcName} — GRO10X`;
+
+  const sUrl = slidesUrl || 'https://gro10x.ai/assets/case-studies/overview.pdf';
+  const bUrl = blueprintUrl || 'https://gro10x.ai/assets/blueprints/system.pdf';
+  const aUrl = audioUrl || 'https://open.spotify.com/show/gro10x-ai-case-studies';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 32px;">⚡</span>
+        <h1 style="color: #00df89; margin: 8px 0 0 0; font-size: 24px;">GRO10X</h1>
+        <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">AI Architecture & Sprint Engineering</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(0, 223, 137, 0.2); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <h2 style="color: #f8fafc; font-size: 18px; margin-top: 0;">Here Are Your Requested Assets 📂</h2>
+        <p style="color: #cbd5e1; font-size: 15px;">Hi <strong>${name}</strong>,</p>
+        <p style="color: #94a3b8; font-size: 14px;">Thank you for your interest in <strong>${svcName}</strong>. As promised, here are the direct links to examine our production architecture and case study breakdown:</p>
+        
+        <div style="margin: 20px 0; background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 16px;">
+          <div style="margin-bottom: 12px;">
+            <a href="${sUrl}" style="color: #00df89; font-weight: bold; text-decoration: none; font-size: 15px;">📄 Download 10-Slide Case Study Deck (PDF) &rarr;</a>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <a href="${bUrl}" style="color: #38bdf8; font-weight: bold; text-decoration: none; font-size: 15px;">🛠️ View Full Architecture Blueprint Diagram (PDF) &rarr;</a>
+          </div>
+          <div>
+            <a href="${aUrl}" style="color: #a855f7; font-weight: bold; text-decoration: none; font-size: 15px;">🎙️ Listen to Two-Host Audio Breakdown (Spotify) &rarr;</a>
+          </div>
+        </div>
+
+        <div style="background: rgba(0, 223, 137, 0.08); border-left: 3px solid #00df89; padding: 12px 16px; margin: 18px 0; border-radius: 4px;">
+          <p style="margin: 0; font-size: 13px; color: #e2e8f0;">⚡ <strong>Need this deployed for your team?</strong> Our standard sprint framework delivers production MVP builds in <strong>14 days</strong> with 100% full source code transfer.</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px;">
+          <a href="https://wa.me/8801708459008?text=Hi%20Tanvir!%20I%20reviewed%20the%20${encodeURIComponent(svcName)}%20blueprint%20and%20want%20to%20discuss%20a%20build." style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
+            📱 Chat on WhatsApp
+          </a>
+          <a href="https://gro10x.ai/services/${productCode || 'SVC-001'}" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
+            🚀 Service Scope & Pricing
+          </a>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; color: #64748b; text-align: center;">
+        <p style="margin: 4px 0;">Direct Contact: <a href="tel:+8801708459008" style="color: #00df89; text-decoration: none;">+880 1708 459008</a> | <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
+        <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;">
+        <p style="font-size: 11px; margin: 0;">GRO10X AI Growth Agency • Dhaka, Bangladesh</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({ to: email, subject, html });
+}
+
 module.exports = {
   sendEmail,
   sendClientOnboardingEmail,
@@ -312,7 +479,11 @@ module.exports = {
   sendLeadFollowUpEmail,
   sendDeliverableReadyEmail,
   sendPaymentReceiptEmail,
-  sendTicketResolutionEmail
+  sendTicketResolutionEmail,
+  sendDigitalDeliveryEmail,
+  sendRenewalReminderEmail,
+  sendServiceAssetDeliveryEmail
 };
+
 
 

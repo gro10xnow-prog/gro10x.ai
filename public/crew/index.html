@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
@@ -9,14 +9,11 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta http-equiv="refresh" content="0; url=/workspace#tasks">
   <script>
     (function() {
-      var token = localStorage.getItem('sb-access-token') ||
-                  localStorage.getItem('gro10x_token') ||
-                  localStorage.getItem('gro10x_token');
-      if (!token) {
-        window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
-      }
+      var targetTab = window.location.hash.replace('#', '') || 'tasks';
+      window.location.replace('/workspace#' + targetTab);
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,7 +107,7 @@
   <!-- Top App Header -->
   <header class="top-header">
     <div style="display: flex; align-items: center; gap: 0.75rem;">
-      <div class="brand-logo" style="background:var(--gradient-brand);">PB</div>
+      <div class="brand-logo" style="background:var(--gradient-brand); font-weight:900;">G10X</div>
       <div>
         <div class="brand-title" id="crewHeaderName">Crew Member</div>
         <div style="font-size: 0.65rem; color: var(--purple-light); font-weight: 800; letter-spacing: 0.06em;">CREW PERSONAL WORKSPACE</div>
@@ -216,10 +213,13 @@
 
     function crewSignOut() {
       localStorage.removeItem('gro10x_token');
-      localStorage.removeItem('gro10x_token');
-      localStorage.removeItem('gro10x_token');
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('gro10x_user');
       localStorage.removeItem('purple_user');
+      localStorage.removeItem('crew_user');
       localStorage.removeItem('crew_notifications_v1');
+      sessionStorage.removeItem('jwt_token');
+      document.cookie = 'sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       window.location.href = '/auth';
     }
 

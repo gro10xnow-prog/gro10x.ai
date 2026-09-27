@@ -21,6 +21,37 @@
       var token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
       if (token) return token;
 
+      // Extract from URL query parameter if present
+      try {
+        if (typeof window !== 'undefined' && window.location && window.location.search) {
+          var params = new URLSearchParams(window.location.search);
+          var urlToken = params.get('token');
+          if (urlToken) {
+            localStorage.setItem(TOKEN_KEY, urlToken);
+            sessionStorage.setItem(TOKEN_KEY, urlToken);
+            try {
+              var parts = urlToken.split('.');
+              if (parts.length === 3) {
+                var payload = JSON.parse(atob(parts[1]));
+                if (payload) {
+                  var userObj = {
+                    id: payload.id || payload.sub,
+                    name: payload.name || 'Partner',
+                    email: payload.email,
+                    role: payload.role || 'Partner',
+                    access_level: payload.access_level || 'Partner',
+                    type: payload.type || 'partner'
+                  };
+                  localStorage.setItem(USER_KEY, JSON.stringify(userObj));
+                  sessionStorage.setItem(USER_KEY, JSON.stringify(userObj));
+                }
+              }
+            } catch(e) {}
+            return urlToken;
+          }
+        }
+      } catch (e) {}
+
       // Migrate legacy tokens on first access
       for (var i = 0; i < LEGACY_TOKENS.length; i++) {
         var legToken = localStorage.getItem(LEGACY_TOKENS[i]) || sessionStorage.getItem(LEGACY_TOKENS[i]);

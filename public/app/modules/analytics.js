@@ -93,8 +93,8 @@ window.APP_MODULES.analytics = async function(container) {
 
         <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
           <!-- Dual-Currency Switcher -->
-          <button onclick="window.ANALYTICS_MODULE.toggleCurrency()" class="btn-secondary btn-sm" style="display:flex; align-items:center; gap:0.35rem; font-size:0.8rem; font-weight:700; cursor:pointer;" title="Toggle Display Currency">
-            <span>${currentCurrency === 'USD' ? '💵 USD ($)' : '৳ BDT (৳)'}</span>
+          <button id="analyticsCurrencyBtn" onclick="window.switchAnalyticsCurrency ? window.switchAnalyticsCurrency() : window.ANALYTICS_MODULE.toggleCurrency()" class="btn-secondary btn-sm" style="display:flex; align-items:center; gap:0.35rem; font-size:0.8rem; font-weight:700; cursor:pointer;" title="Toggle Display Currency">
+            <span id="analyticsCurrencyPill">${currentCurrency === 'USD' ? '💵 USD ($)' : '৳ BDT (৳)'}</span>
           </button>
 
           <!-- Timeframe Selector -->
@@ -113,7 +113,7 @@ window.APP_MODULES.analytics = async function(container) {
           
           <!-- Authenticated Export Report Dropdown -->
           <div style="position:relative; display:inline-block;">
-            <button class="btn-primary" onclick="window.ANALYTICS_MODULE.toggleExportMenu()" style="background:#00df89; color:#09090b; font-weight:800; border:none; padding:0.45rem 1rem; border-radius:8px; font-size:0.82rem; cursor:pointer; display:flex; align-items:center; gap:0.35rem;">
+            <button id="btnExportMenu" class="btn-primary" onclick="window.ANALYTICS_MODULE.toggleExportMenu()" style="background:#00df89; color:#09090b; font-weight:800; border:none; padding:0.45rem 1rem; border-radius:8px; font-size:0.82rem; cursor:pointer; display:flex; align-items:center; gap:0.35rem;">
               <span>📥 Export Report</span> <span>▼</span>
             </button>
             <div id="exportMenuDropdown" style="display:none; position:absolute; right:0; top:115%; background:var(--surface-2, #162032); border:1px solid var(--border-medium, rgba(255,255,255,0.15)); border-radius:12px; width:200px; z-index:100; box-shadow:0 12px 36px rgba(0,0,0,0.6); overflow:hidden; backdrop-filter:blur(10px);">
@@ -373,8 +373,18 @@ window.APP_MODULES.analytics = async function(container) {
     // Revenue Trend Chart
     const ctxRev = document.getElementById('revTrendCanvas');
     if (ctxRev) {
-      if (timeSeriesChart) timeSeriesChart.destroy();
-      timeSeriesChart = new Chart(ctxRev.getContext('2d'), {
+      try {
+        if (timeSeriesChart) {
+          try { timeSeriesChart.destroy(); } catch (_) {}
+          timeSeriesChart = null;
+        }
+        if (window.Chart && typeof window.Chart.getChart === 'function') {
+          const existing = window.Chart.getChart(ctxRev);
+          if (existing) {
+            try { existing.destroy(); } catch (_) {}
+          }
+        }
+        timeSeriesChart = new Chart(ctxRev.getContext('2d'), {
         type: 'line',
         data: {
           labels: labels,
@@ -424,13 +434,26 @@ window.APP_MODULES.analytics = async function(container) {
           }
         }
       });
+      } catch (errRev) {
+        console.warn('[Analytics] revTrendChart init notice:', errRev.message);
+      }
     }
 
     // Tasks Throughput Chart
     const ctxTask = document.getElementById('taskThroughputCanvas');
     if (ctxTask) {
-      if (tasksChart) tasksChart.destroy();
-      tasksChart = new Chart(ctxTask.getContext('2d'), {
+      try {
+        if (tasksChart) {
+          try { tasksChart.destroy(); } catch (_) {}
+          tasksChart = null;
+        }
+        if (window.Chart && typeof window.Chart.getChart === 'function') {
+          const existing = window.Chart.getChart(ctxTask);
+          if (existing) {
+            try { existing.destroy(); } catch (_) {}
+          }
+        }
+        tasksChart = new Chart(ctxTask.getContext('2d'), {
         type: 'bar',
         data: {
           labels: labels,
@@ -474,6 +497,9 @@ window.APP_MODULES.analytics = async function(container) {
           }
         }
       });
+      } catch (errTask) {
+        console.warn('[Analytics] tasksChart init notice:', errTask.message);
+      }
     }
   }
 
@@ -495,40 +521,53 @@ window.APP_MODULES.analytics = async function(container) {
       : ['Organic / Direct (100%)'];
     const chartData = rawData.length > 0 ? rawData : [1];
 
-    if (utmChart) utmChart.destroy();
-    utmChart = new Chart(ctxUtm.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: chartLabels,
-        datasets: [{
-          data: chartData,
-          backgroundColor: ['#00df89', '#38bdf8', '#818cf8', '#ec4899', '#f59e0b', '#a855f7'],
-          borderWidth: 2,
-          borderColor: '#121824'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '68%',
-        plugins: {
-          legend: {
-            position: 'right',
-            labels: {
-              color: '#94a3b8',
-              font: { size: 11, family: 'Inter, sans-serif' },
-              boxWidth: 12,
-              padding: 10
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => ` ${ctx.label}`
+    try {
+      if (utmChart) {
+        try { utmChart.destroy(); } catch (_) {}
+        utmChart = null;
+      }
+      if (window.Chart && typeof window.Chart.getChart === 'function') {
+        const existing = window.Chart.getChart(ctxUtm);
+        if (existing) {
+          try { existing.destroy(); } catch (_) {}
+        }
+      }
+      utmChart = new Chart(ctxUtm.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            data: chartData,
+            backgroundColor: ['#00df89', '#38bdf8', '#818cf8', '#ec4899', '#f59e0b', '#a855f7'],
+            borderWidth: 2,
+            borderColor: '#121824'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '68%',
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: '#94a3b8',
+                font: { size: 11, family: 'Inter, sans-serif' },
+                boxWidth: 12,
+                padding: 10
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.label}`
+              }
             }
           }
         }
-      }
-    });
+      });
+    } catch (errUtm) {
+      console.warn('[Analytics] utmChart init notice:', errUtm.message);
+    }
   }
 
   function renderDeptScorecard(depts) {
@@ -605,6 +644,10 @@ window.APP_MODULES.analytics = async function(container) {
       await loadData();
       showToast('✅ Intelligence updated successfully', 2500, 'success');
     },
+    closeExportMenu() {
+      const menu = document.getElementById('exportMenuDropdown');
+      if (menu) menu.style.display = 'none';
+    },
     toggleExportMenu() {
       const menu = document.getElementById('exportMenuDropdown');
       if (!menu) return;
@@ -612,12 +655,23 @@ window.APP_MODULES.analytics = async function(container) {
       menu.style.display = isShowing ? 'none' : 'block';
       if (!isShowing) {
         const closeHandler = (e) => {
-          if (!e.target.closest('#exportMenuDropdown') && !e.target.closest('button')) {
+          if (!e.target.closest('#exportMenuDropdown') && !e.target.closest('#btnExportMenu')) {
             menu.style.display = 'none';
             document.removeEventListener('click', closeHandler);
+            document.removeEventListener('keydown', keyHandler);
           }
         };
-        setTimeout(() => document.addEventListener('click', closeHandler), 10);
+        const keyHandler = (e) => {
+          if (e.key === 'Escape') {
+            menu.style.display = 'none';
+            document.removeEventListener('click', closeHandler);
+            document.removeEventListener('keydown', keyHandler);
+          }
+        };
+        setTimeout(() => {
+          document.addEventListener('click', closeHandler);
+          document.addEventListener('keydown', keyHandler);
+        }, 10);
       }
     },
     async exportCSV(table) {
@@ -650,6 +704,44 @@ window.APP_MODULES.analytics = async function(container) {
       }
     }
   };
+
+  // Global currency alias for cross-module compatibility & QA automation
+  window.switchAnalyticsCurrency = function(currency) {
+    if (!currency) {
+      currency = currentCurrency === 'USD' ? 'BDT' : 'USD';
+    }
+    if (currency !== currentCurrency) {
+      currentCurrency = currency;
+      localStorage.setItem('gro10x_currency', currency);
+      const pill = document.getElementById('analyticsCurrencyPill');
+      if (pill) pill.textContent = currency === 'USD' ? '💵 USD ($)' : '৳ BDT (৳)';
+      const revSub = document.getElementById('chartRevSubtitle');
+      if (revSub) revSub.textContent = 'Daily settled revenue in ' + currency;
+      loadData();
+      window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency } }));
+    }
+  };
+
+  // Document-level Escape dismissal for export dropdown
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const menu = document.getElementById('exportMenuDropdown');
+      if (menu && menu.style.display === 'block') {
+        menu.style.display = 'none';
+      }
+    }
+  });
+
+  // SSE real-time subscriptions (400ms debounce)
+  let _analyticsSseDebounce = null;
+  if (window.APP_SSE && typeof window.APP_SSE.subscribe === 'function') {
+    ['invoice_update', 'payment_update', 'task_update', 'client_update', 'expense_update'].forEach(function(evt) {
+      window.APP_SSE.subscribe(evt, function() {
+        clearTimeout(_analyticsSseDebounce);
+        _analyticsSseDebounce = setTimeout(function() { loadData(); }, 400);
+      });
+    });
+  }
 
   // Listen for global currency toggle from top bar or other modules
   window.addEventListener('gro10x_currency_changed', (e) => {

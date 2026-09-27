@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Order & License Delivery Portal — GRO10X</title>
+  <meta name="description" content="Track your order status, download purchased digital assets, and retrieve license keys securely. Instant delivery portal.">
+
+  <!-- OpenGraph Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GRO10X Digital Commerce Engine">
+  <meta property="og:title" content="Customer Order & License Delivery Portal — GRO10X">
+  <meta property="og:description" content="Track your order status, access automated instant downloads, and manage license keys.">
+  <meta property="og:url" content="https://gro10x.ai/dce/track">
+  <meta property="og:image" content="/vault/preview.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="GRO10X Customer Order & License Delivery">
+  <meta name="twitter:description" content="Track your order status and access digital downloads.">
+  <meta name="twitter:image" content="/vault/preview.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --card-border: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 400px),
+                        radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.08), transparent 400px);
+    }
+    header {
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(11, 15, 25, 0.8);
+      backdrop-filter: blur(12px);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; font-weight: 800; font-size: 17px; }
+    .brand-icon { width: 34px; height: 34px; background: linear-gradient(135deg, #6366f1, #3b82f6); border-radius: 8px; display: grid; place-items: center; }
+    .main-container {
+      max-width: 860px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+      flex: 1;
+    }
+    .hero-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; text-align: center; }
+    .hero-subtitle { color: var(--text-muted); font-size: 15px; text-align: center; margin-bottom: 30px; }
+    .lookup-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      margin-bottom: 30px;
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end; }
+    @media (max-width: 700px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-field {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid #334155;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-field:focus { border-color: var(--primary); }
+    .btn-track {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+      height: 44px;
+      justify-content: center;
+    }
+    .btn-track:hover { background: var(--primary-hover); }
+    .order-result { display: none; }
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: uppercase;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    
+    /* Stepper */
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 25px 0 35px;
+    }
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 30px;
+      right: 30px;
+      height: 2px;
+      background: #1f2937;
+      z-index: 1;
+    }
+    .step-item {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 2px solid #334155;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .step-item.active .step-circle {
+      background: var(--primary);
+      border-color: #818cf8;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.5);
+    }
+    .step-item.completed .step-circle {
+      background: var(--accent);
+      border-color: #34d399;
+      color: #fff;
+    }
+    .step-title { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .step-item.active .step-title, .step-item.completed .step-title { color: #fff; }
+
+    /* Cards */
+    .delivery-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(16, 185, 129, 0.05));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .copy-box {
+      background: #090e17;
+      border: 1px dashed #334155;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 12px 0;
+    }
+    .btn-action {
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-action:hover { background: #2563eb; }
+    .btn-green { background: #10b981; }
+    .btn-green:hover { background: #059669; }
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .items-table th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 10px 12px;
+      border-bottom: 1px solid #1f2937;
+    }
+    .items-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #1e293b;
+      font-size: 13px;
+    }
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      place-items: center;
+    }
+    .modal-content {
+      background: #111827;
+      border: 1px solid #374151;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    /* Shimmer Skeleton & Mobile Responsive */
+    @keyframes dce-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-box {
+      background: linear-gradient(90deg, #111827 25%, #1e293b 50%, #111827 75%);
+      background-size: 200% 100%;
+      animation: dce-shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .btn-track {
+        min-height: 44px;
+      }
+      .modal-content {
+        width: 95% !important;
+        padding: 20px 16px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/dce" class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div>GRO10X Delivery Hub</div>
+        <div style="font-size: 10px; color: #94a3b8; font-weight: 500;">Secure Customer Self-Service</div>
+      </div>
+    </a>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <a href="/dce/store" style="font-size: 12px; color: #818cf8; text-decoration: none; font-weight: 600; padding: 6px 12px; background: rgba(99,102,241,0.1); border-radius: 6px; border: 1px solid rgba(99,102,241,0.2);">🛍️ Store</a>
+      <a href="/my-portal" target="_blank" style="font-size: 12px; color: #c084fc; text-decoration: none; font-weight: 600; padding: 6px 12px; background: rgba(168,85,247,0.1); border-radius: 6px; border: 1px solid rgba(168,85,247,0.2);">👑 Customer Vault</a>
+      <a href="/planner" target="_blank" style="font-size: 12px; color: #34d399; text-decoration: none; font-weight: 600; padding: 6px 12px; background: rgba(16,185,129,0.1); border-radius: 6px; border: 1px solid rgba(16,185,129,0.2);">✨ Planner App</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div class="hero-title">Track Order & Instant Digital License Access</div>
+    <div class="hero-subtitle">Enter your Order Reference from Etsy, Gumroad, Shopify, or Direct Checkout along with your email.</div>
+
+    <!-- Search Card -->
+    <div class="lookup-card">
+      <form id="trackForm" class="form-grid">
+        <div class="form-group">
+          <label>Order Reference ID</label>
+          <input type="text" id="orderRefInput" class="input-field" placeholder="e.g. ETSY-REC-902184 or DIR-PQ-..." required>
+        </div>
+        <div class="form-group">
+          <label>Customer Email</label>
+          <input type="email" id="emailInput" class="input-field" placeholder="email used during purchase" required>
+        </div>
+        <button type="submit" class="btn-track" id="submitBtn">
+          <span>🔍 Lookup Order</span>
+        </button>
+      </form>
+      <div id="lookupError" style="display: none; color: #f87171; font-size: 13px; margin-top: 12px; padding: 12px 16px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.25);"></div>
+    </div>
+
+    <!-- Shimmering Skeleton Loader -->
+    <div id="lookupSkeleton" style="display: none; margin-top: 24px;">
+      <div class="lookup-card">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+          <div class="skeleton-box" style="width: 160px; height: 24px;"></div>
+          <div class="skeleton-box" style="width: 100px; height: 24px;"></div>
+        </div>
+        <div class="skeleton-box" style="width: 100%; height: 50px; margin-bottom: 20px;"></div>
+        <div class="skeleton-box" style="width: 100%; height: 80px;"></div>
+      </div>
+    </div>
+
+    <!-- Results Container -->
+    <div id="orderResult" class="order-result">
+      <!-- Order Header Card -->
+      <div class="lookup-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+          <div>
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Order Reference</div>
+            <div id="resOrderRef" style="font-size: 20px; font-weight: 800; letter-spacing: -0.3px; color: #fff;"></div>
+          </div>
+          <div style="text-align: right;">
+            <div id="resStatusBadge"></div>
+            <div id="resPlacedDate" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;"></div>
+          </div>
+        </div>
+
+        <!-- Dynamic Stepper -->
+        <div class="stepper" id="orderStepper">
+          <div class="step-item completed" id="stepPlaced">
+            <div class="step-circle">✓</div>
+            <div class="step-title">Order Placed</div>
+          </div>
+          <div class="step-item completed" id="stepConfirmed">
+            <div class="step-circle">✓</div>
+            <div class="step-title">Confirmed</div>
+          </div>
+          <div class="step-item active" id="stepFulfill">
+            <div class="step-circle">⚡</div>
+            <div class="step-title" id="stepFulfillLabel">Delivered</div>
+          </div>
+        </div>
+
+        <!-- Digital Delivery Box -->
+        <div id="digitalDeliveryBox" class="delivery-box" style="display: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-weight: 800; font-size: 16px; color: #34d399; display: flex; align-items: center; gap: 6px;">
+              <span>🔑 Instant Digital License &amp; Product Launcher</span>
+            </div>
+            <span class="badge badge-green">Ready to Launch</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Your interactive productivity system is unlocked. Launch the web app directly, or claim your 200 GroCredits bonus in the Customer Vault:</p>
+          
+          <div class="copy-box">
+            <span id="resLicenseKey" style="font-family: monospace; font-size: 15px; font-weight: 700; color: #60a5fa; letter-spacing: 0.5px;"></span>
+            <button class="btn-action" style="padding: 6px 12px; font-size: 12px;" onclick="copyLicense()">📋 Copy Key</button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 14px;">
+            <a id="resLaunchPlannerBtn" href="/planner/" target="_blank" class="btn-action btn-green" style="text-align: center; justify-content: center; font-weight: 700;">
+              <span>✨ Launch Interactive Planner</span>
+            </a>
+            <a id="resVaultBtn" href="/my-portal" target="_blank" class="btn-action" style="background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; text-align: center; justify-content: center; font-weight: 700;">
+              <span>👑 Claim 200 GroCredits in Vault</span>
+            </a>
+            <a id="resDownloadBtn" href="/dist/PLA-14_PlannerQueenGro_Complete_16_Spreads.pdf" download class="btn-action" style="background: rgba(255,255,255,0.08); border: 1px solid #334155; text-align: center; justify-content: center;">
+              <span>🖨️ Download Printable PDF</span>
+            </a>
+            <a id="resCanvaBtn" href="https://www.canva.com/design/DAGMockup14/view" target="_blank" class="btn-action" style="background: rgba(255,255,255,0.08); border: 1px solid #334155; text-align: center; justify-content: center;">
+              <span>🎨 Open Canva Template</span>
+            </a>
+          </div>
+          
+          <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+            <button class="btn-action" style="background: none; border: none; font-size: 12px; color: var(--text-muted); cursor: pointer;" onclick="openHelpModal()">
+              <span>❓ Need Assistance with Access?</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Physical Courier Box -->
+        <div id="physicalCourierBox" class="delivery-box" style="display: none; border-color: rgba(59, 130, 246, 0.3);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-weight: 800; font-size: 16px; color: #60a5fa; display: flex; align-items: center; gap: 6px;">
+              <span>📦 Physical Merchandise Courier Telemetry</span>
+            </div>
+            <span id="resCourierBadge" class="badge badge-blue">Dispatched</span>
+          </div>
+          <div style="font-size: 13px; margin-bottom: 10px;">
+            Carrier: <strong id="resCarrierName" style="color: #fff;"></strong>
+          </div>
+          <div class="copy-box">
+            <span id="resTrackingNumber" style="font-family: monospace; font-size: 14px; font-weight: 700; color: #fbbf24;"></span>
+            <button class="btn-action" style="padding: 6px 12px; font-size: 12px;" onclick="copyTracking()">📋 Copy #</button>
+          </div>
+          <div style="margin-top: 14px;">
+            <a id="resCarrierLink" href="#" target="_blank" class="btn-action">
+              <span>🚚 Live Carrier Tracking</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div style="margin-top: 25px;">
+          <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Purchased Items</div>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item & Format</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="itemsTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Customer Order Footer -->
+        <div style="margin-top: 25px; padding-top: 18px; border-top: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="font-size: 12px; color: var(--text-muted);">
+            Customer: <strong id="resCustomerName" style="color: #fff;"></strong> (<span id="resCustomerEmail"></span>)
+          </div>
+          <button onclick="openHelpModal()" style="background: none; border: none; color: #818cf8; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline;">
+            🎫 Open Support Ticket for this Order
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Desk Ticket Modal -->
+  <div id="helpModal" class="modal-overlay">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 17px; font-weight: 800;">🎫 Request Post-Sale Support</h3>
+        <button onclick="closeHelpModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <form id="ticketForm">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Issue Subject</label>
+          <input type="text" id="tktSubject" class="input-field" placeholder="e.g. Cannot open Canva template link" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Category</label>
+          <select id="tktCategory" class="input-field" style="background: #090e17;">
+            <option value="DIGITAL_ACCESS">Digital Template / Download Issue</option>
+            <option value="TRACKING_INQUIRY">Courier Tracking Inquiry</option>
+            <option value="REFUND_REQUEST">Refund / Return Request</option>
+            <option value="OTHER">Other Assistance</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label>Details & Message</label>
+          <textarea id="tktMessage" class="input-field" rows="4" placeholder="Describe the issue you are experiencing..." required></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="closeHelpModal()" class="btn-action" style="background: #374151;">Cancel</button>
+          <button type="submit" class="btn-action btn-green" id="tktSubmitBtn">Submit Ticket</button>
+        </div>
+      </form>
+      <div id="ticketSuccessMsg" style="display: none; color: #34d399; margin-top: 12px; font-size: 13px; text-align: center;"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentOrderData = null;
+
+    // Check URL parameters for auto-lookup
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref') || params.get('orderRef') || params.get('id');
+      const email = params.get('email');
+      if (ref && email) {
+        document.getElementById('orderRefInput').value = ref;
+        document.getElementById('emailInput').value = email;
+        lookupOrder(ref, email);
+      }
+    });
+
+    document.getElementById('trackForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ref = document.getElementById('orderRefInput').value.trim();
+      const email = document.getElementById('emailInput').value.trim();
+      lookupOrder(ref, email);
+    });
+
+    async function lookupOrder(orderRef, email) {
+      const errEl = document.getElementById('lookupError');
+      const submitBtn = document.getElementById('submitBtn');
+      const skeletonEl = document.getElementById('lookupSkeleton');
+      const resultEl = document.getElementById('orderResult');
+
+      errEl.style.display = 'none';
+      resultEl.style.display = 'none';
+      if (skeletonEl) skeletonEl.style.display = 'block';
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Searching...';
+
+      try {
+        const res = await fetch('/api/dce/orders/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderRef, email })
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || 'Order could not be found. Please check your reference and email.');
+        }
+
+        currentOrderData = data.data;
+        if (skeletonEl) skeletonEl.style.display = 'none';
+        renderOrder(data.data);
+      } catch (err) {
+        if (skeletonEl) skeletonEl.style.display = 'none';
+        errEl.innerHTML = `
+          <div style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="font-size: 20px;">⚠️</span>
+            <div>
+              <div style="font-weight: 700; color: #f87171; margin-bottom: 4px;">${err.message}</div>
+              <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">
+                • For Etsy purchases: please check your Etsy receipt/order ID.<br>
+                • For direct store checkouts: reference starts with <code>DIR-PQ-</code>.<br>
+                • Verify that your email matches the address used during payment.<br>
+                • Need human help? <a href="#" onclick="openHelpModal(); return false;" style="color: #a5b4fc; text-decoration: underline; font-weight: 600;">Open a Support Ticket</a>
+              </div>
+            </div>
+          </div>
+        `;
+        errEl.style.display = 'block';
+        resultEl.style.display = 'none';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = '🔍 Lookup Order';
+      }
+    }
+
+    function renderOrder(order) {
+      document.getElementById('resOrderRef').innerText = order.orderRef;
+      document.getElementById('resPlacedDate').innerText = 'Placed ' + new Date(order.placedAt).toLocaleDateString();
+      document.getElementById('resCustomerName').innerText = order.customerName;
+      document.getElementById('resCustomerEmail').innerText = order.customerEmail;
+
+      // Status Badge
+      const statusBadgeEl = document.getElementById('resStatusBadge');
+      const status = (order.status || 'CONFIRMED').toUpperCase();
+      let badgeClass = 'badge-blue';
+      if (status === 'COMPLETED' || status === 'DELIVERED') badgeClass = 'badge-green';
+      else if (status === 'PROCESSING') badgeClass = 'badge-purple';
+      else if (status === 'CANCELLED') badgeClass = 'badge-amber';
+      statusBadgeEl.innerHTML = `<span class="badge ${badgeClass}">● ${status}</span>`;
+
+      // Digital License
+      const digiBox = document.getElementById('digitalDeliveryBox');
+      if (order.fulfillmentType === 'DIGITAL' || (order.licenses && order.licenses.length > 0)) {
+        digiBox.style.display = 'block';
+        const primaryLic = (order.licenses && order.licenses[0]) || { licenseKey: 'GRO-PQ-DIGITAL-LICENSE', accessUrl: '/planner/' };
+        const licenseKeyVal = primaryLic.licenseKey || 'GRO-PQ-DIGITAL-LICENSE';
+        document.getElementById('resLicenseKey').innerText = licenseKeyVal;
+
+        // 1. Launch Interactive App
+        const launchBtn = document.getElementById('resLaunchPlannerBtn');
+        if (launchBtn) launchBtn.href = primaryLic.interactiveUrl || primaryLic.accessUrl || '/planner/';
+
+        // 2. Claim 200 GroCredits in Vault (pre-fill code in query param)
+        const vaultBtn = document.getElementById('resVaultBtn');
+        const codeForVault = primaryLic.licenseKey || order.orderRef || order.orderId;
+        if (vaultBtn) vaultBtn.href = primaryLic.vaultUrl || (`/my-portal?code=${encodeURIComponent(codeForVault)}`);
+
+        // 3. Download Printable PDF
+        const dlBtn = document.getElementById('resDownloadBtn');
+        if (dlBtn) dlBtn.href = primaryLic.pdfDownloadUrl || '/dist/PLA-14_PlannerQueenGro_Complete_16_Spreads.pdf';
+
+        // 4. Open Canva Template
+        const canvaBtn = document.getElementById('resCanvaBtn');
+        if (canvaBtn) canvaBtn.href = primaryLic.canvaTemplateUrl || 'https://www.canva.com/design/DAGMockup14/view';
+      } else {
+        digiBox.style.display = 'none';
+      }
+
+      // Physical Courier
+      const physBox = document.getElementById('physicalCourierBox');
+      if (order.fulfillmentType === 'PHYSICAL' && order.tracking) {
+        physBox.style.display = 'block';
+        document.getElementById('resCarrierName').innerText = order.tracking.carrier || 'Express Courier';
+        document.getElementById('resTrackingNumber').innerText = order.tracking.trackingNumber || 'Pending Dispatch';
+        document.getElementById('resCarrierLink').href = order.tracking.trackingUrl || '#';
+      } else {
+        physBox.style.display = 'none';
+      }
+
+      // Items Table
+      const tbody = document.getElementById('itemsTableBody');
+      tbody.innerHTML = (order.items || []).map(item => `
+        <tr>
+          <td>
+            <div style="font-weight: 700; color: #fff;">${item.title}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Format: <span class="badge badge-purple" style="font-size: 9px;">${item.format}</span></div>
+          </td>
+          <td>${item.quantity}</td>
+          <td>$${Number(item.unitPrice).toFixed(2)}</td>
+          <td><strong>$${Number(item.lineTotal).toFixed(2)}</strong></td>
+        </tr>
+      `).join('');
+
+      document.getElementById('orderResult').style.display = 'block';
+    }
+
+    function copyLicense() {
+      const key = document.getElementById('resLicenseKey').innerText;
+      navigator.clipboard.writeText(key);
+      alert('✅ License Key copied to clipboard!');
+    }
+
+    function copyTracking() {
+      const num = document.getElementById('resTrackingNumber').innerText;
+      navigator.clipboard.writeText(num);
+      alert('✅ Tracking number copied to clipboard!');
+    }
+
+    // Modal Operations
+    function openHelpModal() {
+      if (currentOrderData) {
+        document.getElementById('tktSubject').value = `Order ${currentOrderData.orderRef} Support`;
+      }
+      document.getElementById('helpModal').style.display = 'grid';
+    }
+
+    function closeHelpModal() {
+      document.getElementById('helpModal').style.display = 'none';
+    }
+
+    document.getElementById('ticketForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('tktSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Submitting...';
+
+      const payload = {
+        orderId: currentOrderData?.orderId || null,
+        orderRef: currentOrderData?.orderRef || 'DIRECT',
+        customerName: currentOrderData?.customerName || 'Customer',
+        customerEmail: currentOrderData?.customerEmail || document.getElementById('emailInput').value,
+        subject: document.getElementById('tktSubject').value,
+        category: document.getElementById('tktCategory').value,
+        message: document.getElementById('tktMessage').value,
+        priority: 'MEDIUM'
+      };
+
+      try {
+        const res = await fetch('/api/dce/helpdesk/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        const successMsg = document.getElementById('ticketSuccessMsg');
+        successMsg.innerText = `✅ Support Ticket #${data.data?.ticketRef || 'TKT-SUBMITTED'} logged! Our team will respond within 4 business hours.`;
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+          closeHelpModal();
+          successMsg.style.display = 'none';
+        }, 3000);
+      } catch (err) {
+        alert('Failed to submit ticket. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Submit Ticket';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formal Handover Shield & IP Transfer Manifest — Gro10x.ai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- html2pdf for zero-margin vector PDF download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --primary: #00df89;
+      --primary-dark: #00b368;
+      --navy: #070b12;
+      --navy-card: #0d131f;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --purple-accent: #7c3aed;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #090d14;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Top Action Control Toolbar */
+    .toolbar {
+      width: 100%;
+      max-width: 210mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 1.25rem;
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .toolbar-title {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .toolbar-sub {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      border: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00df89, #00b368);
+      color: #05140b;
+      box-shadow: 0 4px 14px rgba(0, 223, 137, 0.35);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #05f096, #00c774);
+      transform: translateY(-1px);
+    }
+
+    .btn-purple {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+    }
+    .btn-purple:hover {
+      background: linear-gradient(135deg, #a78bfa, #7c3aed);
+      transform: translateY(-1px);
+    }
+
+    /* Print Canvas — Pixel-Perfect A4 */
+    .sheet-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .sheet {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      padding: 12mm 14mm 10mm;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Header */
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .brand-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .brand-sub {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #475569;
+      margin-top: 0.15rem;
+      letter-spacing: 0.5px;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0.3rem;
+    }
+
+    .manifest-meta {
+      text-align: right;
+    }
+
+    .manifest-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .meta-line {
+      font-size: 0.72rem;
+      color: #475569;
+      margin-top: 0.15rem;
+    }
+
+    /* Parties Two-Column Grid */
+    .parties-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .party-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+    }
+
+    .party-role {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      margin-bottom: 0.2rem;
+    }
+
+    .party-name {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .party-detail {
+      font-size: 0.7rem;
+      color: #475569;
+      line-height: 1.35;
+      margin-top: 0.2rem;
+    }
+
+    /* IP Assignment Banner */
+    .ip-clause-box {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(0, 223, 137, 0.05));
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid var(--purple-accent);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .ip-clause-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .ip-clause-text {
+      font-size: 0.68rem;
+      color: #334155;
+      line-height: 1.45;
+      text-align: justify;
+    }
+
+    /* Section Subheading */
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #0f172a;
+      margin: 0.5rem 0 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    /* Technical Inventory Table */
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .doc-table th {
+      background: #0f172a;
+      color: #ffffff;
+      text-align: left;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .doc-table td {
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+    }
+
+    .badge-status {
+      display: inline-block;
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-weight: 700;
+      font-size: 0.62rem;
+    }
+
+    /* Warranty & SLA Box */
+    .warranty-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .warranty-item {
+      font-size: 0.7rem;
+    }
+
+    .warranty-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    .warranty-val {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 0.1rem;
+    }
+
+    /* Dual Signatures */
+    .signatures-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 0.75rem;
+    }
+
+    .sig-block {
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      background: #fbfcfe;
+    }
+
+    .sig-seal {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .seal-icon {
+      font-size: 1.2rem;
+    }
+
+    .sig-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .sig-info {
+      font-size: 0.65rem;
+      color: #475569;
+      line-height: 1.35;
+    }
+
+    .sig-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: #059669;
+      font-weight: 700;
+      margin-top: 0.3rem;
+    }
+
+    /* Footer */
+    .sheet-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 0.4rem;
+      margin-top: 0.5rem;
+      font-size: 0.6rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-card {
+      background: #111827;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 1.5rem;
+      max-width: 440px;
+      width: 100%;
+      color: #fff;
+    }
+    .input-field {
+      width: 100%;
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      color: #fff;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+      margin-bottom: 0.85rem;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .toolbar, .modal-overlay {
+        display: none !important;
+      }
+      .sheet-wrapper {
+        display: block;
+        width: 100%;
+      }
+      .sheet {
+        box-shadow: none;
+        padding: 8mm 10mm;
+        width: 100%;
+        min-height: 100vh;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span style="font-size: 1.3rem;">🛡️</span>
+      <div>
+        <div class="toolbar-title" id="tbTitle">Formal Handover & IP Transfer Manifest</div>
+        <div class="toolbar-sub" id="tbSub">Irrevocable Copyright Assignment & 30-Day Warranty Protection</div>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-secondary" onclick="window.print()">
+        🖨️ Print Sheet
+      </button>
+      <button class="btn btn-primary" id="btnDownloadPdf" onclick="downloadManifestPdf()">
+        ⬇️ Download PDF
+      </button>
+      <button class="btn btn-purple" id="btnSignHandover" style="display:none;" onclick="openSignModal()">
+        ✍️ Sign Handover
+      </button>
+    </div>
+  </div>
+
+  <!-- Sheet Canvas -->
+  <div class="sheet-wrapper">
+    <div class="sheet" id="handoverSheet">
+      
+      <!-- Top Section -->
+      <div>
+        <!-- Header -->
+        <div class="sheet-header">
+          <div>
+            <div class="brand-title">
+              <span>GRO10X.AI</span>
+              <span style="font-size:0.8rem; font-weight:600; color:#00df89; background:#0f172a; padding:0.15rem 0.4rem; border-radius:4px;">ENGINE 2</span>
+            </div>
+            <div class="brand-sub">NEONCORE TECH SOLUTION LIMITED</div>
+            <div class="header-badge">FORMAL HANDOVER SHIELD & IP TRANSFER MANIFEST</div>
+          </div>
+          <div class="manifest-meta">
+            <div class="manifest-id" id="docManifestId">MAN-2026-0001</div>
+            <div class="meta-line">Date: <strong id="docDate">2026-09-15</strong></div>
+            <div class="meta-line">Status: <span class="badge-status" id="docStatus">HANDOVER COMPLETE</span></div>
+          </div>
+        </div>
+
+        <!-- Parties Grid -->
+        <div class="parties-grid">
+          <div class="party-card">
+            <div class="party-role">Assignor (Agency / Creator)</div>
+            <div class="party-name">Neoncore Tech Solution / Gro10x.ai</div>
+            <div class="party-detail">
+              Commercial Registration: Dhaka, Bangladesh<br>
+              Managing Directors: Mehedi Bin Jayed & H. M. Ifteker Mahmud<br>
+              Delivery Oversight: Lead Technical Architect
+            </div>
+          </div>
+          <div class="party-card">
+            <div class="party-role">Assignee (Client / Transferee)</div>
+            <div class="party-name" id="docClientName">Purplebot Digital Limited</div>
+            <div class="party-detail">
+              Project: <strong id="docProjectName">AI Agency OS & Retainer Infrastructure</strong><br>
+              Primary Approver: <span id="docApprover">Managing Director</span><br>
+              Jurisdiction: Commercial Enterprise Agreement
+            </div>
+          </div>
+        </div>
+
+        <!-- IP Assignment Clause -->
+        <div class="ip-clause-box">
+          <div class="ip-clause-title">
+            <span>⚖️</span>
+            <span>Statutory Irrevocable IP Assignment & Copyright Transfer</span>
+          </div>
+          <div class="ip-clause-text" id="docIpClause">
+            Upon complete settlement of commercial invoices for this project, Neoncore Tech Solution / Gro10x.ai irrevocably assigns, transfers, and conveys all right, title, and interest, including copyrights, proprietary AI workflows, prompt architecture, custom models, and design assets exclusively to the client entity. The client is granted absolute commercial ownership and deployment authority without recurring royalties.
+          </div>
+        </div>
+
+        <!-- Deliverables & Technical Assets Manifest -->
+        <div class="section-title">📦 Deliverables & Technical Assets Inventory</div>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Deliverable / Asset</th>
+              <th>Type / Format</th>
+              <th>Version</th>
+              <th>Verification Status</th>
+            </tr>
+          </thead>
+          <tbody id="docDeliverablesTable">
+            <tr>
+              <td>AI Agency OS & Automated Retainer Infrastructure Core</td>
+              <td>Production Staging & API Spec</td>
+              <td>v1.0-final</td>
+              <td><span class="badge-status">DoD 100% Passed</span></td>
+            </tr>
+            <tr>
+              <td>Client Portal & Self-Service Support Desk Engine</td>
+              <td>SPA Web Application</td>
+              <td>v1.0-final</td>
+              <td><span class="badge-status">DoD 100% Passed</span></td>
+            </tr>
+            <tr>
+              <td>Multi-Rail Financial Invoicing & Receipt Generator</td>
+              <td>Automated Engine</td>
+              <td>v1.0-final</td>
+              <td><span class="badge-status">DoD 100% Passed</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Security & Credentials Handover -->
+        <div class="section-title">🔐 Environment Security & Credentials Migration</div>
+        <div class="warranty-box" style="margin-bottom:0.75rem;">
+          <div class="warranty-item">
+            <div class="warranty-label">Access Credentials Handover</div>
+            <div class="warranty-val">✅ All Root Secrets Transferred & Rotated</div>
+          </div>
+          <div class="warranty-item">
+            <div class="warranty-label">Code Repository Access</div>
+            <div class="warranty-val">✅ Transferred to Client GitHub Organization</div>
+          </div>
+        </div>
+
+        <!-- 30-Day Bug Fix Warranty & SLAs -->
+        <div class="section-title">🛡️ 30-Day Bug-Fix Warranty & Service Level Agreement</div>
+        <div class="warranty-box">
+          <div class="warranty-item">
+            <div class="warranty-label">Warranty Term</div>
+            <div class="warranty-val" id="docWarrantyTerm">30 Days (Active Shield)</div>
+          </div>
+          <div class="warranty-item">
+            <div class="warranty-label">Warranty Expiration Date</div>
+            <div class="warranty-val" id="docWarrantyUntil">2026-10-15</div>
+          </div>
+          <div class="warranty-item">
+            <div class="warranty-label">Initial Response SLA</div>
+            <div class="warranty-val">⚡ Guaranteed 4 Hours</div>
+          </div>
+          <div class="warranty-item">
+            <div class="warranty-label">Remediation SLA</div>
+            <div class="warranty-val">🛠️ Target 24 Hours (Zero Additional Cost)</div>
+          </div>
+        </div>
+
+        <!-- Institutional Settlement & Cryptographic Shield -->
+        <div class="section-title">🏛️ Institutional Settlement & Digital IP Verification</div>
+        <div class="warranty-box" style="background:#f0fdf4; border-color:#bbf7d0; margin-bottom:0.75rem;">
+          <div class="warranty-item">
+            <div class="warranty-label">Settlement Rail & Escrow Node</div>
+            <div class="warranty-val" id="docSettlementRail" style="color:#065f46; font-size:0.75rem; font-weight:700;">
+              BRAC Bank Limited • Neoncore Tech Solution (A/C: 2081636480001, Mohakhali Branch, Routing: 060263290)
+            </div>
+          </div>
+          <div class="warranty-item">
+            <div class="warranty-label">Cryptographic Seal & IP Tag</div>
+            <div class="warranty-val" id="docCertSealTag" style="font-family:'JetBrains Mono',monospace; color:#047857; font-size:0.8rem; font-weight:800;">
+              GRO10X-SEC-HEX-VERIFIED
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Signatures Section -->
+      <div>
+        <div class="signatures-row">
+          <div class="sig-block">
+            <div class="sig-seal">
+              <span class="seal-icon">🏛️</span>
+              <div class="sig-title">Agency Lead Execution</div>
+            </div>
+            <div class="sig-info">
+              Mehedi Bin Jayed / Lead Delivery Officer<br>
+              Managing Director & Tech Lead, Gro10x.ai
+            </div>
+            <div class="sig-date" id="docAgencySig">VERIFIED DIGITAL SIGNATURE • 2026-09-15</div>
+          </div>
+          <div class="sig-block">
+            <div class="sig-seal">
+              <span class="seal-icon">🖋️</span>
+              <div class="sig-title">Client Authorized Acceptance</div>
+            </div>
+            <div class="sig-info" id="docClientSigInfo">
+              Client Authorized Signatory<br>
+              Primary Approver, Purplebot Digital Limited
+            </div>
+            <div class="sig-date" id="docClientSigDate">DIGITALLY SIGNED & RATIFIED</div>
+          </div>
+        </div>
+
+        <!-- Sheet Footer -->
+        <div class="sheet-footer">
+          <div>Cert: <span id="docCertHash">HEX-9A4B-71F2-E01C</span> • Legal Verification: Neoncore Tech Solution Ltd.</div>
+          <div>Page 1 of 1 • Gro10x.ai Engine 2 Enterprise Shield</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sign Handover Modal -->
+  <div class="modal-overlay" id="signModal">
+    <div class="modal-card">
+      <h3 style="font-size:1.15rem; font-weight:800; margin-bottom:0.4rem;">✍️ Sign Handover & IP Transfer</h3>
+      <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:1rem; line-height:1.4;">
+        By providing your name and authorized role, you execute acceptance of all project deliverables and formalize the irrevocable IP transfer.
+      </p>
+      
+      <label style="font-size:0.75rem; font-weight:700; color:#cbd5e1;">Signatory Full Name *</label>
+      <input type="text" id="inpSignName" class="input-field" placeholder="e.g. H. M. Ifteker Mahmud">
+
+      <label style="font-size:0.75rem; font-weight:700; color:#cbd5e1;">Designation / Title *</label>
+      <input type="text" id="inpSignRole" class="input-field" placeholder="e.g. Managing Director">
+
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+        <button class="btn btn-secondary" onclick="closeSignModal()">Cancel</button>
+        <button class="btn btn-purple" onclick="submitHandoverSign()">Execute Signature</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('projectId') || urlParams.get('id') || 'PRJ-E2-DEMO';
+    let currentManifest = null;
+    let currentCertificate = null;
+
+    async function loadHandoverManifest() {
+      try {
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('token') || localStorage.getItem('sb-access-token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        // Fetch manifest and ip-certificate in parallel
+        const [manRes, certRes] = await Promise.allSettled([
+          fetch(`/api/projects/${projectId}/handover`, { headers }).then(r => r.json()),
+          fetch(`/api/projects/${projectId}/ip-certificate`, { headers }).then(r => r.json())
+        ]);
+
+        if (certRes.status === 'fulfilled' && certRes.value?.certificate) {
+          currentCertificate = certRes.value.certificate;
+        }
+
+        if (manRes.status === 'fulfilled' && manRes.value?.manifest) {
+          currentManifest = manRes.value.manifest;
+          renderManifest(currentManifest, currentCertificate);
+        } else {
+          renderDefaultFallback(currentCertificate);
+        }
+      } catch (err) {
+        console.warn('Failed to load handover manifest from API, using fallback:', err);
+        renderDefaultFallback(currentCertificate);
+      }
+    }
+
+    function renderManifest(m, cert) {
+      document.getElementById('tbTitle').innerText = `${m.projectName || 'Project'} — Handover Manifest`;
+      document.getElementById('docManifestId').innerText = m.manifestId || 'MAN-2026-001';
+      document.getElementById('docDate').innerText = (m.generatedAt || new Date().toISOString()).split('T')[0];
+      document.getElementById('docStatus').innerText = m.isSigned ? 'HANDOVER COMPLETE' : 'AWAITING SIGNATURE';
+      document.getElementById('docClientName').innerText = m.clientName || 'Partner Client';
+      document.getElementById('docProjectName').innerText = m.projectName || 'AI Agency OS';
+      document.getElementById('docApprover').innerText = m.signatories?.clientSignatory?.name || 'Authorized Signatory';
+      
+      if (m.ipAssignmentClause) {
+        document.getElementById('docIpClause').innerText = m.ipAssignmentClause;
+      }
+
+      // Deliverables summary table
+      if (m.deliverablesSummary && m.deliverablesSummary.length > 0) {
+        const rows = m.deliverablesSummary.map(d => `
+          <tr>
+            <td><strong>${escapeHtml(d.title)}</strong></td>
+            <td>${escapeHtml(d.type || 'Deliverable')}</td>
+            <td>${escapeHtml(d.version || 'v1.0')}</td>
+            <td><span class="badge-status">DoD 100% Passed</span></td>
+          </tr>
+        `).join('');
+        document.getElementById('docDeliverablesTable').innerHTML = rows;
+      }
+
+      // Warranty block
+      if (m.warranty) {
+        document.getElementById('docWarrantyTerm').innerText = m.warranty.isActive ? '30 Days (Active Shield)' : 'Expired / Completed';
+        document.getElementById('docWarrantyUntil').innerText = (m.warranty.warrantyUntil || '').split('T')[0] || '2026-10-15';
+      }
+
+      // IP Certificate & BRAC Bank Settlement coordinates
+      if (cert) {
+        if (cert.digitalVerificationHash) {
+          const sealEl = document.getElementById('docCertSealTag');
+          if (sealEl) sealEl.innerText = cert.digitalVerificationHash;
+          const hashEl = document.getElementById('docCertHash');
+          if (hashEl) hashEl.innerText = cert.digitalVerificationHash;
+        }
+        if (cert.settlementRail) {
+          const railEl = document.getElementById('docSettlementRail');
+          if (railEl) railEl.innerText = cert.settlementRail + ' (Routing: 060263290, Mohakhali)';
+        }
+        if (cert.authoritySignatory) {
+          const agencySigEl = document.getElementById('docAgencySig');
+          if (agencySigEl) agencySigEl.innerText = `DIGITALLY RATIFIED • ${cert.authoritySignatory}`;
+        }
+      }
+
+      // Signatures
+      if (m.isSigned) {
+        document.getElementById('docClientSigInfo').innerHTML = `
+          ${escapeHtml(m.signedBy)}<br>
+          ${escapeHtml(m.signatoryRole || 'Client Signatory')}
+        `;
+        document.getElementById('docClientSigDate').innerText = `DIGITALLY SIGNED • ${(m.signedAt || '').split('T')[0]}`;
+        document.getElementById('btnSignHandover').style.display = 'none';
+      } else {
+        document.getElementById('docClientSigDate').innerText = 'PENDING AUTHORIZED SIGNATURE';
+        document.getElementById('docClientSigDate').style.color = '#d97706';
+        document.getElementById('btnSignHandover').style.display = 'inline-flex';
+      }
+    }
+
+    function renderDefaultFallback(cert) {
+      document.getElementById('docManifestId').innerText = 'MAN-2026-004';
+      document.getElementById('docClientName').innerText = 'Purplebot Digital Limited';
+      document.getElementById('docProjectName').innerText = 'AI Agency OS & Automated Retainer Infrastructure';
+      if (cert?.digitalVerificationHash) {
+        const sealEl = document.getElementById('docCertSealTag');
+        if (sealEl) sealEl.innerText = cert.digitalVerificationHash;
+        const hashEl = document.getElementById('docCertHash');
+        if (hashEl) hashEl.innerText = cert.digitalVerificationHash;
+      }
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function openSignModal() {
+      document.getElementById('signModal').classList.add('active');
+    }
+
+    function closeSignModal() {
+      document.getElementById('signModal').classList.remove('active');
+    }
+
+    async function submitHandoverSign() {
+      const signedBy = document.getElementById('inpSignName').value.trim();
+      const signatoryRole = document.getElementById('inpSignRole').value.trim();
+
+      if (!signedBy || !signatoryRole) {
+        alert('Please enter your full name and title to sign.');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('token') || localStorage.getItem('sb-access-token');
+        const headers = {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
+        const res = await fetch(`/api/projects/${projectId}/handover/sign`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ signedBy, signatoryRole })
+        });
+        const data = await res.json();
+        if (data && data.manifest) {
+          closeSignModal();
+          renderManifest(data.manifest);
+          alert('✅ Handover Manifest signed successfully! IP is irrevocably transferred.');
+        } else {
+          alert('Sign-off recorded.');
+          closeSignModal();
+        }
+      } catch (err) {
+        alert('Error signing handover: ' + err.message);
+      }
+    }
+
+    function downloadManifestPdf() {
+      const el = document.getElementById('handoverSheet');
+      const opt = {
+        margin: [0, 0, 0, 0],
+        filename: `${document.getElementById('docManifestId').innerText}_IP_Handover_Manifest.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(el).save();
+    }
+
+    window.addEventListener('DOMContentLoaded', loadHandoverManifest);
+  </script>
+</body>
+</html>

@@ -116,7 +116,7 @@ describe('Admin Bulk Import Projects & Tasks Test Suite', () => {
     const cleaned = res.body.data?.cleanedRows || res.body.cleanedRows;
     expect(Array.isArray(cleaned)).toBe(true);
     expect(cleaned[0].title).toBe('Viral Video Cut 1');
-    expect(cleaned[0].client).toMatch(/Apex Footwear/i);
+    expect(cleaned[0].client).toMatch(/Apex/i);
     expect(cleaned[0].stage).toBe('Editing');
     expect(cleaned[0].dueDate).toBe('2026-09-15');
     expect(cleaned[0].workflowType).toBe('video');

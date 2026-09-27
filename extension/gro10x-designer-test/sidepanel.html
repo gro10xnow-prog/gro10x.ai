@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X Designer Test</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="brand-row">
+        <div class="logo-icon">🎨</div>
+        <div>
+          <h1 class="logo-title">Designer Test</h1>
+          <span class="logo-subtitle">AI Upscaler Browser Automator</span>
+        </div>
+      </div>
+      <div class="tab-status" id="tabStatus">
+        <span class="status-dot"></span>
+        <span class="tab-domain" id="activeDomain">Ready</span>
+      </div>
+    </header>
+
+    <!-- CANVAS SELECTION STATUS STRIP -->
+    <div class="selection-status-strip" id="selectionStatusStrip">
+      <div class="selection-info-group">
+        <span class="selection-dot" id="selectionDot"></span>
+        <span class="selection-status-text" id="selectionStatusText">Checking Canvas Selection...</span>
+      </div>
+      <button class="btn-refresh-selection" id="btnRefreshSelection" title="Scan & Target Canvas Layer">🎯 Target Layer</button>
+    </div>
+
+    <!-- STEP 1: DROPZONE -->
+    <section class="section-card">
+      <label class="section-label">1. Select Picture (Optional)</label>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        <div id="dropzoneContent">
+          <div class="upload-icon">📸</div>
+          <div class="drop-text">Click or Drop Picture Here</div>
+          <div class="drop-subtext">Drop image to upload, or leave empty to upscale active canvas image</div>
+        </div>
+        <div id="previewContainer" class="preview-container" style="display:none;">
+          <img id="previewImg" class="preview-thumb" alt="Preview">
+          <div class="preview-info">
+            <div id="previewFileName" class="preview-filename">image.png</div>
+            <div id="previewDimensions" class="preview-dims">-- x -- px</div>
+            <button id="btnRemoveImg" class="btn-remove">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: ENGINE SELECTOR -->
+    <section class="section-card">
+      <label class="section-label">2. Automation Engine</label>
+      <div class="engine-selector" id="engineSelector">
+        <button class="btn-engine active" data-engine="canvas" id="btnEngineCanvas">
+          <div class="engine-row">
+            <span class="engine-badge-studio">🎨 CANVAS 2-CLICK</span>
+            <span class="engine-name">Canvas Editor (Recommended)</span>
+          </div>
+          <div class="engine-desc">Floating HD Upscale bar • Proven 2-Click layer export</div>
+        </button>
+        <button class="btn-engine" data-engine="chat" id="btnEngineChat">
+          <div class="engine-row">
+            <span class="engine-badge-fast">⚡ FAST</span>
+            <span class="engine-name">AI Chat Prompt Engine</span>
+          </div>
+          <div class="engine-desc">Sends upscale prompt in chat</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 3: RESOLUTION SELECTOR -->
+    <section class="section-card">
+      <label class="section-label">3. Target Upscale Resolution</label>
+      <div class="res-selector" id="resSelector">
+        <button class="btn-res" data-res="2K">
+          <span class="res-tag">2K</span>
+          <span class="res-desc">2x Standard</span>
+        </button>
+        <button class="btn-res active" data-res="4K">
+          <span class="res-tag">4K</span>
+          <span class="res-desc">4x Ultra-HD</span>
+        </button>
+        <button class="btn-res" data-res="8K">
+          <span class="res-tag">8K</span>
+          <span class="res-desc">8x Print Master</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 4: EXECUTE AUTOMATION -->
+    <section class="section-card">
+      <button id="btnRunAutomation" class="btn-primary">
+        🎨 Run Canvas Upscale &amp; Download (4K)
+      </button>
+      <button id="btnQuick2ClickDownload" class="btn-secondary" style="margin-top: 0.6rem;" title="Download the currently selected/generated layer using the 2-click sequence immediately">
+        ⬇️ Test 2-Click Download Now (Top Bar)
+      </button>
+      <div class="options-row">
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkAutoOpen" checked>
+          <span>Auto-reveal in Windows Explorer upon download</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- STEP 4: LIVE AUTOMATION TRACKER -->
+    <section class="section-card progress-card" id="progressSection" style="display:none;">
+      <div class="progress-header">
+        <div class="spinner-small" id="progressSpinner"></div>
+        <span class="progress-title" id="progressTitle">Automating Webpage...</span>
+      </div>
+      <div class="progress-steps" id="progressSteps">
+        <div class="step-item" id="step1">
+          <span class="step-icon">○</span>
+          <span class="step-text">1. Uploading picture / targeting layer</span>
+        </div>
+        <div class="step-item" id="step2">
+          <span class="step-icon">○</span>
+          <span class="step-text">2. Selecting HD Upscale in toolbar</span>
+        </div>
+        <div class="step-item" id="step3">
+          <span class="step-icon">○</span>
+          <span class="step-text">3. Monitoring upscale generation (30–45s)</span>
+        </div>
+        <div class="step-item" id="step4">
+          <span class="step-icon">○</span>
+          <span class="step-text">4. Auto-selecting layer &amp; 1-click download</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: RESULT RETURN CARD (How it comes back to you!) -->
+    <section class="section-card result-card" id="resultCard" style="display:none;">
+      <div class="result-header">
+        <span class="badge-success">🎉 Upscale Completed &amp; Retrieved!</span>
+      </div>
+
+      <div class="result-preview-box" id="resultPreviewBox">
+        <img id="resultImg" class="result-thumb" alt="Upscaled Result">
+      </div>
+
+      <div class="result-meta">
+        <div class="result-meta-row">
+          <span class="meta-label">Resolution:</span>
+          <span class="meta-val" id="resultResBadge">4K Ultra-HD</span>
+        </div>
+        <div class="result-meta-row">
+          <span class="meta-label">Local File:</span>
+          <span class="meta-val truncate" id="resultFilePath">Downloads/upscaled.png</span>
+        </div>
+      </div>
+
+      <!-- DIRECT BRING-BACK-TO-ME ACTIONS -->
+      <div class="result-actions">
+        <button id="btnShowInFolder" class="btn-action-primary" title="Open file location in Windows Explorer">
+          📂 Show in Explorer
+        </button>
+        <button id="btnOpenFile" class="btn-action-secondary" title="Open file in default image viewer">
+          🖼️ Open File
+        </button>
+        <button id="btnCopyClipboard" class="btn-action-secondary" title="Copy high-res image to clipboard">
+          📋 Copy
+        </button>
+      </div>
+    </section>
+
+    <!-- RECENT HISTORY -->
+    <footer class="app-footer">
+      <div class="history-toggle" id="btnToggleHistory">
+        <span>🕒 Recent Upscale History</span>
+        <span id="historyCountBadge" class="history-badge">0</span>
+      </div>
+      <div class="history-list" id="historyList" style="display:none;">
+        <div class="empty-history" id="emptyHistoryMsg">No upscales yet</div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

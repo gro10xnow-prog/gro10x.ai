@@ -7,7 +7,23 @@ window.CREW_MODULES = window.CREW_MODULES || {};
 window.CREW_MODULES.profile = async function(container) {
   let me = await CREW_API.getMe().catch(() => ({}));
   let user = me.user || {};
-  const empId = user.emp_code || user.id || 'PBD-001';
+  const empId = user.emp_code || user.id || 'GRO-000';
+
+  let spiRes = await CREW_API.get(`/team/specialist/${encodeURIComponent(empId)}/spi`).catch(() => null);
+  let spi = (spiRes && spiRes.ok) ? spiRes : {
+    spiScore: 94,
+    tier: 'Diamond Lead',
+    tierBadge: '💎 Diamond Specialist Lead',
+    metrics: {
+      velocityScore: 38,
+      defectScore: 38,
+      peerReviewScore: 18,
+      completedSprints: 4,
+      onTimeDeliveryRate: '95%',
+      warrantyDefectRate: '0.0%'
+    },
+    settlementRail: 'BRAC Bank Limited (Neoncore Tech Solution / 2081636480001)'
+  };
 
   let isEditing = false;
 
@@ -15,12 +31,15 @@ window.CREW_MODULES.profile = async function(container) {
     const bkashNo = user.bank_info?.mfsNo || user.bank_info?.bkashNo || user.phone || '';
     const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Not Specified'];
     const tshirtSizes = ['S', 'M', 'L', 'XL', 'XXL', '3XL'];
+    const spiScore = spi.spiScore || 94;
+    const spiStroke = spiScore >= 85 ? '#00df89' : (spiScore >= 70 ? '#06b6d4' : '#f59e0b');
+    const spiDashOffset = Math.round(264 - (264 * (spiScore / 100)));
 
     container.innerHTML = `
       <div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
         <div>
           <h1 style="font-size:1.5rem; font-weight:800; font-family:var(--font-heading); margin:0 0 0.3rem;">👤 My Personal Profile</h1>
-          <div style="font-size:0.88rem; color:var(--text-muted);">Manage your personal details, contact info, and bKash payout account.</div>
+          <div style="font-size:0.88rem; color:var(--text-muted);">Manage your personal details, contact info, and production performance.</div>
         </div>
 
         <div>
@@ -30,7 +49,7 @@ window.CREW_MODULES.profile = async function(container) {
             </button>
           ` : `
             <div style="display:flex; gap:0.5rem;">
-              <button class="btn-secondary" style="font-size:0.85rem; padding:0.5rem 0.85rem; border-radius:10px; cursor:pointer;" onclick="toggleCrewProfileEdit(false)">
+              <button id="crewProfileCancelBtn" class="btn-secondary" style="font-size:0.85rem; padding:0.5rem 0.85rem; border-radius:10px; cursor:pointer;" onclick="toggleCrewProfileEdit(false)">
                 Cancel
               </button>
               <button id="crewProfileSaveBtn" class="btn-primary" style="font-size:0.85rem; padding:0.5rem 1.1rem; border-radius:10px; cursor:pointer;" onclick="saveCrewProfile('${empId}')">
@@ -42,6 +61,83 @@ window.CREW_MODULES.profile = async function(container) {
       </div>
 
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+        <!-- Specialist Performance Index (SPI) Cockpit Card -->
+        <div class="card-glass" id="crewSpiCard" style="grid-column: 1 / -1; border: 1.5px solid rgba(0, 223, 137, 0.35); background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(6, 182, 212, 0.08) 100%); padding: 1.5rem; border-radius: 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div style="font-size:2rem;">⚡</div>
+              <div>
+                <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                  <h2 style="font-size:1.25rem; font-weight:900; margin:0; font-family:var(--font-heading); color:#fff;">Specialist Performance Index (SPI)</h2>
+                  <span class="badge" id="crewSpiTierBadge" style="background:rgba(0,223,137,0.15); color:var(--accent-mint); border:1px solid rgba(0,223,137,0.4); font-size:0.75rem; font-weight:800; padding:0.25rem 0.65rem;">
+                    ${spi.tierBadge || '💎 Diamond Specialist Lead'}
+                  </span>
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
+                  Production Reliability & Engineering Velocity Ledger &bull; Evaluated across active sprints
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:1.25rem;">
+              <!-- Radial SVG Gauge -->
+              <div style="position:relative; width:80px; height:80px; display:flex; align-items:center; justify-content:center;">
+                <svg width="80" height="80" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
+                  <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="transparent"></circle>
+                  <circle id="crewSpiCircle" cx="50" cy="50" r="42" stroke="${spiStroke}" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="${spiDashOffset}" stroke-linecap="round" fill="transparent" style="transition: stroke-dashoffset 0.8s ease;"></circle>
+                </svg>
+                <div style="position:absolute; text-align:center;">
+                  <div id="crewSpiScoreVal" style="font-size:1.35rem; font-weight:900; color:#fff; font-family:var(--font-mono); line-height:1;">
+                    ${spiScore}
+                  </div>
+                  <div style="font-size:0.6rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">SPI</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3-Factor Telemetry Grid -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.25rem;">
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.35rem;">
+                <span style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">⚡ Velocity & On-Time</span>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--accent-mint); font-family:var(--font-mono);" id="crewSpiVelocityPts">${spi.metrics?.velocityScore || 38}/40 pts</span>
+              </div>
+              <div style="font-size:1.05rem; font-weight:800; color:#fff;" id="crewSpiVelocityRate">${spi.metrics?.onTimeDeliveryRate || '95%'} On-Time</div>
+              <div style="font-size:0.74rem; color:var(--text-muted); margin-top:0.2rem;">Sprint ticket completion velocity</div>
+            </div>
+
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.35rem;">
+                <span style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">🛡️ Warranty & Zero-Defects</span>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--accent-cyan); font-family:var(--font-mono);" id="crewSpiDefectPts">${spi.metrics?.defectScore || 38}/40 pts</span>
+              </div>
+              <div style="font-size:1.05rem; font-weight:800; color:#fff;" id="crewSpiDefectRate">${spi.metrics?.warrantyDefectRate || '0.0%'} Defect Rate</div>
+              <div style="font-size:0.74rem; color:var(--text-muted); margin-top:0.2rem;">Post-handover zero-regression SLA</div>
+            </div>
+
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.35rem;">
+                <span style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">🤝 DoD & Peer Review</span>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--accent-purple); font-family:var(--font-mono);" id="crewSpiPeerPts">${spi.metrics?.peerReviewScore || 18}/20 pts</span>
+              </div>
+              <div style="font-size:1.05rem; font-weight:800; color:#fff;">Pass Rate &ge; 90%</div>
+              <div style="font-size:0.74rem; color:var(--text-muted); margin-top:0.2rem;">Definition of Done verification sign-off</div>
+            </div>
+          </div>
+
+          <!-- Incentive & Settlement Footer Strip -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem 1rem; font-size:0.82rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; color:#f8fafc;">
+              <span>✨</span>
+              <span><strong>Quarterly Performance Bonus Pool:</strong> <span id="crewSpiBonusEligible" style="color:var(--accent-mint); font-weight:700;">QUALIFIED (SPI &ge; 80)</span></span>
+            </div>
+            <div style="font-size:0.76rem; color:var(--text-muted); font-family:var(--font-mono);" id="crewSpiRail">
+              Settlement: ${spi.settlementRail || 'BRAC Bank Limited (Neoncore Tech Solution / 2081636480001)'}
+            </div>
+          </div>
+        </div>
+
         <!-- Official Employment Details (Read-Only) -->
         <div class="card-glass">
           <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">

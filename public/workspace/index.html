@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — Unified Multi-Engine Workspace</title>
+  
+  <script>
+    (function() {
+      var token = localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || localStorage.getItem('token');
+      if (!token && !window.location.search.includes('token=')) {
+        window.location.href = '/auth?portal=workspace&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+      }
+      var theme = localStorage.getItem('gro10x_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/workspace/workspace.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+</head>
+<body class="workspace-layout">
+
+  <!-- Top Application Header -->
+  <header class="workspace-header">
+    <div class="workspace-header-left">
+      <a href="#overview" class="workspace-brand">
+        <div class="workspace-brand-logo">⚡</div>
+        <div class="workspace-brand-text">
+          <div class="workspace-brand-title">GRO10X</div>
+          <div class="workspace-brand-sub">UNIFIED WORKSPACE</div>
+        </div>
+      </a>
+
+      <span style="color: var(--border-subtle); margin: 0 0.25rem;">|</span>
+
+      <!-- 🌐 Dynamic Engine Context Switcher -->
+      <div class="engine-switcher-container">
+        <div class="engine-select-wrapper">
+          <span class="engine-switcher-icon" id="engineSwitcherIcon">⚡</span>
+          <select id="engineSwitcherSelect" class="engine-switcher-select" onchange="WORKSPACE.switchEngine(this.value)">
+            <option value="engine2">Engine 2: AI Agency & Sprints</option>
+            <option value="engine1">Engine 1: Micro-SaaS Platforms</option>
+            <option value="engine3">Engine 3: Digital Commerce (DCE)</option>
+            <option value="engine4">Engine 4: Managed Retainers</option>
+            <option value="engine5">Engine 5: AI Video & Media</option>
+            <option value="all">🏛️ All Engines (Executive Command)</option>
+          </select>
+          <span class="engine-switcher-arrow">▼</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Actions & Telemetry -->
+    <div class="workspace-header-right">
+      <!-- Live Dhaka Operations Clock -->
+      <div id="dhakaClockPill" class="dhaka-clock-pill" title="Bangladesh Standard Time (BST / UTC+6) — Agency Operations HQ">
+        <span class="clock-icon">🕒</span>
+        <span id="dhakaClockText">--:-- -- · BST</span>
+      </div>
+
+      <!-- Seniority Tier Badge -->
+      <div id="userTierBadge" class="user-tier-badge tier-badge-1">
+        <span>🛡️</span>
+        <span id="userTierText">Tier 1 · Specialist</span>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">🌙</button>
+
+      <!-- User Profile Badge & Sign Out -->
+      <a href="#settings" class="user-profile-badge" title="Account Settings" style="text-decoration:none;">
+        <div class="user-avatar" id="userAvatar">GX</div>
+        <div class="user-info">
+          <span class="user-name" id="userName">Staff User</span>
+          <span class="user-role-tag" id="userRoleTag">Specialist</span>
+        </div>
+      </a>
+
+      <button class="btn-signout" id="signOutBtn" onclick="WORKSPACE.signOut()" title="Sign Out">
+        <span style="font-size: 0.9rem;">⎋</span>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 4-Pillar Dynamic Sidebar -->
+  <aside class="workspace-sidebar" id="workspaceSidebar">
+    
+    <!-- Pillar 1: 🏛️ Engine Command Hub -->
+    <div class="pillar-group" id="pillar-command" data-pillar="command">
+      <div class="pillar-header">
+        <span>🏛️</span>
+        <span>1. Command Hub</span>
+      </div>
+      <a href="#overview" class="workspace-nav-item" data-tab="overview">
+        <span class="workspace-nav-icon">📊</span>
+        <span>Executive Overview</span>
+      </a>
+      <a href="#velocity" class="workspace-nav-item" data-tab="velocity">
+        <span class="workspace-nav-icon">📈</span>
+        <span>Velocity & Targets</span>
+      </a>
+      <a href="#pnl" class="workspace-nav-item" data-tab="pnl">
+        <span class="workspace-nav-icon">💰</span>
+        <span>P&L Waterfall</span>
+      </a>
+    </div>
+
+    <!-- Pillar 2: 📈 Sales & Growth -->
+    <div class="pillar-group" id="pillar-growth" data-pillar="growth">
+      <div class="pillar-header">
+        <span>📈</span>
+        <span>2. Sales & Growth</span>
+      </div>
+      <a href="#leads" class="workspace-nav-item" data-tab="leads">
+        <span class="workspace-nav-icon">🎯</span>
+        <span>Leads Pipeline</span>
+      </a>
+      <a href="#proposals" class="workspace-nav-item" data-tab="proposals">
+        <span class="workspace-nav-icon">💼</span>
+        <span>Proposals & Quotes</span>
+      </a>
+      <a href="#crm" class="workspace-nav-item" data-tab="crm">
+        <span class="workspace-nav-icon">👥</span>
+        <span>Client CRM</span>
+      </a>
+      <a href="#invoices" class="workspace-nav-item" data-tab="invoices">
+        <span class="workspace-nav-icon">💳</span>
+        <span>Invoices & Rails</span>
+      </a>
+    </div>
+
+    <!-- Pillar 3: 🚀 Sprint Delivery -->
+    <div class="pillar-group" id="pillar-delivery" data-pillar="delivery">
+      <div class="pillar-header">
+        <span>🚀</span>
+        <span>3. Sprint Delivery</span>
+      </div>
+      <a href="#tasks" class="workspace-nav-item" data-tab="tasks">
+        <span class="workspace-nav-icon">📋</span>
+        <span>Tasks Pipeline</span>
+      </a>
+      <a href="#kanban" class="workspace-nav-item" data-tab="kanban">
+        <span class="workspace-nav-icon">🗂️</span>
+        <span>Kanban Studio</span>
+      </a>
+      <a href="#deliverables" class="workspace-nav-item" data-tab="deliverables">
+        <span class="workspace-nav-icon">📦</span>
+        <span>Deliverables Vault</span>
+      </a>
+      <a href="#tickets" class="workspace-nav-item" data-tab="tickets">
+        <span class="workspace-nav-icon">🛡️</span>
+        <span>24h Defect SLAs</span>
+      </a>
+    </div>
+
+    <!-- Pillar 4: 🛡️ Operations & Governance -->
+    <div class="pillar-group" id="pillar-operations" data-pillar="operations">
+      <div class="pillar-header">
+        <span>🛡️</span>
+        <span>4. Operations</span>
+      </div>
+      <a href="#team" class="workspace-nav-item" data-tab="team">
+        <span class="workspace-nav-icon">👨‍💼</span>
+        <span>Team & Attendance</span>
+      </a>
+      <a href="#leaves" class="workspace-nav-item" data-tab="leaves">
+        <span class="workspace-nav-icon">🌴</span>
+        <span>Leaves Desk</span>
+      </a>
+      <a href="#claims" class="workspace-nav-item" data-tab="claims">
+        <span class="workspace-nav-icon">💸</span>
+        <span>Expense Claims</span>
+      </a>
+      <a href="#tech" class="workspace-nav-item" data-tab="tech">
+        <span class="workspace-nav-icon">🩺</span>
+        <span>Tech Diagnostics</span>
+      </a>
+      <a href="#settings" class="workspace-nav-item" data-tab="settings">
+        <span class="workspace-nav-icon">⚙️</span>
+        <span>Settings</span>
+      </a>
+    </div>
+
+  </aside>
+
+  <!-- Central Dynamic Workspace Viewport -->
+  <main class="workspace-main">
+    <div id="workspace-view" class="workspace-viewport">
+      <div style="display:flex; align-items:center; justify-content:center; min-height:400px; color:var(--text-muted);">
+        <div style="text-align:center;">
+          <div style="font-size:2rem; margin-bottom:0.5rem;">⚡</div>
+          <div style="font-weight:700;">Loading Workspace...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Global Workspace Controller -->
+  <script src="/workspace/workspace.js"></script>
+</body>
+</html>

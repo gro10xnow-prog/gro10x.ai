@@ -43,15 +43,31 @@ async function handleMorningBriefing(teamBot, msg) {
     });
   }
 
+  // Engine 2 Sprint & Pod Operations Pulse
+  try {
+    const { calculateTeamCapacity } = require('../../delivery-pods');
+    const cap = await calculateTeamCapacity().catch(() => null);
+    if (cap) {
+      text += `\n⚡ *Engine 2 Sprints & Delivery Pods:*\n` +
+        `• Pod Utilization: *${cap.utilizationRate || '78%'}* (Range: 75%–85%)\n` +
+        `• Pods Active: *MVP Rapid (14d)* · *Automation (21d)* · *Creative (7d)*\n`;
+    }
+  } catch (_) {}
+
   text += `\nHave a productive and profitable day! ⚡`;
 
   teamBot.sendMessage(chatId, text, {
     parse_mode: 'Markdown',
     reply_markup: {
-      inline_keyboard: [[
-        { text: '📊 Command Dashboard', url: 'https://gro10x-ai.vercel.app/app' },
-        { text: '✍️ Pending Approvals', callback_data: 'cmd_approvals' }
-      ]]
+      inline_keyboard: [
+        [
+          { text: '📊 Command Dashboard', url: 'https://gro10x-ai.vercel.app/app' },
+          { text: '🚀 Engine 2 Studio', url: 'https://gro10x-ai.vercel.app/app#engines' }
+        ],
+        [
+          { text: '✍️ Pending Approvals', callback_data: 'cmd_approvals' }
+        ]
+      ]
     }
   }).catch(() => {});
 }

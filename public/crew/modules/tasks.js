@@ -4,7 +4,7 @@
  */
 window.CREW_MODULES = window.CREW_MODULES || {};
 
-const WORKFLOW_MAP = {
+var WORKFLOW_MAP = window.WORKFLOW_MAP || {
   video:       ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved'],
   social:      ['Draft', 'Graphic Design', 'Copy Review', 'Scheduled', 'Published'],
   branding:    ['Strategy', 'Concepts', 'Client Refinement', 'Master Delivered'],
@@ -227,12 +227,81 @@ window.CREW_MODULES.tasks = async function(container) {
   });
 
   window._crewTasks = myTasks;
+  const podName = user.deliveryPod || user.pod || (user.department?.includes('Tech') || user.department?.includes('Development') ? 'MVP Rapid Delivery Pod' : user.department?.includes('Auto') ? 'Enterprise Automation Pod' : 'Creative AI Pod');
+
+  const doneTasks = myTasks.filter(t => !getNextStage(t)).length;
+  const pendingTasks = myTasks.length - doneTasks;
+  const velocityPct = myTasks.length > 0 ? Math.round((doneTasks / myTasks.length) * 100) : 100;
+
+  // 14-day sprint calculation
+  const now = new Date();
+  const sprintCycleLength = 14;
+  const dayOfMonth = now.getDate();
+  const sprintNumber = Math.ceil(dayOfMonth / sprintCycleLength);
+  const sprintStartDay = (sprintNumber - 1) * sprintCycleLength + 1;
+  const sprintEndDay = Math.min(sprintStartDay + sprintCycleLength - 1, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate());
+  const sprintStartDate = new Date(now.getFullYear(), now.getMonth(), sprintStartDay);
+  const sprintEndDate = new Date(now.getFullYear(), now.getMonth(), sprintEndDay);
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const remainingDays = Math.max(0, Math.ceil((sprintEndDate.getTime() - now.getTime()) / msPerDay));
+  const formatDate = d => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 
   container.innerHTML = `
-    <div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+    <div style="margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
       <div>
-        <h1 style="font-size:1.5rem; font-weight:800; font-family:var(--font-heading); margin:0 0 0.3rem;">📋 My Assigned Tasks (${myTasks.length})</h1>
-        <div style="font-size:0.88rem; color:var(--text-muted);">Advance stages as you progress through deliverables.</div>
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.3rem;">
+          <h1 style="font-size:1.5rem; font-weight:800; font-family:var(--font-heading); margin:0;">📋 My Assigned Tasks (${myTasks.length})</h1>
+          <span class="badge badge-purple" style="font-size:0.72rem; font-weight:800; padding:0.3rem 0.6rem;">⚡ ${podName}</span>
+        </div>
+        <div style="font-size:0.85rem; color:var(--text-muted);">Engine 2 Autonomous Pod Workflow • Sprint Velocity: 14-Day Delivery</div>
+      </div>
+    </div>
+
+    <!-- 14-Day Sprint Velocity Burndown Header Widget (Phase 2 Pillar 3) -->
+    <div class="card-glass" style="margin-bottom:1.5rem; padding:1.25rem; border:1px solid rgba(139,92,246,0.35); background:linear-gradient(135deg, rgba(139,92,246,0.12), rgba(6,182,212,0.06)); border-radius:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+        <div>
+          <div style="font-size:0.72rem; font-weight:800; color:var(--purple-light); text-transform:uppercase; letter-spacing:0.08em;">🔥 14-Day Autonomous Sprint Velocity</div>
+          <div style="font-size:1.15rem; font-weight:800; color:#fff; margin-top:0.2rem;">Cycle Sprint #${sprintNumber} Burndown</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+          <a href="https://github.com/Gro10x/gro10x-monorepo/pulls" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="font-size:0.75rem; padding:0.4rem 0.8rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem; color:#fff; border-color:rgba(255,255,255,0.2);">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.251 2.251 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"></path></svg>
+            Active PRs
+          </a>
+          <span class="badge ${remainingDays <= 3 ? 'badge-pink' : 'badge-emerald'}" style="font-size:0.75rem; padding:0.4rem 0.75rem; font-weight:800;">
+            ⏳ ${remainingDays} Days Left
+          </span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem; margin-bottom:1rem;">
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.65rem 0.85rem;">
+          <div style="font-size:0.7rem; color:var(--text-muted);">Sprint Start</div>
+          <div style="font-size:0.9rem; font-weight:700; color:#fff; margin-top:0.2rem;">📅 ${formatDate(sprintStartDate)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.65rem 0.85rem;">
+          <div style="font-size:0.7rem; color:var(--text-muted);">Target Deadline</div>
+          <div style="font-size:0.9rem; font-weight:700; color:#fff; margin-top:0.2rem;">🏁 ${formatDate(sprintEndDate)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.65rem 0.85rem;">
+          <div style="font-size:0.7rem; color:var(--text-muted);">DoD Complete</div>
+          <div style="font-size:0.9rem; font-weight:700; color:var(--emerald-brand, #10b981); margin-top:0.2rem;">✅ ${doneTasks} / ${myTasks.length}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.65rem 0.85rem;">
+          <div style="font-size:0.7rem; color:var(--text-muted);">Pending Review/QC</div>
+          <div style="font-size:0.9rem; font-weight:700; color:var(--purple-light); margin-top:0.2rem;">⏳ ${pendingTasks} Tasks</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:0.35rem; color:var(--text-muted);">
+          <span>Definition of Done (DoD) Burndown Rate</span>
+          <strong style="color:#fff;">${velocityPct}% Complete</strong>
+        </div>
+        <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+          <div style="width:${velocityPct}%; height:100%; background:linear-gradient(90deg, var(--purple-light), #10b981); border-radius:999px; transition:width 0.4s ease;"></div>
+        </div>
       </div>
     </div>
 

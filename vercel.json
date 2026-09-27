@@ -99,6 +99,22 @@
     {
       "path": "/api/cron/dbm-standup-reminder",
       "schedule": "0 11 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/dce-renewals",
+      "schedule": "0 3,15 * * *"
+    },
+    {
+      "path": "/api/cron/warranty-check",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/defect-escalation",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/weekly-executive",
+      "schedule": "0 3 * * 1"
     }
   ],
   "headers": [
@@ -177,20 +193,31 @@
       "dest": "/public/app/$1"
     },
     {
-      "src": "/digivault/(.*)",
-      "dest": "/public/digivault/$1"
+      "src": "/crew(.*)",
+      "status": 302,
+      "headers": { "Location": "/workspace#tasks" }
     },
     {
-      "src": "/digivault",
-      "dest": "/public/digivault/index.html"
+      "src": "/manager(.*)",
+      "status": 302,
+      "headers": { "Location": "/workspace#overview" }
     },
     {
-      "src": "/dbm/(.*)",
-      "dest": "/public/dbm/$1"
+      "src": "/dbm(.*)",
+      "status": 302,
+      "headers": { "Location": "/workspace?engineId=engine3#deliverables" }
     },
     {
-      "src": "/dbm",
-      "dest": "/public/dbm/index.html"
+      "src": "/workspace/(.*)",
+      "dest": "/public/workspace/$1"
+    },
+    {
+      "src": "/workspace",
+      "dest": "/public/workspace/index.html"
+    },
+    {
+      "src": "/transit",
+      "dest": "/public/team-miniapp.html"
     },
     {
       "src": "/(.*)",

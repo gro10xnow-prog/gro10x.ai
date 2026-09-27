@@ -32,7 +32,7 @@ describe('Phase 2: Executive Telegram Command Layer & One-Tap Approvals', () => 
 
     // Verify presence of deep-link button
     const hasAdminLink = capturedOptions.reply_markup.inline_keyboard.some(row =>
-      row.some(btn => btn.url && btn.url.includes('/app'))
+      row.some(btn => btn.url && (btn.url.includes('/workspace') || btn.url.includes('/app')))
     );
     expect(hasAdminLink).toBe(true);
   });

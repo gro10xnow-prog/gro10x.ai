@@ -109,22 +109,22 @@ window.APP_MODULES.crm = async function(container) {
     kpiStrip.innerHTML = `
       <div class="kpi-tile" style="background:var(--card-bg, rgba(255,255,255,0.03)); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem;">
         <div class="kpi-label" style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Active Clients</div>
-        <div class="kpi-val" style="font-size:1.9rem; font-weight:900; font-family:var(--font-heading); color:#fff; margin:0.25rem 0;">${activeClients.length}</div>
+        <div class="kpi-val" id="crmKpiActiveClients" style="font-size:1.9rem; font-weight:900; font-family:var(--font-heading); color:#fff; margin:0.25rem 0;">${activeClients.length}</div>
         <div style="font-size:0.72rem; color:var(--text-muted);">${onboardingCount} Onboarding</div>
       </div>
       <div class="kpi-tile" style="background:var(--card-bg, rgba(255,255,255,0.03)); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem;">
         <div class="kpi-label" style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Total Retainer Spend</div>
-        <div class="kpi-val" style="font-size:1.9rem; font-weight:900; font-family:var(--font-heading); color:var(--emerald-brand, #10b981); margin:0.25rem 0;">${formatMoney(totSpent)}</div>
+        <div class="kpi-val" id="crmKpiTotalSpend" style="font-size:1.9rem; font-weight:900; font-family:var(--font-heading); color:var(--emerald-brand, #10b981); margin:0.25rem 0;">${formatMoney(totSpent)}</div>
         <div style="font-size:0.72rem; color:#10b981;">Cumulative Revenue</div>
       </div>
       <div class="kpi-tile" style="background:var(--card-bg, rgba(255,255,255,0.03)); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem;">
         <div class="kpi-label" style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Avg Account Value</div>
-        <div class="kpi-val" style="font-size:1.9rem; font-weight:900; font-family:var(--font-heading); color:var(--purple-light, #c084fc); margin:0.25rem 0;">${formatMoney(avgSpend)}</div>
+        <div class="kpi-val" id="crmKpiAvgSpend" style="font-size:1.9rem; font-weight:900; font-family:var(--font-heading); color:var(--purple-light, #c084fc); margin:0.25rem 0;">${formatMoney(avgSpend)}</div>
         <div style="font-size:0.72rem; color:var(--text-muted);">Per active client</div>
       </div>
       <div class="kpi-tile" style="background:var(--card-bg, rgba(255,255,255,0.03)); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem;">
         <div class="kpi-label" style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Total Accounts</div>
-        <div class="kpi-val" style="font-size:1.9rem; font-weight:900; font-family:var(--font-heading); color:#fff; margin:0.25rem 0;">${clientsData.length}</div>
+        <div class="kpi-val" id="crmKpiTotalAccounts" style="font-size:1.9rem; font-weight:900; font-family:var(--font-heading); color:#fff; margin:0.25rem 0;">${clientsData.length}</div>
         <div style="font-size:0.72rem; color:var(--text-muted);">Master Directory</div>
       </div>
     `;
@@ -184,7 +184,7 @@ window.APP_MODULES.crm = async function(container) {
     }
 
     return `
-      <div class="card-glass" id="client-card-${c.id}" style="display:flex; flex-direction:column; gap:0.85rem; position:relative; background:var(--card-bg, rgba(255,255,255,0.03)); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:14px; padding:1.25rem; transition:transform 0.2s ease, border-color 0.2s ease;">
+      <div class="card-glass crm-client-card" id="client-card-${c.id}" style="display:flex; flex-direction:column; gap:0.85rem; position:relative; background:var(--card-bg, rgba(255,255,255,0.03)); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:14px; padding:1.25rem; transition:transform 0.2s ease, border-color 0.2s ease;">
         <!-- Header -->
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
           <div style="display:flex; gap:0.75rem; align-items:center; min-width:0;">
@@ -227,7 +227,7 @@ window.APP_MODULES.crm = async function(container) {
 
         <!-- Action Row -->
         <div style="display:flex; gap:0.4rem; margin-top:0.3rem;">
-          <button class="btn-outline btn-sm" style="flex:1; border-radius:8px; font-size:0.75rem; padding:0.4rem;" onclick="window.CRM_MODULE.openHub('${c.id}')">📂 Open Hub</button>
+          <button class="btn-outline btn-sm btn-open-crm-hub" style="flex:1; border-radius:8px; font-size:0.75rem; padding:0.4rem;" onclick="window.CRM_MODULE.openHub('${c.id}')">📂 Open Hub</button>
           <button class="btn-ghost btn-sm" style="font-size:0.75rem; padding:0.4rem 0.6rem; border-radius:8px;" title="Edit Client" onclick="window.CRM_MODULE.openEditModal('${c.id}')">✏️</button>
           <button class="btn-ghost btn-sm delete-btn-${c.id}" style="font-size:0.75rem; padding:0.4rem 0.6rem; border-radius:8px; color:#ef4444;" title="Delete Client" onclick="window.CRM_MODULE.deleteClient('${c.id}', this)">🗑️</button>
         </div>
@@ -254,10 +254,10 @@ window.APP_MODULES.crm = async function(container) {
         <button id="crmCurrencyToggleBtn" class="btn-secondary" style="font-size:0.8rem; font-weight:700; padding:0.45rem 0.85rem;" onclick="window.CRM_MODULE.toggleCurrency()">
           💱 ${currentCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)'}
         </button>
-        <button class="btn-secondary" style="font-size:0.8rem; padding:0.45rem 0.85rem;" onclick="window.CRM_MODULE.openImportModal()">
+        <button id="btnOpenImportClientsModal" class="btn-secondary" style="font-size:0.8rem; padding:0.45rem 0.85rem;" onclick="window.CRM_MODULE.openImportModal()">
           📥 Import Clients (CSV)
         </button>
-        <button class="btn-primary" style="font-size:0.8rem; padding:0.45rem 0.95rem;" onclick="window.CRM_MODULE.openAddModal()">
+        <button id="btnOpenNewClient" class="btn-primary" style="font-size:0.8rem; padding:0.45rem 0.95rem;" onclick="window.CRM_MODULE.openAddModal()">
           + Add New Client
         </button>
       </div>
@@ -302,11 +302,11 @@ window.APP_MODULES.crm = async function(container) {
     </div>
 
     <!-- Add / Edit Client Modal -->
-    <div class="modal-overlay" id="crmModal">
+    <div class="modal-overlay" id="crmModal" onclick="if(event.target === this) window.CRM_MODULE.closeModal()">
       <div class="modal-box" style="max-width:550px; background:var(--surface, #1e1b2e); border:1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius:16px; padding:1.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <h2 style="color:#fff; font-size:1.2rem; margin:0; font-family:var(--font-heading);" id="crmModalTitle">👥 Client Onboarding Wizard</h2>
-          <button onclick="window.CRM_MODULE.closeModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          <button id="btnCloseCrmModal" onclick="window.CRM_MODULE.closeModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
         </div>
 
         <!-- Wizard Step Indicator -->
@@ -387,14 +387,14 @@ window.APP_MODULES.crm = async function(container) {
     </div>
 
     <!-- 360° CRM HUB MODAL -->
-    <div class="modal-overlay" id="crmHubModal">
+    <div class="modal-overlay" id="crmHubModal" onclick="if(event.target === this) window.CRM_MODULE.closeHub()">
       <div class="modal-box" style="max-width: 880px; width: 92vw; max-height: 92vh; overflow-y: auto; background: var(--surface, #1e1b2e); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 16px; padding: 1.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1rem;">
           <div>
             <h2 style="color:#fff; font-size:1.4rem; margin:0; font-family: var(--font-heading);" id="hubClientName">Client Name</h2>
             <div style="font-size: 0.85rem; color: var(--text-muted);" id="hubClientSub">360° CRM Hub, Multi-POC Access & Activity Timeline</div>
           </div>
-          <button onclick="window.CRM_MODULE.closeHub()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          <button id="btnCloseCrmHubModal" onclick="window.CRM_MODULE.closeHub()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
         </div>
 
         <!-- Hub Quick Actions Strip -->
@@ -424,6 +424,17 @@ window.APP_MODULES.crm = async function(container) {
               </div>
             </div>
 
+            <!-- Project Lock-In & Handover Specifications -->
+            <div style="background: rgba(0,0,0,0.25); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border:1px solid rgba(255,255,255,0.06);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">🔒 Project Lock-In & Handover</div>
+                <span id="hubSpecsBadge" class="badge badge-purple" style="font-size:0.65rem;">0 Specs</span>
+              </div>
+              <div id="hubLockinSpecsList" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 280px; overflow-y: auto;">
+                <div style="color: var(--text-dim); font-size: 0.8rem;">Loading specifications...</div>
+              </div>
+            </div>
+
             <!-- Client Sync Log (Meetings) -->
             <div style="background: rgba(0,0,0,0.25); padding: 1rem; border-radius: 12px; border:1px solid rgba(255,255,255,0.06);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
@@ -448,11 +459,11 @@ window.APP_MODULES.crm = async function(container) {
     </div>
 
     <!-- LOG MEETING MODAL -->
-    <div class="modal-overlay" id="logMeetingModal">
+    <div class="modal-overlay" id="logMeetingModal" onclick="if(event.target === this) window.CRM_MODULE.closeLogMeetingModal()">
       <div class="modal-box" style="max-width:460px; background:var(--surface, #1e1b2e); border:1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius:16px; padding:1.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
           <h3 style="color:#fff; margin:0; font-family:var(--font-heading);">📝 Log Client Sync Meeting</h3>
-          <button onclick="window.CRM_MODULE.closeLogMeetingModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">✕</button>
+          <button id="btnCloseLogMeetingModal" onclick="window.CRM_MODULE.closeLogMeetingModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">✕</button>
         </div>
         <div style="display:flex; flex-direction:column; gap:0.75rem;">
           <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:0.75rem;">
@@ -481,6 +492,23 @@ window.APP_MODULES.crm = async function(container) {
 
   // ─── Module Public API ───────────────────────────────────────────────────────
   window.CRM_MODULE = {
+    switchCurrency(currency) {
+      if (!currency || currency === currentCurrency) return;
+      currentCurrency = currency;
+      localStorage.setItem('gro10x_currency', currentCurrency);
+      
+      const btn = document.getElementById('crmCurrencyToggleBtn');
+      if (btn) btn.innerText = '💱 ' + (currentCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)');
+      
+      const spendLabel = document.getElementById('crmSpendLabel');
+      if (spendLabel) spendLabel.innerText = 'Total Spend (' + (currentCurrency === 'USD' ? 'USD $' : 'BDT ৳') + ')';
+
+      updateKpiStrip();
+      renderCRMGrid();
+
+      window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: currentCurrency } }));
+      if (window.showToast) window.showToast('Switched CRM currency to ' + currentCurrency, 'info');
+    },
     toggleCurrency() {
       currentCurrency = currentCurrency === 'BDT' ? 'USD' : 'BDT';
       localStorage.setItem('gro10x_currency', currentCurrency);
@@ -891,6 +919,73 @@ window.APP_MODULES.crm = async function(container) {
           `).join('');
         }
 
+        // Render Project Lock-In & Handover Specifications
+        const specsContainer = document.getElementById('hubLockinSpecsList');
+        const specsBadge = document.getElementById('hubSpecsBadge');
+        if (specsContainer) {
+          try {
+            const specsRes = await APP_API.get('/clients/' + clientId + '/lockin-specs').catch(() => ({ data: [] }));
+            const specs = Array.isArray(specsRes.data) ? specsRes.data : (Array.isArray(specsRes) ? specsRes : []);
+            if (specsBadge) specsBadge.innerText = `${specs.length} Spec${specs.length === 1 ? '' : 's'}`;
+
+            if (specs.length > 0) {
+              specsContainer.innerHTML = specs.map(s => {
+                const checklist = Array.isArray(s.prerequisites_checklist) ? s.prerequisites_checklist : [];
+                const readyCount = checklist.filter(i => i.status === 'RECEIVED' || i.status === 'VERIFIED').length;
+                const total = checklist.length || 5;
+                const isReadyForKickoff = (readyCount === total) && s.status !== 'IN_PROGRESS';
+                const isInProgress = s.status === 'IN_PROGRESS';
+
+                return `
+                  <div style="background: rgba(255,255,255,0.04); padding: 0.75rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                      <span class="badge badge-purple" style="font-size:0.68rem;">${escapeHTML(s.canonical_service_code || 'SPEC')}</span>
+                      <span class="badge ${isInProgress ? 'badge-emerald' : isReadyForKickoff ? 'badge-cyan' : 'badge-amber'}" style="font-size:0.68rem;">
+                        ${isInProgress ? '🚀 In Progress' : isReadyForKickoff ? '⚡ Ready to Kickoff' : '🔒 ' + s.status}
+                      </span>
+                    </div>
+                    <div style="font-size:0.85rem; font-weight:700; color:#fff; margin-bottom:0.3rem;">${escapeHTML(s.service_title)}</div>
+                    
+                    <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.4rem; display:flex; justify-content:space-between;">
+                      <span>Prerequisites: <strong>${readyCount}/${total} Handed Over</strong></span>
+                      <span>Turnaround: <strong>${s.delivery_and_governance?.turnaround_days || 14}d</strong></span>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.35rem; margin-bottom:0.6rem;">
+                      ${checklist.map(item => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; padding:0.25rem 0.4rem; background:rgba(0,0,0,0.2); border-radius:6px;">
+                          <span style="color:${item.status === 'VERIFIED' ? 'var(--emerald-accent)' : item.status === 'RECEIVED' ? 'var(--cyan)' : 'var(--text-muted)'};">
+                            ${item.status === 'VERIFIED' ? '✅' : item.status === 'RECEIVED' ? '📨' : '⏳'} ${escapeHTML(item.name)}
+                          </span>
+                          ${item.status === 'RECEIVED' ? `
+                            <button class="btn-primary" style="padding:0.15rem 0.4rem; font-size:0.65rem;" onclick="window.CRM_MODULE.verifyPrerequisite('${clientId}', '${s.id}', '${item.id}')">
+                              Verify
+                            </button>
+                          ` : `<span style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase;">${item.status}</span>`}
+                        </div>
+                      `).join('')}
+                    </div>
+
+                    ${!isInProgress ? `
+                      <button class="btn-primary" style="width:100%; justify-content:center; font-size:0.75rem; padding:0.4rem;" onclick="window.CRM_MODULE.kickoffSprint('${clientId}', '${s.id}', '${escapeHTML(client?.name || '')}')">
+                        🚀 Initiate 14-Day Sprint
+                      </button>
+                    ` : `
+                      <div style="text-align:center; font-size:0.72rem; color:var(--emerald-accent); font-weight:700;">
+                        ⏱️ Active Sprint Handover: ${escapeHTML(s.delivery_and_governance?.target_handover_date || '')}
+                      </div>
+                    `}
+                  </div>
+                `;
+              }).join('');
+            } else {
+              specsContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.78rem; text-align: center; padding: 1rem;">No lock-in specs for this client yet. Accepting a proposal creates one automatically.</div>';
+            }
+          } catch (e) {
+            specsContainer.innerHTML = '<div style="color: var(--text-dim); font-size: 0.78rem;">Could not load specs.</div>';
+          }
+        }
+
         // Update Health
         if (data && data.health) {
           const scoreEl = document.getElementById('hubHealthScore');
@@ -1035,6 +1130,38 @@ window.APP_MODULES.crm = async function(container) {
         this.loadHubData(this.currentHubClientId);
       } catch (err) {
         window.showToast && window.showToast('Failed to log meeting: ' + err.message, 'error');
+      }
+    },
+
+    async verifyPrerequisite(clientId, specId, itemId) {
+      try {
+        const res = await APP_API.put(`/clients/${clientId}/lockin-specs/${specId}/prerequisites/${itemId}`, { status: 'VERIFIED' });
+        if (res.ok) {
+          window.showToast && window.showToast('✅ Prerequisite item marked as VERIFIED.', 'success');
+          await this.loadHubData(clientId);
+        } else {
+          window.showToast && window.showToast('Error: ' + (res.error || 'Verification failed'), 'error');
+        }
+      } catch (err) {
+        window.showToast && window.showToast('Verification failed: ' + err.message, 'error');
+      }
+    },
+
+    async kickoffSprint(clientId, specId, clientName) {
+      const confirmKickoff = confirm('Initiate 14-Day Sprint for this client?\n\nThis will activate the production timer, link the project, and notify the engineering team.');
+      if (!confirmKickoff) return;
+
+      try {
+        const res = await APP_API.post(`/clients/${clientId}/lockin-specs/${specId}/kickoff`, { clientName, forceKickoff: true });
+        if (res.ok) {
+          window.showToast && window.showToast(res.message || '🚀 Production sprint initiated!', 'success');
+          await this.loadHubData(clientId);
+          await loadCRMData();
+        } else {
+          window.showToast && window.showToast('Error: ' + (res.error || 'Sprint initiation failed'), 'error');
+        }
+      } catch (err) {
+        window.showToast && window.showToast('Kickoff failed: ' + err.message, 'error');
       }
     },
 
@@ -1322,33 +1449,67 @@ window.APP_MODULES.crm = async function(container) {
     return parseFloat(String(raw || 0).replace(/[^0-9.]/g, '')) || 0;
   }
 
-  // ─── Keyboard Shortcuts & Backdrop Dismissal ───────────────────────────────
-  document.addEventListener('keydown', (e) => {
+  // ─── Global Currency Alias ──────────────────────────────────────────────────
+  window.switchCRMCurrency = function(currency) {
+    if (window.CRM_MODULE && typeof window.CRM_MODULE.switchCurrency === 'function') {
+      window.CRM_MODULE.switchCurrency(currency);
+    } else if (window.CRM_MODULE && typeof window.CRM_MODULE.toggleCurrency === 'function') {
+      window.CRM_MODULE.toggleCurrency();
+    }
+  };
+
+  // ─── Keyboard Shortcuts & Backdrop Dismissal (Deduplicated with Route Guard) ─
+  if (window._crmKeyDownHandler) {
+    document.removeEventListener('keydown', window._crmKeyDownHandler);
+  }
+  window._crmKeyDownHandler = (e) => {
+    if (window.location.hash !== '#crm') return;
     if (e.key === 'Escape') {
-      window.CRM_MODULE.closeModal();
-      window.CRM_MODULE.closeHub();
-      window.CRM_MODULE.closeLogMeetingModal();
-      window.CRM_MODULE.closeImportModal();
+      if (window.CRM_MODULE) {
+        window.CRM_MODULE.closeModal();
+        window.CRM_MODULE.closeHub();
+        window.CRM_MODULE.closeLogMeetingModal();
+        window.CRM_MODULE.closeImportModal();
+      }
       const accessModal = document.getElementById('pocAccessCardModal');
       if (accessModal) accessModal.classList.remove('active');
     }
-  });
+  };
+  document.addEventListener('keydown', window._crmKeyDownHandler);
 
-  // ─── Real-Time SSE Multi-Instance Listener ─────────────────────────────────
-  if (window.APP_API && typeof window.APP_API.on === 'function') {
-    window.APP_API.on('client_update', () => loadCRMData());
-    window.APP_API.on('clients_update', () => loadCRMData());
+  // ─── Real-Time SSE Multi-Instance Listener (400ms Debounce & Route Guard) ───
+  let crmSyncDebounceTimer = null;
+  function debouncedCrmSync() {
+    if (window.location.hash !== '#crm') return;
+    if (crmSyncDebounceTimer) clearTimeout(crmSyncDebounceTimer);
+    crmSyncDebounceTimer = setTimeout(() => {
+      loadCRMData();
+    }, 400);
   }
 
-  window.addEventListener('gro10x_currency_changed', (e) => {
+  if (window.APP_SSE && typeof window.APP_SSE.subscribe === 'function') {
+    window.APP_SSE.subscribe('client_update', debouncedCrmSync);
+    window.APP_SSE.subscribe('clients_update', debouncedCrmSync);
+  } else if (window.APP_API && typeof window.APP_API.on === 'function') {
+    window.APP_API.on('client_update', debouncedCrmSync);
+    window.APP_API.on('clients_update', debouncedCrmSync);
+  }
+
+  // ─── Currency Listener (Deduplicated with Route Guard) ────────────────────────
+  if (window._crmCurrencyHandler) {
+    window.removeEventListener('gro10x_currency_changed', window._crmCurrencyHandler);
+  }
+  window._crmCurrencyHandler = (e) => {
+    if (window.location.hash !== '#crm') return;
     if (e.detail && e.detail.currency && e.detail.currency !== currentCurrency) {
       currentCurrency = e.detail.currency;
       const btn = document.getElementById('crmCurrencyToggleBtn');
-      if (btn) btn.innerText = `💱 ${currentCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)'}`;
+      if (btn) btn.innerText = '💱 ' + (currentCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)');
       updateKpiStrip();
       renderCRMGrid();
     }
-  });
+  };
+  window.addEventListener('gro10x_currency_changed', window._crmCurrencyHandler);
 
   // Initial load
   await loadCRMData();

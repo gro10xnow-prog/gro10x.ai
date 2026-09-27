@@ -142,15 +142,15 @@ async function sendAgreementNotification(stage, emp, dbData) {
           `Let's build this empire together! 💜⚡`;
       } else {
         activationMsg =
-          `🎉 *CONGRATULATIONS, ${emp.name}!*\\n\\n` +
-          `Your Employment Agreement is fully executed and signed by all parties.\\n\\n` +
-          `━━━━━━━━━━━━━━━━━━━━\\n` +
-          `🚀 *You are now an official GRO10X team member!*\\n\\n` +
-          `📌 *Your Next Steps:*\\n` +
-          `1. 📍 Do your first GPS Clock-In to go Online\\n` +
-          `2. 📋 Check *My Tasks* for your first assignment\\n` +
-          `3. 💳 Verify your *Bank & bKash* payout accounts\\n` +
-          `4. 👤 Review your *My Profile* — check your salary details\\n\\n` +
+          `🎉 *CONGRATULATIONS, ${emp.name}!*\n\n` +
+          `Your Employment Agreement is fully executed and signed by all parties.\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `🚀 *You are now an official GRO10X team member!*\n\n` +
+          `📌 *Your Next Steps:*\n` +
+          `1. 📍 Do your first GPS Clock-In to go Online\n` +
+          `2. 📋 Check *My Tasks* for your first assignment\n` +
+          `3. 💳 Verify your *Bank & bKash* payout accounts\n` +
+          `4. 👤 Review your *My Profile* — check your salary details\n\n` +
           `Tap *Open App* to access your full dashboard. Welcome to the team! ⚡`;
       }
 
@@ -607,6 +607,12 @@ function initBot() {
         } else if (wizardState.action.startsWith('await_dbm')) {
           const dbmHandler = require('./bot/handlers/dbm');
           await dbmHandler.handleDBMStandupWizardStep(teamBot, msg, wizardState, emp);
+        } else if (wizardState.action && wizardState.action.startsWith('await_dce_tracking')) {
+          const dceOpsHandler = require('./bot/handlers/dce-ops');
+          await dceOpsHandler.handleDCETrackingWizard(teamBot, msg, wizardState);
+        } else if (wizardState.action && wizardState.action.startsWith('await_dce_ticket')) {
+          const dceOpsHandler = require('./bot/handlers/dce-ops');
+          await dceOpsHandler.handleDCETicketWizard(teamBot, msg, wizardState);
         }
       });
 
@@ -657,7 +663,12 @@ function initBot() {
           `• \`/clockin\` — GPS studio clock-in\n` +
           `• \`/clockout\` — Clock-out & log daily hours\n` +
           `• \`/orientation\` — Complete onboarding survey\n` +
-          `• \`/techdiag\` — System diagnostics (Admin only)\n\n` +
+          `• \`/techdiag\` — System diagnostics (Admin only)\n` +
+          `• \`/dce_menu\` — Digital Commerce Engine operations deck\n` +
+          `• \`/dce_stats\` — Live commerce & GMV telemetry\n` +
+          `• \`/dce_orders\` — Recent orders & 1-tap courier dispatch\n` +
+          `• \`/dce_tickets\` — Post-sale customer support SLA queue\n` +
+          `• \`/track <order_id>\` — Track order & access digital license\n\n` +
           `💡 *Tip:* You can also search tasks inline anywhere in Telegram by typing \`@Aigeneral01bot <search_term>\`!`;
         teamBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
       });
@@ -680,6 +691,7 @@ function initBot() {
       const studioHandler = require('./bot/handlers/studio');
       const finMgrHandler = require('./bot/handlers/finance-manager');
       const ticketsHandler = require('./bot/handlers/tickets');
+      const dceOpsHandler = require('./bot/handlers/dce-ops');
 
       // Core profile & earnings
       teamBot.onText(/\/myprofile|👤 My Profile/, (msg) => profileHandler.handleMyProfile(teamBot, msg));
@@ -712,7 +724,7 @@ function initBot() {
       });
 
       // Admin & Team Overview
-      teamBot.onText(/\/fullteam(?:@\w+)?|👥 Full Team Status/, (msg) => adminHandler.handleFullTeamStatus(teamBot, msg));
+      teamBot.onText(/\/fullteam(?:@\w+)?|👥 Full Team Status|👥 Team Attendance/, (msg) => adminHandler.handleFullTeamStatus(teamBot, msg));
 
       // Attendance (with aliases /clock_in, /clock_out)
       teamBot.onText(/\/clockin(?:@\w+)?|\/clock_in(?:@\w+)?|📍 Clock-In GPS/, (msg) => attendanceHandler.handleTextClockIn(teamBot, msg));
@@ -835,6 +847,47 @@ function initBot() {
           teamBot.sendMessage(chatId, '❌ Could not load orientation tracker. Please try again.').catch(() => {});
         }
       });
+
+      // ── Digital Commerce Engine (DCE) Mobile Operations ──
+      teamBot.onText(/\/dce_stats|\/dce_summary|\/dcestats/, (msg) => dceOpsHandler.handleDCEStats(teamBot, msg));
+      teamBot.onText(/\/dce_orders|\/dceorders/, (msg) => dceOpsHandler.handleDCEOrders(teamBot, msg));
+      teamBot.onText(/\/dce_tickets|\/dcetickets/, (msg) => dceOpsHandler.handleDCETickets(teamBot, msg));
+      teamBot.onText(/\/dce_menu|\/dce(?:@\w+)?/, (msg) => dceOpsHandler.handleDCEMenu(teamBot, msg));
+      teamBot.onText(/\/track(?:\s+(.+))?|\/myorder(?:\s+(.+))?/, (msg, match) => {
+        const ref = (match && (match[1] || match[2])) ? (match[1] || match[2]).trim() : '';
+        dceOpsHandler.handleCustomerTrack(teamBot, msg, ref);
+      });
+
+      // ── Engine 2 (AI Solution Sprints & Retainers) Handlers ──
+      const engine2Handler = require('./bot/handlers/engine2');
+      teamBot.onText(/\/e2flash|\/flash|🚀 Engine 2 Flash|⚡ Executive Flash/, (msg) => engine2Handler.handleEngine2Flash(teamBot, msg));
+      teamBot.onText(/\/e2pods|\/pods|⚡ Pod Status/, (msg) => engine2Handler.handleEngine2Pods(teamBot, msg));
+      teamBot.onText(/\/e2warranties|\/warranties|🛡️ Warranty Radar|🛡️ Warranties/, (msg) => engine2Handler.handleEngine2Warranties(teamBot, msg));
+
+      // ── Unified Multi-Engine Web Workspace Bridge ──
+      teamBot.onText(/\/workspace|🚀 Web Workspace/, async (msg) => {
+        const chatId = msg.chat.id;
+        const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+        const workspaceUrl = `${baseUrl}/workspace`;
+        return teamBot.sendMessage(chatId,
+          `🚀 *UNIFIED MULTI-ENGINE WEB WORKSPACE*\n\n` +
+          `Access your complete workstation across all 5 engines on desktop/laptop:\n` +
+          `• *Growth & BD* (CRM, Leads, Retainers)\n` +
+          `• *Operations* (Kanban, QC, Tickets, Health)\n` +
+          `• *Financial* (COGS, Claims, Invoices, Payroll)\n` +
+          `• *Governance* (SOPs, Master IP, Audit)\n\n` +
+          `🔗 Tap below to launch your Web Workstation:`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [[
+                { text: '🚀 Launch Web Workspace ↗', url: workspaceUrl }
+              ]]
+            }
+          }
+        );
+      });
+
       // Refactored monolithic handlers
       require('./bot/handlers/legacy_menus').registerLegacyTeamMenus(teamBot, readDB);
     } catch (err) {
@@ -1337,6 +1390,7 @@ function initBot() {
       });
 
       const clientHandler = require('./bot/handlers/client');
+      const engine2Handler = require('./bot/handlers/engine2');
       clientBot.onText(/\/services|🎨 Our Services/, (msg) => clientHandler.handleServices(clientBot, msg));
       clientBot.onText(/\/portfolio|📁 Portfolio|📁 See Portfolio/, (msg) => clientHandler.handlePortfolio(clientBot, msg));
       clientBot.onText(/\/review|🎬 Review Room/, (msg) => clientHandler.handleReviewRoom(clientBot, msg));
@@ -1345,6 +1399,7 @@ function initBot() {
       clientBot.onText(/📞 Contact AM|📞 Talk to an Expert/, (msg) => clientHandler.handleContactAM(clientBot, msg));
       clientBot.onText(/\/brief|📝 Submit Brief/, (msg) => clientHandler.handleSubmitBrief(clientBot, msg));
       clientBot.onText(/\/digest|📊 Monthly Digest/, (msg) => clientHandler.handleClientDigest(clientBot, msg));
+      clientBot.onText(/\/warranty|🛡️ Warranty & Sprint SLA|🛡️ Warranty Status/, (msg) => engine2Handler.handleClientWarrantyStatus(clientBot, msg));
 
       // ── Client Bot Callback Query Handler ──────────────────────────────────
       // Required: Telegram will show infinite spinner if answerCallbackQuery()
@@ -1354,21 +1409,39 @@ function initBot() {
         const data = query.data || '';
 
         try {
+          const chatId = query.message?.chat?.id || query.from?.id;
+          const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+
           if (data.startsWith('open_portal')) {
-            await clientBot.answerCallbackQuery(queryId, {
-              text: '🌐 Opening your client portal...',
-              url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/client`
-            });
+            await clientBot.answerCallbackQuery(queryId, { text: '🌐 Launching Client Portal...' });
+            if (chatId) {
+              await clientBot.sendMessage(chatId, '🔗 *GRO10X Client Portal*\nAccess your active sprints, deliverables, and project cockpit:', {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [[{ text: '🌐 Launch Portal', url: `${baseUrl}/client` }]]
+                }
+              }).catch(() => {});
+            }
           } else if (data.startsWith('open_review')) {
-            await clientBot.answerCallbackQuery(queryId, {
-              text: '🎬 Opening Review Room...',
-              url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/client#review`
-            });
+            await clientBot.answerCallbackQuery(queryId, { text: '🎬 Opening Review Room...' });
+            if (chatId) {
+              await clientBot.sendMessage(chatId, '🎬 *Interactive Review Room*\nInspect deliverables, provide time-stamped feedback, and trigger Sprint Warranty:', {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [[{ text: '🎬 Open Review Room', url: `${baseUrl}/client#review` }]]
+                }
+              }).catch(() => {});
+            }
           } else if (data.startsWith('open_invoice')) {
-            await clientBot.answerCallbackQuery(queryId, {
-              text: '💳 Opening invoices...',
-              url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/client#invoices`
-            });
+            await clientBot.answerCallbackQuery(queryId, { text: '💳 Opening Invoices...' });
+            if (chatId) {
+              await clientBot.sendMessage(chatId, '💳 *Corporate Invoices & Rail*\nView invoice settlements and official BRAC Bank corporate payment details:', {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [[{ text: '💳 View Invoices', url: `${baseUrl}/client#invoices` }]]
+                }
+              }).catch(() => {});
+            }
           } else {
             // Generic acknowledgement — dismiss spinner
             await clientBot.answerCallbackQuery(queryId, { text: '✅ Received' });

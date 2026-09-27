@@ -126,7 +126,7 @@ async function handleInvoices(clientBot, msg) {
       text += `• Settled (Paid): *BDT ${paid.reduce((s,i)=>s+(Number(i.amount)||0),0).toLocaleString()}*\n\n`;
       
       if (pending.length) {
-        text += `📌 *To complete payment & submit proof:* Open the Client Portal via the button below or transfer via bKash to *01711-019550* (Ref: Invoice ID).\n`;
+        text += `📌 *Official Corporate Settlement:* Settle via BRAC Bank Limited (A/C: *2081636480001*, Neoncore Tech Solution, Mohakhali Branch, Routing: *060263290*) with Invoice ID as reference, or upload wire slip via Client Portal below.\n`;
       }
     } else {
       text += `✅ *No outstanding invoices.*\nAll account billings are settled or up to date. Invoices are generated automatically upon deliverable approval.`;

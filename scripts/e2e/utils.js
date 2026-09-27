@@ -194,6 +194,43 @@ async function assertModalClosed(page, modalSelector) {
   return true;
 }
 
+async function clickAndVerify(page, clickSelector, expectedSelector, timeout = 5000) {
+  await page.waitForSelector(clickSelector, { visible: true, timeout });
+  await page.click(clickSelector);
+  await page.waitForSelector(expectedSelector, { visible: true, timeout });
+  return true;
+}
+
+async function fillFormAndSubmit(page, fieldMap, submitBtnSelector) {
+  for (const [selector, value] of Object.entries(fieldMap)) {
+    await page.waitForSelector(selector, { visible: true, timeout: 4000 });
+    const tagName = await page.$eval(selector, el => el.tagName.toLowerCase());
+    if (tagName === 'select') {
+      await page.select(selector, String(value));
+    } else if (tagName === 'input' || tagName === 'textarea') {
+      await page.click(selector, { clickCount: 3 });
+      await page.keyboard.press('Backspace');
+      await page.type(selector, String(value), { delay: 10 });
+    }
+  }
+  if (submitBtnSelector) {
+    await page.waitForSelector(submitBtnSelector, { visible: true, timeout: 4000 });
+    await page.click(submitBtnSelector);
+  }
+  return true;
+}
+
+async function assertCurrencySwitch(page, toggleBtnSelector, expectedSymbol) {
+  await page.waitForSelector(toggleBtnSelector, { visible: true, timeout: 4000 });
+  await page.click(toggleBtnSelector);
+  await wait(300);
+  const text = await page.$eval('#app-view', el => el.textContent);
+  if (!text.includes(expectedSymbol)) {
+    throw new Error(`Expected currency symbol "${expectedSymbol}" not found in app view after toggle.`);
+  }
+  return true;
+}
+
 async function assertTableRowCount(page, tableSelector, minCount = 1) {
   const rowCount = await page.evaluate((sel) => {
     const rows = document.querySelectorAll(`${sel} tr, ${sel} .table-row, ${sel} .grid-card`);
@@ -220,6 +257,9 @@ module.exports = {
   assertModalOpen,
   assertModalClosed,
   assertTableRowCount,
+  clickAndVerify,
+  fillFormAndSubmit,
+  assertCurrencySwitch,
   TestTracker
 };
 

@@ -13,7 +13,8 @@ window.MANAGER_MODULES.leaves = async function(container) {
   let searchQuery = '';
 
   async function loadLeaves() {
-    allLeaves = await MANAGER_API.get('/leaves').catch(() => []);
+    const res = await MANAGER_API.get('/leaves').catch(() => []);
+    allLeaves = Array.isArray(res) ? res : (res?.leaves || res?.data || []);
     renderLeaves();
   }
 
@@ -63,13 +64,13 @@ window.MANAGER_MODULES.leaves = async function(container) {
 
       <!-- Filter Pills -->
       <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; overflow-x:auto; padding-bottom:0.25rem;">
-        <button class="filter-pill ${currentFilter === 'pending' ? 'active' : ''}" onclick="window.MGR_LEAVES.setFilter('pending')">
+        <button id="mgrLeavesFilterPending" class="filter-pill ${currentFilter === 'pending' ? 'active' : ''}" onclick="window.MGR_LEAVES.setFilter('pending')">
           ⏳ Pending Review (${pendingCount})
         </button>
-        <button class="filter-pill ${currentFilter === 'all' ? 'active' : ''}" onclick="window.MGR_LEAVES.setFilter('all')">
+        <button id="mgrLeavesFilterAll" class="filter-pill ${currentFilter === 'all' ? 'active' : ''}" onclick="window.MGR_LEAVES.setFilter('all')">
           All Requests (${allLeaves.length})
         </button>
-        <button class="filter-pill ${currentFilter === 'approved' ? 'active' : ''}" onclick="window.MGR_LEAVES.setFilter('approved')">
+        <button id="mgrLeavesFilterApproved" class="filter-pill ${currentFilter === 'approved' ? 'active' : ''}" onclick="window.MGR_LEAVES.setFilter('approved')">
           ✅ Approved
         </button>
         <button class="filter-pill ${currentFilter === 'rejected' ? 'active' : ''}" onclick="window.MGR_LEAVES.setFilter('rejected')">

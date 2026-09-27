@@ -16,11 +16,11 @@
     {
       "id": "GIG-TECH-001",
       "accountId": "ACC-TECH-001",
-      "serviceId": "SVC-025",
-      "category": "mobile-web",
+      "serviceId": "SVC-030",
+      "category": "automation",
       "platform": "fiverr",
       "gigIndex": 1,
-      "title": "I will build your web app or PWA MVP in 48 hours",
+      "title": "I will build your Custom Enterprise AI Chatbot & Knowledge Assi fast",
       "categorySelection": {
         "primary": "Programming & Tech",
         "sub": "Vibe Coding",
@@ -28,91 +28,90 @@
       },
       "tags": [
         "web app",
-        "pwa",
-        "mvp development",
-        "fast web app",
-        "supabase"
+        "fast delivery",
+        "supabase",
+        "node js",
+        "business solution"
       ],
       "pricing": {
         "basic": {
-          "title": "48-Hour Core MVP",
-          "price": 300,
+          "title": "Core MVP Sprint",
+          "price": 250,
           "deliveryDays": 2,
           "revisions": 2,
-          "description": "1 core feature working web app or PWA with responsive UI, live Vercel deployment, and Supabase database.",
+          "description": "1 core feature working solution with responsive UI and live database connection.",
           "features": [
-            "Single Core Feature",
-            "Supabase Database & Auth",
-            "Responsive Mobile & Desktop UI",
-            "Live Vercel Deployment",
+            "1 Core Feature",
+            "Supabase Database Setup",
+            "Responsive UI",
+            "Live Cloud Deployment",
             "Source Code Handover"
           ]
         },
         "standard": {
-          "title": "Full MVP Sprint",
-          "price": 600,
-          "deliveryDays": 4,
+          "title": "Full Business Platform",
+          "price": 550,
+          "deliveryDays": 5,
           "revisions": 3,
-          "description": "Complete MVP with up to 3 features, user auth, dynamic forms, API integration, and admin dashboard.",
+          "description": "Complete 3-feature platform with auth, dynamic forms, notification triggers, and admin panel.",
           "features": [
-            "Up to 3 Core Features",
-            "User Auth & Roles",
-            "REST API Integration",
-            "Admin KPI Panel",
-            "PWA Offline Mode",
-            "7 Days Launch Support"
+            "3 Core Features",
+            "User Authentication",
+            "Notification Webhooks",
+            "Admin Dashboard",
+            "7 Days Support"
           ]
         },
         "premium": {
-          "title": "Production MVP Suite",
-          "price": 1200,
-          "deliveryDays": 7,
+          "title": "Enterprise Suite",
+          "price": 1100,
+          "deliveryDays": 8,
           "revisions": "Unlimited",
-          "description": "Production-ready web platform with payment gateway, automated notifications, full documentation, and 14 days warranty.",
+          "description": "Full production-grade solution with payment gateway, automated digests, and 14 days warranty.",
           "features": [
-            "Full MVP Architecture",
-            "Payment Gateway (Stripe/PayPal)",
-            "Automated Email & Telegram Alerts",
-            "Security Hardened & SEO Ready",
-            "14 Days Post-Launch Support"
+            "Full Architecture",
+            "Payment Integration",
+            "Telegram & Email Alerts",
+            "Documentation & Runbook",
+            "14 Days Support"
           ]
         }
       },
-      "description": "Need to validate your startup idea fast without waiting months? Traditional agencies take 6 to 12 weeks just to deliver a prototype. We do it differently: using modern AI-assisted engineering and cloud-native architecture, we engineer and deploy your live working MVP in as fast as 48 hours.\n\nWhat You Get:\n• Fully responsive web application or installable Progressive Web App (PWA)\n• Secure user authentication and real-time database powered by Supabase\n• Instant serverless cloud hosting on Vercel with zero downtime\n• Clean, documented Node.js / JavaScript source code you 100% own\n• Seamless mobile-first design with interactive user flows\n\nWhy Choose Our Sprint Approach?\nUnlike conventional developers who bill endless hourly rates, we execute fixed-scope, rapid sprint deliveries. You receive a live URL to test and pitch to investors immediately.\n\nOur Verified Tech Stack:\nNode.js, Express, Supabase PostgreSQL, Modern Responsive JS, Vercel Edge Cloud, and RESTful APIs.\n\nReady to see your concept live? Send a message with your idea, and let us launch your MVP this week!",
+      "description": "Are you looking for rapid, reliable engineering for your business? Traditional agencies take months and charge high hourly rates. We engineer clean, cloud-native solutions deployed in days, not months.\n\nWhat We Deliver:\n• Clean, maintainable Node.js and Supabase architecture\n• Fully responsive mobile and desktop user interfaces\n• Fast cloud deployment with SSL and zero downtime\n• Real-time database and secure authentication\n• Complete source code ownership and technical handover\n\nWhy Choose GRO10X:\nWe operate a modern, AI-assisted engineering workflow focused on speed, clear communication, and measurable business outcomes. You get a working live platform quickly to validate and grow your business.\n\nVerified Tech Stack:\nNode.js, Express, Supabase PostgreSQL, Telegram Bot API, and Vercel Edge.\n\nSend us a message with your project scope to get started today!",
       "faq": [
         {
-          "q": "What is included in the 48-hour delivery?",
-          "a": "You receive a working, live-deployed web app with 1 core feature, database connection, user auth, and responsive UI."
+          "q": "How fast can you deliver the project?",
+          "a": "Our sprint approach allows us to deliver basic prototypes in 48 hours and full platforms in 5 to 8 days."
         },
         {
-          "q": "Can users install the app on their phones?",
-          "a": "Yes! We build Progressive Web Apps (PWAs) that users can install directly to their iOS and Android home screens without app store delays."
+          "q": "Do I get full source code ownership?",
+          "a": "Yes, you receive 100% full source code ownership with complete GitHub repository access."
         },
         {
-          "q": "Do I get full ownership of the source code?",
-          "a": "Absolutely. You get full ownership and access to the GitHub repository and database credentials upon completion."
+          "q": "Where will the project be hosted?",
+          "a": "We deploy on serverless edge networks like Vercel with automated SSL certificates and high uptime."
         },
         {
-          "q": "What if I need custom integrations later?",
-          "a": "Our architecture is modular and scalable, allowing you to easily add payment gateways, APIs, or advanced features anytime."
+          "q": "Can you add custom integrations later?",
+          "a": "Yes, all code is built modularly so you can easily expand features, payment gateways, and APIs."
         }
       ],
       "buyerRequirements": [
-        "What is the core problem your app solves?",
-        "Do you have a wireframe, reference website, or sketch of the layout?",
-        "What are the 1-3 essential features required for this MVP launch?"
+        "What is the primary goal and target audience for this project?",
+        "Do you have reference websites, wireframes, or brand assets?",
+        "What are the 1-3 essential features required for the first release?"
       ],
       "thumbnailBrief": {
-        "headline": "WEB APP / PWA MVP",
-        "subheading": "LIVE IN 48 HOURS · NODE.JS + SUPABASE",
+        "headline": "CUSTOM ENTERPRISE AI CHATBOT &",
+        "subheading": "FAST 48-HR SPRINT · NODE.JS + SUPABASE",
         "colorPalette": [
           "#00DF89",
-          "#09090B",
-          "#FFFFFF"
+          "#3B82F6",
+          "#09090B"
         ],
-        "visualStyle": "Dark mode glassmorphism mockup showing mobile PWA + desktop browser frame side-by-side.",
-        "badgeText": "⚡ 48-HR SPRINT DELIVERY",
-        "layoutAdvice": "Bold neon green headline on dark background with clean screenshot preview of dashboard interface."
+        "visualStyle": "Dark glassmorphic layout displaying clean dashboard interface and responsive device frames.",
+        "badgeText": "⚡ RAPID SPRINT DELIVERY",
+        "layoutAdvice": "Canva 1280x769 canvas with bold neon green typography on dark background with clean screenshot preview."
       },
       "healthCheck": {
         "score": 10,
@@ -126,7 +125,7 @@
           {
             "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 48 chars."
+            "message": "Title is 68 chars."
           },
           {
             "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
@@ -136,7 +135,7 @@
           {
             "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 1080 chars."
+            "message": "Description length: 867 chars."
           },
           {
             "rule": "No pricing amounts in description body",
@@ -170,10 +169,10 @@
           }
         ]
       },
-      "status": "Live",
-      "liveUrl": "https://www.fiverr.com/farhan/build-your-pwa-mvp-48h",
-      "updatedAt": "2026-09-08T12:50:00.480Z",
-      "titleBody": "build your web app or pwa mvp in 48 hours",
+      "status": "Generated",
+      "liveUrl": "",
+      "updatedAt": "2026-09-20T21:47:39.708Z",
+      "titleBody": "build your Custom Enterprise AI Chatbot & Knowledge Assi fast",
       "pricingMatrix": {
         "screens": {
           "basic": 2,
@@ -230,22 +229,13 @@
       },
       "galleryPrompts": {
         "videoScenes": [
-          "Scene 1 (0-10s) Hook: Cinematic macro shot of a frustrated entrepreneur staring at calendar showing 3 months agency delay, dramatic neon green glow transitions into a stopwatch hitting 48 hours.",
-          "Scene 2 (10-20s) Problem: Fast dynamic montage of messy legacy code, endless agency invoices, and slow loading wireframes disappearing into digital smoke.",
-          "Scene 3 (20-30s) Solution: High-tech 3D glassmorphic laptop opening rapidly, revealing sleek dark-mode Progressive Web App dashboard booting with 60fps fluidity.",
-          "Scene 4 (30-40s) Architecture: Holographic node network displaying Node.js backend connecting securely to Supabase PostgreSQL real-time database with lightning pulses.",
-          "Scene 5 (40-50s) Feature Demo: Smartphone screen smoothly installing the PWA icon to home screen, instant biometric login, dynamic interactive data chart rendering live.",
-          "Scene 6 (50-60s) Handover: Digital padlock opening smoothly, revealing 100% full GitHub repository ownership, zero recurring agency fees badge glowing.",
-          "Scene 7 (60-70s) CTA: High energy closing card with neon green typography: FAST 48-HR MVP SPRINT - SEND US YOUR SCOPE TODAY with GRO10X verified badge."
-        ],
-        "imagePrompts": [
-          "Image 1 (Hero Thumbnail 1280x769): High-contrast dark glassmorphic banner with neon green (#00DF89) bold 3D typography: WEB APP / PWA MVP IN 48 HOURS, sleek floating MacBook and iPhone mockup displaying modern SaaS dashboard, verified speed badge.",
-          "Image 2 (Feature Matrix Slide): Infographic layout on dark slate background showing 3 tier features: 48h Sprint, Supabase Database, Auth, Stripe integration, with checkmark matrix and clean UI icons.",
-          "Image 3 (Architecture & Deliverables): Isometric 3D diagram showing full stack pipeline: Frontend Responsive PWA -> Supabase PostgreSQL DB -> Vercel Cloud Edge -> Full GitHub Repo Handover."
-        ],
-        "pdfPrompts": [
-          "PDF 1 (Agency Case Study & Capabilities Guide): Write a 2-page executive agency capabilities brief detailing GRO10X rapid 48-hour MVP sprint methodology, technical architecture standards (Node.js + Supabase + Vercel), client deliverables breakdown, and project timeline milestone guarantee for prospective enterprise buyers.",
-          "PDF 2 (Technical Onboarding & Deliverables Spec Sheet): Generate a comprehensive technical spec sheet and onboarding checklist for MVP buyers, covering database configuration requirements, user role permissions, API key integration protocols, and post-launch maintenance runbook."
+          "Scene 1 (0-10s) Hook: Cinematic macro shot of entrepreneur facing weeks of development delay, transitioning into rapid GRO10X sprint timer.",
+          "Scene 2 (10-20s) Problem: Legacy systems and high agency invoices dissolving into streamlined digital flow.",
+          "Scene 3 (20-30s) Solution: Sleek dark-mode dashboard interface loading with fluid 60fps responsiveness.",
+          "Scene 4 (30-40s) Architecture: Node.js backend connecting securely to Supabase PostgreSQL real-time database.",
+          "Scene 5 (40-50s) Feature Demo: Interactive feature walkthrough with live dynamic forms and instant cloud response.",
+          "Scene 6 (50-60s) Handover: Complete GitHub repository ownership and zero recurring maintenance fees badge.",
+          "Scene 7 (60-70s) CTA: High energy closing card: RAPID SPRINT DELIVERY - SEND YOUR PROJECT SCOPE TODAY."
         ],
         "voiceoverScenes": [
           "Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way.",
@@ -256,7 +246,16 @@
           "You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees.",
           "Stop waiting and launch your MVP this week. Send us a message today with your project scope!"
         ],
-        "fullVoiceoverScript": "Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way. Endless hourly billing, bloated codebases, and missed launch deadlines kill great startup ideas before they even get off the ground. At GRO10X, we engineer and deploy your full working web application or Progressive Web App in as fast as 48 hours. Powered by modern Node.js, Supabase PostgreSQL, and serverless edge hosting on Vercel with zero downtime and ironclad security. Your users get instant mobile installation, secure authentication, dynamic data forms, and interactive analytics ready to pitch to real investors. You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees. Stop waiting and launch your MVP this week. Send us a message today with your project scope!"
+        "fullVoiceoverScript": "Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way. Endless hourly billing, bloated codebases, and missed launch deadlines kill great startup ideas before they even get off the ground. At GRO10X, we engineer and deploy your full working web application or Progressive Web App in as fast as 48 hours. Powered by modern Node.js, Supabase PostgreSQL, and serverless edge hosting on Vercel with zero downtime and ironclad security. Your users get instant mobile installation, secure authentication, dynamic data forms, and interactive analytics ready to pitch to real investors. You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees. Stop waiting and launch your MVP this week. Send us a message today with your project scope!",
+        "imagePrompts": [
+          "Image 1 (Hero Thumbnail 1280x769): High-contrast dark glassmorphic banner with neon green (#00DF89) bold 3D typography: CUSTOM ENTERPRISE AI CHATBOT & KNOWLEDGE ASSISTANT, floating laptop mockup and verified speed badge.",
+          "Image 2 (Feature Matrix Slide): Dark slate grid highlighting 4 core sprint features, Supabase integration, and live Vercel cloud deployment.",
+          "Image 3 (Architecture & Deliverables): 3D isometric diagram illustrating end-to-end full stack architecture and source code handover."
+        ],
+        "pdfPrompts": [
+          "PDF 1 (Agency Case Study & Capabilities Guide): 2-page executive summary detailing GRO10X rapid development methodology, architecture standards, and milestone timeline.",
+          "PDF 2 (Technical Onboarding & Deliverables Spec Sheet): Technical spec sheet and onboarding checklist covering database config, auth roles, and deployment runbook."
+        ]
       }
     },
     {
@@ -266,96 +265,98 @@
       "category": "mobile-web",
       "platform": "fiverr",
       "gigIndex": 2,
-      "title": "I will build your AI web app and SaaS PWA in 48 hours",
+      "title": "I will build your ai websites & software in rapid sprint",
       "categorySelection": {
         "primary": "Programming & Tech",
-        "sub": "Web Applications"
+        "sub": "Vibe Coding",
+        "serviceType": "Development & MVP"
       },
       "tags": [
-        "ai web app",
-        "saas pwa",
+        "ai websites software",
+        "fast delivery",
         "supabase",
-        "express node",
-        "gemini ai"
+        "node js",
+        "business solution"
       ],
       "pricing": {
         "basic": {
-          "title": "Sprint Launch MVP",
+          "title": "Core MVP Sprint",
           "price": 250,
           "deliveryDays": 2,
           "revisions": 2,
-          "description": "Rapid AI web app MVP built with Express, Supabase PostgreSQL, and core Gemini AI integrations.",
+          "description": "1 core feature working solution with responsive UI and live database connection.",
           "features": [
-            "Single Core Page PWA",
-            "Supabase DB & Auth",
-            "Gemini AI Lead Capture",
-            "Vercel Deployment"
+            "1 Core Feature",
+            "Supabase Database Setup",
+            "Responsive UI",
+            "Live Cloud Deployment",
+            "Source Code Handover"
           ]
         },
         "standard": {
-          "title": "Pro SaaS Platform",
+          "title": "Full Business Platform",
           "price": 550,
-          "deliveryDays": 4,
+          "deliveryDays": 5,
           "revisions": 3,
-          "description": "Full SaaS web application with Telegram Bot alerts, custom workflows, and 95+ SEO performance.",
+          "description": "Complete 3-feature platform with auth, dynamic forms, notification triggers, and admin panel.",
           "features": [
-            "Multi-page Web App",
-            "Supabase Auth & Roles",
-            "Gemini AI Automation",
-            "Telegram Bot Alerts",
-            "Core Web Vitals 95+"
+            "3 Core Features",
+            "User Authentication",
+            "Notification Webhooks",
+            "Admin Dashboard",
+            "7 Days Support"
           ]
         },
         "premium": {
-          "title": "Enterprise AI Suite",
-          "price": 1200,
-          "deliveryDays": 7,
+          "title": "Enterprise Suite",
+          "price": 1100,
+          "deliveryDays": 8,
           "revisions": "Unlimited",
-          "description": "Full-scale AI web platform with custom Express architecture, Google Workspace scripts, and HeyGen videos.",
+          "description": "Full production-grade solution with payment gateway, automated digests, and 14 days warranty.",
           "features": [
-            "Full Enterprise SaaS App",
-            "Advanced Gemini AI Models",
-            "Google Workspace Integration",
-            "HeyGen Video Automation",
-            "Priority Support & Deployment"
+            "Full Architecture",
+            "Payment Integration",
+            "Telegram & Email Alerts",
+            "Documentation & Runbook",
+            "14 Days Support"
           ]
         }
       },
-      "description": "Looking for lightning-fast execution? I turn your software vision into a production-ready, AI-powered web platform or PWA in days, not months. Powered by Node.js, Express, Supabase PostgreSQL, and Gemini AI, your SaaS application will be built for maximum speed, security, and user conversion.\n\nWhat You Get:\n• Scalable Node.js & Express Architecture deployed seamlessly on Vercel\n• Supabase PostgreSQL Database with secure User Authentication\n• Intelligent Gemini AI Lead Generation & Dynamic Form workflows\n• Instant Telegram Bot API alerts for real-time lead updates\n• Google Apps Script & Google Workspace data synchronization\n• SEO & Core Web Vitals 95+ score optimization\n\nWhy Choose GRO10X AI Agency?\nWe eliminate tech debt with rapid sprint development. You receive clean, modular code designed for instant scaling and rapid market validation.\n\nTech Stack: Node.js, Express, Supabase, Gemini AI, Telegram Bot API, Vercel.\n\nReady to launch your AI platform at warp speed? Select your package or contact me for a custom development sprint!",
+      "description": "Are you looking for rapid, reliable engineering for your business? Traditional agencies take months and charge high hourly rates. We engineer clean, cloud-native solutions deployed in days, not months.\n\nWhat We Deliver:\n• Clean, maintainable Node.js and Supabase architecture\n• Fully responsive mobile and desktop user interfaces\n• Fast cloud deployment with SSL and zero downtime\n• Real-time database and secure authentication\n• Complete source code ownership and technical handover\n\nWhy Choose GRO10X:\nWe operate a modern, AI-assisted engineering workflow focused on speed, clear communication, and measurable business outcomes. You get a working live platform quickly to validate and grow your business.\n\nVerified Tech Stack:\nNode.js, Express, Supabase PostgreSQL, Telegram Bot API, and Vercel Edge.\n\nSend us a message with your project scope to get started today!",
       "faq": [
         {
-          "q": "How do you achieve 48-hour delivery for an MVP?",
-          "a": "We utilize modular Express and Node.js templates with pre-configured Supabase authentication and Gemini AI APIs to sprint from design to deployment quickly."
+          "q": "How fast can you deliver the project?",
+          "a": "Our sprint approach allows us to deliver basic prototypes in 48 hours and full platforms in 5 to 8 days."
         },
         {
-          "q": "What database and AI integrations are included?",
-          "a": "We use Supabase PostgreSQL for real-time database management and authentication, paired with Google Gemini AI for smart dynamic forms and AI processing."
+          "q": "Do I get full source code ownership?",
+          "a": "Yes, you receive 100% full source code ownership with complete GitHub repository access."
         },
         {
-          "q": "Will my web application be optimized for mobile and SEO?",
-          "a": "Yes! Every platform is engineered as a Progressive Web App (PWA) with a guaranteed 95+ score on Google Core Web Vitals."
+          "q": "Where will the project be hosted?",
+          "a": "We deploy on serverless edge networks like Vercel with automated SSL certificates and high uptime."
         },
         {
-          "q": "Can I connect external tools like Google Workspace or Telegram?",
-          "a": "Absolutely! We natively build integrations for Google Apps Script to update Google Sheets/Docs, and Telegram Bot API for instant messaging alerts."
+          "q": "Can you add custom integrations later?",
+          "a": "Yes, all code is built modularly so you can easily expand features, payment gateways, and APIs."
         }
       ],
       "buyerRequirements": [
-        "Please describe your web application vision, core feature requirements, and target audience.",
-        "Do you already have Gemini AI API keys and a Supabase account, or should we assist in setting them up?",
-        "Provide your branding assets (logo, preferred color palette, text content) or link to visual style references."
+        "What is the primary goal and target audience for this project?",
+        "Do you have reference websites, wireframes, or brand assets?",
+        "What are the 1-3 essential features required for the first release?"
       ],
       "thumbnailBrief": {
-        "headline": "FAST AI WEB APPS & SAAS",
-        "subheading": "48-HOUR RAPID SPRINT WITH NODE & GEMINI AI",
+        "headline": "AI WEBSITES & SOFTWARE",
+        "subheading": "FAST 48-HR SPRINT · NODE.JS + SUPABASE",
         "colorPalette": [
           "#00DF89",
-          "#09090B",
-          "#FFFFFF"
+          "#3B82F6",
+          "#09090B"
         ],
-        "visualStyle": "Dark modern tech interface with glowing neon green accents, slick code overlay elements, and floating Gemini AI icon badges.",
-        "badgeText": "⚡ 48-HOUR SPRINT",
-        "layoutAdvice": "Large headline text on the left, dark glassmorphism SaaS app mock-up on the right with floating badges for Supabase and Gemini AI."
+        "visualStyle": "Dark glassmorphic layout displaying clean dashboard interface and responsive device frames.",
+        "badgeText": "⚡ RAPID SPRINT DELIVERY",
+        "layoutAdvice": "Canva 1280x769 canvas with bold neon green typography on dark background with clean screenshot preview."
       },
       "healthCheck": {
         "score": 10,
@@ -369,7 +370,7 @@
           {
             "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 53 chars."
+            "message": "Title is 56 chars."
           },
           {
             "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
@@ -379,7 +380,7 @@
           {
             "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 1045 chars."
+            "message": "Description length: 867 chars."
           },
           {
             "rule": "No pricing amounts in description body",
@@ -415,8 +416,8 @@
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-09-08T12:50:22.465Z",
-      "titleBody": "build your AI web app and SaaS PWA in 48 hours",
+      "updatedAt": "2026-09-20T21:46:16.201Z",
+      "titleBody": "build your ai websites & software in rapid sprint",
       "pricingMatrix": {
         "screens": {
           "basic": 2,

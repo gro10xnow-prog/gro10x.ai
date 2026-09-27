@@ -27,9 +27,8 @@ async function runPhaseA5(page) {
 
   await tracker.runStep('A5.1', 'Load Finance Hub & Verify 4 KPI Summary Cards', async () => {
     await page.waitForFunction(() => {
-      const el = document.querySelector('#app-view');
-      return el && (el.textContent.includes('Financials') || el.textContent.includes('Total Invoiced'));
-    }, { timeout: 8000 });
+      return document.querySelectorAll('.kpi-tile').length >= 4;
+    }, { timeout: 12000 });
 
     const isFinanceReady = await page.evaluate(() => {
       return typeof window.FINANCE_MODULE === 'object' && window.FINANCE_MODULE !== null;
@@ -151,8 +150,8 @@ async function runPhaseA5(page) {
   await tracker.runStep('A5.4', 'Invoice Lifecycle Status Mutation (Mark Fully Paid)', async () => {
     // Wait for any prior loadFinance to complete
     await page.waitForFunction(() => {
-      return document.getElementById('expModal') !== null;
-    }, { timeout: 8000 });
+      return document.getElementById('expModal') !== null && !window._financeMutating;
+    }, { timeout: 8000 }).catch(() => {});
 
     // Test Mark Paid on first invoice row or button
     const markPaidTriggered = await page.evaluate(() => {
@@ -165,7 +164,8 @@ async function runPhaseA5(page) {
     });
 
     if (markPaidTriggered) {
-      await wait(600);
+      await page.waitForFunction(() => !window._financeMutating, { timeout: 8000 }).catch(() => {});
+      await wait(500);
       await page.waitForFunction(() => {
         return document.getElementById('expModal') !== null;
       }, { timeout: 8000 });
@@ -174,10 +174,14 @@ async function runPhaseA5(page) {
   });
 
   await tracker.runStep('A5.5', 'Log Expense Modal & Intercept POST /api/expenses', async () => {
-    // Wait for expModal element
+    // Wait for any prior mutation to finish
+    await page.waitForFunction(() => !window._financeMutating, { timeout: 8000 }).catch(() => {});
+    await wait(300);
+
+    // Wait for expModal element and module readiness
     await page.waitForFunction(() => {
-      return document.getElementById('expModal') !== null;
-    }, { timeout: 8000 });
+      return document.getElementById('expModal') !== null && typeof window.FINANCE_MODULE?.openExpenseModal === 'function';
+    }, { timeout: 10000 });
 
     await page.evaluate(() => {
       window.FINANCE_MODULE.openExpenseModal();
@@ -186,7 +190,7 @@ async function runPhaseA5(page) {
 
     const isModalActive = await page.evaluate(() => {
       const m = document.getElementById('expModal');
-      return m && m.classList.contains('active');
+      return m && (m.classList.contains('active') || m.style.display === 'flex');
     });
     tracker.assert(isModalActive, '#expModal must have .active class');
 
@@ -227,14 +231,18 @@ async function runPhaseA5(page) {
 
     await page.waitForFunction(() => {
       const m = document.getElementById('expModal');
-      return !m || !m.classList.contains('active');
+      return !m || (!m.classList.contains('active') && m.style.display !== 'flex');
     }, { timeout: 8000 });
   });
 
   await tracker.runStep('A5.6', 'Price Quote Generator Modal & Intercept POST /api/invoices/quotes', async () => {
+    // Wait for any prior mutation to finish
+    await page.waitForFunction(() => !window._financeMutating, { timeout: 8000 }).catch(() => {});
+    await wait(300);
+
     // Wait for quoteModal element
     await page.waitForFunction(() => {
-      return document.getElementById('quoteModal') !== null;
+      return document.getElementById('quoteModal') !== null && typeof window.FINANCE_MODULE?.openQuoteModal === 'function';
     }, { timeout: 8000 });
 
     await page.evaluate(() => {
@@ -244,10 +252,9 @@ async function runPhaseA5(page) {
 
     const isModalActive = await page.evaluate(() => {
       const m = document.getElementById('quoteModal');
-      return m && m.classList.contains('active');
+      return m && (m.classList.contains('active') || m.style.display === 'flex');
     });
     tracker.assert(isModalActive, '#quoteModal must have .active class');
-
 
     // Populate quote form fields
     await page.evaluate(() => {
@@ -287,7 +294,7 @@ async function runPhaseA5(page) {
 
     await page.waitForFunction(() => {
       const m = document.getElementById('quoteModal');
-      return !m || !m.classList.contains('active');
+      return !m || (!m.classList.contains('active') && m.style.display !== 'flex');
     }, { timeout: 8000 });
   });
 

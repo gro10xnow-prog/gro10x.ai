@@ -248,7 +248,7 @@ async function handleDBMStandupWizardStep(teamBot, msg, wizardState, emp) {
       '📝 *Notes:* _' + notes + '_\n' +
       '━━━━━━━━━━━━━━━━━━━━\n\n' +
       motivationText + '\n\n' +
-      '🌐 View live brand metrics: https://gro10x-ai.vercel.app/dbm#workspace',
+      '🌐 View live brand metrics: https://gro10x-ai.vercel.app/workspace?engineId=engine3#deliverables',
       {
         parse_mode: 'Markdown',
         reply_markup: keyboard
@@ -301,7 +301,7 @@ async function handleMyBrands(teamBot, msg) {
     responseText += '• 🌅 *Block 1 (9AM–1PM):* 4 product blueprints & vault deliverables\n';
     responseText += '• ⚡ *Block 2 (1PM–5PM):* 4 mockups, videos & AI SEO packages\n';
     responseText += '• 📝 *Block 3 (5PM–6PM):* QC submit & DBM daily standup\n\n';
-    responseText += '🌐 *Open DBM Portal:* https://gro10x-ai.vercel.app/dbm';
+    responseText += '🌐 *Open DBM Portal:* https://gro10x-ai.vercel.app/workspace?engineId=engine3#deliverables';
 
     teamBot.sendMessage(chatId, responseText, { parse_mode: 'Markdown' });
   } catch (err) {
@@ -362,8 +362,8 @@ async function handleTodayQueue(teamBot, msg) {
     text += '🚀 *Next Action:* Tap below to open Studio or switch brand context:';
 
     const assignedBrands = brandsState.brands.filter(b => (dbmInfo.assignedBrands || [1, 5, 8]).includes(b.id));
-    const inlineButtons = assignedBrands.map(b => [{ text: `🛍️ ${b.name} (${brandsState.productsCatalog?.[b.id]?.filter(p => p.status === 'Live')?.length || 0}/100 Live)`, url: `https://gro10x-ai.vercel.app/dbm#workspace` }]);
-    inlineButtons.push([{ text: '⚡ Open DBM Studio Workstation', url: 'https://gro10x-ai.vercel.app/dbm#studio' }]);
+    const inlineButtons = assignedBrands.map(b => [{ text: `🛍️ ${b.name} (${brandsState.productsCatalog?.[b.id]?.filter(p => p.status === 'Live')?.length || 0}/100 Live)`, url: `https://gro10x-ai.vercel.app/workspace?engineId=engine3#deliverables` }]);
+    inlineButtons.push([{ text: '⚡ Open DBM Studio Workstation', url: 'https://gro10x-ai.vercel.app/workspace?engineId=engine3#deliverables' }]);
 
     teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineButtons } });
   } catch (err) {
@@ -422,8 +422,8 @@ async function handleDBMMyStatus(teamBot, msg) {
       '💰 *Vault Incentive Earned:* *$' + vaultBonus + ' USD*\n' +
       '━━━━━━━━━━━━━━━━━━━━\n' +
       '🚀 *Quick Actions:*\n' +
-      '• 🛍️ [Open DBM Workspace](https://gro10x-ai.vercel.app/dbm#workspace)\n' +
-      '• 📝 [Submit EOD Standup](https://gro10x-ai.vercel.app/dbm#standup)';
+      '• 🛍️ [Open DBM Workspace](https://gro10x-ai.vercel.app/workspace?engineId=engine3#deliverables)\n' +
+      '• 📝 [Submit EOD Standup](https://gro10x-ai.vercel.app/workspace?engineId=engine3#deliverables)';
 
     teamBot.sendMessage(chatId, statusText, { parse_mode: 'Markdown' });
   } catch (err) {
@@ -471,7 +471,7 @@ async function handleDBMIncentive(teamBot, msg) {
       '• 🥇 *Super Achiever (120%+):* +5% gross monthly bonus\n' +
       '• 🎁 *Mid-Month Surprise Bonus:* $35–$50 on 20th of each month\n\n' +
       '━━━━━━━━━━━━━━━━━━━━\n' +
-      '🌐 *View Full Live Ledger:* https://gro10x-ai.vercel.app/dbm#output';
+      '🌐 *View Full Live Ledger:* https://gro10x-ai.vercel.app/workspace?engineId=engine3#deliverables';
 
     teamBot.sendMessage(chatId, incentiveText, { parse_mode: 'Markdown' });
   } catch (err) {

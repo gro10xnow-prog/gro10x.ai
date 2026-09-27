@@ -64,6 +64,8 @@ function mapTask(t) {
     qcFeedback: t.qc_feedback,
     qcRejectedBy: t.qc_rejected_by,
     qcRejectedAt: t.qc_rejected_at,
+    engineId: t.engine_id || t.engineId || t.engine_tag || t.engineTag || null,
+    engineTag: t.engine_tag || t.engineTag || t.engine_id || t.engineId || null,
     reassignedBy: t.reassigned_by,
     reassignReason: t.reassign_reason,
     createdAt: t.created_at || t.createdAt,
@@ -71,15 +73,17 @@ function mapTask(t) {
   };
 }
 
-// GET Tasks (Supports ?dept=, ?assignee=, ?label=, ?limit=, ?page= filters)
+// GET Tasks (Supports ?dept=, ?assignee=, ?label=, ?engineId=, ?limit=, ?page= filters)
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { dept, assignee, label, parentId } = req.query;
+    const { normalizeEngineId } = require('../utils/engine-scope');
+    const engineFilter = normalizeEngineId(req.query.engineId || req.query.engine || req.headers['x-gro10x-engine']);
     const limit = Math.min(parseInt(req.query.limit) || 100, 500);
     const page = Math.max(parseInt(req.query.page) || 0, 0);
     const offset = page * limit;
 
-    const cacheKey = `tasks:list:${dept || ''}:${assignee || ''}:${parentId || ''}:${label || ''}:${limit}:${page}`;
+    const cacheKey = `tasks:list:${dept || ''}:${assignee || ''}:${parentId || ''}:${label || ''}:${engineFilter || ''}:${limit}:${page}`;
     const cached = cache.get(cacheKey);
     if (cached) {
       return res.json(cached);
@@ -122,6 +126,9 @@ router.get('/', requireAuth, async (req, res) => {
         if (parentId) {
           query = query.eq('parent_task_id', parentId);
         }
+        if (engineFilter && engineFilter !== 'all') {
+          query = query.or(`engine_tag.eq.${engineFilter},engine_id.eq.${engineFilter}`);
+        }
 
         const { data, error } = await query;
         if (!error && Array.isArray(data)) {
@@ -138,6 +145,12 @@ router.get('/', requireAuth, async (req, res) => {
       if (req.user?.linkedType === 'client' && req.user?.linkedId) {
         const cName = (req.user.company || req.user.name || '').toLowerCase();
         rawTasks = rawTasks.filter(t => t.clientId === req.user.linkedId || (cName && (t.client || '').toLowerCase().includes(cName)));
+      }
+      if (engineFilter && engineFilter !== 'all') {
+        rawTasks = rawTasks.filter(t => {
+          const tag = (t.engine_tag || t.engineTag || t.engine_id || t.engineId || '').toLowerCase();
+          return tag === engineFilter;
+        });
       }
       tasks = rawTasks.slice(offset, offset + limit);
     }
@@ -699,6 +712,34 @@ router.post('/:id/qc-approve', requireAuth, async (req, res) => {
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
     broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
+    // Automatically bridge to reviews table for Client Review Room visibility
+    try {
+      const reviewPayload = {
+        id: `REV-${task.id.replace(/[^A-Za-z0-9]/g, '')}`,
+        project_id: task.projectId || task.project_id || 'PRJ-ENG2',
+        project_name: task.title || 'Sprint Deliverable',
+        client: task.client || task.clientName || 'Client Partner',
+        client_id: task.clientId || task.client_id || null,
+        task_id: task.id,
+        active_version: 'v1',
+        versions: ['v1'],
+        deliverable_type: task.deliverable_type || 'staging_url',
+        media_type: task.media_type || 'video',
+        media_url: task.media_url || task.deliverableUrl || 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-sky-in-a-sunset-26070-large.mp4',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      if (supabase) {
+        await supabase.from('reviews').upsert([reviewPayload], { onConflict: 'id' });
+      }
+      broadcast('review_update', [reviewPayload]);
+      if (reviewPayload.client_id) {
+        broadcastToClient('review_update', [reviewPayload], [reviewPayload.client_id]);
+      }
+    } catch (revErr) {
+      console.warn('[QC Approve -> Review Bridge] Warning:', revErr.message);
+    }
+
     res.json({ success: true, task });
   } catch (err) {
     console.error('Task QC Approve error:', err.message);
@@ -979,13 +1020,29 @@ router.post('/:id/log-time', requireAuth, async (req, res) => {
     }
 
     // Update tasks table
-    const { data: existing } = await supabase.from('tasks').select('logged_hours').eq('id', id).maybeSingle();
+    const { data: existing } = await supabase.from('tasks').select('logged_hours, project_id, title').eq('id', id).maybeSingle();
     if (!existing) {
       return res.status(404).json({ error: 'Task not found' });
     }
     const newLogged = (Number(existing?.logged_hours) || 0) + logged;
     const { data, error } = await supabase.from('tasks').update({ logged_hours: newLogged, updated_at: new Date().toISOString() }).eq('id', id).select().maybeSingle();
     if (error) throw error;
+
+    // Automatically roll up time to project's Retainer Hours Bank if applicable
+    try {
+      const projId = existing.project_id || data?.project_id;
+      if (projId) {
+        const { logRetainerHours } = require('../services/retainer-bank');
+        await logRetainerHours(projId, {
+          hours: logged,
+          engineer: userName,
+          taskName: data?.title || existing.title || 'Task Deliverable',
+          notes: note || 'Logged via Kanban Task Board'
+        });
+      }
+    } catch (retRollErr) {
+      console.warn('[Task Log-Time -> Retainer Rollup] Warning:', retRollErr.message);
+    }
 
     broadcastTaskEvent('task_time_logged', { taskId: id, log: logEntry });
     res.json({ success: true, task: mapTask(data), log: logEntry });

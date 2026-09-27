@@ -172,7 +172,7 @@ router.post('/invoices', requireAuth, requireAdmin, asyncHandler(async (req, res
       id: id ? String(id).trim() : `INV-${Date.now()}-${idx}`,
       client_name: String(client).trim(),
       amount: Number(String(amount).replace(/[^0-9.]/g, '')) || 0,
-      date: issueDate,
+      issue_date: issueDate,
       due_date: dueStr,
       status: status ? String(status).trim() : 'Pending',
       created_at: new Date().toISOString()

@@ -3,7 +3,7 @@
  * Executive Client Partner Dashboard
  */
 window.CLIENT_MODULES = window.CLIENT_MODULES || {};
-const escapeHTML = window.escapeHTML || function(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; };
+var escapeHTML = window.escapeHTML || function(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; };
 
 window.CLIENT_MODULES.home = async function(container) {
   try {
@@ -13,14 +13,63 @@ window.CLIENT_MODULES.home = async function(container) {
     const user = me?.user || me || localUser;
     const clientName = user.company || user.name || '';
 
-    const [posts, invoices, tickets, clientInfo] = await Promise.all([
+    const [posts, invoices, tickets, clientInfo, projects] = await Promise.all([
       clientName 
         ? CLIENT_API.get(`/posts/client/${encodeURIComponent(clientName)}`).catch(() => CLIENT_API.get('/posts').catch(() => []))
         : CLIENT_API.get('/posts').catch(() => []),
       CLIENT_API.get('/invoices').catch(() => []),
       CLIENT_API.get('/tickets').catch(() => []),
-      CLIENT_API.get(`/clients/${user.linkedId || user.id}`).catch(() => ({}))
+      CLIENT_API.get('/clients/me').catch(() => ({})),
+      CLIENT_API.get('/projects').catch(() => [])
     ]);
+
+    const projectList = Array.isArray(projects) ? projects : [];
+    
+    // Resolve active warranty project
+    const activeWarrantyProject = projectList.find(p => {
+      const w = p.warrantyUntil || p.warranty_until;
+      return w && (new Date(w).getTime() > Date.now());
+    }) || projectList.find(p => p.delivery_status === 'APPROVED' || p.deliveryStatus === 'APPROVED') || null;
+
+    let isWarrantyActive = false;
+    let warrantyDaysRemaining = 0;
+    let warrantyExpiryDateStr = '';
+
+    if (activeWarrantyProject) {
+      const rawW = activeWarrantyProject.warrantyUntil || activeWarrantyProject.warranty_until;
+      if (rawW) {
+        const diff = new Date(rawW).getTime() - Date.now();
+        if (diff > 0) {
+          isWarrantyActive = true;
+          warrantyDaysRemaining = Math.ceil(diff / (1000 * 60 * 60 * 24));
+          warrantyExpiryDateStr = new Date(rawW).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+      }
+    }
+
+    // Resolve active sprint project (default to first active project or Purplebot sprint)
+    const activeSprint = projectList.find(p => p.delivery_status !== 'WARRANTY_CLOSED') || {
+      id: 'proj-purplebot-01',
+      name: 'AI Agency OS & Automated Retainer Sprint',
+      delivery_status: 'DELIVERED',
+      delivery_pod: {
+        podName: 'MVP Rapid Delivery Pod',
+        icon: '⚡',
+        targetVelocityDays: 14,
+        leadEngineer: 'Fahim Rahman'
+      }
+    };
+
+    const pod = activeSprint.delivery_pod || activeSprint.deliveryPod || {
+      podName: 'MVP Rapid Delivery Pod',
+      icon: '⚡',
+      targetVelocityDays: 14,
+      leadEngineer: 'Fahim Rahman'
+    };
+
+    const isDelivered = activeSprint.delivery_status === 'DELIVERED' || activeSprint.delivery_status === 'APPROVED' || activeSprint.deliveryStatus === 'DELIVERED';
+    const isApproved = activeSprint.delivery_status === 'APPROVED' || activeSprint.deliveryStatus === 'APPROVED';
+    const sprintPct = isApproved ? 100 : isDelivered ? 90 : 65;
 
     const pendingApprovals = (posts || []).filter(p => p.status === 'Pending Client Approval' || p.status === 'Client Review').length;
     const totalScheduled = (posts || []).filter(p => p.status === 'Approved' || p.status === 'Scheduled' || p.status === 'Draft').length;
@@ -36,7 +85,7 @@ window.CLIENT_MODULES.home = async function(container) {
 
     container.innerHTML = `
       <!-- Greeting & Retainer Status Header -->
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
         <div>
           <h1 style="font-size: 1.55rem; font-weight: 800; font-family: var(--font-heading); margin: 0 0 0.35rem;">
             👋 Welcome back, ${escapeHTML(user.name || 'Partner')}!
@@ -48,12 +97,102 @@ window.CLIENT_MODULES.home = async function(container) {
             <span class="badge badge-emerald" style="font-size:0.72rem; padding:0.25rem 0.65rem;">
               ⚡ ${escapeHTML(retainerStatus)}
             </span>
+            <span class="badge badge-blue" style="font-size:0.72rem; padding:0.25rem 0.65rem;">
+              🚀 Engine 2 Partner
+            </span>
           </div>
         </div>
 
-        <a href="#brief" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
-          📝 Submit Brief
-        </a>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <a href="#brief" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+            📝 Submit Brief
+          </a>
+          <a href="/msa-view.html?id=${encodeURIComponent(activeSprint.id || 'proj-purplebot-01')}" target="_blank" class="btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+            📜 Legal MSA & NDA
+          </a>
+        </div>
+      </div>
+
+      <!-- 30-Day Bug-Fix Warranty Countdown Shield Banner -->
+      ${isWarrantyActive ? `
+        <div class="card-glass" style="background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(5,150,105,0.32)); border:1px solid rgba(16,185,129,0.45); margin-bottom:1.5rem; padding:1.15rem 1.4rem; border-radius:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.9rem;">
+              <div style="font-size:2rem;">🛡️</div>
+              <div>
+                <div style="font-size:0.72rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.05em;">
+                  Institutional Warranty Shield · Zero-Cost Defect Resolution
+                </div>
+                <div style="font-size:1.2rem; font-weight:900; font-family:var(--font-heading); color:#fff; margin:0.15rem 0;">
+                  30-Day Bug-Fix Warranty — <span style="color:#6ee7b7;">${warrantyDaysRemaining} Days Remaining</span>
+                </div>
+                <div style="font-size:0.8rem; color:rgba(255,255,255,0.85);">
+                  Active for <strong>${escapeHTML(activeWarrantyProject.name || 'AI Sprint Solution')}</strong> · Closes on <strong>${warrantyExpiryDateStr}</strong> · SLA: <strong>4h P0 Critical / 24h P1 Standard</strong>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <a href="#tickets" class="btn-primary btn-sm" style="background:#059669; text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+                🎟️ File Warranty Ticket
+              </a>
+              <a href="/handover-view.html?id=${encodeURIComponent(activeWarrantyProject.id)}" target="_blank" class="btn-secondary btn-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+                📄 IP Handover Shield
+              </a>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Engine 2: Active Rapid Sprint Progress Cockpit -->
+      <div class="card-glass" style="background:linear-gradient(135deg, rgba(124,58,237,0.14), rgba(15,23,42,0.6)); border:1px solid rgba(139,92,246,0.35); margin-bottom:1.5rem; padding:1.25rem 1.4rem; border-radius:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+              <span class="badge badge-purple" style="font-size:0.75rem;">
+                ${pod.icon || '⚡'} ${escapeHTML(pod.podName || 'MVP Rapid Delivery Pod')}
+              </span>
+              <span class="badge ${isApproved ? 'badge-emerald' : isDelivered ? 'badge-blue' : 'badge-amber'}" style="font-size:0.75rem;">
+                ${isApproved ? '✅ Handover Approved' : isDelivered ? '🚀 Deliverables Released' : '⚡ In Active Sprint'}
+              </span>
+            </div>
+            <h2 style="font-size:1.2rem; font-family:var(--font-heading); margin:0 0 0.25rem; color:#fff;">
+              ${escapeHTML(activeSprint.name || 'AI Solution Sprint')}
+            </h2>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">
+              Velocity Target: <strong>${pod.targetVelocityDays || 14} Days</strong> · Lead Engineer: <strong>${escapeHTML(pod.leadEngineer || 'Fahim Rahman')}</strong>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <a href="#review" class="btn-primary btn-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+              🎬 Review Deliverables
+            </a>
+            <a href="#retainer" class="btn-secondary btn-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+              ⏳ Retainer Bank
+            </a>
+            <a href="/handover-view.html?id=${encodeURIComponent(activeSprint.id)}" target="_blank" class="btn-secondary btn-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+              🛡️ Handover Shield
+            </a>
+          </div>
+        </div>
+
+        <!-- Sprint Stages Bar -->
+        <div style="margin-top:0.75rem;">
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:0.4rem;">
+            <span>Sprint Execution Stage</span>
+            <span style="font-weight:700; color:var(--purple-light);">${sprintPct}% Complete</span>
+          </div>
+          <div style="height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
+            <div style="height:100%; width:${sprintPct}%; background:linear-gradient(90deg, #8b5cf6, #00df89); border-radius:999px;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:var(--text-dim); margin-top:0.35rem;">
+            <span style="color:${sprintPct >= 20 ? '#a78bfa' : 'inherit'};">1. Scope Lock</span>
+            <span style="color:${sprintPct >= 40 ? '#a78bfa' : 'inherit'};">2. Architecture</span>
+            <span style="color:${sprintPct >= 65 ? '#a78bfa' : 'inherit'};">3. Pod Build</span>
+            <span style="color:${sprintPct >= 90 ? '#34d399' : 'inherit'};">4. QA & Deliver</span>
+            <span style="color:${sprintPct >= 100 ? '#34d399' : 'inherit'};">5. Handover Shield</span>
+          </div>
+        </div>
       </div>
 
       <!-- 4 KPI Tiles Grid -->

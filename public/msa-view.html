@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Service Agreement (MSA) & NDA — Gro10x.ai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- html2pdf for zero-margin vector PDF download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --primary: #00df89;
+      --primary-dark: #00b368;
+      --navy: #070b12;
+      --navy-card: #0d131f;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --purple-accent: #7c3aed;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #090d14;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Top Action Control Toolbar */
+    .toolbar {
+      width: 100%;
+      max-width: 210mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 1.25rem;
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .toolbar-title {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .toolbar-sub {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-emerald {
+      background: var(--primary);
+      color: #042514;
+    }
+    .btn-emerald:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* A4 Document Sheet */
+    .document-page {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      padding: 24mm 22mm 24mm 22mm;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    /* Header Section */
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .brand-logo {
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: #0f172a;
+    }
+    .brand-logo span {
+      color: #059669;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .doc-badge-meta {
+      text-align: right;
+    }
+
+    .doc-type-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: #0f172a;
+      color: #fff;
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 0.4rem;
+    }
+
+    .doc-ref-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .doc-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Parties Section */
+    .parties-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .party-col h4 {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.4rem;
+    }
+
+    .party-col .party-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+
+    .party-col p {
+      font-size: 0.8rem;
+      color: #334155;
+      line-height: 1.4;
+    }
+
+    /* Clauses List */
+    .clauses-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .clause-block {
+      border-left: 3px solid #0f172a;
+      padding-left: 0.85rem;
+    }
+
+    .clause-block.highlight {
+      border-left-color: #059669;
+      background: #f0fdf4;
+      padding: 0.6rem 0.85rem;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .clause-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+
+    .clause-text {
+      font-size: 0.75rem;
+      color: #334155;
+      line-height: 1.45;
+      text-align: justify;
+    }
+
+    /* Signatory Section */
+    .signatory-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .signatory-box {
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 1rem;
+      background: #fafafa;
+    }
+
+    .signatory-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.75rem;
+    }
+
+    .signature-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+
+    .signatory-person {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .signatory-role {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* Footer / Security Stamp */
+    .doc-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 0.75rem;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+
+    .hash-code {
+      font-family: 'JetBrains Mono', monospace;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .toolbar {
+        display: none !important;
+      }
+      .document-page {
+        box-shadow: none;
+        padding: 15mm 15mm;
+        width: 100%;
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controls Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div>
+        <div class="toolbar-title" id="tbTitle">Master Service Agreement (MSA)</div>
+        <div class="toolbar-sub">Engine 2 Legal Framework • IP Transfer & NDA Protection</div>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-outline" onclick="window.print()">🖨️ Browser Print</button>
+      <button class="btn btn-emerald" onclick="downloadMsaPdf()">📄 Download Official PDF</button>
+    </div>
+  </div>
+
+  <!-- A4 Legal Document Sheet -->
+  <div class="document-page" id="msaSheet">
+    <div>
+      <!-- Header -->
+      <div class="doc-header">
+        <div class="logo-container">
+          <div class="brand-logo">GRO10X<span>.AI</span></div>
+          <div class="brand-sub">Autonomous AI Systems & Software Engineering Agency</div>
+        </div>
+        <div class="doc-badge-meta">
+          <div class="doc-type-tag">MASTER SERVICE AGREEMENT & NDA</div>
+          <div class="doc-ref-id" id="docMsaId">MSA-2026-001</div>
+          <div class="doc-date">Effective: <span id="docEffectiveDate">2026-09-15</span></div>
+        </div>
+      </div>
+
+      <!-- Parties -->
+      <div class="parties-grid">
+        <div class="party-col">
+          <h4>Provider (Service Agency)</h4>
+          <div class="party-name">GRO10X Business Limited</div>
+          <p>Registration: REG-BD-2025-G10X</p>
+          <p>Uttara Sector 3, Dhaka 1230, Bangladesh</p>
+          <p>Email: legal@gro10x.ai</p>
+        </div>
+        <div class="party-col">
+          <h4>Client Partner</h4>
+          <div class="party-name" id="docClientName">Purplebot Digital Limited</div>
+          <p id="docClientAddress">Dhaka / International Entity</p>
+          <p>Authorized Signatory: <span id="docClientSignatory">Managing Director</span></p>
+          <p id="docClientEmail">client@partner.corp</p>
+        </div>
+      </div>
+
+      <!-- Clauses -->
+      <div class="clauses-container" id="docClausesContainer">
+        <!-- Clauses injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Signatures & Verification -->
+    <div>
+      <div class="signatory-grid">
+        <div class="signatory-box">
+          <div class="signatory-title">For GRO10X Business Limited</div>
+          <div class="signature-badge">✓ CRYPTOGRAPHICALLY EXECUTED</div>
+          <div class="signatory-person">Tanvir Ahmed</div>
+          <div class="signatory-role">Managing Director & Principal Architect</div>
+        </div>
+        <div class="signatory-box">
+          <div class="signatory-title">For Client Organization</div>
+          <div class="signature-badge">✓ BINDING ENTERPRISE AGREEMENT</div>
+          <div class="signatory-person" id="docSigClientName">Executive Signatory</div>
+          <div class="signatory-role" id="docSigClientRole">Authorized Corporate Representative</div>
+        </div>
+      </div>
+
+      <div class="doc-footer">
+        <div>Engine 2 B2B Agency OS • Bangladesh Jurisdiction & UNCITRAL Arbitration</div>
+        <div>Digital Security Hash: <span class="hash-code" id="docVerificationHash">GRO10X-SEC-79B8C02D</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('projectId') || urlParams.get('id') || 'PRJ-2026-ENG2';
+
+    async function loadMSA() {
+      try {
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('token') || localStorage.getItem('sb-access-token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`/api/projects/${projectId}/msa`, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.msa) {
+            renderMSA(data.msa);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('API fetch error, rendering default template:', err.message);
+      }
+      renderDefaultTemplate();
+    }
+
+    function renderMSA(msa) {
+      document.getElementById('tbTitle').innerText = `${msa.parties?.client?.companyName || 'Client'} — Master Service Agreement`;
+      document.getElementById('docMsaId').innerText = msa.msaId || 'MSA-2026-001';
+      document.getElementById('docEffectiveDate').innerText = msa.effectiveDate || new Date().toISOString().split('T')[0];
+      document.getElementById('docClientName').innerText = msa.parties?.client?.companyName || 'Valued Client';
+      document.getElementById('docClientAddress').innerText = msa.parties?.client?.address || 'Corporate Headquarters';
+      document.getElementById('docClientSignatory').innerText = msa.parties?.client?.authorizedSignatory || 'Authorized Representative';
+      document.getElementById('docClientEmail').innerText = msa.parties?.client?.email || 'contact@client.corp';
+
+      document.getElementById('docSigClientName').innerText = msa.parties?.client?.authorizedSignatory || 'Authorized Representative';
+      document.getElementById('docSigClientRole').innerText = msa.parties?.client?.designation || 'Corporate Signatory';
+      document.getElementById('docVerificationHash').innerText = msa.verificationHash || 'GRO10X-SEC-DEFAULT';
+
+      if (Array.isArray(msa.clauses)) {
+        const clausesHtml = msa.clauses.map(c => `
+          <div class="clause-block ${c.section.includes('2.') ? 'highlight' : ''}">
+            <div class="clause-title">${escapeHtml(c.section)}: ${escapeHtml(c.title)}</div>
+            <div class="clause-text">${escapeHtml(c.content)}</div>
+          </div>
+        `).join('');
+        document.getElementById('docClausesContainer').innerHTML = clausesHtml;
+      }
+    }
+
+    function renderDefaultTemplate() {
+      document.getElementById('docMsaId').innerText = 'MSA-2026-PURPLEBOT';
+      document.getElementById('docClientName').innerText = 'Purplebot Digital Limited';
+      const defaultClauses = [
+        { section: '1. Engagement & Statements of Work', title: 'Scope of AI Engineering Engagement', content: 'GRO10X agrees to provide high-velocity AI engineering, intelligent automation, and custom algorithmic deliverables under Statement of Work (SOW) guidelines.' },
+        { section: '2. Intellectual Property Assignment', title: 'Irrevocable Transfer of Ownership', content: 'Upon receipt of final invoice settlement, GRO10X irrevocably transfers and assigns 100% of all intellectual property, bespoke source code, and neural network weights to Client.' },
+        { section: '3. Mutual Non-Disclosure & Data Confidentiality', title: 'Confidentiality of Proprietary Assets & Client Data', content: 'Both parties agree to protect all confidential proprietary information, including proprietary training datasets, production API keys, algorithms, customer records, and trade secrets, for a duration of not less than five (5) consecutive years.' },
+        { section: '4. 30-Day Bug-Fix Warranty & Maintenance SLA', title: 'Zero-Cost Production Warranty', content: 'GRO10X guarantees a 30-calendar-day warranty commencing on the date of formal deliverable acceptance. Critical severity regressions (P0) will be responded to within 4 business hours; standard regressions (P1) within 24 business hours at zero additional cost to Client.' },
+        { section: '5. Multi-Rail Settlement & Commercial Terms', title: 'Invoicing Standards & Taxes', content: 'Invoicing follows milestone sprint completion. Client agrees to settle invoices via institutional bank wire transfer (BRAC Bank PLC) within five (5) business days of issuance conforming to applicable 5% statutory VAT.' }
+      ];
+      const clausesHtml = defaultClauses.map(c => `
+        <div class="clause-block ${c.section.includes('2.') ? 'highlight' : ''}">
+          <div class="clause-title">${escapeHtml(c.section)}: ${escapeHtml(c.title)}</div>
+          <div class="clause-text">${escapeHtml(c.content)}</div>
+        </div>
+      `).join('');
+      document.getElementById('docClausesContainer').innerHTML = clausesHtml;
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function downloadMsaPdf() {
+      const el = document.getElementById('msaSheet');
+      const opt = {
+        margin: [0, 0, 0, 0],
+        filename: `${document.getElementById('docMsaId').innerText}_Master_Service_Agreement.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(el).save();
+    }
+
+    window.addEventListener('DOMContentLoaded', loadMSA);
+  </script>
+</body>
+</html>

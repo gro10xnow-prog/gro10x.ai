@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commercial Document Viewer — GRO10X AI Agency</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- html2pdf for 1-click zero-margin vector PDF download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --primary: #00df89;
+      --primary-dark: #00b368;
+      --navy: #070b12;
+      --navy-card: #0d131f;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #090d14;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Top Action Control Toolbar */
+    .toolbar {
+      width: 100%;
+      max-width: 210mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 1.25rem;
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .toolbar-title {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .toolbar-sub {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .calc-toggle-wrap {
+      display: flex;
+      background: rgba(255,255,255,0.08);
+      padding: 0.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-right: 0.5rem;
+    }
+
+    .toggle-btn {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .toggle-btn.active {
+      background: var(--primary);
+      color: #070b12;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-emerald {
+      background: #00df89;
+      color: #070b12;
+    }
+
+    .btn-emerald:hover {
+      background: #34d399;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Strict 1-Page A4 Sheet */
+    .invoice-sheet {
+      width: 210mm;
+      height: 297mm;
+      max-height: 297mm;
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      page-break-inside: avoid;
+      page-break-after: avoid;
+    }
+
+    /* Top Brand Banner */
+    .sheet-header {
+      background: var(--navy);
+      color: #ffffff;
+      padding: 16mm 16mm 12mm;
+      border-bottom: 3.5px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .brand-name {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+    }
+
+    .brand-details {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      margin-top: 0.35rem;
+      line-height: 1.45;
+    }
+
+    .brand-details strong {
+      color: #f1f5f9;
+    }
+
+    .doc-meta {
+      text-align: right;
+    }
+
+    .doc-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.06em;
+    }
+
+    .doc-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 0.2rem;
+    }
+
+    .status-badge {
+      display: inline-block;
+      margin-top: 0.35rem;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #f59e0b;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge.paid {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #10b981;
+    }
+
+    /* Main Content Area */
+    .sheet-body {
+      padding: 10mm 16mm 8mm;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Client & Invoice Meta Grid */
+    .client-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 1.5rem;
+      padding-bottom: 0.85rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .client-company {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.2rem;
+    }
+
+    .client-meta-line {
+      font-size: 0.8rem;
+      color: #334155;
+      line-height: 1.45;
+    }
+
+    .meta-table {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .meta-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .meta-item .lbl {
+      color: var(--text-muted);
+    }
+
+    .meta-item .val {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Line Items Table */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+
+    .items-table th {
+      background: var(--navy);
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.55rem 0.8rem;
+      text-align: left;
+    }
+
+    .items-table td {
+      padding: 0.75rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+      vertical-align: top;
+    }
+
+    .item-title {
+      font-weight: 800;
+      color: #0f172a;
+      font-size: 0.88rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .item-desc {
+      font-size: 0.76rem;
+      color: #475569;
+      line-height: 1.38;
+    }
+
+    .num-col {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    /* Calculation Breakdown */
+    .calc-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 1rem;
+    }
+
+    .calc-box {
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #475569;
+    }
+
+    .calc-row.discount {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    .calc-row.taxable-base {
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 0.3rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .calc-row.vat {
+      color: #0369a1;
+      font-weight: 600;
+    }
+
+    .calc-row.total-due {
+      background: var(--navy);
+      color: #ffffff;
+      margin: 0.35rem -1rem -0.75rem;
+      padding: 0.65rem 1rem;
+      border-radius: 0 0 8px 8px;
+      font-size: 0.98rem;
+      font-weight: 800;
+    }
+
+    .calc-row.total-due .amt {
+      color: var(--primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem;
+    }
+
+    /* Bank Settlement Card */
+    .bank-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .bank-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #0f172a;
+      margin-bottom: 0.45rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .bank-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      font-size: 0.75rem;
+    }
+
+    .b-cell {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .b-lbl {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .b-val {
+      font-weight: 700;
+      color: #0f172a;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 0.1rem;
+      font-size: 0.8rem;
+    }
+
+    /* Receipt Stamp */
+    .receipt-seal {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1.5px dashed #10b981;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      margin-bottom: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .receipt-seal-text {
+      font-size: 0.75rem;
+      color: #065f46;
+      line-height: 1.4;
+    }
+
+    .receipt-seal-badge {
+      background: #10b981;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* Terms & Footer */
+    .sheet-footer {
+      padding: 0 16mm 8mm;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .terms-block {
+      font-size: 0.7rem;
+      color: #64748b;
+      line-height: 1.4;
+      margin-bottom: 0.5rem;
+    }
+
+    .closing-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 0.35rem;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+
+    .sign-block {
+      text-align: right;
+    }
+
+    .sign-title {
+      font-weight: 800;
+      color: #0f172a;
+      font-size: 0.78rem;
+    }
+
+    .sign-sub {
+      font-size: 0.68rem;
+      color: #64748b;
+    }
+
+    /* Strict Print Styles (100% Guaranteed 1-Page A4) */
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    @media print {
+      html, body {
+        width: 210mm !important;
+        height: 297mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .toolbar {
+        display: none !important;
+      }
+
+      .invoice-sheet {
+        width: 210mm !important;
+        height: 297mm !important;
+        max-height: 297mm !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+        overflow: hidden !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Control Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span style="font-size:1.3rem;" id="toolbarIcon">🧾</span>
+      <div>
+        <div class="toolbar-title" id="toolbarTitle">Commercial Document Viewer</div>
+        <div class="toolbar-sub" id="toolbarSub">Engine 2 Corporate Settlement · Guaranteed 1-Page Vector A4</div>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="calc-toggle-wrap" id="calcToggleWrap">
+        <button class="toggle-btn active" id="btnModeAddVat" onclick="switchCalcMode('add_vat')">
+          Net + 5% VAT
+        </button>
+        <button class="toggle-btn" id="btnModeFlat" onclick="switchCalcMode('flat')">
+          Flat Total
+        </button>
+      </div>
+
+      <button class="btn btn-secondary" onclick="copySummary()">📋 Copy Text</button>
+      <button class="btn btn-emerald" onclick="downloadCleanPDF()">📥 Download Vector PDF</button>
+      <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+
+  <!-- A4 Printable Sheet -->
+  <div class="invoice-sheet" id="invoiceSheet">
+
+    <!-- Header Banner -->
+    <div class="sheet-header">
+      <div>
+        <div class="brand-name">GRO10X AI AGENCY</div>
+        <div class="brand-details">
+          Enterprise AI Engineering, Automated Growth Engines & Digital Transformation<br>
+          Dhaka, Bangladesh · BST (UTC+6) | Global Operations<br>
+          Email: <strong>gro10xnow@gmail.com</strong> | WhatsApp / Direct: <strong>+880 1708-459008</strong><br>
+          Web: <strong>gro10x-ai.vercel.app</strong> · Corporate Settlement Division
+        </div>
+      </div>
+
+      <div class="doc-meta">
+        <div class="doc-title" id="docTypeTitle">TAX INVOICE</div>
+        <div class="doc-number" id="docNumber">INV-2026-004</div>
+        <div class="status-badge" id="docStatusBadge">Pending Settlement</div>
+      </div>
+    </div>
+
+    <!-- Sheet Body -->
+    <div class="sheet-body">
+
+      <!-- Client & Metadata Grid -->
+      <div class="client-grid">
+        <div>
+          <div class="section-label">Billed To / Client Organization</div>
+          <div class="client-company" id="clientCompanyName">Purplebot Digital Limited</div>
+          <div class="client-meta-line" id="clientMetaBlock">
+            <strong>Attention:</strong> H. M. Ifteker Mahmud<br>
+            <strong>Designation:</strong> Managing Director<br>
+            <strong>Email:</strong> ifteker@purplebot.digital<br>
+            <strong>Client Account ID:</strong> CLI-MTWK4BNC-24F6EA
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Document Specifications</div>
+          <div class="meta-table">
+            <div class="meta-item">
+              <span class="lbl">Date of Issue:</span>
+              <span class="val" id="metaIssueDate">15 September, 2026</span>
+            </div>
+            <div class="meta-item">
+              <span class="lbl">Payment Terms:</span>
+              <span class="val">Net 14 Days</span>
+            </div>
+            <div class="meta-item">
+              <span class="lbl">Payment Due Date:</span>
+              <span class="val" style="color:#d97706;" id="metaDueDate">29 September, 2026</span>
+            </div>
+            <div class="meta-item">
+              <span class="lbl">Transaction Type:</span>
+              <span class="val" id="metaInvoiceType">Retainer Sprint Milestone</span>
+            </div>
+            <div class="meta-item">
+              <span class="lbl">Settlement Rail:</span>
+              <span class="val" id="metaSettlementRail">Corporate Bank Wire (BRAC Bank)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Line Items Table -->
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th style="width: 58%;">Deliverable Description</th>
+            <th style="width: 10%; text-align: center;">Qty</th>
+            <th style="width: 16%; text-align: right;">Rate (<span class="currLbl">BDT</span>)</th>
+            <th style="width: 16%; text-align: right;">Amount (<span class="currLbl">BDT</span>)</th>
+          </tr>
+        </thead>
+        <tbody id="itemsTableBody">
+          <tr>
+            <td>
+              <div class="item-title">AI Agency OS & Automated Retainer Infrastructure</div>
+              <div class="item-desc">
+                Deployment of automated delivery pipelines, Telegram bot mesh integration, client review cockpit governance, and retainer sprint cycle 1 for Purplebot Digital.
+              </div>
+            </td>
+            <td style="text-align: center; font-weight: 700;">1</td>
+            <td style="text-align: right;" class="num-col">৳35,000</td>
+            <td style="text-align: right; font-weight: 800;" class="num-col">৳35,000</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Calculations Breakdown -->
+      <div class="calc-container">
+        <div class="calc-box">
+          <div class="calc-row">
+            <span>Gross Package Subtotal:</span>
+            <span style="font-weight:700;" class="num-col" id="valGrossSubtotal">৳35,000</span>
+          </div>
+
+          <div class="calc-row discount" id="rowDiscount">
+            <span>Agency Courtesy Discount:</span>
+            <span class="num-col" id="valDiscount">-৳10,000</span>
+          </div>
+
+          <div class="calc-row taxable-base">
+            <span>Net Taxable Base:</span>
+            <span class="num-col" id="valTaxableBase">৳25,000</span>
+          </div>
+
+          <div class="calc-row vat" id="rowVat">
+            <span id="lblVat">VAT (5% on Taxable Base):</span>
+            <span class="num-col" id="valVat">+৳1,250</span>
+          </div>
+
+          <div class="calc-row total-due">
+            <span id="lblTotalPayable">Total Payable:</span>
+            <span class="amt" id="valTotalDue">৳26,250 BDT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paid Receipt Seal (Hidden unless status is Paid) -->
+      <div class="receipt-seal" id="receiptSealBox" style="display:none;">
+        <div class="receipt-seal-text">
+          <strong style="color:#065f46;">🔒 Official Commercial Clearance & IP Transfer Endorsement:</strong><br>
+          Payment confirmed and reconciled by GRO10X Corporate Treasury. Full intellectual property rights and codebase licenses are formally transferred to client organization under standard commercial warranty.
+        </div>
+        <div class="receipt-seal-badge">
+          ✓ IP Transferred
+        </div>
+      </div>
+
+      <!-- Official Bank Settlement Details -->
+      <div class="bank-card">
+        <div class="bank-title">
+          <span>🏦</span>
+          <span>Official Corporate Settlement Details (Direct Corporate Bank Wire Transfer)</span>
+        </div>
+        <div class="bank-grid">
+          <div class="b-cell">
+            <span class="b-lbl">Beneficiary Name</span>
+            <span class="b-val">Neoncore Tech Solution</span>
+          </div>
+          <div class="b-cell">
+            <span class="b-lbl">Bank Name</span>
+            <span class="b-val">BRAC Bank Limited</span>
+          </div>
+          <div class="b-cell">
+            <span class="b-lbl">Account Number</span>
+            <span class="b-val" style="color:#059669; font-size: 0.88rem;">2081636480001</span>
+          </div>
+          <div class="b-cell">
+            <span class="b-lbl">Branch & Routing</span>
+            <span class="b-val">Mohakhali | 060263290</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sheet Footer & Governance -->
+    <div class="sheet-footer">
+      <div class="terms-block">
+        <strong>Handover & Warranty Governance:</strong>
+        Includes active 30-day post-delivery bug-fix warranty on all deployed software deliverables. Official commercial receipt and IP handover are issued automatically upon bank settlement clearance. For questions, contact <strong>gro10xnow@gmail.com</strong>.
+      </div>
+      <div class="closing-row">
+        <div>
+          GRO10X AI Agency · Dhaka, Bangladesh · https://gro10x-ai.vercel.app
+        </div>
+        <div class="sign-block">
+          <div class="sign-title">GRO10X Finance & Operations</div>
+          <div class="sign-sub">Authorized Computer-Generated Tax Document</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let activeDoc = null;
+    let currentMode = 'add_vat';
+
+    async function initDocument() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const invoiceId = urlParams.get('id') || 'INV-2026-004';
+      const receiptId = urlParams.get('receipt');
+
+      let endpoint = `/api/invoices/${invoiceId}`;
+      if (receiptId) {
+        endpoint = `/api/invoices/${invoiceId}/receipt`;
+      }
+
+      try {
+        const token = localStorage.getItem('gro10x_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(endpoint, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          activeDoc = data.receipt || data;
+          renderDocument(activeDoc, !!receiptId);
+        } else {
+          // Fallback to static mock if offline or unauthenticated
+          renderMockPurplebot();
+        }
+      } catch (e) {
+        console.warn('API lookup failed, falling back to document defaults:', e.message);
+        renderMockPurplebot();
+      }
+    }
+
+    function renderMockPurplebot() {
+      activeDoc = {
+        id: 'INV-2026-004',
+        clientName: 'Purplebot Digital Limited',
+        attention: 'H. M. Ifteker Mahmud (Managing Director)',
+        email: 'ifteker@purplebot.digital',
+        clientId: 'CLI-MTWK4BNC-24F6EA',
+        issueDate: '2026-09-15',
+        dueDate: '2026-09-29',
+        currency: 'BDT',
+        status: 'Pending',
+        invoiceType: 'deposit_upfront',
+        settlementRail: 'bdt_bank_wire',
+        grossSubtotal: 35000,
+        discount: 10000,
+        taxableBase: 25000,
+        taxRate: 5,
+        vatAmount: 1250,
+        totalDue: 26250,
+        items: [
+          {
+            description: 'AI Agency OS & Automated Retainer Infrastructure',
+            notes: 'Deployment of automated delivery pipelines, Telegram bot mesh integration, client review cockpit governance, and retainer sprint cycle 1 for Purplebot Digital.',
+            qty: 1,
+            rate: 35000,
+            amount: 35000
+          }
+        ]
+      };
+      renderDocument(activeDoc, false);
+    }
+
+    function renderDocument(doc, isReceipt) {
+      const isPaid = doc.status === 'Paid' || isReceipt;
+      document.getElementById('toolbarTitle').textContent = `${doc.clientName || 'Client'} — ${doc.id || doc.invoiceId || 'INV'}`;
+      document.getElementById('docTypeTitle').textContent = isPaid ? 'TAX INVOICE & RECEIPT' : 'TAX INVOICE';
+      document.getElementById('docNumber').textContent = doc.id || doc.invoiceId || 'INV-2026-004';
+      
+      const badge = document.getElementById('docStatusBadge');
+      badge.textContent = isPaid ? 'Settlement Cleared' : 'Pending Settlement';
+      badge.className = isPaid ? 'status-badge paid' : 'status-badge';
+
+      document.getElementById('clientCompanyName').textContent = doc.clientName || 'Client Account';
+      
+      const currSymbol = doc.currency === 'USD' ? '$' : '৳';
+      document.querySelectorAll('.currLbl').forEach(el => el.textContent = doc.currency || 'BDT');
+
+      // Table items
+      const items = doc.items || [{ description: doc.projectName || 'AI Engineering Services', amount: doc.amount || 25000, qty: 1 }];
+      const tbody = document.getElementById('itemsTableBody');
+      tbody.innerHTML = items.map(it => `
+        <tr>
+          <td>
+            <div class="item-title">${escapeHTML(it.description || it.title || 'Service Deliverable')}</div>
+            <div class="item-desc">${escapeHTML(it.notes || it.item_desc || '')}</div>
+          </td>
+          <td style="text-align: center; font-weight: 700;">${it.qty || 1}</td>
+          <td style="text-align: right;" class="num-col">${currSymbol}${Number(it.rate || it.amount || 0).toLocaleString()}</td>
+          <td style="text-align: right; font-weight: 800;" class="num-col">${currSymbol}${Number(it.amount || 0).toLocaleString()}</td>
+        </tr>
+      `).join('');
+
+      // Calculation values
+      const gross = doc.grossSubtotal || doc.subtotal || 35000;
+      const disc = doc.discount !== undefined ? doc.discount : 10000;
+      const base = doc.taxableBase || Math.max(0, gross - disc);
+      const vat = doc.vatAmount !== undefined ? doc.vatAmount : Math.round(base * 0.05);
+      const total = doc.amount || (base + vat);
+
+      document.getElementById('valGrossSubtotal').textContent = `${currSymbol}${gross.toLocaleString()}`;
+      document.getElementById('valDiscount').textContent = `-${currSymbol}${disc.toLocaleString()}`;
+      document.getElementById('valTaxableBase').textContent = `${currSymbol}${base.toLocaleString()}`;
+      document.getElementById('valVat').textContent = `+${currSymbol}${vat.toLocaleString()}`;
+      document.getElementById('valTotalDue').textContent = `${currSymbol}${total.toLocaleString()} ${doc.currency || 'BDT'}`;
+
+      if (isPaid) {
+        document.getElementById('receiptSealBox').style.display = 'flex';
+      }
+    }
+
+    function switchCalcMode(mode) {
+      currentMode = mode;
+      document.getElementById('btnModeAddVat').classList.toggle('active', mode === 'add_vat');
+      document.getElementById('btnModeFlat').classList.toggle('active', mode === 'flat');
+
+      if (mode === 'add_vat') {
+        document.getElementById('valDiscount').textContent = '-৳10,000';
+        document.getElementById('valTaxableBase').textContent = '৳25,000';
+        document.getElementById('lblVat').textContent = 'VAT (5% on Taxable Base):';
+        document.getElementById('valVat').textContent = '+৳1,250';
+        document.getElementById('valTotalDue').textContent = '৳26,250 BDT';
+      } else {
+        document.getElementById('valDiscount').textContent = '-৳11,190';
+        document.getElementById('valTaxableBase').textContent = '৳23,810';
+        document.getElementById('lblVat').textContent = 'VAT (5% Inclusive):';
+        document.getElementById('valVat').textContent = '+৳1,190';
+        document.getElementById('valTotalDue').textContent = '৳25,000 BDT';
+      }
+    }
+
+    function downloadCleanPDF() {
+      const element = document.getElementById('invoiceSheet');
+      const filename = `${document.getElementById('docNumber').textContent || 'INV'}-Purplebot-Digital.pdf`;
+      const opt = {
+        margin:       0,
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function copySummary() {
+      const docNum = document.getElementById('docNumber').textContent;
+      const total = document.getElementById('valTotalDue').textContent;
+      const text = `
+GRO10X AI AGENCY — OFFICIAL TAX INVOICE
+Document: ${docNum}
+Billed To: Purplebot Digital Limited
+Attention: H. M. Ifteker Mahmud (Managing Director)
+Amount Due: ${total}
+
+CORPORATE SETTLEMENT ROUTING (BANK WIRE):
+Beneficiary: Neoncore Tech Solution
+Bank: BRAC Bank Limited
+Account Number: 2081636480001
+Branch: Mohakhali Branch (Routing: 060263290)
+Reference: ${docNum}
+      `.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Invoice settlement details copied to clipboard!');
+      });
+    }
+
+    function escapeHTML(s) {
+      return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+    }
+
+    window.addEventListener('DOMContentLoaded', initDocument);
+  </script>
+</body>
+</html>

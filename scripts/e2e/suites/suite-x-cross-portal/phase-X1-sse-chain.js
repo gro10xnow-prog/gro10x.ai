@@ -78,9 +78,23 @@ async function runPhaseX1(page) {
 
     await wait(400);
 
-    // Broadcast test task event
-    sseService.broadcast('task_update', { id: 'TSK-E2E-TEST', title: 'E2E_TASK_BROADCAST', status: 'done' });
-    await wait(500);
+    // Broadcast test task event via server API or fallback
+    await new Promise((resolve) => {
+      const postReq = http.request(`${BASE_URL}/api/sync/broadcast`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }, (res) => { resolve(res); });
+      postReq.on('error', () => {
+        sseService.broadcast('task_update', { id: 'TSK-E2E-TEST', title: 'E2E_TASK_BROADCAST', status: 'done' });
+        resolve(null);
+      });
+      postReq.write(JSON.stringify({ eventType: 'task_update', data: { id: 'TSK-E2E-TEST', title: 'E2E_TASK_BROADCAST', status: 'done' } }));
+      postReq.end();
+    });
+    await wait(600);
 
     if (listener) listener.destroy();
     tracker.assert(receivedTaskEvent, 'Broadcasting task_update should reach active SSE listener');
@@ -121,7 +135,26 @@ async function runPhaseX1(page) {
     const [reqTarget, reqOther] = await Promise.all([connectPromise1, connectPromise2]);
     await wait(300);
 
-    sseService.broadcastToClient('invoice_paid', { secret: 'CLI-E2E-100-SECRET' }, ['CLI-E2E-100']);
+    // Broadcast to targeted client via server API
+    await new Promise((resolve) => {
+      const postReq = http.request(`${BASE_URL}/api/sync/broadcast`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tokenTarget}`
+        }
+      }, (res) => { resolve(res); });
+      postReq.on('error', () => {
+        sseService.broadcastToClient('invoice_paid', { secret: 'CLI-E2E-100-SECRET' }, ['CLI-E2E-100']);
+        resolve(null);
+      });
+      postReq.write(JSON.stringify({
+        eventType: 'invoice_paid',
+        data: { secret: 'CLI-E2E-100-SECRET' },
+        clientId: 'CLI-E2E-100'
+      }));
+      postReq.end();
+    });
     await wait(600);
 
     if (reqTarget) reqTarget.destroy();

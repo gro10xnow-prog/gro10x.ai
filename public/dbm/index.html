@@ -9,6 +9,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="DBM Workspace">
+  <meta http-equiv="refresh" content="0; url=/workspace?engineId=engine3#deliverables">
+  <script>
+    (function() {
+      var targetTab = window.location.hash.replace('#', '') || 'deliverables';
+      window.location.replace('/workspace?engineId=engine3#' + targetTab);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">

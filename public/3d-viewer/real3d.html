@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>True 3D Spatial Explorer · Kids & STEM 3D AR Lab · Gro10x</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Google model-viewer (Local + CDN fallback) -->
+  <script type="module" src="/3d-viewer/model-viewer.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #07090E;
+      --bg-surface: rgba(18, 24, 38, 0.75);
+      --accent-cyan: #00F0FF;
+      --accent-purple: #8B5CF6;
+      --accent-amber: #F59E0B;
+      --accent-emerald: #10B981;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --border-glow: rgba(0, 240, 255, 0.35);
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-display: 'Space Grotesk', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: radial-gradient(circle at 50% 15%, #151C2E 0%, var(--bg-dark) 80%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Top Navigation */
+    .topbar {
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .badge-gold {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-nav-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-nav-ghost:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main Container */
+    .main-stage {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Model Selection Bar */
+    .catalog-bar {
+      display: flex;
+      gap: 0.6rem;
+      overflow-x: auto;
+      padding-bottom: 0.4rem;
+      scrollbar-width: thin;
+    }
+
+    .catalog-tab {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 0.65rem 1.1rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .catalog-tab:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+    .catalog-tab.active {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(139, 92, 246, 0.25));
+      border-color: var(--accent-cyan);
+      color: #FFF;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+    }
+
+    /* 3D Viewport Box */
+    .viewport-box {
+      position: relative;
+      width: 100%;
+      height: 60vh;
+      min-height: 440px;
+      max-height: 620px;
+      border-radius: 24px;
+      background: radial-gradient(circle at 50% 50%, #161D2F 0%, #0D111A 85%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      --poster-color: transparent;
+      outline: none;
+    }
+
+    /* Custom Floating Hotspot Callouts */
+    .hotspot-pin {
+      background: rgba(0, 240, 255, 0.95);
+      border-radius: 50%;
+      border: 2px solid #FFF;
+      box-shadow: 0 0 15px var(--accent-cyan);
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulseGlow 2s infinite;
+      transition: transform 0.2s ease;
+    }
+    .hotspot-pin:hover {
+      transform: scale(1.3);
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
+      70% { box-shadow: 0 0 0 12px rgba(0, 240, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+    }
+
+    .hotspot-annotation {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 14, 23, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 10px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.78rem;
+      color: #FFF;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      display: none;
+      z-index: 10;
+    }
+    .hotspot-pin:hover + .hotspot-annotation,
+    .hotspot-pin:focus + .hotspot-annotation,
+    .hotspot-pin.active-annotation + .hotspot-annotation {
+      display: block;
+    }
+
+    /* Floating Viewport HUD Controls */
+    .viewport-hud {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      pointer-events: none;
+    }
+
+    .model-badge-info {
+      pointer-events: auto;
+      background: rgba(7, 9, 14, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 0.65rem 1rem;
+      max-width: 260px;
+    }
+    .model-title-text {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #FFF;
+    }
+    .model-subtitle-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* AR Prompt & Floating Overlay */
+    .ar-custom-button {
+      position: absolute;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      z-index: 10;
+      background: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%);
+      border: none;
+      border-radius: 14px;
+      color: #FFF;
+      font-family: var(--font-body);
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 0.85rem 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.4);
+      transition: all 0.25s ease;
+    }
+    .ar-custom-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 40px rgba(0, 240, 255, 0.6);
+    }
+    .ar-custom-button:active {
+      transform: translateY(1px);
+    }
+
+    /* Bottom Control Deck */
+    .deck-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .deck-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      padding: 1.1rem 1.3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .deck-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .deck-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 0.5rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent-cyan);
+    }
+    .btn-action.active {
+      background: var(--accent-cyan);
+      color: #000;
+      border-color: var(--accent-cyan);
+      font-weight: 800;
+    }
+
+    /* Mobile Quick Connect Box */
+    .mobile-connect-box {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(0, 240, 255, 0.08));
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 18px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .qr-visual-block {
+      background: #FFF;
+      padding: 8px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    }
+    .qr-visual-block img {
+      width: 105px;
+      height: 105px;
+      display: block;
+    }
+
+    .wifi-details-block {
+      flex: 1;
+      min-width: 240px;
+    }
+    .wifi-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #FFF;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .wifi-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 0.6rem;
+    }
+    .url-chip {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--border-subtle);
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      user-select: all;
+      display: inline-block;
+    }
+
+    /* Commercial Etsy Product Explainer */
+    .etsy-value-grid {
+      background: rgba(14, 18, 28, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 1.25rem;
+    }
+    .value-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 0.8rem;
+    }
+    .v-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent-cyan);
+      border-radius: 8px;
+      padding: 0.85rem;
+    }
+    .v-card h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      color: #FFF;
+    }
+    .v-card p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    @media (max-width: 768px) {
+      .viewport-box { height: 50vh; min-height: 360px; }
+      .mobile-connect-box { flex-direction: column; align-items: flex-start; }
+      .qr-visual-block { align-self: center; }
+      .topbar { padding: 0.75rem 1rem; }
+      .ar-custom-button { padding: 0.65rem 1rem; font-size: 0.85rem; bottom: 0.8rem; right: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="topbar">
+    <div class="brand-group">
+      <div style="font-size: 1.4rem;">🦊</div>
+      <div>
+        <div class="brand-title">Gro10x Spatial 3D</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Kids &amp; STEM Interactive AR Engine</div>
+      </div>
+      <span class="badge-gold">True 3D (Path 1)</span>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="/3d-viewer" class="btn-nav-ghost"><span>📸 9-Angle Flipbook (Compare)</span></a>
+      <a href="/my-portal" class="btn-nav-ghost"><span>👑 Vault</span></a>
+    </div>
+  </header>
+
+  <main class="main-stage">
+
+    <!-- 3D Model Catalog Tabs -->
+    <div class="catalog-bar" id="catalogBar">
+      <button class="catalog-tab active" data-model="fox">
+        <span>🦊</span> Arctic Fox (Animals)
+      </button>
+      <button class="catalog-tab" data-model="horse">
+        <span>🐎</span> Wild Stallion (Anatomy)
+      </button>
+      <button class="catalog-tab" data-model="flamingo">
+        <span>🦩</span> Exotic Flamingo (Birds)
+      </button>
+      <button class="catalog-tab" data-model="astronaut">
+        <span>👨‍🚀</span> Space Explorer (STEM &amp; Wonders)
+      </button>
+    </div>
+
+    <!-- The 3D Viewport Box -->
+    <div class="viewport-box">
+      
+      <!-- Google model-viewer WebGL Element with Native AR Quick Look -->
+      <model-viewer
+        id="stageViewer"
+        src="/3d-viewer/models/Fox.glb"
+        alt="Interactive 3D Model"
+        auto-rotate
+        rotation-per-second="25deg"
+        camera-controls
+        touch-action="pan-y"
+        shadow-intensity="1.6"
+        shadow-softness="0.8"
+        exposure="1.15"
+        autoplay
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        ar-scale="auto"
+        camera-orbit="0deg 75deg 105%"
+        interaction-prompt="none"
+      >
+
+        <!-- Hotspot Pin 1: Ears -->
+        <button class="hotspot-pin" slot="hotspot-ears" data-position="0 0.18 0.1" data-normal="0 1 0" id="pinEars">
+          <span>👂</span>
+        </button>
+        <div class="hotspot-annotation" slot="hotspot-ears" id="noteEars">
+          <strong>Sub-Zero Hearing</strong><br>Can pinpoint lemmings under 3 feet of snow.
+        </div>
+
+        <!-- Hotspot Pin 2: Tail -->
+        <button class="hotspot-pin" slot="hotspot-tail" data-position="0 0.1 -0.22" data-normal="0 0 -1" id="pinTail">
+          <span>❄️</span>
+        </button>
+        <div class="hotspot-annotation" slot="hotspot-tail" id="noteTail">
+          <strong>Thermal Blanket Tail</strong><br>Wraps tightly over face to survive -50°C blizzards.
+        </div>
+
+        <!-- Custom AR Action Button Trigger -->
+        <button slot="ar-button" class="ar-custom-button" id="btnCustomAR">
+          <span>📱</span> View In Your Room (AR)
+        </button>
+
+      </model-viewer>
+
+      <!-- Viewport Floating Info HUD -->
+      <div class="viewport-hud">
+        <div class="model-badge-info">
+          <div class="model-title-text" id="hudModelTitle">Arctic Fox</div>
+          <div class="model-subtitle-text" id="hudModelSub">Vulpes lagopus · Full 3D Skeletal Mesh</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mobile Quick Connect Banner (Local Wi-Fi) -->
+    <section class="mobile-connect-box">
+      <div class="wifi-details-block">
+        <div class="wifi-title">
+          <span>📶</span> Test Live on Your Phone (Same Wi-Fi)
+        </div>
+        <p class="wifi-sub">
+          Point your phone camera at this QR code or type the link below to experience <strong>true 60 FPS continuous touch rotation and Augmented Reality (AR)</strong> on your mobile device right now:
+        </p>
+        <div class="url-chip" id="mobileUrlChip">http://192.168.0.154:3000/3d-viewer/real3d.html</div>
+      </div>
+      <div class="qr-visual-block" title="Scan with Phone Camera">
+        <img id="qrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=http://192.168.0.154:3000/3d-viewer/real3d.html" alt="Mobile QR Code">
+      </div>
+    </section>
+
+    <!-- Bottom Controls Deck -->
+    <section class="deck-controls">
+      
+      <!-- Card 1: 3D Camera Controls -->
+      <div class="deck-card">
+        <div class="deck-title">
+          <span>Camera &amp; Rotation</span>
+          <span style="color: var(--accent-cyan); font-size: 0.72rem;">60 FPS WebGL</span>
+        </div>
+        <div class="deck-buttons">
+          <button class="btn-action active" id="btnAutoRotate">
+            <span id="rotateIcon">⏸</span> Auto-Spin
+          </button>
+          <button class="btn-action" id="btnResetView">
+            <span>🔄</span> Reset Camera
+          </button>
+          <button class="btn-action" id="btnPlaySound">
+            <span>🔊</span> Play Sound FX
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 2: Skeletal Animation -->
+      <div class="deck-card">
+        <div class="deck-title">
+          <span>Animal Behaviors &amp; Motion</span>
+          <span style="color: var(--accent-emerald); font-size: 0.72rem;">Bone Rigged</span>
+        </div>
+        <div class="deck-buttons" id="animButtons">
+          <button class="btn-action active" data-anim="0">Survey (Idle)</button>
+          <button class="btn-action" data-anim="1">Walk Cycle</button>
+          <button class="btn-action" data-anim="2">Full Sprint</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Etsy Commercial Blueprint Card -->
+    <section class="etsy-value-grid">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.05rem; color: #FFF; display: flex; align-items: center; gap: 0.4rem;">
+          <span>📦</span> Why This Sells for $19.99 Instead of $3.00 on Etsy
+        </h3>
+        <span class="badge-gold">Commercial Product Architecture</span>
+      </div>
+      <div class="value-cards">
+        <div class="v-card">
+          <h4>1. Tangible Flashcard + Digital Portal</h4>
+          <p>Parents receive physical/printable educational cards. Scanning the printed QR code opens this exact interactive 3D stage on their iPad or smartphone.</p>
+        </div>
+        <div class="v-card" style="border-color: var(--accent-purple);">
+          <h4>2. Room Projection (Augmented Reality)</h4>
+          <p>Kids tap "View In Your Room" to see life-sized animals or Apollo rockets on their carpet. Neither Canva nor static PDFs can ever compete with this.</p>
+        </div>
+        <div class="v-card" style="border-color: var(--accent-emerald);">
+          <h4>3. Zero API Cost &amp; Zero Maintenance</h4>
+          <p>Every 3D model is built once, self-hosted on our web stack, and runs client-side on the buyer's device. 100 sales or 100,000 sales cost you $0.00 in API fees.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Audio Synthesis & Sound Effects (Zero External Asset Dependencies) -->
+  <script>
+    // Web Audio Sound Synthesizer for educational feedback
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playChirp(freq = 440, type = 'sine', duration = 0.2) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, audioCtx.currentTime + duration);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playAnimalSound(type) {
+      if (type === 'fox') {
+        // Fox playful double chatter
+        playChirp(750, 'triangle', 0.12);
+        setTimeout(() => playChirp(920, 'triangle', 0.18), 140);
+      } else if (type === 'horse') {
+        // Horse gallop rumble
+        playChirp(180, 'sine', 0.25);
+        setTimeout(() => playChirp(140, 'sine', 0.25), 180);
+      } else if (type === 'flamingo') {
+        // High bird chirp
+        playChirp(1200, 'sine', 0.15);
+        setTimeout(() => playChirp(1400, 'sine', 0.12), 160);
+      } else if (type === 'astronaut') {
+        // NASA Apollo comms beep
+        playChirp(2500, 'sine', 0.08);
+      }
+    }
+
+    // Model Catalog Data
+    const MODELS = {
+      fox: {
+        title: 'Arctic Fox',
+        sub: 'Vulpes lagopus · Full 3D Skeletal Mesh',
+        src: '/3d-viewer/models/Fox.glb',
+        scale: '1 1 1',
+        cameraOrbit: '0deg 75deg 105%',
+        anims: ['Survey (Idle)', 'Walk Cycle', 'Full Sprint'],
+        sound: 'fox',
+        hotspots: true
+      },
+      horse: {
+        title: 'Wild Mustang Stallion',
+        sub: 'Equus caballus · Galloping Biomechanical Model',
+        src: '/3d-viewer/models/Horse.glb',
+        scale: '1 1 1',
+        cameraOrbit: '45deg 80deg 110%',
+        anims: ['Gallop'],
+        sound: 'horse',
+        hotspots: false
+      },
+      flamingo: {
+        title: 'Caribbean Flamingo',
+        sub: 'Phoenicopterus ruber · Aerial Flight Dynamics',
+        src: '/3d-viewer/models/Flamingo.glb',
+        scale: '1 1 1',
+        cameraOrbit: '30deg 70deg 110%',
+        anims: ['Wing Flap Flight'],
+        sound: 'flamingo',
+        hotspots: false
+      },
+      astronaut: {
+        title: 'Apollo Space Explorer',
+        sub: 'NASA Extravehicular Mobility Unit (EMU)',
+        src: '/3d-viewer/models/Astronaut.glb',
+        scale: '1 1 1',
+        cameraOrbit: '0deg 75deg 105%',
+        anims: [],
+        sound: 'astronaut',
+        hotspots: false
+      }
+    };
+
+    let currentModelKey = 'fox';
+    const viewer = document.getElementById('stageViewer');
+    const hudTitle = document.getElementById('hudModelTitle');
+    const hudSub = document.getElementById('hudModelSub');
+    const animContainer = document.getElementById('animButtons');
+    const btnAutoRotate = document.getElementById('btnAutoRotate');
+    const rotateIcon = document.getElementById('rotateIcon');
+
+    // Model Selector Tabs
+    document.querySelectorAll('.catalog-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.catalog-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        const key = tab.dataset.model;
+        loadModel(key);
+      });
+    });
+
+    function loadModel(key) {
+      currentModelKey = key;
+      const data = MODELS[key];
+      if (!data) return;
+
+      viewer.src = data.src;
+      hudTitle.textContent = data.title;
+      hudSub.textContent = data.sub;
+
+      // Hotspots visibility
+      const pinEars = document.getElementById('pinEars');
+      const pinTail = document.getElementById('pinTail');
+      if (pinEars && pinTail) {
+        pinEars.style.display = data.hotspots ? 'flex' : 'none';
+        pinTail.style.display = data.hotspots ? 'flex' : 'none';
+      }
+
+      // Rebuild Animation Buttons
+      animContainer.innerHTML = '';
+      if (data.anims.length > 0) {
+        data.anims.forEach((animName, idx) => {
+          const btn = document.createElement('button');
+          btn.className = `btn-action ${idx === 0 ? 'active' : ''}`;
+          btn.textContent = animName;
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('#animButtons .btn-action').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // model-viewer animations
+            const available = viewer.availableAnimations;
+            if (available && available[idx]) {
+              viewer.animationName = available[idx];
+              viewer.play();
+            }
+          });
+          animContainer.appendChild(btn);
+        });
+      } else {
+        animContainer.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Posed Static Geometry</span>';
+      }
+
+      playAnimalSound(data.sound);
+    }
+
+    // Camera Auto-Rotate Toggle
+    btnAutoRotate.addEventListener('click', () => {
+      viewer.autoRotate = !viewer.autoRotate;
+      btnAutoRotate.classList.toggle('active', viewer.autoRotate);
+      rotateIcon.textContent = viewer.autoRotate ? '⏸' : '▶';
+    });
+
+    // Reset Camera Button
+    document.getElementById('btnResetView').addEventListener('click', () => {
+      viewer.cameraOrbit = '0deg 75deg 105%';
+      viewer.fieldOfView = 'auto';
+      playChirp(520, 'sine', 0.1);
+    });
+
+    // Sound FX Button
+    document.getElementById('btnPlaySound').addEventListener('click', () => {
+      playAnimalSound(MODELS[currentModelKey].sound);
+    });
+
+    // Hotspot Click Interactivity (Tap on mobile)
+    document.querySelectorAll('.hotspot-pin').forEach(pin => {
+      pin.addEventListener('click', (e) => {
+        e.stopPropagation();
+        pin.classList.toggle('active-annotation');
+        playChirp(880, 'sine', 0.15);
+      });
+    });
+
+    // Handle Mobile Network IP detection
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const host = isLocal ? '192.168.0.154' : window.location.hostname;
+    const port = window.location.port ? `:${window.location.port}` : '';
+    const fullMobileUrl = `http://${host}${port}/real3d`;
+    const chip = document.getElementById('mobileUrlChip');
+    const qrImg = document.getElementById('qrImage');
+    
+    if (chip) chip.textContent = fullMobileUrl;
+    if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(fullMobileUrl)}`;
+  </script>
+</body>
+</html>

@@ -46,15 +46,74 @@
 
     <!-- Category Filter Chips -->
     <div class="filter-chips-wrapper" id="categoryChips">
-      <button class="filter-chip active" data-cat="all" data-i18n="catAll">সকল প্রোডাক্ট</button>
-      <button class="filter-chip" data-cat="AI Tools" data-i18n="catAI">🤖 AI টুলস</button>
-      <button class="filter-chip" data-cat="Streaming" data-i18n="catStreaming">🎬 স্ট্রিমিং</button>
-      <button class="filter-chip" data-cat="Music" data-i18n="catMusic">🎵 মিউজিক</button>
-      <button class="filter-chip" data-cat="Creative Tools" data-i18n="catCreative">🎨 ক্রিয়েটিভ</button>
-      <button class="filter-chip" data-cat="Productivity" data-i18n="catCloud">💼 ক্লাউড ও অফিস</button>
-      <button class="filter-chip" data-cat="Professional" data-i18n="catCareer">🚀 ক্যারিয়ার ও LinkedIn</button>
-      <button class="filter-chip" data-cat="Learning" data-i18n="catCourses">📚 কোর্স</button>
-      <button class="filter-chip" data-cat="VPN" data-i18n="catVPN">🔒 ভিপিএন</button>
+      <button class="filter-chip active" data-cat="all"><span data-i18n="catAll">সকল প্রোডাক্ট</span> <span class="chip-count"></span></button>
+      <button class="filter-chip" data-cat="AI Tools"><span data-i18n="catAI">🤖 AI টুলস</span> <span class="chip-count"></span></button>
+      <button class="filter-chip" data-cat="Streaming"><span data-i18n="catStreaming">🎬 স্ট্রিমিং</span> <span class="chip-count"></span></button>
+      <button class="filter-chip" data-cat="Music"><span data-i18n="catMusic">🎵 মিউজিক</span> <span class="chip-count"></span></button>
+      <button class="filter-chip" data-cat="Creative Tools"><span data-i18n="catCreative">🎨 ক্রিয়েটিভ</span> <span class="chip-count"></span></button>
+      <button class="filter-chip" data-cat="Productivity"><span data-i18n="catCloud">💼 ক্লাউড ও অফিস</span> <span class="chip-count"></span></button>
+      <button class="filter-chip" data-cat="Professional"><span data-i18n="catCareer">🚀 ক্যারিয়ার ও LinkedIn</span> <span class="chip-count"></span></button>
+      <button class="filter-chip" data-cat="Learning"><span data-i18n="catCourses">📚 কোর্স</span> <span class="chip-count"></span></button>
+      <button class="filter-chip" data-cat="VPN"><span data-i18n="catVPN">🔒 ভিপিএন</span> <span class="chip-count"></span></button>
+    </div>
+
+    <!-- PlannerQueen Flagship Cross-Sell Banner (Phase C3) -->
+    <div class="pq-spotlight-card" id="plannerQueenCrossSell">
+      <div class="pq-spotlight-content">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
+          <span class="badge" style="background: linear-gradient(135deg, #f59e0b, #ec4899); color: #000; font-weight: 800; border-radius: 9999px; padding: 4px 12px; font-size: 11px;">
+            👑 <span data-i18n="pqBannerBadge">গ্রো১০এক্স ফ্ল্যাগশিপ প্রোডাক্ট</span>
+          </span>
+          <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700;">
+            ⚡ 50% OFF
+          </span>
+          <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+            <span data-i18n="pqBadgeUpdates">লাইফটাইম ২০২৬ আপডেট</span>
+          </span>
+        </div>
+
+        <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span data-i18n="pqBannerTitle">PlannerQueen™ 2026 Daily & Weekly System</span>
+          <span style="font-size: 13px; color: #f59e0b; font-weight: 600; background: rgba(245, 158, 11, 0.1); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.3);">Digital + Spiral Edition</span>
+        </h2>
+
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 14px; line-height: 1.5; max-width: 680px;" data-i18n="pqBannerDesc">
+          iPad, ট্যাবলেট ও ডেক্সটপের জন্য আল্ট্রা-ফাস্ট হাইপারলিঙ্কড ডিজিটাল প্ল্যানার এবং লাক্সারি হার্ডকভার স্পাইরাল এডিশন। GoodNotes, Notability ও Notion ইন্টিগ্রেশন সহ ৪৫০+ স্প্রেড এবং ফাইন্যান্স ট্র্যাকার।
+        </p>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 12px;">
+            <span data-i18n="pqBadgeSpreads">✨ ৪৫০+ হাইপারলিঙ্কড স্প্রেড</span>
+          </span>
+          <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 12px;">
+            <span data-i18n="pqBadgeInteractive">📱 সরাসরি ওয়েব অ্যাপ</span>
+          </span>
+          <span class="badge" style="background: rgba(0, 223, 137, 0.15); color: #00df89; font-size: 12px;">
+            <span data-i18n="pqBadgeLicense">🔒 ইনস্ট্যান্ট ক্রিপ্টোগ্রাফিক লাইসেন্স</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="pq-spotlight-actions">
+        <div style="font-size: 12px; color: var(--text-muted);">
+          <span style="text-decoration: line-through; color: #64748b; margin-right: 4px;">$39.99</span>
+          <span data-i18n="pqPriceLabel">বিশেষ ডিরেক্ট প্রাইস:</span>
+        </div>
+        <div style="font-size: 26px; font-weight: 900; color: #f59e0b; margin: 2px 0 6px;">
+          $19.99 <span style="font-size: 14px; color: #94a3b8; font-weight: 600;">(~৳২,২০০)</span>
+        </div>
+        <a href="/dce/store" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b, #ea580c); border: none; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); text-decoration: none;">
+          <span data-i18n="pqBtnStore">🛍️ প্ল্যানার স্টোরে অর্ডার করুন</span> ➔
+        </a>
+        <div style="display: flex; gap: 8px;">
+          <a href="/planner" target="_blank" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 12px; text-align: center; padding: 6px 10px; text-decoration: none;">
+            <span data-i18n="pqBtnDemo">✨ লাইভ অ্যাপ ডেমো</span>
+          </a>
+          <a href="/dce/track" class="btn btn-secondary btn-sm" style="font-size: 12px; text-align: center; padding: 6px 10px; text-decoration: none;" title="অর্ডার ট্র্যাক করুন">
+            🔍 <span data-i18n="pqBtnTrack">ট্র্যাক</span>
+          </a>
+        </div>
+      </div>
     </div>
 
     <!-- Products Grid -->
@@ -99,8 +158,8 @@
       categoryChips.forEach(btn => {
         const cat = btn.getAttribute('data-cat');
         const count = cat === 'all' ? products.length : products.filter(p => p.category === cat).length;
-        const baseText = btn.textContent.replace(/\(\d+\)/, '').trim();
-        btn.textContent = `${baseText} (${count})`;
+        const countSpan = btn.querySelector('.chip-count');
+        if (countSpan) countSpan.textContent = `(${count})`;
       });
 
       function renderCatalog() {
@@ -111,6 +170,34 @@
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
           filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || (p.tags && p.tags.some(t => t.toLowerCase().includes(q))));
+        }
+
+        // Cross-sell visibility & search matching (Phase C3)
+        const pqCard = document.getElementById('plannerQueenCrossSell');
+        if (pqCard) {
+          if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const pqMatch = ['planner', 'queen', 'notion', 'goodnotes', 'ipad', 'digital', 'daily', 'weekly'].some(k => k.includes(q) || q.includes(k));
+            if (pqMatch) {
+              pqCard.style.display = 'grid';
+              pqCard.style.borderColor = 'rgba(245, 158, 11, 0.9)';
+              pqCard.style.boxShadow = '0 14px 50px rgba(245, 158, 11, 0.35)';
+            } else if (filtered.length > 0) {
+              pqCard.style.display = 'none';
+            } else {
+              pqCard.style.display = 'grid';
+              pqCard.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+              pqCard.style.boxShadow = '0 10px 40px rgba(245, 158, 11, 0.12)';
+            }
+          } else {
+            if (currentCategory === 'all' || currentCategory === 'Productivity' || currentCategory === 'Creative Tools') {
+              pqCard.style.display = 'grid';
+              pqCard.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+              pqCard.style.boxShadow = '0 10px 40px rgba(245, 158, 11, 0.12)';
+            } else {
+              pqCard.style.display = 'none';
+            }
+          }
         }
 
         if (filtered.length === 0) {

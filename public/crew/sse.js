@@ -301,7 +301,7 @@
     const sseToken = window.CREW_API ? window.CREW_API.getToken() : (localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || '');
     let cachedEmp = '';
     try {
-      const u = JSON.parse(localStorage.getItem('crew_user') || '{}');
+      const u = JSON.parse(localStorage.getItem('gro10x_user') || localStorage.getItem('crew_user') || localStorage.getItem('purple_user') || '{}');
       cachedEmp = u.emp_code || u.empCode || u.id || '';
     } catch (_) {}
     const empQuery = cachedEmp ? `&emp_code=${encodeURIComponent(cachedEmp)}` : '';

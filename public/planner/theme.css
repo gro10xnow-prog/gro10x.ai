@@ -1,0 +1,50 @@
+/* ==========================================================================
+   PlannerQueenGro Luxury Botanical Design System Tokens
+   Product SKU: PLA-14 (Daily & Weekly Planners #1)
+   ========================================================================== */
+
+:root {
+  /* Brand Palette */
+  --bg-canvas: #FAF3E8;
+  --surface-card: #FFFFFF;
+  --surface-card-subtle: #F6EFE3;
+  --primary-plum: #8B5A7A;
+  --primary-plum-hover: #734563;
+  --primary-plum-light: rgba(139, 90, 122, 0.12);
+  --primary-plum-ring: rgba(139, 90, 122, 0.25);
+  
+  --accent-sage: #7D9B76;
+  --accent-sage-light: rgba(125, 155, 118, 0.15);
+  --accent-sage-hover: #6a8764;
+  
+  --accent-rose: #C4887C;
+  --accent-rose-light: rgba(196, 136, 124, 0.15);
+  
+  --text-main: #2E2E2E;
+  --text-muted: #6E6862;
+  --text-subtle: #999187;
+  
+  --border-subtle: #E8DECF;
+  --border-card: #DFD5C4;
+  --border-focus: #8B5A7A;
+  
+  /* Typography */
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-accent: 'Cormorant Garamond', Garamond, serif;
+  
+  /* Shadows & Elevations */
+  --shadow-subtle: 0 4px 16px rgba(139, 90, 122, 0.05);
+  --shadow-card: 0 8px 24px rgba(46, 46, 46, 0.06);
+  --shadow-float: 0 16px 36px rgba(139, 90, 122, 0.12);
+  
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 0.18s ease;
+  --transition-normal: 0.28s ease;
+}

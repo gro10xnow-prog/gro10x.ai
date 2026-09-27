@@ -7,7 +7,7 @@ const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast, broadcastToRole } = require('../services/sse');
 const { processAutomationEvent } = require('../services/automation');
 const { sendTelegramNotification } = require('../services/bot');
-const { sendClientOnboardingEmail, sendLeadConfirmationEmail } = require('../services/resend');
+const { sendClientOnboardingEmail, sendLeadConfirmationEmail, sendServiceAssetDeliveryEmail } = require('../services/resend');
 const cache = require('../services/cache');
 const { verifyToken } = require('../services/jwt');
 
@@ -38,8 +38,12 @@ function broadcastLeadEvent(eventType, data) {
 // ─────────────────────────────────────────────────────────────────────────────
 async function nextLeadId() {
   if (isSupabaseConfigured()) {
-    const { count } = await supabase.from('leads').select('id', { count: 'exact', head: true });
-    return `LED-${String((count || 0) + 1).padStart(3, '0')}`;
+    try {
+      const { count } = await supabase.from('leads').select('id', { count: 'exact', head: true });
+      if (count !== null && count !== undefined) {
+        return `LED-${String(count + 1).padStart(3, '0')}`;
+      }
+    } catch (_) {}
   }
   return `LED-${Date.now()}`;
 }
@@ -61,6 +65,9 @@ function calculateLeadScore(lead) {
   if (source.includes('referral') || source.includes('partner')) score += 15;
   else if (source.includes('organic') || source.includes('search')) score += 5;
   else if (source.includes('cold') || source.includes('outbound')) score -= 5;
+
+  // Verified Engine 2 Outbound Campaign Attribution
+  if (String(lead.utm_campaign || '').startsWith('CMP-E2-')) score += 15;
 
   // Time in pipeline decay (decay by 1 point per day since creation, max -20)
   if (lead.created_at) {
@@ -93,13 +100,15 @@ function normalizeStage(stage) {
   return stage;
 }
 
-// GET all leads (Internal Team/Admin, Supports ?limit=, ?page=)
+// GET all leads (Internal Team/Admin, Supports ?engineId=, ?limit=, ?page=)
 router.get('/', requireAuth, async (req, res) => {
   try {
+    const { normalizeEngineId } = require('../utils/engine-scope');
+    const engineFilter = normalizeEngineId(req.query.engineId || req.query.engine || req.headers['x-gro10x-engine']);
     const limit = Math.min(parseInt(req.query.limit) || 200, 500);
     const page = Math.max(parseInt(req.query.page) || 0, 0);
     const offset = page * limit;
-    const cacheKey = `leads:list:${limit}:${page}`;
+    const cacheKey = `leads:list:${engineFilter || ''}:${limit}:${page}`;
 
     const cached = cache.get(cacheKey);
     if (cached) {
@@ -107,10 +116,16 @@ router.get('/', requireAuth, async (req, res) => {
     }
 
     if (isSupabaseConfigured()) {
-      const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+      let query = supabase.from('leads').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+      if (engineFilter && engineFilter !== 'all') {
+        const engineCode = engineFilter.toUpperCase().replace('ENGINE', 'E');
+        query = query.or(`engine_tag.eq.${engineFilter},engine_tag.eq.${engineCode},utm_campaign.ilike.%CMP-${engineCode}%`);
+      }
+      const { data, error } = await query;
       if (!error) {
-        const leads = (data || []).map(l => ({
+        let leads = (data || []).map(l => ({
           ...l,
+          engineTag: l.engine_tag || (l.utm_campaign?.includes('CMP-E2') ? 'engine2' : 'engine2'),
           stage: normalizeStage(l.stage || l.status),
           company: l.company || l.name || 'Inquiring Brand',
           contact_person: l.contact_person || l.name || 'Direct Contact',
@@ -224,6 +239,7 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
           return res.status(200).json({
             success: true,
             isDuplicate: true,
+            lead: existing[0],
             message: 'We already have your inquiry on file! Our Account Director will follow up with you shortly.',
             duplicateIds: existing.map(e => e.id)
           });
@@ -298,6 +314,26 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
     }).catch(err => {
       console.warn('[Leads API] Confirmation email exception:', err.message);
     });
+
+    // Also dispatch the requested architecture blueprint and case study assets if service is matched
+    const serviceCode = leadRow.service_interest || newLead.service;
+    if (serviceCode && typeof sendServiceAssetDeliveryEmail === 'function') {
+      const { getServiceByCode } = require('../services/taxonomy');
+      getServiceByCode(serviceCode).then(matchedProduct => {
+        if (matchedProduct) {
+          const proof = matchedProduct.metadata?.proof_pack || {};
+          sendServiceAssetDeliveryEmail({
+            email: leadRow.email,
+            contactPerson: leadRow.name,
+            serviceName: matchedProduct.name,
+            productCode: matchedProduct.product_code,
+            slidesUrl: proof.slides_pdf_url,
+            blueprintUrl: proof.blueprint_url,
+            audioUrl: proof.audio_overview_url
+          }).catch(err => console.warn('[Leads API] Asset delivery email exception:', err.message));
+        }
+      }).catch(() => {});
+    }
   }
 
   // Tiered Telegram alert to agency owner with dynamic priority & WhatsApp CTA
@@ -569,4 +605,275 @@ router.post('/bulk', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/leads/:id/create-proposal
+ * Converts a lead record directly into an official client SOW proposal referencing the canonical catalog service
+ */
+router.post('/:id/create-proposal', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { getServiceByCode } = require('../services/taxonomy');
+    const crypto = require('crypto');
+
+    let lead = null;
+    if (isSupabaseConfigured()) {
+      try {
+        const { data } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+        if (data) lead = data;
+      } catch (_) {}
+    }
+
+    if (!lead) {
+      // Memory / request body fallback
+      lead = {
+        id,
+        name: req.body.clientName || 'Valued Client',
+        company: req.body.clientCompany || 'Client Partner',
+        email: req.body.clientEmail || 'client@example.com',
+        phone: req.body.clientPhone || '',
+        service_interest: req.body.service || req.body.service_interest || 'SVC-001',
+        budget: req.body.budget || 2500
+      };
+    }
+
+    const serviceCode = lead.service_interest || lead.service || 'SVC-001';
+    const product = await getServiceByCode(serviceCode) || {
+      name: `${serviceCode} AI Sprint`,
+      metadata: {
+        description: 'Production AI engineering sprint deliverable.',
+        price_usd: 2500,
+        engineering: {
+          core_deliverables: [
+            'Complete UX/UI Wireframes & Responsive Layouts',
+            'Production Codebase Repository (GitHub)',
+            'Supabase Database Setup with RLS',
+            'Automated CI/CD Edge Deployment'
+          ],
+          turnaround_days: 14,
+          warranty_days: 30
+        }
+      }
+    };
+
+    const deliverables = product.metadata?.engineering?.core_deliverables || [
+      'Full Source Code Handover (GitHub Repository)',
+      'Production Relational Database Setup',
+      'Automated CI/CD Cloud Deployment',
+      '30 Days Bug-Fix Warranty & Maintenance'
+    ];
+
+    const priceUsd = product.metadata?.price_usd || 2500;
+    const shareToken = crypto.randomBytes(6).toString('hex');
+    const proposalId = `PRP-${Date.now().toString().slice(-6)}`;
+
+    const newProposal = {
+      id: proposalId,
+      share_token: shareToken,
+      client_name: lead.name || lead.contact_person || 'Valued Client',
+      client_company: lead.company || '',
+      client_email: lead.email || '',
+      client_phone: lead.phone || '',
+      project_title: `${product.name} — 14-Day Production Sprint`,
+      project_summary: product.metadata?.description || `Turnkey engineering and production deployment of ${product.name}.`,
+      scope_items: deliverables,
+      one_time_items: [
+        {
+          name: `${product.name} Sprint Delivery`,
+          description: `Complete 14-day production build, cloud edge hosting, and full GitHub source code handover.`,
+          amount: priceUsd
+        }
+      ],
+      recurring_items: [],
+      one_time_total: priceUsd,
+      recurring_total: 0,
+      currency: lead.currency || 'USD',
+      timeline: `${product.metadata?.engineering?.turnaround_days || 14} Days`,
+      terms: 'Fixed-Price SOW: 50% upon project kickoff, 50% upon final acceptance & GitHub repository transfer. Includes 30 days bug-fix warranty.',
+      notes: `Generated from CRM Lead ${id} (Campaign: ${lead.utm_campaign || 'Direct'})`,
+      status: 'Draft',
+      created_by: 'CRM-AUTOMATION',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('proposals').insert([newProposal]);
+        await supabase.from('leads').update({ stage: 'Proposal Sent' }).eq('id', id);
+      } catch (sbErr) {
+        console.warn('[Leads create-proposal] Supabase notice:', sbErr.message);
+      }
+    }
+
+    const shareUrl = `${process.env.PUBLIC_APP_URL || 'https://gro10x.ai'}/p/${shareToken}`;
+
+    res.status(201).json({
+      success: true,
+      message: 'Proposal generated successfully from lead record.',
+      proposalId,
+      shareToken,
+      shareUrl,
+      proposal: newProposal
+    });
+  } catch (err) {
+    console.error('[Leads Create Proposal Error]:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Engine 2: Inbound AI Readiness Audit & Diagnostic Scorecard Lead Capture
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/ai-audit', leadSubmitLimiter, async (req, res) => {
+  try {
+    const {
+      companyName,
+      contactName,
+      email,
+      phone,
+      currentTechStack = [],
+      dataReadiness = 'unstructured_docs',
+      automationPriority = 'internal_ops',
+      monthlyBudgetUsd = 2500,
+      timelineUrgency = 'immediate_1_2_weeks'
+    } = req.body;
+
+    if (!email && !phone) {
+      return res.status(400).json({ ok: false, error: 'Either email or phone is required for AI audit delivery.' });
+    }
+
+    const normCompany = (companyName || contactName || 'Prospective Enterprise Client').trim();
+    const techStackArray = Array.isArray(currentTechStack)
+      ? currentTechStack
+      : String(currentTechStack || '').split(',').map(s => s.trim()).filter(Boolean);
+
+    // 1. Calculate AI Readiness Score (0-100)
+    let score = 30; // Baseline
+
+    // Data Readiness (up to +25)
+    if (dataReadiness === 'clean_relational_db') score += 25;
+    else if (dataReadiness === 'cloud_lake') score += 20;
+    else if (dataReadiness === 'unstructured_docs') score += 12;
+    else score += 5;
+
+    // Tech Stack Maturity (up to +20)
+    if (techStackArray.length >= 4) score += 20;
+    else if (techStackArray.length >= 2) score += 12;
+    else if (techStackArray.length === 1) score += 6;
+    else score += 2;
+
+    // Automation Priority Clarity (+15)
+    if (['internal_ops', 'custom_ai_agent', 'customer_support', 'lead_generation'].includes(automationPriority)) {
+      score += 15;
+    }
+
+    // Budget Commitment (up to +10)
+    const budgetNum = Number(monthlyBudgetUsd) || 0;
+    if (budgetNum >= 3500) score += 10;
+    else if (budgetNum >= 1500) score += 7;
+    else if (budgetNum >= 500) score += 3;
+
+    score = Math.min(100, Math.max(25, score));
+
+    // 2. Determine Tier, Service & Pod Recommendation
+    let readinessTier = 'Foundational Optimization';
+    let recommendedService = 'ENG2-MVP';
+    let recommendedPod = 'MVP_BUILD_POD';
+    let estimatedSprintDays = 14;
+
+    if (score >= 80) {
+      readinessTier = 'Enterprise AI Pioneer';
+      recommendedService = 'ENG2-MVP';
+      recommendedPod = 'MVP_BUILD_POD';
+      estimatedSprintDays = 10;
+    } else if (score >= 65) {
+      readinessTier = 'Sprint Ready';
+      if (automationPriority === 'customer_support' || automationPriority === 'internal_ops') {
+        recommendedService = 'ENG2-AUT';
+        recommendedPod = 'ENTERPRISE_AUTOMATION_POD';
+        estimatedSprintDays = 14;
+      } else {
+        recommendedService = 'ENG2-MVP';
+        recommendedPod = 'MVP_BUILD_POD';
+        estimatedSprintDays = 14;
+      }
+    } else {
+      readinessTier = 'Exploratory AI Candidate';
+      recommendedService = 'ENG2-DISC';
+      recommendedPod = 'CREATIVE_AI_POD';
+      estimatedSprintDays = 21;
+    }
+
+    const leadId = await nextLeadId();
+
+    const scorecard = {
+      score,
+      readinessTier,
+      recommendedService,
+      recommendedPod,
+      estimatedSprintDays,
+      keyBottlenecks: score < 60
+        ? ['Data standardization required', 'Production API orchestration pipeline needed']
+        : ['Model fine-tuning latency', 'Enterprise SSO & RBAC integration'],
+      immediateActionPlan: `Initiate ${estimatedSprintDays}-Day Rapid AI Solution Sprint with GRO10X ${recommendedPod}.`
+    };
+
+    // 3. Save Lead into DB / Supabase
+    const leadRecord = {
+      id: leadId,
+      name: contactName || normCompany,
+      company: normCompany,
+      email: email || '',
+      phone: phone || '',
+      source: 'AI_Readiness_Scorecard',
+      engine_tag: 'engine2',
+      stage: 'Qualified Lead',
+      lead_score: score,
+      notes: `AI Audit Score: ${score}/100 (${readinessTier}) | Recommended: ${recommendedService} | Priority: ${automationPriority} | Budget: $${budgetNum}/mo`,
+      created_at: new Date().toISOString()
+    };
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('leads').insert([leadRecord]);
+      } catch (sbErr) {
+        console.warn('[Leads AI-Audit] Supabase insert warning:', sbErr.message);
+      }
+    }
+
+    // Broadcast SSE
+    broadcastLeadEvent('lead_created', leadRecord);
+
+    // Telegram Notification to Managing Director
+    try {
+      const ownerChatId = process.env.TELEGRAM_OWNER_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID;
+      if (ownerChatId) {
+        sendTelegramNotification(
+          ownerChatId,
+          `🎯 *New Engine 2 Inbound AI Audit Lead!*\n\n` +
+          `🏢 *Company:* ${normCompany}\n` +
+          `👤 *Contact:* ${contactName || 'N/A'}\n` +
+          `📊 *AI Readiness Score:* *${score}/100* (${readinessTier})\n` +
+          `🚀 *Recommended:* ${recommendedService} (${recommendedPod})\n` +
+          `💵 *Budget:* $${budgetNum.toLocaleString()} / mo\n` +
+          `📞 *Phone/Email:* ${phone || email}`,
+          null,
+          true
+        ).catch(() => {});
+      }
+    } catch (_) {}
+
+    return res.status(201).json({
+      ok: true,
+      leadId,
+      companyName: normCompany,
+      scorecard
+    });
+  } catch (err) {
+    console.error('[Leads AI-Audit Error]:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
+

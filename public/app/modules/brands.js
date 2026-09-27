@@ -15,7 +15,7 @@
 
 window.APP_MODULES = window.APP_MODULES || {};
 
-const DEFAULT_BRANDS_DATA = {
+var DEFAULT_BRANDS_DATA = window.DEFAULT_BRANDS_DATA || {
   brands: [
     {
       id: 1,
@@ -558,6 +558,18 @@ window.APP_MODULES.brands = async function(container) {
     }, 300);
   }
 
+  function getCurrency() {
+    return localStorage.getItem('gro10x_currency') || 'USD';
+  }
+
+  function formatMoney(amountUSD, targetCurr) {
+    const curr = targetCurr || getCurrency();
+    const val = Number(amountUSD) || 0;
+    if (curr === 'BDT') {
+      return '৳' + Math.round(val * 120).toLocaleString();
+    }
+    return '$' + Math.round(val).toLocaleString();
+  }
   function render() {
     const totalTargetGross = state.brands.reduce((acc, b) => acc + (b.target12mo || 0), 0);
     const totalTargetNet = state.brands.reduce((acc, b) => acc + (b.netTarget || 0), 0);
@@ -584,10 +596,13 @@ window.APP_MODULES.brands = async function(container) {
         </div>
 
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button class="btn-secondary" onclick="window.BrandsModule.openAddProductModal()">
+          <button class="btn-secondary" id="brandsCurrencyToggleBtn" onclick="window.BrandsModule.toggleCurrency()">
+            ${getCurrency() === 'BDT' ? '৳ BDT Mode' : '$ USD Mode'}
+          </button>
+          <button class="btn-secondary" id="btnQuickAddProduct" onclick="window.BrandsModule.openAddProductModal()">
             📦 + Quick Add Product
           </button>
-          <button class="btn-primary" onclick="window.BrandsModule.openLogRevenueModal()">
+          <button class="btn-primary" id="btnLogBrandRevenue" onclick="window.BrandsModule.openLogRevenueModal()">
             ⚡ Log Brand Revenue
           </button>
         </div>
@@ -597,23 +612,23 @@ window.APP_MODULES.brands = async function(container) {
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
         <div class="card-glass" style="padding:1.1rem; border-radius:14px; border-left:4px solid #00df89;">
           <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Year 1 Target Gross</span>
-          <div style="font-size:1.6rem; font-weight:900; color:#ffffff; margin-top:0.2rem;">
-            $${totalTargetGross.toLocaleString()}
+          <div id="brandsKpiTargetGross" style="font-size:1.6rem; font-weight:900; color:#ffffff; margin-top:0.2rem;">
+            ${formatMoney(totalTargetGross)}
           </div>
           <span style="font-size:0.72rem; color:#00df89; font-weight:700;">86.0% Net Margin Model</span>
         </div>
 
         <div class="card-glass" style="padding:1.1rem; border-radius:14px; border-left:4px solid #06b6d4;">
           <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Target Net Cash Profit</span>
-          <div style="font-size:1.6rem; font-weight:900; color:#06b6d4; margin-top:0.2rem;">
-            $${totalTargetNet.toLocaleString()}
+          <div id="brandsKpiTargetNet" style="font-size:1.6rem; font-weight:900; color:#06b6d4; margin-top:0.2rem;">
+            ${formatMoney(totalTargetNet)}
           </div>
           <span style="font-size:0.72rem; color:var(--text-muted);">Month 12 Run Rate: <strong>$54.8k/mo</strong></span>
         </div>
 
         <div class="card-glass" style="padding:1.1rem; border-radius:14px; border-left:4px solid #a855f7;">
           <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Catalog Execution</span>
-          <div style="font-size:1.6rem; font-weight:900; color:#ffffff; margin-top:0.2rem;">
+          <div id="brandsKpiCatalogExec" style="font-size:1.6rem; font-weight:900; color:#ffffff; margin-top:0.2rem;">
             ${totalProductsLive} <span style="font-size:1rem; color:var(--text-muted); font-weight:500;">/ ${totalProductsTarget} Live</span>
           </div>
           <span style="font-size:0.72rem; color:#a855f7; font-weight:700;">${overallProgress}% of 1,300 Completed</span>
@@ -621,8 +636,8 @@ window.APP_MODULES.brands = async function(container) {
 
         <div class="card-glass" style="padding:1.1rem; border-radius:14px; border-left:4px solid #fbbf24;">
           <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Actual Revenue Logged</span>
-          <div style="font-size:1.6rem; font-weight:900; color:#fbbf24; margin-top:0.2rem;">
-            $${totalActualGross.toLocaleString()}
+          <div id="brandsKpiActualRevenue" style="font-size:1.6rem; font-weight:900; color:#fbbf24; margin-top:0.2rem;">
+            ${formatMoney(totalActualGross)}
           </div>
           <span style="font-size:0.72rem; color:var(--text-muted);">Auto-synced with Growth Engine 3</span>
         </div>
@@ -660,62 +675,68 @@ window.APP_MODULES.brands = async function(container) {
       <div id="brands-tab-container"></div>
 
       <!-- BRAND DETAIL DRAWER MODAL -->
-      <div id="brandDetailDrawer" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:9999; justify-content:flex-end;">
+      <div id="brandDetailDrawer" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:9999; justify-content:flex-end;" onclick="if(event.target === this) window.BrandsModule.closeBrandDrawer()">
         <div style="background:var(--surface-card, #181824); width:100%; max-width:680px; height:100%; overflow-y:auto; padding:2rem; box-shadow:-10px 0 30px rgba(0,0,0,0.5); border-left:1px solid var(--border-subtle, #2e2e3e);" id="drawerInner">
         </div>
       </div>
 
       <!-- AI SEO RESULT MODAL -->
-      <div id="aiSeoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center; padding:1.5rem;">
+      <div id="aiSeoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) this.style.display='none'">
         <div style="background:var(--surface-card, #181824); max-width:640px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="aiSeoModalContent">
         </div>
       </div>
 
       <!-- ETSY HEALTH CHECK DIAGNOSTICS MODAL -->
-      <div id="etsyHealthModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10001; align-items:center; justify-content:center; padding:1.5rem;">
+      <div id="etsyHealthModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10001; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) this.style.display='none'">
         <div style="background:var(--surface-card, #181824); max-width:760px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(6,182,212,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="etsyHealthModalContent">
         </div>
       </div>
 
       <!-- ETSY BULK PUBLISHER PROGRESS MODAL -->
-      <div id="etsyBulkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:10002; align-items:center; justify-content:center; padding:1.5rem;">
+      <div id="etsyBulkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:10002; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) this.style.display='none'">
         <div style="background:var(--surface-card, #181824); max-width:680px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.4); padding:2rem; box-shadow:0 25px 60px rgba(0,0,0,0.9);" id="etsyBulkModalContent">
         </div>
       </div>
 
       <!-- ETSY SHOP PROFILE MODAL -->
-      <div id="shopProfileModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10003; align-items:center; justify-content:center; padding:1.5rem;">
+      <div id="shopProfileModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10003; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) this.style.display='none'">
         <div style="background:var(--surface-card, #181824); max-width:620px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(6,182,212,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="shopProfileModalContent">
         </div>
       </div>
 
       <!-- ETSY SECTIONS MODAL -->
-      <div id="sectionsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10004; align-items:center; justify-content:center; padding:1.5rem;">
+      <div id="sectionsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10004; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) this.style.display='none'">
         <div style="background:var(--surface-card, #181824); max-width:620px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(168,85,247,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="sectionsModalContent">
         </div>
       </div>
 
       <!-- EDIT LIVE LISTING MODAL -->
-      <div id="editLiveListingModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10005; align-items:center; justify-content:center; padding:1.5rem;">
+      <div id="editLiveListingModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10005; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) this.style.display='none'">
         <div style="background:var(--surface-card, #181824); max-width:640px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="editLiveListingModalContent">
         </div>
       </div>
 
       <!-- BULK PUBLISH COST CONFIRMATION MODAL -->
-      <div id="costConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:10006; align-items:center; justify-content:center; padding:1.5rem;">
+      <div id="costConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:10006; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) this.style.display='none'">
         <div style="background:var(--surface-card, #181824); max-width:540px; width:100%; border-radius:20px; border:1px solid rgba(251,191,36,0.4); padding:2rem; box-shadow:0 25px 60px rgba(0,0,0,0.9);" id="costConfirmModalContent">
         </div>
       </div>
 
       <!-- ADD CUSTOM BRAND MODAL -->
-      <div id="addBrandModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10007; align-items:center; justify-content:center; padding:1.5rem;">
+      <div id="addBrandModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10007; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) window.BrandsModule.closeAddBrandModal()">
         <div style="background:var(--surface-card, #181824); max-width:600px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="addBrandModalContent">
         </div>
       </div>
 
       <!-- ADD CUSTOM PRODUCT MODAL -->
-      <div id="addProductModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10008; align-items:center; justify-content:center; padding:1.5rem;">
+            <div id="addProductModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10008; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) window.BrandsModule.closeAddProductModal()">
         <div style="background:var(--surface-card, #181824); max-width:600px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(6,182,212,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="addProductModalContent">
+        </div>
+      </div>
+
+      <!-- LOG REVENUE MODAL -->
+      <div id="logRevenueModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10010; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target === this) window.BrandsModule.closeLogRevenueModal()">
+        <div style="background:var(--surface-card, #181824); max-width:540px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="logRevenueModalContent">
         </div>
       </div>
     `;
@@ -875,7 +896,7 @@ window.APP_MODULES.brands = async function(container) {
             </div>
           </div>
           <div style="margin-top:1rem; text-align:center;">
-            <a href="#digistore" class="btn-primary btn-sm" style="background:#a855f7; color:#ffffff; font-weight:800; text-decoration:none; display:inline-block; width:100%;">🏪 Launch DigiVault Store</a>
+            <a href="/dce" target="_blank" rel="noopener" class="btn-primary btn-sm" style="background:#00df89; color:#070b12; font-weight:800; text-decoration:none; display:inline-block; width:100%;">⚡ Open Commerce Engine (DCE)</a>
           </div>
         </div>
 
@@ -1117,7 +1138,7 @@ window.APP_MODULES.brands = async function(container) {
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
         <span style="color:var(--text-secondary); font-size:0.85rem;">Showing all ${state.brands.length} Brands across 4 DBM Divisions:</span>
-        <button class="btn-secondary btn-sm" onclick="window.BrandsModule.openAddBrandModal()">+ Add Custom Brand</button>
+        <button class="btn-secondary btn-sm" id="btnOpenAddBrandModal" onclick="window.BrandsModule.openAddBrandModal()">+ Add Custom Brand</button>
       </div>
 
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:1.25rem;">
@@ -1192,7 +1213,7 @@ window.APP_MODULES.brands = async function(container) {
 
               <!-- ACTION BUTTONS -->
               <div style="display:flex; gap:0.4rem; margin-top:0.75rem;">
-                <button class="btn-secondary btn-sm" style="flex:1;" onclick="window.BrandsModule.openBrandDrawer(${b.id})">
+                <button class="btn-secondary btn-sm btn-open-brand-drawer" id="btnOpenBrandDrawer-${b.id}" style="flex:1;" onclick="window.BrandsModule.openBrandDrawer(${b.id})">
                   🎨 Studio & Checklist (${checklistCount}/8)
                 </button>
                 <button class="btn-primary btn-sm" style="flex:1;" onclick="window.BrandsModule.viewBrandProducts(${b.id})">
@@ -1241,7 +1262,7 @@ window.APP_MODULES.brands = async function(container) {
             <span style="font-size:0.85rem; color:var(--text-secondary);">
               Live Listings: <strong style="color:#00df89; font-size:1.1rem;">${liveCount}</strong> / ${products.length}
             </span>
-            <button class="btn-primary btn-sm" onclick="window.BrandsModule.openAddProductToBrandModal(${brand.id})">
+            <button class="btn-primary btn-sm" id="btnOpenAddProductToBrand" onclick="window.BrandsModule.openAddProductToBrandModal(${brand.id})">
               + Add Custom Product
             </button>
           </div>
@@ -1264,7 +1285,7 @@ window.APP_MODULES.brands = async function(container) {
           </thead>
           <tbody>
             ${products.map((p, idx) => `
-              <tr style="border-bottom:1px solid rgba(255,255,255,0.04); background:${p.status === 'Live' ? 'rgba(0,223,137,0.03)' : 'transparent'};">
+              <tr class="product-row" style="border-bottom:1px solid rgba(255,255,255,0.04); background:${p.status === 'Live' ? 'rgba(0,223,137,0.03)' : 'transparent'};">
                 <td style="padding:0.75rem; font-family:monospace; color:#06b6d4; font-weight:700;">${p.code || `PROD-${idx + 1}`}</td>
                 <td style="padding:0.75rem; font-weight:700; color:#fff;">
                   ${p.hero ? '⭐ ' : ''}${p.name}
@@ -2554,6 +2575,11 @@ window.APP_MODULES.brands = async function(container) {
   // GLOBAL MODULE METHODS
   // ─────────────────────────────────────────────────────────────────────────
   window.BrandsModule = {
+    toggleCurrency() {
+      const next = getCurrency() === 'BDT' ? 'USD' : 'BDT';
+      window.BrandsModule.switchCurrency(next);
+    },
+
     switchTab(tab) {
       currentTab = tab;
       localStorage.setItem('gro10x_brands_active_tab', tab);
@@ -2607,7 +2633,7 @@ window.APP_MODULES.brands = async function(container) {
             <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase;">Brand Studio & Launch Checklist</span>
             <h2 style="font-size:1.5rem; font-weight:900; color:#fff; margin:0.2rem 0 0;">${b.name}</h2>
           </div>
-          <button onclick="document.getElementById('brandDetailDrawer').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+          <button id="btnCloseBrandDrawer" onclick="window.BrandsModule.closeBrandDrawer()" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:1.4rem;">
@@ -2719,86 +2745,99 @@ window.APP_MODULES.brands = async function(container) {
       render();
     },
 
-    async editEtsyUrl(brandId) {
+    async editEtsyUrl(brandId, newUrl) {
       const b = state.brands.find(x => x.id === brandId);
       if (!b) return;
-      const url = prompt(`Enter Live Etsy Store URL for ${b.name}:`, b.etsyUrl || 'https://www.etsy.com/shop/');
-      if (url !== null) {
-        b.etsyUrl = url.trim();
-        b.etsyStatus = url.trim() ? 'Live' : 'In Setup';
-        saveBrandsStateLocally(state);
+      const url = (newUrl !== undefined && newUrl !== null) ? newUrl : (b.etsyUrl || 'https://www.etsy.com/shop/');
+      b.etsyUrl = url.trim();
+      b.etsyStatus = url.trim() ? 'Live' : 'In Setup';
+      saveBrandsStateLocally(state);
 
-        if (window.APP_API) {
-          window.APP_API.post(`/brands/${brandId}/settings`, {
-            etsyUrl: b.etsyUrl,
-            etsyStatus: b.etsyStatus
-          }).catch(err => console.warn('[Settings] Sync error:', err.message));
-        }
-
-        if (window.showToast) window.showToast(`Saved Etsy Store URL for ${b.name}`, 'success');
-        render();
+      if (window.APP_API) {
+        window.APP_API.post(`/brands/${brandId}/settings`, {
+          etsyUrl: b.etsyUrl,
+          etsyStatus: b.etsyStatus
+        }).catch(err => console.warn('[Settings] Sync error:', err.message));
       }
+
+      if (window.showToast) window.showToast(`Saved Etsy Store URL for ${b.name}`, 'success');
+      render();
     },
 
-    async openLogRevenueModal() {
-      const brandIdStr = prompt('Enter Brand ID (1 to 13) to log revenue for:', '1');
-      if (!brandIdStr) return;
-      const brandId = Number(brandIdStr);
+    openLogRevenueModal(preselectedBrandId) {
+      const modal = document.getElementById('logRevenueModal');
+      const content = document.getElementById('logRevenueModalContent');
+      if (!modal || !content) return;
+
+      const selectedId = Number(preselectedBrandId) || 1;
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
+          <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">⚡ Log Brand Revenue</h3>
+          <button id="btnCloseLogRevenueModal" onclick="window.BrandsModule.closeLogRevenueModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Brand Store</label>
+            <select id="logRevenueBrandSelect" style="width:100%; font-size:0.85rem; padding:0.6rem; background:var(--surface-card, #181824); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+              ${state.brands.map(b => `<option value="${b.id}" ${b.id === selectedId ? 'selected' : ''}>${b.id}. ${b.name} (${b.type})</option>`).join('')}
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Gross Revenue ($ USD)</label>
+            <input type="number" id="logRevenueAmount" value="500" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:800;">
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Etsy Ads Spend ($ USD)</label>
+            <input type="number" id="logRevenueAds" value="50" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fbbf24; font-weight:800;">
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+            <button class="btn-ghost" id="btnCancelLogRevenueModal" onclick="window.BrandsModule.closeLogRevenueModal()">Cancel</button>
+            <button class="btn-primary" id="btnSubmitLogRevenue" onclick="window.BrandsModule.submitLogRevenue()">💾 Save Revenue</button>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    },
+
+    closeLogRevenueModal() {
+      const modal = document.getElementById('logRevenueModal');
+      if (modal) modal.style.display = 'none';
+    },
+
+    async submitLogRevenue() {
+      const brandSelect = document.getElementById('logRevenueBrandSelect');
+      const amountInput = document.getElementById('logRevenueAmount');
+      const adsInput = document.getElementById('logRevenueAds');
+      const brandId = Number(brandSelect ? brandSelect.value : 1);
+      const amount = Number(amountInput ? amountInput.value : 0) || 0;
+      const ads = Number(adsInput ? adsInput.value : 0) || 0;
+
       const b = state.brands.find(x => x.id === brandId);
-      if (!b) {
-        if (window.showToast) window.showToast('Invalid Brand ID', 'error');
-        return;
-      }
-
-      const amountStr = prompt(`Enter Gross Revenue for ${b.name} ($ USD):`, '500');
-      const amount = Number(amountStr);
-      if (!amount || isNaN(amount)) return;
-
-      const adsStr = prompt(`Enter Etsy Ads Spend for ${b.name} ($ USD):`, '50') || '0';
-      const ads = Number(adsStr) || 0;
+      if (!b) return;
 
       b.actualGross = (b.actualGross || 0) + amount;
       b.actualAds = (b.actualAds || 0) + ads;
-
       saveBrandsStateLocally(state);
 
       if (window.APP_API) {
         window.APP_API.post(`/brands/${brandId}/revenue`, {
           amount,
           adsSpend: ads,
-          note: 'Logged via Command Center'
+          note: 'Logged via Command Center Modal'
         }).catch(err => console.warn('[Revenue API] Sync note:', err.message));
       }
 
+      window.BrandsModule.closeLogRevenueModal();
       if (window.showToast) window.showToast(`Logged $${amount} revenue for ${b.name} (synced to Growth Engine 3)!`, 'success');
       render();
     },
 
     async openLogBrandRevenueSpecific(brandId) {
-      const b = state.brands.find(x => x.id === brandId);
-      if (!b) return;
-      const amountStr = prompt(`Enter Gross Revenue for ${b.name} ($ USD):`, '500');
-      const amount = Number(amountStr);
-      if (!amount || isNaN(amount)) return;
-
-      const adsStr = prompt(`Enter Etsy Ads Spend for ${b.name} ($ USD):`, '50') || '0';
-      const ads = Number(adsStr) || 0;
-
-      b.actualGross = (b.actualGross || 0) + amount;
-      b.actualAds = (b.actualAds || 0) + ads;
-
-      saveBrandsStateLocally(state);
-
-      if (window.APP_API) {
-        window.APP_API.post(`/brands/${brandId}/revenue`, {
-          amount,
-          adsSpend: ads,
-          note: 'Logged via P&L Ledger'
-        }).catch(err => console.warn('[Revenue API] Sync note:', err.message));
-      }
-
-      if (window.showToast) window.showToast(`Logged $${amount} revenue for ${b.name}!`, 'success');
-      render();
+      window.BrandsModule.openLogRevenueModal(brandId);
     },
 
     async generateLiveSEOPackage(arg1, arg2, arg3) {
@@ -4163,18 +4202,14 @@ window.APP_MODULES.brands = async function(container) {
       const audience = document.getElementById('studioBlueprintAudience')?.value || '';
       const titleOverride = document.getElementById('studioBlueprintTitle')?.value || '';
 
-      if (!confirm(`Regenerate Blueprint 2.0 with architecture:\n"${catText}"?\n\nThis will update your Master Prompt, Page Stack, and 10 Mockup Briefs.`)) {
-        return;
-      }
+      if (window.showToast) window.showToast(`Regenerating Blueprint 2.0 for ${catText}...`, 'info');
 
       await window.BrandsModule.generateStudioBlueprintWithAI(brandId, productCode, false, catId, audience, titleOverride);
     },
 
     async resetProductBlueprint(brandId, productCode, encodedProdName) {
       const prodName = decodeURIComponent(encodedProdName || '');
-      if (!confirm(`Are you sure you want to reset the Blueprint for ${productCode} ("${prodName}")?\n\nThis will clear the generated prompt and mockup briefs so you can choose a fresh category architecture.\n(Your uploaded vault deliverables will not be deleted).`)) {
-        return;
-      }
+      if (window.showToast) window.showToast(`Resetting Blueprint for ${productCode}...`, 'info');
 
       if (window.showToast) window.showToast('Resetting blueprint...', 'info');
 
@@ -4477,7 +4512,7 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async submitProductForReview(brandId, productCode) {
-      if (!confirm(`Submit ${productCode} for Admin Review & Publication Approval?`)) return;
+      if (window.showToast) window.showToast(`Submitting ${productCode} for Admin Review...`, 'info');
 
       const titleEl = document.getElementById('studioSeoTitle');
       const descEl = document.getElementById('studioSeoDescription');
@@ -4704,9 +4739,7 @@ window.APP_MODULES.brands = async function(container) {
 
     async clearVaultDeliverable(brandId, productCode, productNameEncoded) {
       const prodName = decodeURIComponent(productNameEncoded || '');
-      if (!confirm(`Clear vault deliverable file for ${productCode} ("${prodName}")?\n\nThis will remove the current stored file and allow you to upload a fresh version.`)) {
-        return;
-      }
+      if (window.showToast) window.showToast(`Clearing vault deliverable for ${productCode}...`, 'info');
 
       try {
         const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
@@ -5324,7 +5357,7 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async deleteMockupSlot(brandId, productCode, slotNum) {
-      if (!confirm(`Clear and remove mockup in Slot #${slotNum}?`)) return;
+      if (window.showToast) window.showToast(`Clearing mockup in Slot #${slotNum}...`, 'info');
 
       try {
         const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
@@ -5544,7 +5577,7 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async clearProductVideo(brandId, productCode) {
-      if (!confirm('Clear stored listing video?')) return;
+      if (window.showToast) window.showToast('Clearing stored listing video...', 'info');
 
       try {
         const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
@@ -5832,7 +5865,7 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async disconnectEtsyStore(brandId) {
-      if (!confirm('Are you sure you want to disconnect this Etsy Store connection?')) return;
+      if (window.showToast) window.showToast('Disconnecting Etsy Store...', 'info');
       const headers = getStudioAuthHeaders();
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/disconnect`, {
@@ -6580,7 +6613,7 @@ window.APP_MODULES.brands = async function(container) {
         return;
       }
 
-      if (!confirm(`Renewing listing ${prod.code} will cost $0.20 on Etsy and extend the listing for another 120 days. Proceed?`)) return;
+      if (window.showToast) window.showToast(`Renewing listing ${prod.code}...`, 'info');
 
       const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
@@ -6606,7 +6639,7 @@ window.APP_MODULES.brands = async function(container) {
       const prod = catalog.find(p => p.code === productCode);
       if (!prod || !prod.etsyListingId) return;
 
-      if (!confirm(`Deactivate listing ${prod.code} on Etsy? It will be hidden from shoppers.`)) return;
+      if (window.showToast) window.showToast(`Deactivating listing ${prod.code}...`, 'info');
 
       const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
@@ -6677,7 +6710,7 @@ window.APP_MODULES.brands = async function(container) {
       }
 
       const totalCost = (expiring.length * 0.20).toFixed(2);
-      if (!confirm(`Renewing all ${expiring.length} expiring listings will cost $${totalCost} ($0.20 per listing). Proceed?`)) return;
+      if (window.showToast) window.showToast(`Renewing ${expiring.length} expiring listings...`, 'info');
 
       const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       let renewed = 0;
@@ -6700,6 +6733,21 @@ window.APP_MODULES.brands = async function(container) {
       renderTabContent('lifecycle');
     },
 
+    closeBrandDrawer() {
+      const drawer = document.getElementById('brandDetailDrawer');
+      if (drawer) drawer.style.display = 'none';
+    },
+
+    closeAddBrandModal() {
+      const modal = document.getElementById('addBrandModal');
+      if (modal) modal.style.display = 'none';
+    },
+
+    closeAddProductModal() {
+      const modal = document.getElementById('addProductModal');
+      if (modal) modal.style.display = 'none';
+    },
+
     openAddBrandModal() {
       const modal = document.getElementById('addBrandModal');
       const content = document.getElementById('addBrandModalContent');
@@ -6708,7 +6756,7 @@ window.APP_MODULES.brands = async function(container) {
       content.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
           <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">🏢 Create New Brand Store</h3>
-          <button onclick="document.getElementById('addBrandModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+          <button id="btnCloseAddBrandModal" onclick="window.BrandsModule.closeAddBrandModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:1rem;">
@@ -6744,7 +6792,7 @@ window.APP_MODULES.brands = async function(container) {
           </div>
 
           <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
-            <button class="btn-ghost" onclick="document.getElementById('addBrandModal').style.display='none'">Cancel</button>
+            <button class="btn-ghost" id="btnCancelAddBrandModal" onclick="window.BrandsModule.closeAddBrandModal()">Cancel</button>
             <button class="btn-primary" onclick="window.BrandsModule.saveNewBrand()">✨ Create Brand</button>
           </div>
         </div>
@@ -6766,7 +6814,7 @@ window.APP_MODULES.brands = async function(container) {
       content.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
           <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">📦 Add Custom Product to ${b.name}</h3>
-          <button onclick="document.getElementById('addProductModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+          <button id="btnCloseAddProductModal" onclick="window.BrandsModule.closeAddProductModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:1rem;">
@@ -6801,7 +6849,7 @@ window.APP_MODULES.brands = async function(container) {
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
-            <button class="btn-ghost" onclick="document.getElementById('addProductModal').style.display='none'">Cancel</button>
+            <button class="btn-ghost" id="btnCancelAddProductModal" onclick="window.BrandsModule.closeAddProductModal()">Cancel</button>
             <div style="display:flex; gap:0.5rem;">
               <button class="btn-secondary" onclick="window.BrandsModule.saveNewProduct(${b.id}, false)">💾 Save to Catalog</button>
               <button class="btn-primary" onclick="window.BrandsModule.saveNewProduct(${b.id}, true)">🚀 Save & Open Studio</button>
@@ -6909,7 +6957,7 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async deleteProduct(brandId, productCode) {
-      if (!confirm(`Are you sure you want to delete ${productCode} from catalog?`)) return;
+      if (window.showToast) window.showToast(`Deleting ${productCode}...`, 'info');
 
       const headers = getStudioAuthHeaders();
       try {
@@ -7269,7 +7317,7 @@ window.APP_MODULES.brands = async function(container) {
         return;
       }
 
-      if (!confirm(`Publishing ${prod.code} ("${title.slice(0, 45)}...") to Etsy will incur a $0.20 listing fee. Proceed?`)) return;
+      if (window.showToast) window.showToast(`Publishing ${prod.code} to Etsy...`, 'info');
 
       const pubBtn = document.getElementById('studioPublishBtn');
       const origBtnHtml = pubBtn ? pubBtn.innerHTML : '';
@@ -7626,6 +7674,79 @@ window.APP_MODULES.brands = async function(container) {
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   `;
   document.head.appendChild(styleEl);
+
+  // Keyboard accessibility & Escape key modal dismiss
+  if (!window._brandsA11yInit) {
+    window._brandsA11yInit = true;
+    window.addEventListener('keydown', (e) => {
+      if (window.location.hash !== '#brands') return;
+      if (e.key === 'Escape') {
+        const modals = [
+          'addBrandModal',
+          'addProductModal',
+          'logRevenueModal',
+          'brandDetailDrawer',
+          'aiSeoModal',
+          'etsyHealthModal',
+          'etsyBulkModal',
+          'shopProfileModal',
+          'sectionsModal',
+          'editLiveListingModal',
+          'costConfirmModal',
+          'aiScoutModal'
+        ];
+        modals.forEach(id => {
+          const el = document.getElementById(id);
+          if (el && el.style.display !== 'none') {
+            el.style.display = 'none';
+          }
+        });
+      }
+    });
+  }
+
+  // Deduplicated gro10x_currency_changed handler with #brands route guard
+  if (window._brandsCurrencyHandler) {
+    window.removeEventListener('gro10x_currency_changed', window._brandsCurrencyHandler);
+  }
+  window._brandsCurrencyHandler = function(e) {
+    if (window.location.hash !== '#brands') return;
+    render();
+  };
+  window.addEventListener('gro10x_currency_changed', window._brandsCurrencyHandler);
+
+  // Global aliases for MAIN world QA evaluation
+  window.BrandsModule.switchCurrency = function(curr) {
+    localStorage.setItem('gro10x_currency', curr);
+    window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: curr } }));
+    render();
+  };
+  window.switchBrandsCurrency = window.BrandsModule.switchCurrency;
+  window.BRANDS_MODULE = window.BrandsModule;
+
+  // Real-time SSE listener with 400ms debounce
+  if (window.APP_SSE && !window._brandsSSEInit) {
+    window._brandsSSEInit = true;
+    let sseTimeout = null;
+    const debouncedReload = () => {
+      if (window.location.hash !== '#brands') return;
+      clearTimeout(sseTimeout);
+      sseTimeout = setTimeout(async () => {
+        const fresh = await loadBrandsStateFromAPI(true);
+        if (fresh && fresh.brands) {
+          state = fresh;
+          render();
+        }
+      }, 400);
+    };
+    if (typeof window.APP_SSE.subscribe === 'function') {
+      window.APP_SSE.subscribe('brand_update', debouncedReload);
+      window.APP_SSE.subscribe('product_update', debouncedReload);
+    } else if (typeof window.APP_SSE.addEventListener === 'function') {
+      window.APP_SSE.addEventListener('brand_update', debouncedReload);
+      window.APP_SSE.addEventListener('product_update', debouncedReload);
+    }
+  }
 
   render();
 

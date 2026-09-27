@@ -59,12 +59,21 @@ const USERS = {
     type: 'client'
   },
   partner: {
-    id: 'CLI-001',
-    name: 'Apex Footwear',
-    email: 'brand@apexfootwear.com',
-    role: 'Client Partner',
-    access_level: 'Client',
-    type: 'client'
+    id: 'AFF-001',
+    name: 'Growth Ventures Partner',
+    email: 'partners@scaleup.io',
+    role: 'Partner / Affiliate',
+    access_level: 'Partner',
+    type: 'partner'
+  },
+  contractor: {
+    id: 'CON-001',
+    emp_code: 'CON-001',
+    name: 'Specialist Pod Engineer',
+    phone: '+8801799887766',
+    role: 'AI Workflow Specialist',
+    access_level: 'Contractor',
+    type: 'contractor'
   }
 };
 

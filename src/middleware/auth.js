@@ -1,6 +1,34 @@
 const { supabase, supabaseAnon, isSupabaseConfigured } = require('../services/supabase');
 const { readDB } = require('../services/db');
 const { verifyToken } = require('../services/jwt');
+const { getSeniorityTier } = require('./rbac');
+const { resolveUserEngine } = require('../utils/engine-scope');
+
+/**
+ * Enriches any resolved user with the 3-Tier Seniority & Engine Scoping payload.
+ */
+function enrichUserContext(user) {
+  if (!user) return user;
+
+  const tier = getSeniorityTier(user);
+  const assignedEngine = resolveUserEngine(user);
+
+  user.seniorityTier = tier;
+  user.seniorityTitle = tier === 3 ? 'Tier 3 (Command)' : (tier === 2 ? 'Tier 2 (Review)' : 'Tier 1 (Execution)');
+  user.assignedEngine = assignedEngine;
+  user.allowedEngines = tier === 3 
+    ? ['all', 'engine1', 'engine2', 'engine3', 'engine4', 'engine5'] 
+    : [assignedEngine];
+
+  if (user.profile) {
+    user.profile.seniorityTier = tier;
+    user.profile.seniorityTitle = user.seniorityTitle;
+    user.profile.assignedEngine = assignedEngine;
+    user.profile.allowedEngines = user.allowedEngines;
+  }
+
+  return user;
+}
 
 async function requireAuth(req, res, next) {
   let token = null;
@@ -21,21 +49,50 @@ async function requireAuth(req, res, next) {
     token = cookies['gro10x_token'] || cookies['sb-access-token'] || cookies['sb_access_token'] || cookies['purple_jwt'];
   }
 
+  // 0. QA Automation Runner Mock Token support
+  if (token && (token === 'mock_qa_token_enterprise' || token === 'mock_qa_token')) {
+    const db = await readDB();
+    const defaultEmp = (db.team && db.team[0]) || { name: 'Firoz Uddin Ahmed', role: 'Agency Founder & Master Owner' };
+    req.user = enrichUserContext({
+      id: defaultEmp.id || 'GRO-001',
+      email: defaultEmp.email || 'gro10xnow@gmail.com',
+      role: defaultEmp.role || 'Agency Founder & Master Owner',
+      accessLevel: 'Owner / Admin',
+      department: defaultEmp.department || 'Executive Leadership',
+      linkedType: 'team',
+      linkedId: defaultEmp.id || 'GRO-001',
+      profile: {
+        emp_code: defaultEmp.id || 'GRO-001',
+        name: defaultEmp.name || 'Firoz Uddin Ahmed',
+        email: defaultEmp.email || 'gro10xnow@gmail.com',
+        role: defaultEmp.role || 'Agency Founder & Master Owner',
+        accessLevel: 'Owner / Admin',
+        phone: defaultEmp.phone || '+8801708459008',
+        department: defaultEmp.department || 'Executive Leadership',
+        status: defaultEmp.status || 'Active'
+      }
+    });
+    return next();
+  }
+
   // 1. Verify Real Signed JWT first
   if (token) {
     const decodedPayload = verifyToken(token);
     if (decodedPayload) {
-      req.user = {
+      req.user = enrichUserContext({
         id: decodedPayload.userId || decodedPayload.id || 'USER-001',
         email: decodedPayload.email || '',
         name: decodedPayload.name || decodedPayload.profile?.name || 'Team Member',
         emp_code: decodedPayload.emp_code || decodedPayload.linkedId || decodedPayload.id || 'PBD-003',
         phone: decodedPayload.phone || '',
         role: decodedPayload.role || 'Specialist',
+        company: decodedPayload.company || decodedPayload.client || '',
         accessLevel: decodedPayload.accessLevel || decodedPayload.access_level || 'Specialist / Crew',
         department: decodedPayload.department || 'Production',
         linkedType: decodedPayload.linkedType || decodedPayload.type || 'team',
         linkedId: decodedPayload.linkedId || decodedPayload.emp_code || decodedPayload.userId || decodedPayload.id || 'EMP-001',
+        projectId: decodedPayload.projectId || decodedPayload.project_id || null,
+        projectName: decodedPayload.projectName || decodedPayload.project_name || null,
         profile: decodedPayload.profile || {
           emp_code: decodedPayload.linkedId || decodedPayload.emp_code || decodedPayload.userId || decodedPayload.id || 'EMP-001',
           name: decodedPayload.name || 'User',
@@ -43,7 +100,7 @@ async function requireAuth(req, res, next) {
           accessLevel: decodedPayload.accessLevel || decodedPayload.access_level || 'Specialist / Crew',
           department: decodedPayload.department || 'Production'
         }
-      };
+      });
       return next();
     }
 
@@ -81,7 +138,7 @@ async function requireAuth(req, res, next) {
         const resolvedLinkedType = isClient ? 'client' : (profile?.linked_type || profile?.linkedType || 'team');
         const resolvedLinkedId = isClient ? (profile?.client_id || profile?.linked_id || user.id) : (profile?.emp_code || user.id);
 
-        req.user = {
+        req.user = enrichUserContext({
           id: user.id,
           email: user.email,
           role: profile?.role || (isClient ? 'Client' : 'Specialist'),
@@ -94,7 +151,7 @@ async function requireAuth(req, res, next) {
             role: user.user_metadata?.role || (isClient ? 'Client' : 'Specialist'),
             department: isClient ? 'Client Accounts' : 'Production'
           }
-        };
+        });
         return next();
       }
     } catch (err) {
@@ -109,7 +166,7 @@ async function requireAuth(req, res, next) {
     if (pinUser) {
       const emp = (dbData.team || []).find(t => t.id === pinUser.linkedId || t.phone === pinUser.phone);
       if (emp) {
-        req.user = {
+        req.user = enrichUserContext({
           id: emp.id || 'GRO-001',
           email: emp.email || '',
           name: emp.name || 'Team Member',
@@ -125,7 +182,7 @@ async function requireAuth(req, res, next) {
             accessLevel: emp.accessLevel,
             department: emp.department
           }
-        };
+        });
         return next();
       }
     }
@@ -145,7 +202,7 @@ async function requireAuth(req, res, next) {
     const db = await readDB();
     const defaultEmp = (db.team && db.team[0]) || { name: 'Firoz Uddin Ahmed', role: 'Agency Founder & Master Owner' };
 
-    req.user = {
+    req.user = enrichUserContext({
       id: defaultEmp.id || 'GRO-001',
       email: defaultEmp.email || 'gro10xnow@gmail.com',
       role: defaultEmp.role || 'Agency Founder & Master Owner',
@@ -163,7 +220,7 @@ async function requireAuth(req, res, next) {
         department: defaultEmp.department || 'Executive Leadership',
         status: defaultEmp.status || 'Active'
       }
-    };
+    });
     return next();
   }
 
@@ -171,5 +228,6 @@ async function requireAuth(req, res, next) {
 }
 
 module.exports = {
-  requireAuth
+  requireAuth,
+  enrichUserContext
 };

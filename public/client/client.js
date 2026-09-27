@@ -3,12 +3,16 @@
  * Client Portal SPA Hash Router
  */
 (function initClientApp() {
+  window.escapeHTML = window.escapeHTML || function(s) {
+    return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+  };
   const ROUTES = {
     '#home':     { module: 'home.js',     title: 'Account Overview', icon: '🏠' },
     '#retainer': { module: 'retainer.js', title: 'Retainer Health & Quota', icon: '⚡' },
     '#review':   { module: 'review.js',   title: 'Content Review Room', icon: '🎬' },
     '#campaign': { module: 'campaign.js', title: 'Campaign Schedule', icon: '📋' },
     '#brief':    { module: 'brief.js',    title: 'Submit Campaign Brief', icon: '📝' },
+    '#lockin':   { module: 'lockin.js',   title: 'Sprint Lock-In & Handover', icon: '🔒' },
     '#invoices': { module: 'invoices.js', title: 'Billing & Invoices', icon: '💳' },
     '#tickets':  { module: 'tickets.js',  title: 'Support Requests', icon: '🎟️' },
     '#account':  { module: 'account.js',  title: 'My Account & Contacts', icon: '👤' }
@@ -46,12 +50,17 @@
     } catch (e) {}
   }
 
+  let routeNavSeq = 0;
+  let currentRenderedHash = null;
+  const moduleLoadPromises = {};
+
   function initRouter() {
     window.addEventListener('hashchange', handleRoute);
     handleRoute();
   }
 
   async function handleRoute() {
+    const currentSeq = ++routeNavSeq;
     let hash = window.location.hash || '#home';
     if (!ROUTES[hash]) hash = '#home';
 
@@ -78,6 +87,11 @@
     const viewContainer = document.getElementById('client-view');
     if (!viewContainer) return;
 
+    // If current hash is already fully mounted and rendered without skeleton, keep it intact
+    if (currentRenderedHash === hash && viewContainer.children.length > 0 && !viewContainer.querySelector('.skeleton')) {
+      return;
+    }
+
     viewContainer.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:1.25rem; padding:1.5rem 0;">
         <div class="skeleton" style="height:120px; width:100%; border-radius:16px;"></div>
@@ -86,9 +100,14 @@
     `;
 
     try {
-      if (!loadedModules[routeInfo.module]) {
-        await loadModuleScript(routeInfo.module);
-        loadedModules[routeInfo.module] = true;
+      await loadModuleScript(routeInfo.module);
+
+      if (currentSeq !== routeNavSeq) {
+        const latestHash = window.location.hash || '#home';
+        if (latestHash !== hash) {
+          // Navigation was genuinely superseded by a different route
+          return;
+        }
       }
 
       const moduleName = routeInfo.module.replace('.js', '');
@@ -98,8 +117,13 @@
         viewContainer.innerHTML = '';
         viewContainer.className = 'client-main-content content-area view-fade-in';
         await renderFn(viewContainer);
+        currentRenderedHash = hash;
       }
     } catch (err) {
+      if (currentSeq !== routeNavSeq) {
+        const latestHash = window.location.hash || '#home';
+        if (latestHash !== hash) return;
+      }
       console.error(`[Client Router] Error loading ${hash}:`, err);
       viewContainer.innerHTML = `
         <div class="card-glass" style="text-align:center; padding:3rem;">
@@ -112,19 +136,39 @@
   }
 
   function loadModuleScript(file) {
-    return new Promise((resolve, reject) => {
-      const scriptId = `script-mod-${file.replace('.js', '')}`;
+    const moduleName = file.replace('.js', '');
+    if (window.CLIENT_MODULES && window.CLIENT_MODULES[moduleName]) {
+      return Promise.resolve();
+    }
+    if (moduleLoadPromises[file]) {
+      return moduleLoadPromises[file];
+    }
+    moduleLoadPromises[file] = new Promise((resolve, reject) => {
+      const scriptId = `script-mod-${moduleName}`;
       const existing = document.getElementById(scriptId);
       if (existing) {
-        return resolve();
+        if (window.CLIENT_MODULES && window.CLIENT_MODULES[moduleName]) {
+          return resolve();
+        }
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener('error', () => {
+          delete moduleLoadPromises[file];
+          reject(new Error(`Could not load module: ${file}`));
+        }, { once: true });
+        return;
       }
       const script = document.createElement('script');
       script.id = scriptId;
-      script.src = `/client/modules/${file}?v=2.0`;
-      script.onload = resolve;
-      script.onerror = () => reject(new Error(`Could not load module: ${file}`));
+      script.setAttribute('data-module', moduleName);
+      script.src = `/client/modules/${file}?v=3.0`;
+      script.onload = () => resolve();
+      script.onerror = () => {
+        delete moduleLoadPromises[file];
+        reject(new Error(`Could not load module: ${file}`));
+      };
       document.body.appendChild(script);
     });
+    return moduleLoadPromises[file];
   }
 
   window.showClientToast = function(msg, type = 'success') {

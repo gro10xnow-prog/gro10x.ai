@@ -43,7 +43,8 @@ window.APP_MODULES.leads = async function(container) {
   function formatMoney(amount) {
     const val = Number(amount) || 0;
     if (currentCurrency === 'USD') {
-      return '$' + Math.round(val).toLocaleString();
+      const usdVal = val > 10000 ? Math.round(val / 120) : val;
+      return '$' + Math.round(usdVal).toLocaleString('en-US');
     }
     if (val >= 10000000) {
       return `৳${(val / 10000000).toFixed(2)} Cr`;
@@ -51,7 +52,7 @@ window.APP_MODULES.leads = async function(container) {
     if (val >= 100000) {
       return `৳${(val / 100000).toFixed(1)} Lakh`;
     }
-    return `৳${val.toLocaleString()}`;
+    return `৳${Math.round(val).toLocaleString('en-US')}`;
   }
 
   // ─── Load Data ──────────────────────────────────────────────────────────────
@@ -145,6 +146,9 @@ window.APP_MODULES.leads = async function(container) {
 
   // ─── Render Main Shell ───────────────────────────────────────────────────────
   function render() {
+    if (window.location.hash !== '#leads' && !document.getElementById('leadsKanbanBoard') && !document.getElementById('leadsKpiStrip')) {
+      return;
+    }
     const kpi = computeKPIs();
     const sources = [...new Set(leadsData.map(l => l.source).filter(Boolean))];
     const lostLeads = getLostLeads();
@@ -171,30 +175,34 @@ window.APP_MODULES.leads = async function(container) {
     const lostArchiveToggleBtn = document.getElementById('leadsLostArchiveToggleBtn');
 
     if (kanbanBoardEl && kpiStripEl) {
+      const currencyBtn = document.getElementById('leadsCurrencyToggleBtn');
+      if (currencyBtn) {
+        currencyBtn.innerHTML = `💱 <strong>${currentCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)'}</strong>`;
+      }
       kpiStripEl.innerHTML = `
         <div class="kpi-tile">
           <div class="kpi-label">Active Pipeline</div>
-          <div class="kpi-val">${kpi.activeCount}</div>
+          <div class="kpi-val" id="kpiActiveCount">${kpi.activeCount}</div>
           <div style="font-size:0.72rem; color:var(--text-muted);">Open Leads</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Pipeline Value</div>
-          <div class="kpi-val" style="color:var(--emerald-brand);">${formatMoney(kpi.pipelineVal)}</div>
+          <div class="kpi-val" id="kpiPipelineVal" style="color:var(--emerald-brand);">${formatMoney(kpi.pipelineVal)}</div>
           <div style="font-size:0.72rem; color:#10b981;">Estimated Deal Pool (${currentCurrency})</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Win Rate</div>
-          <div class="kpi-val" style="color:var(--purple-light);">${kpi.winRate}%</div>
+          <div class="kpi-val" id="kpiWinRate" style="color:var(--purple-light);">${kpi.winRate}%</div>
           <div style="font-size:0.72rem; color:var(--text-muted);">Won vs Lost</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Avg Lead Score</div>
-          <div class="kpi-val" style="color:${kpi.avgScore >= 70 ? '#10b981' : kpi.avgScore >= 40 ? '#f59e0b' : '#ef4444'};">${kpi.avgScore}</div>
+          <div class="kpi-val" id="kpiAvgScore" style="color:${kpi.avgScore >= 70 ? '#10b981' : kpi.avgScore >= 40 ? '#f59e0b' : '#ef4444'};">${kpi.avgScore}</div>
           <div style="font-size:0.72rem; color:var(--text-muted);">/ 100</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Follow-Ups Due</div>
-          <div class="kpi-val" style="color:${kpi.followUpsDue > 0 ? '#f59e0b' : 'var(--text-main)'};">${kpi.followUpsDue}</div>
+          <div class="kpi-val" id="kpiFollowUpsDue" style="color:${kpi.followUpsDue > 0 ? '#f59e0b' : 'var(--text-main)'};">${kpi.followUpsDue}</div>
           <div style="font-size:0.72rem; color:${kpi.followUpsDue > 0 ? '#f59e0b' : 'var(--text-muted)'};">⏰ Overdue / Today</div>
         </div>
       `;
@@ -220,11 +228,11 @@ window.APP_MODULES.leads = async function(container) {
           <div style="font-size:0.85rem; color:var(--text-muted);">Full sales funnel — capture, qualify, convert, and activate clients.</div>
         </div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-          <button class="btn-ghost" style="font-size:0.78rem; border:1px solid var(--border-subtle); padding:0.35rem 0.75rem; border-radius:8px; cursor:pointer;" onclick="window.LEADS_MODULE.toggleCurrency()" title="Toggle Currency">
+          <button class="btn-ghost" style="font-size:0.78rem; border:1px solid var(--border-subtle); padding:0.35rem 0.75rem; border-radius:8px; cursor:pointer;" id="leadsCurrencyToggleBtn" onclick="window.LEADS_MODULE.toggleCurrency()" title="Toggle Currency">
             💱 <strong>${currentCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)'}</strong>
           </button>
-          <button class="btn-secondary" style="font-size:0.8rem;" onclick="window.LEADS_MODULE.openImportModal()">📥 Bulk Import CSV</button>
-          <button class="btn-primary" style="font-size:0.8rem;" onclick="window.LEADS_MODULE.openAddModal()">+ Add Lead</button>
+          <button class="btn-secondary" style="font-size:0.8rem;" id="btnOpenImportModal" onclick="window.LEADS_MODULE.openImportModal()">📥 Bulk Import CSV</button>
+          <button class="btn-primary" style="font-size:0.8rem;" id="btnOpenAddLeadModal" onclick="window.LEADS_MODULE.openAddModal()">+ Add Lead</button>
         </div>
       </div>
 
@@ -232,27 +240,27 @@ window.APP_MODULES.leads = async function(container) {
       <div id="leadsKpiStrip" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(155px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
         <div class="kpi-tile">
           <div class="kpi-label">Active Pipeline</div>
-          <div class="kpi-val">${kpi.activeCount}</div>
+          <div class="kpi-val" id="kpiActiveCount">${kpi.activeCount}</div>
           <div style="font-size:0.72rem; color:var(--text-muted);">Open Leads</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Pipeline Value</div>
-          <div class="kpi-val" style="color:var(--emerald-brand);">${formatMoney(kpi.pipelineVal)}</div>
+          <div class="kpi-val" id="kpiPipelineVal" style="color:var(--emerald-brand);">${formatMoney(kpi.pipelineVal)}</div>
           <div style="font-size:0.72rem; color:#10b981;">Estimated Deal Pool (${currentCurrency})</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Win Rate</div>
-          <div class="kpi-val" style="color:var(--purple-light);">${kpi.winRate}%</div>
+          <div class="kpi-val" id="kpiWinRate" style="color:var(--purple-light);">${kpi.winRate}%</div>
           <div style="font-size:0.72rem; color:var(--text-muted);">Won vs Lost</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Avg Lead Score</div>
-          <div class="kpi-val" style="color:${kpi.avgScore >= 70 ? '#10b981' : kpi.avgScore >= 40 ? '#f59e0b' : '#ef4444'};">${kpi.avgScore}</div>
+          <div class="kpi-val" id="kpiAvgScore" style="color:${kpi.avgScore >= 70 ? '#10b981' : kpi.avgScore >= 40 ? '#f59e0b' : '#ef4444'};">${kpi.avgScore}</div>
           <div style="font-size:0.72rem; color:var(--text-muted);">/ 100</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Follow-Ups Due</div>
-          <div class="kpi-val" style="color:${kpi.followUpsDue > 0 ? '#f59e0b' : 'var(--text-main)'};">${kpi.followUpsDue}</div>
+          <div class="kpi-val" id="kpiFollowUpsDue" style="color:${kpi.followUpsDue > 0 ? '#f59e0b' : 'var(--text-main)'};">${kpi.followUpsDue}</div>
           <div style="font-size:0.72rem; color:${kpi.followUpsDue > 0 ? '#f59e0b' : 'var(--text-muted)'};">⏰ Overdue / Today</div>
         </div>
       </div>
@@ -268,14 +276,14 @@ window.APP_MODULES.leads = async function(container) {
           value="${searchQuery}"
           oninput="window.LEADS_MODULE.setSearch(this.value)"
         >
-        <button type="button" class="btn-ghost" style="font-size:0.78rem; font-weight:700; border:1px solid ${filterSource.toLowerCase().includes('sprint') ? '#c084fc' : 'rgba(168,85,247,0.35)'}; color:#c084fc; background:${filterSource.toLowerCase().includes('sprint') ? 'rgba(168,85,247,0.25)' : 'rgba(168,85,247,0.08)'}; border-radius:8px; padding:0.4rem 0.85rem; cursor:pointer;" onclick="window.LEADS_MODULE.setFilter(window.LEADS_MODULE.getFilter() === 'Sprint' ? 'all' : 'Sprint')">
+        <button type="button" class="btn-ghost" style="font-size:0.78rem; font-weight:700; border:1px solid ${filterSource.toLowerCase().includes('sprint') ? '#c084fc' : 'rgba(168,85,247,0.35)'}; color:#c084fc; background:${filterSource.toLowerCase().includes('sprint') ? 'rgba(168,85,247,0.25)' : 'rgba(168,85,247,0.08)'}; border-radius:8px; padding:0.4rem 0.85rem; cursor:pointer;" id="btnSprintFilter" onclick="window.LEADS_MODULE.setFilter(window.LEADS_MODULE.getFilter() === 'Sprint' ? 'all' : 'Sprint')">
           ${filterSource.toLowerCase().includes('sprint') ? '✕ Show All Sources' : '🚀 Sprint 01 Only'}
         </button>
-        <select class="input-text" style="width:auto;" onchange="window.LEADS_MODULE.setFilter(this.value)">
+        <select id="leadsFilterSelect" class="input-text" style="width:auto;" onchange="window.LEADS_MODULE.setFilter(this.value)">
           <option value="all" ${filterSource === 'all' ? 'selected' : ''}>All Sources</option>
           ${sources.map(s => `<option value="${escapeHTML(s)}" ${filterSource === s ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('')}
         </select>
-        <select class="input-text" style="width:auto;" onchange="window.LEADS_MODULE.setSort(this.value)">
+        <select id="leadsSortSelect" class="input-text" style="width:auto;" onchange="window.LEADS_MODULE.setSort(this.value)">
           <option value="score" ${sortBy === 'score' ? 'selected' : ''}>Sort: By Score ↓</option>
           <option value="date" ${sortBy === 'date' ? 'selected' : ''}>Sort: Newest First</option>
           <option value="followup" ${sortBy === 'followup' ? 'selected' : ''}>Sort: Follow-Up Due</option>
@@ -312,7 +320,7 @@ window.APP_MODULES.leads = async function(container) {
         <div class="modal-content" style="max-width:520px;">
           <div class="modal-header">
             <h3>🎯 Add New Lead</h3>
-            <button class="modal-close" onclick="window.LEADS_MODULE.closeAddModal()">✕</button>
+            <button id="btnCloseAddLeadModal" class="modal-close" onclick="window.LEADS_MODULE.closeAddModal()">✕</button>
           </div>
           <div class="modal-body" style="display:flex; flex-direction:column; gap:0.85rem;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.85rem;">
@@ -377,11 +385,11 @@ window.APP_MODULES.leads = async function(container) {
       </div>
 
       <!-- Bulk Import Leads Modal -->
-      <div id="importLeadsModal" class="modal-overlay">
+      <div id="importLeadsModal" class="modal-overlay" onclick="if(event.target===this) window.LEADS_MODULE.closeImportModal()">
         <div class="modal-content" style="max-width:620px;">
           <div class="modal-header">
             <h3>📥 Bulk Import Leads (CSV)</h3>
-            <button class="modal-close" onclick="window.LEADS_MODULE.closeImportModal()">✕</button>
+            <button id="btnCloseImportModal" class="modal-close" onclick="window.LEADS_MODULE.closeImportModal()">✕</button>
           </div>
           <div class="modal-body" style="display:flex; flex-direction:column; gap:1rem;">
             
@@ -495,7 +503,7 @@ window.APP_MODULES.leads = async function(container) {
     };
 
     return `
-      <div class="lead-card"
+      <div class="lead-card lead-kanban-card"
            draggable="${!isLost}"
            data-lead-id="${lead.id}"
            ondragstart="window.LEADS_MODULE.handleDragStart(event, '${lead.id}')"
@@ -514,6 +522,11 @@ window.APP_MODULES.leads = async function(container) {
 
         <!-- Service + Budget + Source tags -->
         <div style="display:flex; gap:0.3rem; flex-wrap:wrap; margin-bottom:0.5rem; align-items:center;">
+          ${(lead.source === 'AI_Readiness_Scorecard' || lead.engine_tag === 'engine2') ? `
+            <span style="font-size:0.68rem; background:rgba(6,182,212,0.18); color:#38bdf8; border:1px solid rgba(6,182,212,0.4); padding:0.12rem 0.45rem; border-radius:4px; font-weight:800; display:inline-flex; align-items:center; gap:0.25rem;">
+              ⚡ AI SCORE ${lead.lead_score || lead.score || 75}/100
+            </span>
+          ` : ''}
           ${(String(lead.source || '').includes('Sprint') || String(lead.service || lead.service_interest || '').includes('Sprint')) ? `
             <span style="font-size:0.68rem; background:rgba(168,85,247,0.22); color:#c084fc; border:1px solid rgba(168,85,247,0.5); padding:0.12rem 0.45rem; border-radius:4px; font-weight:800; display:inline-flex; align-items:center; gap:0.25rem;">
               🚀 SPRINT 01
@@ -521,7 +534,7 @@ window.APP_MODULES.leads = async function(container) {
           ` : ''}
           ${(lead.service || lead.service_interest) && !String(lead.service || lead.service_interest).includes('Sprint') ? `<span style="font-size:0.66rem; background:rgba(0,223,137,0.15); color:#00df89; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${escapeHTML(lead.service || lead.service_interest)}</span>` : ''}
           ${lead.value ? `<span style="font-size:0.66rem; background:rgba(56,189,248,0.15); color:#38bdf8; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${formatMoney(lead.value)}</span>` : ''}
-          ${lead.source && !String(lead.source).includes('Sprint') ? `<span style="font-size:0.66rem; background:rgba(255,255,255,0.06); color:var(--text-muted); padding:0.1rem 0.35rem; border-radius:4px;">${escapeHTML(lead.source.split(' ')[0])}</span>` : ''}
+          ${lead.source && !String(lead.source).includes('Sprint') && lead.source !== 'AI_Readiness_Scorecard' ? `<span style="font-size:0.66rem; background:rgba(255,255,255,0.06); color:var(--text-muted); padding:0.1rem 0.35rem; border-radius:4px;">${escapeHTML(lead.source.split(' ')[0])}</span>` : ''}
           ${(lead.phone || lead.whatsapp) ? `
             <a href="https://wa.me/${String(lead.phone || lead.whatsapp).replace(/[^0-9]/g, '')}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.66rem; background:rgba(16,185,129,0.2); color:#34d399; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700; text-decoration:none;">
               💬 WhatsApp
@@ -551,7 +564,7 @@ window.APP_MODULES.leads = async function(container) {
                 🏆 Convert to Client
               </button>
             ` : ''}
-            <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.25rem 0.4rem;"
+            <button class="btn-ghost btn-sm btn-open-lead-drawer" style="font-size:0.68rem; padding:0.25rem 0.4rem;"
               title="Open full profile"
               onclick="window.LEADS_MODULE.openDrawer('${lead.id}')">
               👁️
@@ -577,7 +590,7 @@ window.APP_MODULES.leads = async function(container) {
           <h2 style="font-size:1.25rem; font-weight:900; margin:0 0 0.25rem; color:var(--text-main);">${escapeHTML(lead.company || 'Unknown Brand')}</h2>
           <div style="font-size:0.8rem; color:var(--text-muted);">Lead ID: <strong>${lead.id}</strong></div>
         </div>
-        <button class="btn-ghost" onclick="window.LEADS_MODULE.closeDrawer()" style="font-size:1.3rem; padding:0.25rem;">✕</button>
+        <button id="btnCloseDrawer" class="btn-ghost" onclick="window.LEADS_MODULE.closeDrawer()" style="font-size:1.3rem; padding:0.25rem;">✕</button>
       </div>
 
       <!-- Stage + Score Header -->
@@ -695,6 +708,14 @@ window.APP_MODULES.leads = async function(container) {
       localStorage.setItem('gro10x_currency', currentCurrency);
       window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: currentCurrency } }));
       render();
+    },
+    switchCurrency(curr) {
+      if (curr && curr !== currentCurrency) {
+        currentCurrency = curr;
+        localStorage.setItem('gro10x_currency', curr);
+        window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: curr } }));
+        render();
+      }
     },
 
     // ─── Drag & Drop ──────────────────────────────────────────────────────────
@@ -1216,30 +1237,61 @@ window.APP_MODULES.leads = async function(container) {
     }
   };
 
-  // ─── Global Event Listeners ──────────────────────────────────────────────────
-  window.addEventListener('gro10x_currency_changed', (e) => {
+  window.switchLeadsCurrency = function(currency) {
+    if (currency) {
+      currentCurrency = currency;
+      localStorage.setItem('gro10x_currency', currency);
+      render();
+    } else {
+      window.LEADS_MODULE && window.LEADS_MODULE.toggleCurrency();
+    }
+  };
+  if (window.LEADS_MODULE) {
+    window.LEADS_MODULE.switchLeadsCurrency = window.switchLeadsCurrency;
+  }
+
+  // ─── Global Event Listeners (Deduplicated) ───────────────────────────────────
+  if (window._leadsCurrencyHandler) {
+    window.removeEventListener('gro10x_currency_changed', window._leadsCurrencyHandler);
+  }
+  window._leadsCurrencyHandler = (e) => {
+    if (window.location.hash !== '#leads') return;
     if (e.detail && e.detail.currency && e.detail.currency !== currentCurrency) {
       currentCurrency = e.detail.currency;
       render();
     }
-  });
+  };
+  window.addEventListener('gro10x_currency_changed', window._leadsCurrencyHandler);
 
-  window.addEventListener('keydown', (e) => {
+  if (window._leadsKeyDownHandler) {
+    window.removeEventListener('keydown', window._leadsKeyDownHandler);
+  }
+  window._leadsKeyDownHandler = (e) => {
     if (e.key === 'Escape') {
       const addModal = document.getElementById('addLeadModal');
-      if (addModal && addModal.classList.contains('active')) {
+      if (addModal && (addModal.classList.contains('active') || addModal.style.display === 'flex')) {
         window.LEADS_MODULE.closeAddModal();
       }
       const importModal = document.getElementById('importLeadsModal');
       if (importModal && importModal.classList.contains('active')) {
         window.LEADS_MODULE.closeImportModal();
       }
+      const drawer = document.getElementById('leadProfileDrawer');
+      if (drawer && drawer.style.display === 'block') {
+        window.LEADS_MODULE.closeDrawer();
+      }
     }
-  });
+  };
+  window.addEventListener('keydown', window._leadsKeyDownHandler);
 
-  if (window.APP_API && typeof window.APP_API.on === 'function') {
-    window.APP_API.on('lead_update', () => {
-      loadLeads();
+  // Real-time SSE subscriptions (400ms debounce)
+  let _leadsSseDebounce = null;
+  if (window.APP_SSE && typeof window.APP_SSE.subscribe === 'function') {
+    ['lead_update', 'client_update'].forEach(evt => {
+      window.APP_SSE.subscribe(evt, () => {
+        clearTimeout(_leadsSseDebounce);
+        _leadsSseDebounce = setTimeout(() => loadLeads(), 400);
+      });
     });
   }
 

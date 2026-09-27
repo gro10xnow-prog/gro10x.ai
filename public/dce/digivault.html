@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — DCE DigiVault Subscriptions & License Operations</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22%20%2232%22><text y=%2224%22 font-size=%2224%22>🏪</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #a855f7;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --cyan: #06b6d4;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: relative;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .brand-logo .icon-badge {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
+    }
+
+    .brand-logo h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-tab-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #111827;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .nav-tab-btn:hover:not(.active) {
+      border-color: #374151;
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+      width: 100%;
+      flex: 1;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .kpi-card.green::before { background: var(--success); }
+    .kpi-card.cyan::before { background: var(--cyan); }
+    .kpi-card.amber::before { background: var(--warning); }
+    .kpi-card.purple::before { background: var(--accent); }
+    .kpi-card.pink::before { background: #ec4899; }
+
+    .kpi-card .kpi-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .kpi-card .kpi-val {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 6px 0 2px;
+      font-family: var(--font);
+    }
+    .kpi-card .kpi-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--success); color: #070b12; }
+    .btn-warning { background: var(--warning); color: #070b12; }
+    .btn-secondary { background: #1f2937; color: var(--text); border: 1px solid var(--card-border); }
+    .btn-secondary:hover { background: #374151; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #1e293b;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .chip.active {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .data-table-wrap {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    th {
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.015); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-verified { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-delivered { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .badge-active { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      display: none;
+      place-items: center;
+      z-index: 2000;
+      padding: 16px;
+    }
+    .modal-card {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+    .modal-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid #1f2937;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body { padding: 22px; }
+    .modal-foot {
+      padding: 16px 22px;
+      border-top: 1px solid #1f2937;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #090e17;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .empty-box {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sub-Header for DigiVault Portal -->
+  <header>
+    <a href="/dce/digivault" class="brand-logo">
+      <div class="icon-badge">🏪</div>
+      <div>
+        <h1>DigiVault Subscriptions & License Operations</h1>
+        <small style="color: var(--text-muted); font-size: 11px;">Official Digital Product & Software Subscription Command Hub</small>
+      </div>
+    </a>
+
+    <div class="nav-tabs">
+      <button id="tabBtnOrders" class="nav-tab-btn active" onclick="switchTab('orders')">📥 Orders Pipeline</button>
+      <button id="tabBtnDelivery" class="nav-tab-btn" onclick="switchTab('delivery')">🔑 Delivery Queue (<span id="badgeDelivery" style="color: #f59e0b;">0</span>)</button>
+      <button id="tabBtnRenewals" class="nav-tab-btn" onclick="switchTab('renewals')">🔔 Renewals Engine (<span id="badgeRenewals" style="color: #ec4899;">0</span>)</button>
+      <button id="tabBtnCatalog" class="nav-tab-btn" onclick="switchTab('catalog')">📋 Products & Margins</button>
+      <button id="tabBtnVendors" class="nav-tab-btn" onclick="switchTab('vendors')">🏪 Verified Suppliers</button>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button class="btn btn-secondary" id="digivaultCurrencyToggleBtn" onclick="toggleCurrency()">৳ BDT Mode</button>
+      <button class="btn btn-primary" onclick="openNewOrderModal()">🛒 Log Order (FB/WA)</button>
+      <a href="/digivault" target="_blank" class="btn btn-secondary" style="background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); color: #c084fc;">Storefront ↗</a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- KPI Scorecards -->
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">Verified Revenue</div>
+        <div class="kpi-val" id="kpiRevenue" style="color: #10b981;">৳0</div>
+        <div class="kpi-sub">Gross verified sales</div>
+      </div>
+      <div class="kpi-card cyan">
+        <div class="kpi-label">Net Profit & Yield</div>
+        <div class="kpi-val" id="kpiProfit" style="color: #06b6d4;">৳0</div>
+        <div class="kpi-sub" id="kpiMargin" style="font-weight: 700;">0% Margin</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Delivery Queue</div>
+        <div class="kpi-val" id="kpiPendingDelivery" style="color: #f59e0b;">0</div>
+        <div class="kpi-sub">Paid orders awaiting creds</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Active Subscriptions</div>
+        <div class="kpi-val" id="kpiActiveSubs" style="color: #a855f7;">0</div>
+        <div class="kpi-sub">Live customer accounts</div>
+      </div>
+      <div class="kpi-card pink">
+        <div class="kpi-label">Upcoming Renewals</div>
+        <div class="kpi-val" id="kpiRenewalsDue" style="color: #ec4899;">0</div>
+        <div class="kpi-sub">Expiring within 7 days</div>
+      </div>
+    </div>
+
+    <!-- Tab 1: Orders Pipeline -->
+    <div id="tab-orders" class="panel active">
+      <div class="filter-bar">
+        <div class="filter-chips">
+          <button class="chip active" onclick="filterOrders('all', this)">All Orders</button>
+          <button class="chip" onclick="filterOrders('pending', this)">Pending Verification</button>
+          <button class="chip" onclick="filterOrders('paid', this)">Paid</button>
+          <button class="chip" onclick="filterOrders('in_delivery', this)">In Delivery</button>
+          <button class="chip" onclick="filterOrders('delivered', this)">Delivered</button>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted);" id="ordersCountNotice">Showing 0 orders</div>
+      </div>
+
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Product / Plan</th>
+              <th>Price / Currency</th>
+              <th>TrxID / Method</th>
+              <th>Status</th>
+              <th>SLA / Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr>
+              <td colspan="8" class="empty-box">Loading DigiVault orders...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 2: Delivery Queue -->
+    <div id="tab-delivery" class="panel">
+      <div style="margin-bottom: 16px;">
+        <h2 style="font-size: 18px; font-weight: 800;">🔑 Credential Delivery & Fulfillment Queue</h2>
+        <p style="font-size: 13px; color: var(--text-muted);">Paid orders waiting for account creation, credential dispatch, or activation links.</p>
+      </div>
+
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Vendor Rate</th>
+              <th>Sale Price</th>
+              <th>Customer Action</th>
+            </tr>
+          </thead>
+          <tbody id="deliveryTableBody">
+            <tr>
+              <td colspan="6" class="empty-box">No pending orders in delivery queue. All orders fulfilled!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 3: Renewals Engine -->
+    <div id="tab-renewals" class="panel">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="font-size: 18px; font-weight: 800;">🔔 Subscription Renewals Radar</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">Accounts expiring in the next 7 days requiring renewal notifications.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="triggerRenewalsCron()">⚡ Run Renewal Evaluator</button>
+      </div>
+
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Expiring Date</th>
+              <th>Days Left</th>
+              <th>Current Rate</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="renewalsTableBody">
+            <tr>
+              <td colspan="6" class="empty-box">No subscriptions due for renewal this week.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 4: Products Catalog & Margins -->
+    <div id="tab-catalog" class="panel">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="font-size: 18px; font-weight: 800;">📋 Digital Products Catalog & Margin Engine</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">Live digital subscriptions, buying rates from suppliers, and retail customer prices.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="loadAllData()">🔄 Refresh Catalog</button>
+      </div>
+
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Vendor Cost (Buy)</th>
+              <th>Customer Price (Sell)</th>
+              <th>Net Profit</th>
+              <th>Margin %</th>
+              <th>Stock Status</th>
+            </tr>
+          </thead>
+          <tbody id="catalogTableBody">
+            <tr>
+              <td colspan="7" class="empty-box">Loading product catalog...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 5: Verified Suppliers -->
+    <div id="tab-vendors" class="panel">
+      <div style="margin-bottom: 16px;">
+        <h2 style="font-size: 18px; font-weight: 800;">🏪 Verified Suppliers Directory</h2>
+        <p style="font-size: 13px; color: var(--text-muted);">Direct wholesale credential vendors and WhatsApp procurement lines.</p>
+      </div>
+
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Supplier Name</th>
+              <th>WhatsApp / Contact</th>
+              <th>Payment Info</th>
+              <th>Supplied Categories</th>
+              <th>Performance / SLA</th>
+            </tr>
+          </thead>
+          <tbody id="vendorsTableBody">
+            <tr>
+              <td colspan="5" class="empty-box">Loading supplier directory...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal: Log New Order -->
+  <div class="modal-overlay" id="newOrderModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 style="font-size: 16px; font-weight: 800;">🛒 Log New DigiVault Order (FB / WA)</h3>
+        <button onclick="closeModals()" style="background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <form id="newOrderForm" onsubmit="submitNewOrder(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Customer Name</label>
+            <input type="text" id="mCustName" class="form-control" placeholder="e.g. Tanvir Ahmed" required>
+          </div>
+          <div class="form-group">
+            <label>Phone or Email Address</label>
+            <input type="text" id="mCustContact" class="form-control" placeholder="e.g. 01712345678 or customer@gmail.com" required>
+          </div>
+          <div class="form-group">
+            <label>Acquisition Channel</label>
+            <select id="mChannel" class="form-control">
+              <option value="FACEBOOK">Facebook Page Messenger</option>
+              <option value="WHATSAPP">WhatsApp Direct</option>
+              <option value="TELEGRAM">Telegram Bot (@Digivault20bot)</option>
+              <option value="WEB">Direct Web Storefront</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Subscription Product</label>
+            <select id="mProductSelect" class="form-control" onchange="onProductSelectChange()" required>
+              <option value="">Select a subscription product...</option>
+            </select>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label>Selling Price (৳ BDT)</label>
+              <input type="number" id="mSalePrice" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>bKash / Nagad TrxID</label>
+              <input type="text" id="mTrxId" class="form-control" placeholder="e.g. 9KA281J72">
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Deliver Credentials -->
+  <div class="modal-overlay" id="deliverModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 style="font-size: 16px; font-weight: 800;">🔑 Deliver Credentials to Customer</h3>
+        <button onclick="closeModals()" style="background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <form id="deliverForm" onsubmit="submitDelivery(event)">
+        <input type="hidden" id="delivOrderId">
+        <div class="modal-body">
+          <p id="delivOrderSummary" style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;"></p>
+          <div class="form-group">
+            <label>Account Email / Username</label>
+            <input type="text" id="delivEmail" class="form-control" placeholder="e.g. premium.user@gmail.com">
+          </div>
+          <div class="form-group">
+            <label>Password or Profile PIN</label>
+            <input type="text" id="delivPassword" class="form-control" placeholder="e.g. Pass1234 or PIN: 1234">
+          </div>
+          <div class="form-group">
+            <label>Activation / Invitation Link (Optional)</label>
+            <input type="url" id="delivLink" class="form-control" placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label>Customer Instructions</label>
+            <textarea id="delivNotes" class="form-control" rows="2" placeholder="e.g. Profile 3 is assigned to you. Do not change password."></textarea>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-success">Mark Delivered & Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="digiModalContainer"></div>
+
+  <!-- Application Logic -->
+  <script>
+    let rawOrders = [];
+    let rawProducts = [];
+    let rawVendors = [];
+    let rawRenewals = [];
+    let currentFilter = 'all';
+
+    function getCurrency() {
+      return localStorage.getItem('gro10x_currency') || 'BDT';
+    }
+
+    function toggleCurrency() {
+      const next = getCurrency() === 'USD' ? 'BDT' : 'USD';
+      localStorage.setItem('gro10x_currency', next);
+      updateCurrencyBtn();
+      renderAll();
+    }
+
+    function updateCurrencyBtn() {
+      const btn = document.getElementById('digivaultCurrencyToggleBtn');
+      if (btn) btn.textContent = getCurrency() === 'USD' ? '$ USD Mode' : '৳ BDT Mode';
+    }
+
+    function formatMoney(amountBdt) {
+      const val = Number(amountBdt) || 0;
+      if (getCurrency() === 'USD') {
+        return '$' + (val / 120).toFixed(2);
+      }
+      return '৳' + Math.round(val).toLocaleString();
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+      const btn = Array.from(document.querySelectorAll('.nav-tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+      if (btn) btn.classList.add('active');
+
+      const panel = document.getElementById('tab-' + tabId);
+      if (panel) panel.classList.add('active');
+    }
+
+    async function loadAllData() {
+      try {
+        const [oRes, pRes, vRes, rRes] = await Promise.all([
+          fetch('/api/digistore/orders').then(r => r.json()).catch(() => ({ data: [] })),
+          fetch('/api/digistore/products').then(r => r.json()).catch(() => ({ data: [] })),
+          fetch('/api/digistore/vendors').then(r => r.json()).catch(() => ({ data: [] })),
+          fetch('/api/digistore/renewals').then(r => r.json()).catch(() => ({ data: [] }))
+        ]);
+
+        rawOrders = oRes.data || [];
+        rawProducts = pRes.data || [];
+        rawVendors = vRes.data || [];
+        rawRenewals = rRes.data || [];
+
+        populateProductDropdown();
+        renderAll();
+      } catch (err) {
+        console.error('[DigiVault] Error fetching data:', err);
+      }
+    }
+
+    function renderAll() {
+      updateKPIs();
+      renderOrders();
+      renderDelivery();
+      renderRenewals();
+      renderCatalog();
+      renderVendors();
+    }
+
+    function updateKPIs() {
+      const verified = rawOrders.filter(o => o.paymentStatus === 'verified');
+      const totalRev = verified.reduce((sum, o) => sum + (o.salePrice || 0), 0);
+      const totalCost = verified.reduce((sum, o) => sum + (o.vendorPrice || 0), 0);
+      const profit = totalRev - totalCost;
+      const margin = totalRev > 0 ? Math.round((profit / totalRev) * 100) : 0;
+
+      const pendingDeliv = rawOrders.filter(o => o.paymentStatus === 'verified' && o.deliveryStatus !== 'delivered').length;
+      const activeSubs = rawOrders.filter(o => o.deliveryStatus === 'delivered' && o.orderStage !== 'admin_closed').length;
+      const renewalsCount = rawRenewals.length;
+
+      document.getElementById('kpiRevenue').innerText = formatMoney(totalRev);
+      document.getElementById('kpiProfit').innerText = formatMoney(profit);
+      document.getElementById('kpiMargin').innerText = margin + '% Margin';
+      document.getElementById('kpiPendingDelivery').innerText = pendingDeliv;
+      document.getElementById('kpiActiveSubs').innerText = activeSubs;
+      document.getElementById('kpiRenewalsDue').innerText = renewalsCount;
+
+      document.getElementById('badgeDelivery').innerText = pendingDeliv;
+      document.getElementById('badgeRenewals').innerText = renewalsCount;
+    }
+
+    function filterOrders(filter, chipEl) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
+      if (chipEl) chipEl.classList.add('active');
+      renderOrders();
+    }
+
+    function renderOrders() {
+      const tbody = document.getElementById('ordersTableBody');
+      let list = [...rawOrders];
+
+      if (currentFilter === 'pending') {
+        list = list.filter(o => o.paymentStatus !== 'verified');
+      } else if (currentFilter === 'paid') {
+        list = list.filter(o => o.paymentStatus === 'verified');
+      } else if (currentFilter === 'in_delivery') {
+        list = list.filter(o => o.paymentStatus === 'verified' && o.deliveryStatus !== 'delivered');
+      } else if (currentFilter === 'delivered') {
+        list = list.filter(o => o.deliveryStatus === 'delivered');
+      }
+
+      document.getElementById('ordersCountNotice').innerText = `Showing ${list.length} of ${rawOrders.length} orders`;
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-box">No orders match this filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(o => {
+        const isVerified = o.paymentStatus === 'verified';
+        const isDelivered = o.deliveryStatus === 'delivered';
+        const orderId = o.orderNumber || o.id || 'ORD-000';
+        const customer = o.customerName || o.customerContact || 'Direct Customer';
+        const contact = o.customerContact || '';
+
+        let badgeStatus = '<span class="badge badge-pending">🟡 Pending Verification</span>';
+        if (isDelivered) {
+          badgeStatus = '<span class="badge badge-delivered">🟢 Delivered</span>';
+        } else if (isVerified) {
+          badgeStatus = '<span class="badge badge-verified">🔵 Paid (Fulfilling)</span>';
+        }
+
+        let actionBtns = '';
+        if (!isVerified) {
+          actionBtns += `<button class="btn btn-success btn-sm" onclick="verifyPayment('${o.id}')">✓ Verify Paid</button> `;
+        } else if (!isDelivered) {
+          actionBtns += `<button class="btn btn-warning btn-sm" onclick="openDeliverModal('${o.id}')">⚡ Deliver Creds</button> `;
+        }
+
+        return `
+          <tr>
+            <td><strong style="font-family: var(--mono); color: #a5b4fc;">#${orderId}</strong></td>
+            <td>
+              <div style="font-weight: 700;">${customer}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${contact}</div>
+            </td>
+            <td>
+              <div style="font-weight: 600;">${o.productName || 'Digital Subscription'}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${o.duration || '1 Month'}</div>
+            </td>
+            <td><strong>${formatMoney(o.salePrice)}</strong></td>
+            <td>
+              <div style="font-family: var(--mono); font-size: 11px;">${o.trxId || 'N/A'}</div>
+              <small style="color: var(--text-muted);">${o.paymentMethod || 'bKash'}</small>
+            </td>
+            <td>${badgeStatus}</td>
+            <td><small style="color: var(--text-muted);">${new Date(o.createdAt || Date.now()).toLocaleDateString()}</small></td>
+            <td>${actionBtns || '<span style="color: var(--text-muted); font-size: 11px;">Completed</span>'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDelivery() {
+      const tbody = document.getElementById('deliveryTableBody');
+      const pending = rawOrders.filter(o => o.paymentStatus === 'verified' && o.deliveryStatus !== 'delivered');
+
+      if (pending.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-box">🎉 Zero pending orders in queue! All paid orders have credentials delivered.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = pending.map(o => `
+        <tr>
+          <td><strong style="font-family: var(--mono); color: #fbbf24;">#${o.orderNumber || o.id}</strong></td>
+          <td>
+            <strong>${o.customerName || 'Customer'}</strong>
+            <div style="font-size: 11px; color: var(--text-muted);">${o.customerContact || ''}</div>
+          </td>
+          <td>${o.productName || 'Subscription'} (${o.duration || '1M'})</td>
+          <td>${formatMoney(o.vendorPrice || 0)}</td>
+          <td><strong>${formatMoney(o.salePrice || 0)}</strong></td>
+          <td>
+            <button class="btn btn-warning btn-sm" onclick="openDeliverModal('${o.id}')">⚡ Send Credentials</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderRenewals() {
+      const tbody = document.getElementById('renewalsTableBody');
+      if (rawRenewals.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-box">Zero subscriptions expiring in the next 7 days.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rawRenewals.map(r => `
+        <tr>
+          <td>
+            <strong>${r.customerName || 'Subscriber'}</strong>
+            <div style="font-size: 11px; color: var(--text-muted);">${r.customerContact || ''}</div>
+          </td>
+          <td>${r.productName || 'Subscription'}</td>
+          <td>${new Date(r.expiresAt || Date.now()).toLocaleDateString()}</td>
+          <td><span class="badge badge-danger">⏱️ ${r.daysLeft || 0} days</span></td>
+          <td>${formatMoney(r.salePrice || 0)}</td>
+          <td>
+            <button class="btn btn-primary btn-sm" onclick="renewSubscription('${r.orderId || r.id}')">🔔 Renew Notice</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCatalog() {
+      const tbody = document.getElementById('catalogTableBody');
+      if (rawProducts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-box">No products in catalog.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rawProducts.map(p => {
+        const buy = p.vendorPrice || p.buyPrice || 0;
+        const sell = p.salePrice || p.price || 0;
+        const profit = Math.max(0, sell - buy);
+        const margin = sell > 0 ? Math.round((profit / sell) * 100) : 0;
+        const inStock = p.stockStatus !== 'out_of_stock';
+
+        return `
+          <tr>
+            <td>
+              <strong style="color: #fff;">${p.name || p.title}</strong>
+              <div style="font-size: 11px; color: var(--text-muted);">${p.planType || '1 Month Slot'}</div>
+            </td>
+            <td><span class="badge badge-active">${p.category || 'AI Software'}</span></td>
+            <td>${formatMoney(buy)}</td>
+            <td><strong>${formatMoney(sell)}</strong></td>
+            <td style="color: #34d399; font-weight: 700;">+${formatMoney(profit)}</td>
+            <td><span style="color: #06b6d4; font-weight: 800;">${margin}%</span></td>
+            <td>
+              <button class="btn btn-sm ${inStock ? 'btn-success' : 'btn-secondary'}" onclick="toggleStock('${p.id}', ${inStock})">
+                ${inStock ? '✓ In Stock' : '✕ Out of Stock'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderVendors() {
+      const tbody = document.getElementById('vendorsTableBody');
+      if (rawVendors.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-box">No verified suppliers registered.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rawVendors.map(v => `
+        <tr>
+          <td><strong style="color: #fff;">${v.name || 'Vendor'}</strong></td>
+          <td>
+            <a href="https://wa.me/${(v.whatsapp || v.phone || '').replace(/[^0-9]/g, '')}" target="_blank" style="color: #22c55e; text-decoration: none; font-weight: 600;">
+              💬 ${v.whatsapp || v.phone || 'N/A'}
+            </a>
+          </td>
+          <td><small style="color: var(--text-muted);">${v.paymentMethods?.join(', ') || 'bKash / USDT'}</small></td>
+          <td>${(v.categories || ['Streaming', 'VPN', 'AI']).join(', ')}</td>
+          <td><span class="badge badge-verified">⚡ 15-30m Delivery SLA</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function populateProductDropdown() {
+      const select = document.getElementById('mProductSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">Select a subscription product...</option>' +
+        rawProducts.map(p => `<option value="${p.id}" data-price="${p.salePrice || 0}">${p.name} — ৳${p.salePrice || 0}</option>`).join('');
+    }
+
+    function onProductSelectChange() {
+      const select = document.getElementById('mProductSelect');
+      const opt = select.options[select.selectedIndex];
+      if (opt && opt.dataset.price) {
+        document.getElementById('mSalePrice').value = opt.dataset.price;
+      }
+    }
+
+    // Modal Actions
+    function openNewOrderModal() {
+      document.getElementById('newOrderForm').reset();
+      document.getElementById('newOrderModal').style.display = 'grid';
+    }
+
+    function openDeliverModal(orderId) {
+      const order = rawOrders.find(o => o.id === orderId);
+      if (!order) return;
+      document.getElementById('delivOrderId').value = order.id;
+      document.getElementById('delivOrderSummary').innerText = `Fulfilling order #${order.orderNumber || order.id} for ${order.customerName || 'Customer'} (${order.productName || 'Subscription'}).`;
+      document.getElementById('deliverForm').reset();
+      document.getElementById('deliverModal').style.display = 'grid';
+    }
+
+    function closeModals() {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    }
+
+    async function submitNewOrder(e) {
+      e.preventDefault();
+      const select = document.getElementById('mProductSelect');
+      const payload = {
+        customerName: document.getElementById('mCustName').value.trim(),
+        customerContact: document.getElementById('mCustContact').value.trim(),
+        contactChannel: document.getElementById('mChannel').value,
+        productId: select.value,
+        productName: select.options[select.selectedIndex].text.split(' — ')[0],
+        salePrice: Number(document.getElementById('mSalePrice').value) || 0,
+        trxId: document.getElementById('mTrxId').value.trim(),
+        paymentMethod: 'BKASH'
+      };
+
+      try {
+        const res = await fetch('/api/digistore/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success || res.ok) {
+          closeModals();
+          await loadAllData();
+        } else {
+          alert(data.message || 'Failed to save order');
+        }
+      } catch (err) {
+        alert('Network error saving order');
+      }
+    }
+
+    async function verifyPayment(orderId) {
+      if (!confirm('Mark payment as verified for this order?')) return;
+      try {
+        const res = await fetch(`/api/digistore/orders/${orderId}/verify-payment`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        await loadAllData();
+      } catch (err) {
+        alert('Failed to verify payment');
+      }
+    }
+
+    async function submitDelivery(e) {
+      e.preventDefault();
+      const orderId = document.getElementById('delivOrderId').value;
+      const payload = {
+        accountEmail: document.getElementById('delivEmail').value.trim(),
+        accountPassword: document.getElementById('delivPassword').value.trim(),
+        activationLink: document.getElementById('delivLink').value.trim(),
+        note: document.getElementById('delivNotes').value.trim()
+      };
+
+      try {
+        const res = await fetch(`/api/digistore/orders/${orderId}/deliver`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        closeModals();
+        await loadAllData();
+      } catch (err) {
+        alert('Failed to submit delivery');
+      }
+    }
+
+    async function renewSubscription(orderId) {
+      try {
+        await fetch(`/api/digistore/orders/${orderId}/renew`, { method: 'POST' });
+        alert('Renewal notification dispatched to subscriber!');
+        await loadAllData();
+      } catch (err) {
+        alert('Failed to renew subscription');
+      }
+    }
+
+    async function toggleStock(productId, currentlyInStock) {
+      const nextStatus = currentlyInStock ? 'out_of_stock' : 'in_stock';
+      try {
+        await fetch(`/api/digistore/products/${productId}/stock`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stock_status: nextStatus })
+        });
+        await loadAllData();
+      } catch (err) {
+        alert('Failed to toggle stock status');
+      }
+    }
+
+    async function triggerRenewalsCron() {
+      try {
+        await fetch('/api/digistore/cron/trigger-renewals', { method: 'POST' });
+        alert('Renewal cron evaluation executed!');
+        await loadAllData();
+      } catch (err) {
+        alert('Evaluator trigger completed');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateCurrencyBtn();
+      loadAllData();
+    });
+  </script>
+  <script src="/dce/nav.js"></script>
+</body>
+</html>

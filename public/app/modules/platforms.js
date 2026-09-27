@@ -9,7 +9,7 @@
 
 window.APP_MODULES = window.APP_MODULES || {};
 
-const PLATFORMS_REGISTRY_DATA = [
+var PLATFORMS_REGISTRY_DATA = window.PLATFORMS_REGISTRY_DATA || [
   {
     id: 'groupacademy',
     name: 'GroUp Academy',
@@ -477,6 +477,11 @@ function saveCustomPlatform(platform) {
   localStorage.setItem('gro10x_custom_platforms', JSON.stringify(list));
 }
 
+function deleteCustomPlatform(id) {
+  const list = getCustomPlatforms().filter(p => p.id !== id);
+  localStorage.setItem('gro10x_custom_platforms', JSON.stringify(list));
+}
+
 function getAllPlatforms() {
   return [...getCustomPlatforms(), ...PLATFORMS_REGISTRY_DATA];
 }
@@ -688,7 +693,12 @@ function renderPlatformsView(container) {
               📦 ${p.repo}
             </span>
             <div style="display:flex; gap:0.35rem; flex-shrink:0;">
-              <button class="btn-ghost btn-sm" onclick="window.PlatformsModule.openSpecs('${p.id}')" style="font-size:0.72rem; padding:0.25rem 0.55rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle, #2e2e3e); border-radius:6px; cursor:pointer; color:var(--text-primary);">
+              ${p.id.startsWith('custom_') ? `
+                <button class="btn-ghost btn-sm" id="btn-del-${p.id}" onclick="window.PlatformsModule.confirmDeleteCustom('${p.id}')" title="Delete custom platform" style="font-size:0.72rem; padding:0.25rem 0.55rem; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; cursor:pointer; color:#ef4444; transition:all 0.2s;">
+                  🗑
+                </button>
+              ` : ''}
+              <button class="btn-ghost btn-sm btn-open-specs" onclick="window.PlatformsModule.openSpecs('${p.id}')" style="font-size:0.72rem; padding:0.25rem 0.55rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle, #2e2e3e); border-radius:6px; cursor:pointer; color:var(--text-primary);">
                 📐 Specs
               </button>
               <button class="btn-ghost btn-sm" onclick="window.PlatformsModule.openLivePreview('${p.liveUrl}', '${p.name.replace(/'/g, "\\'")}')" style="font-size:0.72rem; padding:0.25rem 0.55rem; background:rgba(0,223,137,0.08); border:1px solid rgba(0,223,137,0.3); color:#00df89; border-radius:6px; cursor:pointer;">
@@ -718,7 +728,7 @@ function renderPlatformsView(container) {
         </p>
       </div>
       <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-        <button onclick="window.PlatformsModule.openRegisterModal()" class="btn-primary" style="background:#00df89; color:#09090b; font-weight:800; border:none; padding:0.45rem 0.9rem; border-radius:8px; cursor:pointer; font-size:0.82rem; display:flex; align-items:center; gap:0.35rem;">
+        <button id="btnOpenRegisterModal" onclick="window.PlatformsModule.openRegisterModal()" class="btn-primary" style="background:#00df89; color:#09090b; font-weight:800; border:none; padding:0.45rem 0.9rem; border-radius:8px; cursor:pointer; font-size:0.82rem; display:flex; align-items:center; gap:0.35rem;">
           <span>➕</span> Register Platform
         </button>
         <a href="#engines" class="btn-secondary" style="text-decoration:none; display:flex; align-items:center; gap:0.35rem; font-size:0.82rem; padding:0.45rem 0.9rem;">
@@ -756,7 +766,7 @@ function renderPlatformsView(container) {
     </div>
 
     <!-- ARCHITECTURE SPEC SHEET DRAWER / MODAL -->
-    <div id="platformSpecsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1.25rem;">
+    <div id="platformSpecsModal" onclick="if(event.target===this) window.PlatformsModule.closeSpecs()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1.25rem;">
       <div style="background:#13131c; border:1px solid var(--border-subtle, #2e2e3e); border-radius:18px; width:100%; max-width:680px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.6); display:flex; flex-direction:column;">
         <div id="platformSpecsModalBody" style="padding:1.5rem;">
           <!-- Dynamically populated by openSpecs() -->
@@ -765,7 +775,7 @@ function renderPlatformsView(container) {
     </div>
 
     <!-- REGISTER NEW PLATFORM MODAL -->
-    <div id="registerPlatformModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1.25rem;">
+    <div id="registerPlatformModal" onclick="if(event.target===this) window.PlatformsModule.closeRegisterModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1.25rem;">
       <div style="background:#13131c; border:1px solid var(--border-subtle, #2e2e3e); border-radius:18px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
         <div style="padding:1.5rem; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -965,7 +975,7 @@ function renderPlatformsView(container) {
               </span>
             </div>
           </div>
-          <button onclick="window.PlatformsModule.closeSpecs()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.4rem; line-height:1;">✕</button>
+          <button id="btnCloseSpecsModal" onclick="window.PlatformsModule.closeSpecs()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.4rem; line-height:1;">✕</button>
         </div>
 
         <p style="color:var(--text-secondary); font-size:0.85rem; margin:0 0 1.25rem 0; line-height:1.45;">
@@ -1091,8 +1101,43 @@ ${(p.keyModules || []).map(m => `  - ${m}`).join('\n')}
       if (form) form.reset();
     },
 
+    confirmDeleteCustom: function(platformId) {
+      const btn = document.getElementById(`btn-del-${platformId}`);
+      if (!btn) return;
+      if (btn.dataset.confirming === 'true') {
+        deleteCustomPlatform(platformId);
+        this.showToast('🗑 Platform removed from registry');
+        const headerBadge = document.getElementById('platformsHeaderBadge');
+        if (headerBadge) {
+          headerBadge.textContent = `${getAllPlatforms().length} Registered Platforms & OS Engines`;
+        }
+        updateStatsStrip();
+        updateTabButtons();
+        renderCardsGrid();
+      } else {
+        btn.dataset.confirming = 'true';
+        btn.textContent = '⚠️ Remove?';
+        btn.style.background = 'rgba(239,68,68,0.25)';
+        btn.style.borderColor = '#ef4444';
+        setTimeout(() => {
+          if (btn && btn.dataset.confirming === 'true') {
+            btn.dataset.confirming = 'false';
+            btn.textContent = '🗑';
+            btn.style.background = 'rgba(239,68,68,0.1)';
+            btn.style.borderColor = 'rgba(239,68,68,0.3)';
+          }
+        }, 4000);
+      }
+    },
+
     handleRegisterSubmit: function(e) {
       e.preventDefault();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        if (submitBtn.disabled) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Saving...';
+      }
       const name = document.getElementById('regName').value.trim();
       const icon = document.getElementById('regIcon').value.trim() || '🚀';
       const engineId = parseInt(document.getElementById('regEngineId').value, 10);
@@ -1142,6 +1187,10 @@ ${(p.keyModules || []).map(m => `  - ${m}`).join('\n')}
       };
 
       saveCustomPlatform(newPlatform);
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 Save to Registry';
+      }
       this.closeRegisterModal();
       this.showToast(`✅ Registered "${name}" into Platform Portfolio!`);
 
@@ -1155,6 +1204,44 @@ ${(p.keyModules || []).map(m => `  - ${m}`).join('\n')}
       renderCardsGrid();
     }
   };
+
+  // Global Escape key listener for closing open modals
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      const specsModal = document.getElementById('platformSpecsModal');
+      const regModal = document.getElementById('registerPlatformModal');
+      if (specsModal && specsModal.style.display !== 'none') {
+        window.PlatformsModule.closeSpecs();
+      }
+      if (regModal && regModal.style.display !== 'none') {
+        window.PlatformsModule.closeRegisterModal();
+      }
+    }
+  };
+  if (window._platformsKeyDownHandler) {
+    document.removeEventListener('keydown', window._platformsKeyDownHandler);
+  }
+  window._platformsKeyDownHandler = handleKeyDown;
+  document.addEventListener('keydown', handleKeyDown);
+
+  // Real-time SSE Subscriptions
+  if (window.APP_SSE) {
+    let _sseDebounce = null;
+    const _refreshOnSSE = () => {
+      clearTimeout(_sseDebounce);
+      _sseDebounce = setTimeout(() => {
+        updateStatsStrip();
+        updateTabButtons();
+        renderCardsGrid();
+        const headerBadge = document.getElementById('platformsHeaderBadge');
+        if (headerBadge) {
+          headerBadge.textContent = `${getAllPlatforms().length} Registered Platforms & OS Engines`;
+        }
+      }, 400);
+    };
+    window.APP_SSE.subscribe('engine_update', _refreshOnSSE);
+    window.APP_SSE.subscribe('client_update', _refreshOnSSE);
+  }
 
   // Initial Data Bind
   updateStatsStrip();

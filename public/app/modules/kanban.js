@@ -25,6 +25,8 @@ window.APP_MODULES.kanban = async function(container) {
   let activeTaskId = null;
   let selectedTasks = new Set();
   let lastSelectedTaskId = null;
+  let isContractorMode = false;
+  let activePodFilter = '';
 
   // Space & Stage Editor State
   let selectedSpaceIcon = '📁';
@@ -53,6 +55,11 @@ window.APP_MODULES.kanban = async function(container) {
       name: 'Dev & Tech',
       icon: '💻',
       stages: ['Briefing', 'Wireframe', 'Development', 'QA Testing', 'Client UAT', 'Approved']
+    },
+    sprints: {
+      name: '⚡ Engine 2 AI Sprints',
+      icon: '⚡',
+      stages: ['Discovery & Specs', 'Architecture & DoD', 'Build & Automation', 'QA & Review Room', 'Handover & 30d Warranty']
     }
   };
 
@@ -81,11 +88,30 @@ window.APP_MODULES.kanban = async function(container) {
       name: 'Dev & Tech',
       icon: '💻',
       stages: ['Briefing', 'Wireframe', 'Development', 'QA Testing', 'Client UAT', 'Approved']
+    },
+    sprints: {
+      name: '⚡ Engine 2 AI Sprints',
+      icon: '⚡',
+      stages: ['Discovery & Specs', 'Architecture & DoD', 'Build & Automation', 'QA & Review Room', 'Handover & 30d Warranty']
     }
   };
 
   // Pre-built Agency Task Blueprints
   const PRESET_TEMPLATES = [
+    {
+      id: 'ai_sprint_mvp',
+      name: '⚡ Rapid AI SaaS MVP (14d Target)',
+      workflow: 'sprints',
+      estimatedHours: 40,
+      description: 'Discovery & specs, LangGraph agent orchestration, Supabase pgvector RLS, DoD verification, Handover Hub & 30-Day Warranty.'
+    },
+    {
+      id: 'enterprise_auto_sprint',
+      name: '⚡ Enterprise Automation Pipeline (21d Target)',
+      workflow: 'sprints',
+      estimatedHours: 60,
+      description: 'Multi-system webhook integration, RPA bots, data sanitation, secure contractor boundary, and production sign-off.'
+    },
     {
       id: 'tvc_prod',
       name: '📦 Commercial TVC / OVC Production',
@@ -148,12 +174,54 @@ window.APP_MODULES.kanban = async function(container) {
   }
 
 
+  const CANONICAL_AGENCY_STAGES = [
+    'Briefing & Intake',
+    'In Production',
+    'Internal QC',
+    'Client Review',
+    'Approved'
+  ];
+
+  function getCanonicalStage(t) {
+    const raw = (t.stage || '').toLowerCase().trim();
+    if (!raw || raw.includes('brief') || raw.includes('intake')) return 'Briefing & Intake';
+    if (raw.includes('qc') || raw.includes('internal review') || raw.includes('qa') || raw.includes('copy review')) {
+      return 'Internal QC';
+    }
+    if (raw.includes('client') || raw.includes('approval') || raw.includes('refine') || raw.includes('uat')) {
+      return 'Client Review';
+    }
+    if (raw.includes('approv') || raw.includes('publish') || raw.includes('schedule') || raw.includes('deliver') || raw.includes('done') || raw.includes('complet')) {
+      return 'Approved';
+    }
+    return 'In Production';
+  }
+
+  function getTaskAssignee(t) {
+    if (t.assignee_name && t.assignee_name.trim()) return t.assignee_name.trim();
+    if (t.assigned_to && t.assigned_to.trim()) return t.assigned_to.trim();
+    if (t.assignee && t.assignee.trim()) return t.assignee.trim();
+    if (t.assignee_id && teamMembers && teamMembers.length > 0) {
+      const m = teamMembers.find(tm => tm.id === t.assignee_id || tm.emp_code === t.assignee_id);
+      if (m) return m.name;
+    }
+    return 'Unassigned';
+  }
+
+  function getAssigneeInitials(name) {
+    if (!name || name === 'Unassigned') return 'UN';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
   function getActiveStages() {
     if (activeWorkflowFilter !== 'all' && WORKFLOW_TYPES[activeWorkflowFilter]) {
       return WORKFLOW_TYPES[activeWorkflowFilter].stages;
     }
-    // Default fallback to standard 6-stage pipeline
-    return ['Briefing', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved'];
+    return CANONICAL_AGENCY_STAGES;
   }
 
   function getPriorityColor(priority) {
@@ -181,7 +249,7 @@ window.APP_MODULES.kanban = async function(container) {
             </div>
           `).join('')}
           <div style="margin-top: 0.3rem;">
-            <button class="btn-secondary btn-sm" style="width: 100%; border-style: dashed;" onclick="window.KANBAN_MODULE.openSpaceModal('create')">+ New Space</button>
+            <button class="btn-secondary btn-sm" id="btnOpenSpaceModal" style="width: 100%; border-style: dashed;" onclick="window.KANBAN_MODULE.openSpaceModal('create')">+ New Space</button>
           </div>
 
           <div class="sidebar-section-title">Workflow Pipeline</div>
@@ -217,14 +285,14 @@ window.APP_MODULES.kanban = async function(container) {
             
             <div style="display: flex; gap: 1rem; align-items: center;">
               <div class="view-toggles">
-                <button class="view-btn ${currentView === 'kanban' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('kanban')">🗂️ Board</button>
-                <button class="view-btn ${currentView === 'list' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('list')">📄 List</button>
-                <button class="view-btn ${currentView === 'calendar' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('calendar')">📅 Calendar</button>
-                <button class="view-btn ${currentView === 'dashboard' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('dashboard')">📊 Dashboard</button>
+                <button class="view-btn ${currentView === 'kanban' ? 'active' : ''}" id="btnViewKanbanBoard" onclick="window.KANBAN_MODULE.setView('kanban')">🗂️ Board</button>
+                <button class="view-btn ${currentView === 'list' ? 'active' : ''}" id="btnViewKanbanList" onclick="window.KANBAN_MODULE.setView('list')">📄 List</button>
+                <button class="view-btn ${currentView === 'calendar' ? 'active' : ''}" id="btnViewKanbanCalendar" onclick="window.KANBAN_MODULE.setView('calendar')">📅 Calendar</button>
+                <button class="view-btn ${currentView === 'dashboard' ? 'active' : ''}" id="btnViewKanbanDashboard" onclick="window.KANBAN_MODULE.setView('dashboard')">📊 Dashboard</button>
               </div>
               <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <button class="btn-secondary" onclick="window.KANBAN_MODULE.openImportModal()">📥 Bulk Import</button>
-                <button class="btn-primary" onclick="window.KANBAN_MODULE.openNewTaskModal()">+ New Task</button>
+                <button class="btn-secondary" id="btnOpenBulkImport" onclick="window.KANBAN_MODULE.openImportModal()">📥 Bulk Import</button>
+                <button class="btn-primary" id="btnOpenNewTask" onclick="window.KANBAN_MODULE.openNewTaskModal()">+ New Task</button>
               </div>
             </div>
           </div>
@@ -251,6 +319,17 @@ window.APP_MODULES.kanban = async function(container) {
                 <option value="${k}" ${activeWorkflowFilter === k ? 'selected' : ''}>${WORKFLOW_TYPES[k].icon} ${WORKFLOW_TYPES[k].name}</option>
               `).join('')}
             </select>
+
+            <select id="kanbanFilterPod" onchange="window.KANBAN_MODULE.applyFilters()" class="input-text" style="width: 160px; padding: 0.45rem 0.85rem;">
+              <option value="">⚡ All Pods</option>
+              <option value="MVP_BUILD_POD" ${activePodFilter === 'MVP_BUILD_POD' ? 'selected' : ''}>⚡ MVP Rapid Pod</option>
+              <option value="ENTERPRISE_AUTOMATION_POD" ${activePodFilter === 'ENTERPRISE_AUTOMATION_POD' ? 'selected' : ''}>🏢 Auto Pod</option>
+              <option value="CREATIVE_AI_POD" ${activePodFilter === 'CREATIVE_AI_POD' ? 'selected' : ''}>🎨 Creative Pod</option>
+            </select>
+
+            <button id="btnToggleContractorMode" onclick="window.KANBAN_MODULE.toggleContractorMode()" class="btn-secondary btn-sm" style="padding: 0.45rem 0.75rem; border-color: ${isContractorMode ? '#00df89' : 'rgba(6,182,212,0.4)'}; color: ${isContractorMode ? '#00df89' : '#06b6d4'}; display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer;" title="Toggle Subcontractor Scoped View (Financial Confidentiality Mask)">
+              <span>${isContractorMode ? '🛡️' : '👁️'}</span> <span>${isContractorMode ? 'Contractor Masked Active' : 'Contractor Mode'}</span>
+            </button>
           </div>
 
           <div class="kanban-board-container" id="kanbanBoardArea"></div>
@@ -278,9 +357,18 @@ window.APP_MODULES.kanban = async function(container) {
               <button class="btn-primary" style="flex:1; font-size:0.78rem; background:linear-gradient(135deg,#10b981,#059669);" onclick="window.KANBAN_MODULE.qcApproveActiveTask()">
                 ✅ QC Approve → Client Review
               </button>
-              <button class="btn-secondary" style="flex:1; font-size:0.78rem; border-color:#ef4444; color:#ef4444;" onclick="window.KANBAN_MODULE.qcRejectActiveTask()">
+              <button class="btn-secondary" style="flex:1; font-size:0.78rem; border-color:#ef4444; color:#ef4444;" onclick="window.KANBAN_MODULE.toggleQcRejectBox()">
                 ↩️ Return Briefing Revisions
               </button>
+            </div>
+            <!-- Inline QC Rejection Form -->
+            <div id="drawerQcRejectBox" style="display:none; margin-top:0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(239,68,68,0.4); border-radius:10px; padding:0.75rem;">
+              <label style="font-size:0.72rem; color:#ef4444; font-weight:700; display:block; margin-bottom:0.3rem;">Revision Notes for Production Team:</label>
+              <textarea id="drawerQcRejectInput" class="input-text" rows="2" placeholder="Describe required revisions..." style="width:100%; font-size:0.8rem; margin-bottom:0.5rem;"></textarea>
+              <div style="display:flex; justify-content:flex-end; gap:0.4rem;">
+                <button type="button" class="btn-ghost btn-sm" onclick="document.getElementById('drawerQcRejectBox').style.display='none'">Cancel</button>
+                <button type="button" class="btn-primary btn-sm" style="background:#ef4444;" onclick="window.KANBAN_MODULE.submitQcReject()">Submit Feedback</button>
+              </div>
             </div>
           </div>
 
@@ -291,7 +379,24 @@ window.APP_MODULES.kanban = async function(container) {
                 <div style="font-size: 1.25rem; font-weight: 800; color: var(--emerald-brand);" id="drawerTimeText">0h / 8h</div>
                 <div style="font-size: 0.75rem; color: var(--text-dim);">Logged vs Estimated</div>
               </div>
-              <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.logTime()">Log Hours</button>
+              <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.toggleLogTimeBox()">Log Hours</button>
+            </div>
+            <!-- Inline Time Logging Form -->
+            <div id="drawerLogTimeBox" style="display:none; margin-bottom:0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.3); border-radius:10px; padding:0.75rem;">
+              <div style="display:grid; grid-template-columns: 90px 1fr; gap:0.5rem; margin-bottom:0.5rem;">
+                <div>
+                  <label style="font-size:0.68rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">Hours *</label>
+                  <input type="number" step="0.5" id="drawerLogHoursInput" class="input-text" placeholder="e.g. 2" style="width:100%; font-size:0.82rem; padding:0.35rem 0.5rem;">
+                </div>
+                <div>
+                  <label style="font-size:0.68rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">Work Note</label>
+                  <input type="text" id="drawerLogNoteInput" class="input-text" placeholder="e.g. Color grading & sound sync" style="width:100%; font-size:0.82rem; padding:0.35rem 0.5rem;">
+                </div>
+              </div>
+              <div style="display:flex; justify-content:flex-end; gap:0.4rem;">
+                <button type="button" class="btn-ghost btn-sm" onclick="document.getElementById('drawerLogTimeBox').style.display='none'">Cancel</button>
+                <button type="button" class="btn-primary btn-sm" onclick="window.KANBAN_MODULE.submitLogTime()">Save Time</button>
+              </div>
             </div>
             <div id="drawerTimeLogList" style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.8rem;"></div>
           </div>
@@ -309,8 +414,16 @@ window.APP_MODULES.kanban = async function(container) {
 
           <div>
             <div style="font-size: 0.78rem; font-weight: 800; color: var(--text-dim); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">📝 Subtasks Checklist</div>
-            <div id="drawerSubtaskList" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;"></div>
-            <button class="btn-secondary btn-sm" style="width: 100%; border-style: dashed;" onclick="window.KANBAN_MODULE.addSubtask()">+ Add Subtask Item</button>
+            <div id="drawerSubtaskList" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.6rem;"></div>
+            <!-- Inline Add Subtask Form -->
+            <div id="drawerSubtaskForm" style="display:none; margin-bottom:0.6rem; background:var(--surface-3); border:1px solid rgba(168,85,247,0.3); border-radius:10px; padding:0.6rem;">
+              <div style="display:flex; gap:0.4rem;">
+                <input type="text" id="drawerNewSubtaskInput" class="input-text" placeholder="New subtask title..." style="flex:1; font-size:0.82rem; padding:0.4rem 0.6rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.KANBAN_MODULE.submitAddSubtask();}">
+                <button type="button" class="btn-primary btn-sm" onclick="window.KANBAN_MODULE.submitAddSubtask()">+ Add</button>
+                <button type="button" class="btn-ghost btn-sm" onclick="document.getElementById('drawerSubtaskForm').style.display='none'">✕</button>
+              </div>
+            </div>
+            <button class="btn-secondary btn-sm" style="width: 100%; border-style: dashed;" onclick="window.KANBAN_MODULE.toggleSubtaskForm()">+ Add Subtask Item</button>
           </div>
           
           <div>
@@ -330,11 +443,11 @@ window.APP_MODULES.kanban = async function(container) {
       </div>
 
       <!-- Rich Task Creation Modal -->
-      <div class="modal-overlay" id="newTaskModalOverlay">
+      <div class="modal-overlay" id="newTaskModalOverlay" onclick="if(event.target === this) window.KANBAN_MODULE.closeNewTaskModal()">
         <div class="modal-content" style="max-width: 580px;">
           <div class="modal-header">
             <span>📋 Create New Production Task</span>
-            <button class="modal-close" onclick="window.KANBAN_MODULE.closeNewTaskModal()">✕</button>
+            <button class="modal-close" id="btnCloseNewTaskModal" onclick="window.KANBAN_MODULE.closeNewTaskModal()">✕</button>
           </div>
           <div class="modal-body" style="gap: 1rem;">
             <div class="form-group" style="margin-bottom: 0;">
@@ -431,7 +544,7 @@ window.APP_MODULES.kanban = async function(container) {
         <div class="modal-content" style="max-width: 520px;">
           <div class="modal-header">
             <span style="font-weight: 800; font-family: var(--font-heading);">📁 Workspace Spaces Manager</span>
-            <button class="modal-close" onclick="window.KANBAN_MODULE.closeSpaceModal()">✕</button>
+            <button class="modal-close" id="btnCloseSpaceModal" onclick="window.KANBAN_MODULE.closeSpaceModal()">✕</button>
           </div>
           <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
             <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
@@ -602,7 +715,7 @@ window.APP_MODULES.kanban = async function(container) {
             <div style="font-size:1.15rem; font-weight:800; font-family:var(--font-heading);">
               📥 Bulk Import Tasks & Projects
             </div>
-            <button class="modal-close-btn" onclick="window.KANBAN_MODULE.closeImportModal()">✕</button>
+            <button class="modal-close-btn" id="btnCloseImportModal" onclick="window.KANBAN_MODULE.closeImportModal()">✕</button>
           </div>
 
           <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
@@ -678,6 +791,7 @@ window.APP_MODULES.kanban = async function(container) {
         if (activeWorkflowFilter === 'social' && (t.department === 'Social' || (t.title || '').toLowerCase().includes('post'))) return true;
         if (activeWorkflowFilter === 'branding' && (t.department === 'Graphics' || (t.title || '').toLowerCase().includes('brand'))) return true;
         if (activeWorkflowFilter === 'dev' && (t.department === 'Tech' || (t.title || '').toLowerCase().includes('app'))) return true;
+        if (activeWorkflowFilter === 'sprints' && ((t.title || '').toLowerCase().includes('sprint') || (t.title || '').toLowerCase().includes('ai') || (t.podId || '').includes('POD') || (t.podType || '').includes('POD') || (t.stage || '').includes('DoD') || (t.stage || '').includes('Warranty'))) return true;
         return false;
       });
     }
@@ -686,11 +800,20 @@ window.APP_MODULES.kanban = async function(container) {
     const searchQ = document.getElementById('kanbanSearchQuery')?.value.toLowerCase() || '';
     const assigneeF = document.getElementById('kanbanFilterAssignee')?.value || '';
     const priorityF = document.getElementById('kanbanFilterPriority')?.value || '';
+    const podF = document.getElementById('kanbanFilterPod')?.value || activePodFilter || '';
     
     return displayTasks.filter(t => {
       if (searchQ && !t.title.toLowerCase().includes(searchQ) && !(t.client || '').toLowerCase().includes(searchQ)) return false;
-      if (assigneeF && t.assignee !== assigneeF) return false;
+      if (assigneeF && getTaskAssignee(t) !== assigneeF) return false;
       if (priorityF && t.priority !== priorityF) return false;
+      if (podF) {
+        const tPod = t.podId || t.podType || t.pod || '';
+        if (tPod !== podF) {
+          if (podF === 'MVP_BUILD_POD' && !(t.title || '').toLowerCase().includes('mvp') && !(t.title || '').toLowerCase().includes('prototype')) return false;
+          if (podF === 'ENTERPRISE_AUTOMATION_POD' && !(t.title || '').toLowerCase().includes('auto') && !(t.title || '').toLowerCase().includes('retainer') && !(t.title || '').toLowerCase().includes('langgraph')) return false;
+          if (podF === 'CREATIVE_AI_POD' && !(t.title || '').toLowerCase().includes('creative') && !(t.title || '').toLowerCase().includes('video')) return false;
+        }
+      }
       return true;
     });
   }
@@ -713,9 +836,46 @@ window.APP_MODULES.kanban = async function(container) {
       const todayDate = new Date();
 
       area.innerHTML = `
+        <!-- Workflow Pipeline Switcher Pills -->
+        <div style="display:flex; gap:0.4rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:0.75rem; font-weight:800; color:var(--text-dim); text-transform:uppercase; margin-right:0.3rem;">Pipeline:</span>
+          <button type="button" class="btn-sm" style="border-radius:999px; font-size:0.75rem; font-weight:800; padding:0.25rem 0.75rem; cursor:pointer; ${activeWorkflowFilter === 'all' ? 'background:var(--purple-brand); color:#fff; border:none;' : 'background:var(--surface-3); color:var(--text-muted); border:1px solid var(--border-subtle);'}" onclick="window.KANBAN_MODULE.setWorkflowFilter('all')">
+            ⚡ All (${allTasks.length})
+          </button>
+          ${Object.keys(WORKFLOW_TYPES).map(k => {
+            const wf = WORKFLOW_TYPES[k];
+            const cnt = allTasks.filter(t => (t.workflow_type || t.category || '').toLowerCase() === k.toLowerCase()).length;
+            return `
+              <button type="button" class="btn-sm" style="border-radius:999px; font-size:0.75rem; font-weight:800; padding:0.25rem 0.75rem; cursor:pointer; ${activeWorkflowFilter === k ? 'background:var(--purple-brand); color:#fff; border:none;' : 'background:var(--surface-3); color:var(--text-muted); border:1px solid var(--border-subtle);'}" onclick="window.KANBAN_MODULE.setWorkflowFilter('${k}')">
+                ${wf.icon} ${wf.name} (${cnt})
+              </button>
+            `;
+          }).join('')}
+        </div>
+
+        ${isContractorMode ? `
+          <div style="background:rgba(6,182,212,0.12); border:1px solid rgba(6,182,212,0.4); border-radius:10px; padding:0.65rem 1rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:#06b6d4; font-weight:700;">
+              <span>🛡️</span>
+              <span>Subcontractor Scoped View Active — Budgets, hourly billing rates, client invoices, and gross margins are strictly masked.</span>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <button type="button" class="btn-ghost btn-sm" onclick="window.location.hash='#engines'; setTimeout(() => window.EnginesModule && window.EnginesModule.openContractorPassModal(), 300);" style="font-size:0.72rem; color:#f59e0b; border-color:rgba(245,158,11,0.4); cursor:pointer;">
+                🔑 Issue Contractor Pass
+              </button>
+              <button type="button" class="btn-ghost btn-sm" onclick="window.KANBAN_MODULE.toggleContractorMode(false)" style="font-size:0.72rem; color:#06b6d4; border-color:rgba(6,182,212,0.3); cursor:pointer;">Exit Masked View</button>
+            </div>
+          </div>
+        ` : ''}
+
         <div class="kanban-grid">
           ${currentStages.map(stg => {
-            const stageTasks = displayTasks.filter(t => (t.stage || currentStages[0]) === stg);
+            const stageTasks = displayTasks.filter(t => {
+              if (activeWorkflowFilter === 'all') {
+                return getCanonicalStage(t) === stg;
+              }
+              return (t.stage || currentStages[0]) === stg;
+            });
             const totalStageHours = stageTasks.reduce((sum, t) => sum + Number(t.estimatedHours || 8), 0);
             const urgentCount = stageTasks.filter(t => t.priority === 'Urgent').length;
             const overdueCount = stageTasks.filter(t => (t.dueDate || t.due_date) && (t.dueDate || t.due_date) < todayStr && !['Approved', 'Published', 'Completed'].includes(stg)).length;
@@ -736,14 +896,33 @@ window.APP_MODULES.kanban = async function(container) {
                   ${stageTasks.map(t => {
                     const safeClient = escapeHTML(t.client || 'Agency');
                     const safeTitle = escapeHTML(t.title);
-                    const safeAssignee = escapeHTML(t.assignee || 'Unassigned');
-                    const assigneeInitials = escapeHTML(safeAssignee.substring(0, 2).toUpperCase());
+                    const safeAssignee = escapeHTML(getTaskAssignee(t));
+                    const assigneeInitials = escapeHTML(getAssigneeInitials(safeAssignee));
                     const priorityColor = getPriorityColor(t.priority);
                     const loggedH = Number(t.loggedHours || 0);
                     const estH = Number(t.estimatedHours || 8);
                     const timeProgress = Math.min(100, Math.round((loggedH / estH) * 100));
                     const isUrgent = t.priority === 'Urgent';
                     
+                    // Pod Badge Detection
+                    const tPod = t.podId || t.podType || t.pod || '';
+                    let podBadgeHtml = '';
+                    if (tPod === 'MVP_BUILD_POD' || (!tPod && (t.title||'').toLowerCase().includes('mvp'))) {
+                      podBadgeHtml = '<span class="badge" style="background:rgba(6,182,212,0.15); color:#06b6d4; border:1px solid rgba(6,182,212,0.3); font-weight:700;">⚡ MVP Pod</span>';
+                    } else if (tPod === 'ENTERPRISE_AUTOMATION_POD' || (!tPod && ((t.title||'').toLowerCase().includes('auto') || (t.title||'').toLowerCase().includes('retainer') || (t.title||'').toLowerCase().includes('langgraph')))) {
+                      podBadgeHtml = '<span class="badge" style="background:rgba(0,223,137,0.15); color:#00df89; border:1px solid rgba(0,223,137,0.3); font-weight:700;">🏢 Auto Pod</span>';
+                    } else if (tPod === 'CREATIVE_AI_POD' || (!tPod && (t.title||'').toLowerCase().includes('creative'))) {
+                      podBadgeHtml = '<span class="badge" style="background:rgba(168,85,247,0.15); color:#a855f7; border:1px solid rgba(168,85,247,0.3); font-weight:700;">🎨 Creative Pod</span>';
+                    }
+
+                    // Warranty Shield Badge Detection
+                    const warrantyBadgeHtml = (t.warrantyUntil || t.deliveryStatus === 'IN_WARRANTY' || t.stage === 'Handover & 30d Warranty') ?
+                      '<span class="badge" style="background:rgba(0,223,137,0.15); color:#00df89; border:1px solid rgba(0,223,137,0.3); font-weight:800;">🛡️ 30d Warranty</span>' : '';
+
+                    // Confidential Mask Badge
+                    const contractorBadgeHtml = isContractorMode ?
+                      '<span class="badge" style="background:rgba(6,182,212,0.2); color:#06b6d4; font-weight:800; border:1px solid rgba(6,182,212,0.4);">🔒 Masked</span>' : '';
+
                     // Due Date Check
                     let isOverdue = false;
                     let diffDays = 0;
@@ -779,6 +958,9 @@ window.APP_MODULES.kanban = async function(container) {
 
                       <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.7rem; margin: 0.2rem 0;">
                         ${t.priority ? `<span class="badge" style="background:${isUrgent ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.06)'}; color:${priorityColor}; border:1px solid ${priorityColor}55; font-weight:700;">${isUrgent ? '🔴 ' : ''}${escapeHTML(t.priority)}</span>` : ''}
+                        ${podBadgeHtml}
+                        ${warrantyBadgeHtml}
+                        ${contractorBadgeHtml}
                         ${dueStr ? `<span class="badge ${isOverdue ? 'badge-pink' : 'badge-gray'}" style="${isOverdue ? 'font-weight:800; background:rgba(239,68,68,0.25); color:#ef4444;' : ''}">📅 ${dueStr} ${isOverdue ? `(🚨 ${diffDays}d Late)` : ''}</span>` : ''}
                       </div>
 
@@ -811,11 +993,15 @@ window.APP_MODULES.kanban = async function(container) {
         </div>
       `;
     } else if (currentView === 'list') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayDate = new Date();
       area.innerHTML = `
         <table class="kanban-list-view">
           <thead>
             <tr>
-              <th style="width:40px;"></th>
+              <th style="width:40px;">
+                <input type="checkbox" id="listSelectAllCb" onchange="window.KANBAN_MODULE.toggleSelectAll(this.checked)" style="transform:scale(1.15); cursor:pointer; accent-color: var(--purple-brand);" title="Select All Visible Tasks">
+              </th>
               <th>Priority</th>
               <th>Task Title</th>
               <th>Client Space</th>
@@ -831,7 +1017,29 @@ window.APP_MODULES.kanban = async function(container) {
               const priorityColor = getPriorityColor(prio);
               const safeTitle = escapeHTML(t.title);
               const safeClient = escapeHTML(t.client || 'Agency');
-              const safeAssignee = escapeHTML(t.assignee || 'Unassigned');
+              const safeAssignee = escapeHTML(getTaskAssignee(t));
+              const assigneeInitials = escapeHTML(getAssigneeInitials(safeAssignee));
+
+              // Format due date to human-readable
+              let dueDisplay = '<span style="color:var(--text-dim);">ASAP</span>';
+              const rawDue = t.dueDate || t.due_date;
+              if (rawDue) {
+                const d = new Date(rawDue);
+                if (!isNaN(d)) {
+                  const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                  const isOverdue = rawDue < todayStr && !['Approved', 'Published', 'Completed', 'Done'].includes(t.stage);
+                  if (isOverdue) {
+                    const diffDays = Math.ceil((todayDate - d) / (1000 * 60 * 60 * 24));
+                    dueDisplay = `<span style="font-weight:700; color:#ef4444;" title="${escapeHTML(rawDue)}">📅 ${formattedDate} <span style="font-size:0.68rem; background:rgba(239,68,68,0.2); padding:0.1rem 0.35rem; border-radius:4px;">🚨 ${diffDays}d Late</span></span>`;
+                  } else {
+                    dueDisplay = `<span style="color:var(--text-secondary);" title="${escapeHTML(rawDue)}">📅 ${formattedDate}</span>`;
+                  }
+                }
+              }
+
+              // Dynamic stages for this task's workflow
+              const taskStages = (WORKFLOW_TYPES[t.workflow_type || t.category]?.stages) || currentStages;
+
               return `
                 <tr onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
                   <td onclick="event.stopPropagation()"><input type="checkbox" class="task-cb" ${selectedTasks.has(t.id) ? 'checked' : ''} onclick="window.KANBAN_MODULE.toggleSelect(event, '${t.id}')" style="transform:scale(1.15); cursor:pointer; accent-color: var(--purple-brand);"></td>
@@ -840,12 +1048,19 @@ window.APP_MODULES.kanban = async function(container) {
                   <td style="color: var(--purple-light); font-weight:600;">🏢 ${safeClient}</td>
                   <td>
                     <select style="background:var(--surface-3); border:1px solid var(--border-subtle); color:var(--text-primary); padding:0.3rem 0.5rem; border-radius:8px; font-size:0.78rem;" onclick="event.stopPropagation()" onchange="window.KANBAN_MODULE.updateStage('${t.id}', this.value)">
-                      ${currentStages.map(s => `<option value="${s}" ${t.stage === s ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('')}
+                      ${taskStages.map(s => `<option value="${s}" ${t.stage === s ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('')}
                     </select>
                   </td>
-                  <td>👤 ${safeAssignee}</td>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <div style="width:22px; height:22px; border-radius:50%; background:var(--gradient-rose); font-size:0.65rem; font-weight:800; color:#fff; display:flex; align-items:center; justify-content:center;">
+                        ${assigneeInitials}
+                      </div>
+                      <span style="font-weight:600; font-size:0.82rem;">${safeAssignee}</span>
+                    </div>
+                  </td>
                   <td style="color: var(--text-muted); font-weight:600;">⏱️ ${escapeHTML(t.loggedHours || 0)}h / ${escapeHTML(t.estimatedHours || 8)}h</td>
-                  <td style="color: var(--text-muted);">${escapeHTML(t.dueDate || t.due_date || 'ASAP')}</td>
+                  <td>${dueDisplay}</td>
                 </tr>
               `;
             }).join('')}
@@ -908,12 +1123,13 @@ window.APP_MODULES.kanban = async function(container) {
       );
 
       cellsHtml += `
-        <div class="cal-cell ${isToday ? 'today' : ''}">
+        <div class="cal-cell ${isToday ? 'today' : ''}" style="cursor:pointer;" onclick="if(event.target===this || event.target.classList.contains('cal-date-num')) window.KANBAN_MODULE.openNewTaskModal({ dueDate: '${calCurrentYear}-${String(calCurrentMonth+1).padStart(2, '0')}-${String(day).padStart(2, '0')}' })" title="Click to schedule deliverable on ${monthNames[calCurrentMonth]} ${day}">
           <div class="cal-date-num">${day}</div>
           ${dayTasks.map(t => {
             const pColor = getPriorityColor(t.priority);
+            const safeAssignee = escapeHTML(getTaskAssignee(t));
             return `
-              <div class="cal-task-chip" style="background: ${pColor};" onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
+              <div class="cal-task-chip" style="background: ${pColor}; cursor:pointer;" onclick="event.stopPropagation(); window.KANBAN_MODULE.openDrawer('${t.id}')" title="${escapeHTML(t.title)} • Client: ${escapeHTML(t.client || 'Agency')} • Assignee: ${safeAssignee} • Stage: ${escapeHTML(t.stage)}">
                 <span>•</span> ${escapeHTML(t.title)}
               </div>
             `;
@@ -1007,19 +1223,21 @@ window.APP_MODULES.kanban = async function(container) {
         return false;
       });
 
-      // Specialist Team Workload
+      // Specialist Team Workload - Resolved with getTaskAssignee
       const memberMap = {};
       teamMembers.forEach(m => {
         memberMap[m.name] = { name: m.name, role: m.role || 'Specialist', taskCount: 0, workflows: new Set(), logged: 0 };
       });
       displayTasks.forEach(t => {
-        if (t.assignee) {
-          if (!memberMap[t.assignee]) {
-            memberMap[t.assignee] = { name: t.assignee, role: 'Specialist', taskCount: 0, workflows: new Set(), logged: 0 };
+        const assignee = getTaskAssignee(t);
+        if (assignee && assignee !== 'Unassigned') {
+          if (!memberMap[assignee]) {
+            memberMap[assignee] = { name: assignee, role: 'Specialist', taskCount: 0, workflows: new Set(), logged: 0 };
           }
-          memberMap[t.assignee].taskCount += 1;
-          if (t.workflow_type) memberMap[t.assignee].workflows.add(t.workflow_type);
-          memberMap[t.assignee].logged += Number(t.loggedHours || 0);
+          memberMap[assignee].taskCount += 1;
+          const wf = t.workflow_type || t.category;
+          if (wf) memberMap[assignee].workflows.add(wf);
+          memberMap[assignee].logged += Number(t.loggedHours || t.logged_hours || 0);
         }
       });
       const workloadList = Object.values(memberMap).sort((a, b) => b.taskCount - a.taskCount);
@@ -1115,33 +1333,33 @@ window.APP_MODULES.kanban = async function(container) {
           
           <!-- Executive KPI Row -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-            <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--purple-brand);">
-              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">⚡ Total Tasks</div>
-              <div style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin-top: 0.2rem;">${totalTasks}</div>
-              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">${activeSpace === 'all' ? 'All Spaces' : escapeHTML(activeSpace)}</div>
-            </div>
+          <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--purple-brand);">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">⚡ Total Tasks</div>
+            <div id="kanbanKpiTotalTasks" style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin-top: 0.2rem;">${totalTasks}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">${activeSpace === 'all' ? 'All Spaces' : escapeHTML(activeSpace)}</div>
+          </div>
 
             <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--blue-brand);">
               <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">🎬 In Production</div>
-              <div style="font-size: 1.6rem; font-weight: 800; color: var(--blue-brand); margin-top: 0.2rem;">${inProdTasks}</div>
+              <div id="kanbanKpiInProd" style="font-size: 1.6rem; font-weight: 800; color: var(--blue-brand); margin-top: 0.2rem;">${inProdTasks}</div>
               <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Active shooting / build</div>
             </div>
 
             <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--amber-brand);">
               <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">🔍 QC & Client Review</div>
-              <div style="font-size: 1.6rem; font-weight: 800; color: var(--amber-brand); margin-top: 0.2rem;">${inReviewTasks}</div>
+              <div id="kanbanKpiInReview" style="font-size: 1.6rem; font-weight: 800; color: var(--amber-brand); margin-top: 0.2rem;">${inReviewTasks}</div>
               <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Awaiting sign-off</div>
             </div>
 
             <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--emerald-brand);">
               <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">✅ Approved / Delivered</div>
-              <div style="font-size: 1.6rem; font-weight: 800; color: var(--emerald-brand); margin-top: 0.2rem;">${completedTasks} <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">(${completionRate}%)</span></div>
+              <div id="kanbanKpiApproved" style="font-size: 1.6rem; font-weight: 800; color: var(--emerald-brand); margin-top: 0.2rem;">${completedTasks} <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">(${completionRate}%)</span></div>
               <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Completed deliverables</div>
             </div>
 
             <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--pink-brand);">
               <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">⏱️ Logged Hours</div>
-              <div style="font-size: 1.6rem; font-weight: 800; color: var(--pink-brand); margin-top: 0.2rem;">${totalLoggedHours}h <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">/ ${totalEstHours}h</span></div>
+              <div id="kanbanKpiLoggedHours" style="font-size: 1.6rem; font-weight: 800; color: var(--pink-brand); margin-top: 0.2rem;">${totalLoggedHours}h <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">/ ${totalEstHours}h</span></div>
               <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Tracked vs estimated</div>
             </div>
           </div>
@@ -1287,6 +1505,33 @@ window.APP_MODULES.kanban = async function(container) {
       }
     },
     applyFilters() {
+      renderViewArea();
+    },
+    toggleContractorMode(forceState = null) {
+      if (forceState !== null) {
+        isContractorMode = Boolean(forceState);
+      } else {
+        isContractorMode = !isContractorMode;
+      }
+      const btn = document.getElementById('btnToggleContractorMode');
+      if (btn) {
+        btn.style.borderColor = isContractorMode ? '#00df89' : 'rgba(6,182,212,0.4)';
+        btn.style.color = isContractorMode ? '#00df89' : '#06b6d4';
+        btn.innerHTML = `<span>${isContractorMode ? '🛡️' : '👁️'}</span> <span>${isContractorMode ? 'Contractor Masked Active' : 'Contractor Mode'}</span>`;
+      }
+      if (window.showToast) {
+        if (isContractorMode) {
+          window.showToast('🛡️ Subcontractor Confidentiality Mode: Financial rates, budgets and margins masked.', 'info');
+        } else {
+          window.showToast('👁️ Admin Mode: Full commercial visibility enabled.', 'info');
+        }
+      }
+      renderViewArea();
+    },
+    setPodFilter(pod) {
+      activePodFilter = pod || '';
+      const el = document.getElementById('kanbanFilterPod');
+      if (el) el.value = activePodFilter;
       renderViewArea();
     },
     toggleSelect(event, taskId) {
@@ -1472,7 +1717,7 @@ window.APP_MODULES.kanban = async function(container) {
       }
     },
 
-    /* ── Task Detail Drawer ── */
+    /* ── Task Detail Drawer (Interactive & Zero Native Prompts) ── */
     async openDrawer(taskId) {
       activeTaskId = taskId;
       const task = allTasks.find(t => t.id === taskId);
@@ -1483,10 +1728,27 @@ window.APP_MODULES.kanban = async function(container) {
       if (panel) panel.classList.add('open');
       if (backdrop) backdrop.classList.add('open');
 
+      const resolvedAssignee = getTaskAssignee(task);
+      const loggedH = Number(task.loggedHours || task.logged_hours || 0);
+      const estH = Number(task.estimatedHours || task.estimated_hours || 8);
 
       document.getElementById('drawerStageBadge').textContent = task.stage || 'Briefing';
       document.getElementById('drawerTaskTitle').textContent = task.title;
-      document.getElementById('drawerClientName').textContent = `Client: ${task.client || 'Agency'} · Assignee: ${task.assignee || 'Unassigned'}`;
+      document.getElementById('drawerClientName').textContent = `Client: ${task.client || task.client_name || 'Agency'} · Assignee: ${resolvedAssignee}`;
+      
+      const timeTextEl = document.getElementById('drawerTimeText');
+      if (timeTextEl) {
+        timeTextEl.textContent = `${loggedH}h / ${estH}h`;
+      }
+
+      // Reset inline forms
+      const logBox = document.getElementById('drawerLogTimeBox');
+      if (logBox) logBox.style.display = 'none';
+      const subForm = document.getElementById('drawerSubtaskForm');
+      if (subForm) subForm.style.display = 'none';
+      const qcBox = document.getElementById('drawerQcRejectBox');
+      if (qcBox) qcBox.style.display = 'none';
+
       // Toggle QC Panel visibility
       const qcPanel = document.getElementById('drawerQcPanel');
       if (qcPanel) {
@@ -1529,14 +1791,19 @@ window.APP_MODULES.kanban = async function(container) {
         `).join('');
         document.getElementById('drawerSubtaskList').innerHTML = subHtml || '<div style="color:var(--text-dim); font-size:0.8rem; text-align:center; padding:0.5rem;">No subtasks created yet</div>';
         
-        // Render Time Logs
-        const logsHtml = (logs || []).map(l => `
+        // Render Time Logs with Baseline Fallback
+        const logsHtml = (logs && logs.length > 0) ? logs.map(l => `
           <div style="display:flex; justify-content:space-between; background:var(--surface-3); padding:0.4rem 0.6rem; border-radius:6px;">
-            <span><span style="color:var(--purple-light); font-weight:700;">${escapeHTML(l.user_name || 'Staff')}</span>: ${escapeHTML(l.note || 'Logged time')}</span>
+            <span><span style="color:var(--purple-light); font-weight:700;">${escapeHTML(l.user_name || resolvedAssignee || 'Staff')}</span>: ${escapeHTML(l.note || 'Logged time')}</span>
             <span style="color:var(--emerald-brand); font-weight:800;">+${l.duration_hours}h</span>
           </div>
-        `).join('');
-        document.getElementById('drawerTimeLogList').innerHTML = logsHtml || '<div style="color:var(--text-dim);">No time logged yet.</div>';
+        `).join('') : (loggedH > 0 ? `
+          <div style="display:flex; justify-content:space-between; background:var(--surface-3); padding:0.4rem 0.6rem; border-radius:6px;">
+            <span><span style="color:var(--purple-light); font-weight:700;">${escapeHTML(resolvedAssignee)}</span>: Work in progress</span>
+            <span style="color:var(--emerald-brand); font-weight:800;">+${loggedH}h</span>
+          </div>
+        ` : '<div style="color:var(--text-dim); font-size:0.8rem;">No time logged yet.</div>');
+        document.getElementById('drawerTimeLogList').innerHTML = logsHtml;
 
         // Render Comments
         const commentsHtml = (comments || []).map(c => `
@@ -1556,26 +1823,52 @@ window.APP_MODULES.kanban = async function(container) {
       document.getElementById('taskDrawerBackdrop').classList.remove('open');
       activeTaskId = null;
     },
-    async logTime() {
-      if (!activeTaskId) return;
-      const hoursStr = prompt('Enter worked hours to log (e.g. 2):');
-      const hours = parseFloat(hoursStr);
-      if (hours && hours > 0) {
-        const note = prompt('Enter a short note (optional):') || 'Logged time';
-        try {
-          await APP_API.post(`/tasks/${activeTaskId}/log-time`, { hours, note });
-          const task = allTasks.find(t => t.id === activeTaskId);
-          if (task) {
-            task.loggedHours = (task.loggedHours || 0) + hours;
-            document.getElementById('drawerTimeText').textContent = `${task.loggedHours}h / ${task.estimatedHours || 8}h`;
-            renderViewArea();
-          }
-          this.openDrawer(activeTaskId);
-        } catch (e) {
-          if (window.showToast) window.showToast('Failed to log time', 'error');
+
+    /* ── Inline Time Logging (Zero Native Prompt) ── */
+    toggleLogTimeBox() {
+      const box = document.getElementById('drawerLogTimeBox');
+      if (box) {
+        box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
+        if (box.style.display === 'block') {
+          const input = document.getElementById('drawerLogHoursInput');
+          if (input) input.focus();
         }
       }
     },
+    async submitLogTime() {
+      if (!activeTaskId) return;
+      const hoursInput = document.getElementById('drawerLogHoursInput');
+      const noteInput = document.getElementById('drawerLogNoteInput');
+      const hours = parseFloat(hoursInput?.value);
+      if (!hours || isNaN(hours) || hours <= 0) {
+        if (window.showToast) window.showToast('Please enter valid hours (e.g. 2)', 'warning');
+        return;
+      }
+      const note = noteInput?.value?.trim() || 'Logged time';
+      try {
+        await APP_API.post(`/tasks/${activeTaskId}/log-time`, { hours, note });
+        const task = allTasks.find(t => t.id === activeTaskId);
+        if (task) {
+          task.loggedHours = (task.loggedHours || task.logged_hours || 0) + hours;
+          task.logged_hours = task.loggedHours;
+          const est = task.estimatedHours || task.estimated_hours || 8;
+          document.getElementById('drawerTimeText').textContent = `${task.loggedHours}h / ${est}h`;
+          renderViewArea();
+        }
+        if (hoursInput) hoursInput.value = '';
+        if (noteInput) noteInput.value = '';
+        const box = document.getElementById('drawerLogTimeBox');
+        if (box) box.style.display = 'none';
+        if (window.showToast) window.showToast(`⏱️ Logged ${hours}h successfully!`, 'success');
+        this.openDrawer(activeTaskId);
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to log time: ' + e.message, 'error');
+      }
+    },
+    logTime() {
+      this.toggleLogTimeBox();
+    },
+
     async postComment(evt) {
       evt.preventDefault();
       if (!activeTaskId) return;
@@ -1591,19 +1884,41 @@ window.APP_MODULES.kanban = async function(container) {
         if (window.showToast) window.showToast('Failed to post comment', 'error');
       }
     },
-    async addSubtask() {
-      if (!activeTaskId) return;
-      const title = prompt('Enter subtask item title:');
-      if (title && title.trim()) {
-        try {
-          await APP_API.post(`/tasks/${activeTaskId}/subtasks`, { title: title.trim() });
-          if (window.showToast) window.showToast('Subtask created!', 'success');
-          this.openDrawer(activeTaskId);
-        } catch(e) {
-          if (window.showToast) window.showToast('Failed to create subtask', 'error');
+
+    /* ── Inline Subtask Addition (Zero Native Prompt) ── */
+    toggleSubtaskForm() {
+      const form = document.getElementById('drawerSubtaskForm');
+      if (form) {
+        form.style.display = (form.style.display === 'none' || !form.style.display) ? 'block' : 'none';
+        if (form.style.display === 'block') {
+          const input = document.getElementById('drawerNewSubtaskInput');
+          if (input) input.focus();
         }
       }
     },
+    async submitAddSubtask() {
+      if (!activeTaskId) return;
+      const input = document.getElementById('drawerNewSubtaskInput');
+      const title = input?.value?.trim();
+      if (!title) {
+        if (window.showToast) window.showToast('Please enter a subtask title', 'warning');
+        return;
+      }
+      try {
+        await APP_API.post(`/tasks/${activeTaskId}/subtasks`, { title });
+        if (input) input.value = '';
+        const form = document.getElementById('drawerSubtaskForm');
+        if (form) form.style.display = 'none';
+        if (window.showToast) window.showToast('✅ Subtask added!', 'success');
+        this.openDrawer(activeTaskId);
+      } catch(e) {
+        if (window.showToast) window.showToast('Failed to create subtask: ' + e.message, 'error');
+      }
+    },
+    addSubtask() {
+      this.toggleSubtaskForm();
+    },
+
     async toggleSubtask(subtaskId) {
       try {
         await APP_API.patch(`/tasks/subtasks/${subtaskId}/toggle`);
@@ -1612,6 +1927,7 @@ window.APP_MODULES.kanban = async function(container) {
         console.error('Toggle subtask error', e);
       }
     },
+
     async qcApproveActiveTask() {
       if (!activeTaskId) return;
       try {
@@ -1623,18 +1939,51 @@ window.APP_MODULES.kanban = async function(container) {
         if (window.showToast) window.showToast('QC Approval failed: ' + err.message, 'error');
       }
     },
-    async qcRejectActiveTask() {
+
+    /* ── Inline QC Revision Rejection (Zero Native Prompt) ── */
+    toggleQcRejectBox() {
+      const box = document.getElementById('drawerQcRejectBox');
+      if (box) {
+        box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
+        if (box.style.display === 'block') {
+          const input = document.getElementById('drawerQcRejectInput');
+          if (input) input.focus();
+        }
+      }
+    },
+    async submitQcReject() {
       if (!activeTaskId) return;
-      const feedback = prompt('Enter revision notes / feedback for the production team:');
-      if (feedback === null) return;
+      const input = document.getElementById('drawerQcRejectInput');
+      const feedback = input?.value?.trim();
+      if (!feedback) {
+        if (window.showToast) window.showToast('Please enter revision notes for the team', 'warning');
+        return;
+      }
       try {
-        await APP_API.post(`/tasks/${activeTaskId}/qc-reject`, { feedback: feedback.trim() });
-        if (window.showToast) window.showToast('↩️ Returned for Briefing revisions', 'success');
+        await APP_API.post(`/tasks/${activeTaskId}/qc-reject`, { feedback });
+        if (window.showToast) window.showToast('↩️ Returned for Briefing revisions with feedback', 'success');
+        if (input) input.value = '';
+        const box = document.getElementById('drawerQcRejectBox');
+        if (box) box.style.display = 'none';
         this.closeDrawer();
         loadData();
       } catch (err) {
         if (window.showToast) window.showToast('QC Rejection failed: ' + err.message, 'error');
       }
+    },
+    qcRejectActiveTask() {
+      this.toggleQcRejectBox();
+    },
+
+    toggleSelectAll(checked) {
+      const displayTasks = getFilteredTasks();
+      if (checked) {
+        displayTasks.forEach(t => selectedTasks.add(t.id));
+      } else {
+        selectedTasks.clear();
+      }
+      renderViewArea();
+      this.renderBulkToolbar();
     },
     async setTaskBlocker(blockedBy) {
       if (!activeTaskId) return;
@@ -1679,7 +2028,7 @@ window.APP_MODULES.kanban = async function(container) {
           <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('assign')">Assign</button>
           
           <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
-          <button class="btn-danger btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('delete')">Delete Selected</button>
+          <button id="bulkDeleteBtn" class="btn-danger btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('delete')">Delete Selected</button>
           
           <button onclick="window.KANBAN_MODULE.clearSelection()" style="background:none; border:none; color:var(--text-muted); margin-left:0.5rem; cursor:pointer; font-size:1.1rem;">✕</button>
         </div>
@@ -1705,7 +2054,21 @@ window.APP_MODULES.kanban = async function(container) {
         if (!assignee) { if (window.showToast) window.showToast('Enter an assignee name', 'error'); return; }
         payload.assignee = assignee;
       } else if (action === 'delete') {
-        if (window.confirm && !window.confirm(`Are you sure you want to delete ${taskIds.length} tasks?`)) return;
+        const deleteBtn = document.getElementById('bulkDeleteBtn');
+        if (deleteBtn && !deleteBtn.dataset.confirmed) {
+          deleteBtn.dataset.confirmed = 'true';
+          deleteBtn.textContent = `⚠️ Confirm Delete (${taskIds.length})?`;
+          deleteBtn.style.background = '#dc2626';
+          if (window.showToast) window.showToast(`Click Delete again to confirm deleting ${taskIds.length} tasks`, 'warning');
+          setTimeout(() => {
+            if (deleteBtn) {
+              delete deleteBtn.dataset.confirmed;
+              deleteBtn.textContent = 'Delete Selected';
+              deleteBtn.style.background = '';
+            }
+          }, 4000);
+          return;
+        }
       }
       
       try {
@@ -2440,8 +2803,43 @@ window.APP_MODULES.kanban = async function(container) {
           submitBtn.innerText = '🚀 Import Tasks to Kanban';
         }
       }
+    },
+
+    switchKanbanCurrency(currency) {
+      if (typeof localStorage !== 'undefined') localStorage.setItem('gro10x_currency', currency);
+      window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency } }));
+      return true;
     }
   };
+
+  // Expose global currency alias
+  window.switchKanbanCurrency = function(currency) {
+    return window.KANBAN_MODULE && window.KANBAN_MODULE.switchKanbanCurrency(currency);
+  };
+
+  // SSE subscription with 400ms debounce
+  let _kanbanSseTimer = null;
+  function debouncedKanbanSync() {
+    clearTimeout(_kanbanSseTimer);
+    _kanbanSseTimer = setTimeout(function() {
+      if (window.location.hash !== '#kanban') return;
+      loadData();
+    }, 400);
+  }
+  if (window.APP_SSE && typeof window.APP_SSE.subscribe === 'function') {
+    window.APP_SSE.subscribe('task_update', debouncedKanbanSync);
+    window.APP_SSE.subscribe('tasks_update', debouncedKanbanSync);
+  }
+
+  // Deduplicated gro10x_currency_changed handler with #kanban route guard
+  if (window._kanbanCurrencyHandler) {
+    window.removeEventListener('gro10x_currency_changed', window._kanbanCurrencyHandler);
+  }
+  window._kanbanCurrencyHandler = function(e) {
+    if (window.location.hash !== '#kanban') return;
+    renderViewArea();
+  };
+  window.addEventListener('gro10x_currency_changed', window._kanbanCurrencyHandler);
 
   // Global Escape key listener for all Production Hub modals
   if (!window._gro10xKanbanEscapeBound) {

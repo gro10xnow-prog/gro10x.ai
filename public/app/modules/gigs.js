@@ -10,13 +10,13 @@
 
 window.APP_MODULES = window.APP_MODULES || {};
 
-let activeGigsData = [];
-let selectedGig = null;
-let activeFilter = 'all';
-let searchQuery = '';
-let activeCurrency = localStorage.getItem('gro10x_currency') || 'USD';
-let isRegeneratingAll = false;
-let regeneratingSlots = {};
+var activeGigsData = window.activeGigsData || [];
+var selectedGig = null;
+var activeFilter = 'all';
+var searchQuery = '';
+var activeCurrency = localStorage.getItem('gro10x_currency') || 'USD';
+var isRegeneratingAll = false;
+var regeneratingSlots = {};
 
 function formatPrice(usdAmount) {
   if (activeCurrency === 'BDT') {
@@ -45,6 +45,9 @@ async function fetchGigs() {
 
 async function renderGigsView(container) {
   if (!container) return;
+  if (window.location.hash !== '#gigs' && !document.getElementById('gigsCardsGrid')) {
+    return;
+  }
 
   if (!activeGigsData || activeGigsData.length === 0) {
     container.innerHTML = `
@@ -89,7 +92,7 @@ async function renderGigsView(container) {
         <div>
           <div style="display:flex; align-items:center; gap:0.5rem;">
             <span style="font-size:1.5rem;">⚡</span>
-            <h2 style="font-size:1.4rem; font-weight:800; color:var(--text-primary); margin:0;">Marketplace Gig Studio</h2>
+            <h1 style="font-size:1.4rem; font-weight:800; color:var(--text-primary); margin:0;">Marketplace Gig Studio</h1>
             <span style="font-size:0.75rem; background:rgba(0,223,137,0.15); color:#00df89; padding:0.2rem 0.6rem; border-radius:6px; font-weight:800; border:1px solid rgba(0,223,137,0.3);">FIVERR & UPWORK ENGINE</span>
           </div>
           <p style="color:var(--text-muted); font-size:0.85rem; margin:0.35rem 0 0 0;">
@@ -98,7 +101,7 @@ async function renderGigsView(container) {
         </div>
 
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-          <button onclick="window.GigsModule.toggleCurrency()" class="btn-secondary btn-sm" style="display:flex; align-items:center; gap:0.35rem; font-size:0.8rem; font-weight:700;">
+          <button id="gigsCurrencyToggleBtn" onclick="window.GigsModule.toggleCurrency()" class="btn-secondary btn-sm" style="display:flex; align-items:center; gap:0.35rem; font-size:0.8rem; font-weight:700;">
             <span>${activeCurrency === 'USD' ? '💵 USD ($)' : '৳ BDT (৳)'}</span>
           </button>
           <button id="btnRegenerateAll" onclick="window.GigsModule.promptRegenerateAll()" class="btn-secondary btn-sm" ${isRegeneratingAll ? 'disabled' : ''} style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; background:${isRegeneratingAll ? 'rgba(255,255,255,0.05)' : ''};">
@@ -112,26 +115,26 @@ async function renderGigsView(container) {
       </div>
 
       <!-- Metric KPI Cards -->
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-        <div style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+      <div id="gigsStatsStrip" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+        <div class="gig-kpi-card" style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
           <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em;">Account Gig Quota</div>
           <div style="font-size:1.6rem; font-weight:800; color:#00df89; margin:0.3rem 0 0.1rem 0;">${totalGigs} / 7 <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Slots</span></div>
           <div style="font-size:0.75rem; color:var(--text-muted);">100% Slot Capacity Ready</div>
         </div>
 
-        <div style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+        <div class="gig-kpi-card" style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
           <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em;">Health Check Pass Rate</div>
           <div style="font-size:1.6rem; font-weight:800; color:#38bdf8; margin:0.3rem 0 0.1rem 0;">${readyCount} / ${totalGigs} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">(Score: ${avgHealth}/10)</span></div>
           <div style="font-size:0.75rem; color:var(--text-muted);">Fiverr & Upwork TOS Compliant</div>
         </div>
 
-        <div style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+        <div class="gig-kpi-card" style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
           <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em;">Live Marketplace Gigs</div>
           <div style="font-size:1.6rem; font-weight:800; color:#a855f7; margin:0.3rem 0 0.1rem 0;">${liveCount} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Live URL${liveCount === 1 ? '' : 's'}</span></div>
           <div style="font-size:0.75rem; color:var(--text-muted);">${pendingCount} Pending Copy-Paste Upload${pendingCount === 1 ? '' : 's'}</div>
         </div>
 
-        <div style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+        <div class="gig-kpi-card" style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius:12px; padding:1.1rem; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
           <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em;">Monthly Engine Target</div>
           <div style="font-size:1.6rem; font-weight:800; color:#f59e0b; margin:0.3rem 0 0.1rem 0;">${activeCurrency === 'BDT' ? '৳6.00 Lakh' : '$5,000'} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">/ mo</span></div>
           <div style="font-size:0.75rem; color:var(--text-muted);">${activeCurrency === 'BDT' ? '৳72 Lakh ARR' : '$60k ARR'} Combined Engine 1 & 2</div>
@@ -141,13 +144,13 @@ async function renderGigsView(container) {
       <!-- FILTER TABS & SEARCH BAR -->
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
         <div style="display:flex; gap:0.35rem; background:rgba(0,0,0,0.3); padding:0.25rem; border-radius:10px; border:1px solid var(--border-subtle, rgba(255,255,255,0.08)); flex-wrap:wrap;">
-          <button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" onclick="window.GigsModule.setFilter('all')" style="background:${activeFilter === 'all' ? '#00df89' : 'transparent'}; color:${activeFilter === 'all' ? '#09090b' : 'var(--text-secondary)'}; font-weight:700; border:none; padding:0.35rem 0.75rem; border-radius:7px; cursor:pointer; font-size:0.78rem; transition:all 0.2s;">
+          <button id="filterBtnAll" class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" onclick="window.GigsModule.setFilter('all')" style="background:${activeFilter === 'all' ? '#00df89' : 'transparent'}; color:${activeFilter === 'all' ? '#09090b' : 'var(--text-secondary)'}; font-weight:700; border:none; padding:0.35rem 0.75rem; border-radius:7px; cursor:pointer; font-size:0.78rem; transition:all 0.2s;">
             All (${totalGigs})
           </button>
-          <button class="filter-btn ${activeFilter === 'live' ? 'active' : ''}" onclick="window.GigsModule.setFilter('live')" style="background:${activeFilter === 'live' ? '#00df89' : 'transparent'}; color:${activeFilter === 'live' ? '#09090b' : 'var(--text-secondary)'}; font-weight:700; border:none; padding:0.35rem 0.75rem; border-radius:7px; cursor:pointer; font-size:0.78rem; transition:all 0.2s;">
+          <button id="filterBtnLive" class="filter-btn ${activeFilter === 'live' ? 'active' : ''}" onclick="window.GigsModule.setFilter('live')" style="background:${activeFilter === 'live' ? '#00df89' : 'transparent'}; color:${activeFilter === 'live' ? '#09090b' : 'var(--text-secondary)'}; font-weight:700; border:none; padding:0.35rem 0.75rem; border-radius:7px; cursor:pointer; font-size:0.78rem; transition:all 0.2s;">
             🟢 Live (${liveCount})
           </button>
-          <button class="filter-btn ${activeFilter === 'generated' ? 'active' : ''}" onclick="window.GigsModule.setFilter('generated')" style="background:${activeFilter === 'generated' ? '#a855f7' : 'transparent'}; color:${activeFilter === 'generated' ? '#ffffff' : 'var(--text-secondary)'}; font-weight:700; border:none; padding:0.35rem 0.75rem; border-radius:7px; cursor:pointer; font-size:0.78rem; transition:all 0.2s;">
+          <button id="filterBtnGenerated" class="filter-btn ${activeFilter === 'generated' ? 'active' : ''}" onclick="window.GigsModule.setFilter('generated')" style="background:${activeFilter === 'generated' ? '#a855f7' : 'transparent'}; color:${activeFilter === 'generated' ? '#ffffff' : 'var(--text-secondary)'}; font-weight:700; border:none; padding:0.35rem 0.75rem; border-radius:7px; cursor:pointer; font-size:0.78rem; transition:all 0.2s;">
             🟣 Generated (${pendingCount})
           </button>
         </div>
@@ -156,13 +159,13 @@ async function renderGigsView(container) {
           <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Showing ${filteredGigs.length} of ${totalGigs} gigs</span>
           <div style="position:relative;">
             <input type="text" id="gigsSearchInput" value="${searchQuery}" placeholder="🔍 Search gig title, tags..." oninput="window.GigsModule.handleSearch(this.value)" style="background:var(--card-bg, #121824); border:1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius:10px; padding:0.42rem 0.8rem; font-size:0.8rem; color:#ffffff; width:240px; outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00df89'" onblur="this.style.borderColor='var(--border-subtle, rgba(255,255,255,0.1))'">
-            ${searchQuery ? `<button onclick="window.GigsModule.clearSearch()" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.75rem;">✕</button>` : ''}
+            ${searchQuery ? `<button id="gigsClearSearchBtn" onclick="window.GigsModule.clearSearch()" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.75rem;">✕</button>` : ''}
           </div>
         </div>
       </div>
 
       <!-- 7 Gig Slot Cards Grid -->
-      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); gap:1.25rem;">
+      <div id="gigsCardsGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); gap:1.25rem;">
   `;
 
   if (filteredGigs.length === 0) {
@@ -191,7 +194,7 @@ async function renderGigsView(container) {
       const isRegeneratingThis = !!regeneratingSlots[gig.id];
 
       html += `
-        <div style="background:var(--card-bg, #121824); border:1px solid ${isLive ? 'rgba(0,223,137,0.25)' : 'var(--border-subtle, rgba(255,255,255,0.08))'}; border-radius:14px; padding:1.3rem; display:flex; flex-direction:column; justify-content:space-between; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.25); transition:transform 0.2s ease, border-color 0.2s ease;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='translateY(0)'">
+        <div class="gig-slot-card" style="background:var(--card-bg, #121824); border:1px solid ${isLive ? 'rgba(0,223,137,0.25)' : 'var(--border-subtle, rgba(255,255,255,0.08))'}; border-radius:14px; padding:1.3rem; display:flex; flex-direction:column; justify-content:space-between; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.25); transition:transform 0.2s ease, border-color 0.2s ease;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='translateY(0)'">
           <div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
               <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -199,7 +202,7 @@ async function renderGigsView(container) {
                 <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">${gig.id}</span>
               </div>
               <div style="display:flex; align-items:center; gap:0.4rem;">
-                <button onclick="window.GigsModule.openHealthInspector('${gig.id}')" title="Click to view 10-Point Marketplace Compliance Audit" style="font-size:0.75rem; background:${healthPassed ? 'rgba(0,223,137,0.15)' : 'rgba(239,68,68,0.15)'}; color:${healthPassed ? '#00df89' : '#f87171'}; padding:0.15rem 0.5rem; border-radius:6px; font-weight:800; border:1px solid ${healthPassed ? 'rgba(0,223,137,0.3)' : 'rgba(239,68,68,0.3)'}; cursor:pointer; display:flex; align-items:center; gap:0.25rem;">
+                <button onclick="window.GigsModule.openHealthInspector('${gig.id}')" class="btn-open-health-inspector" title="Click to view 10-Point Marketplace Compliance Audit" style="font-size:0.75rem; background:${healthPassed ? 'rgba(0,223,137,0.15)' : 'rgba(239,68,68,0.15)'}; color:${healthPassed ? '#00df89' : '#f87171'}; padding:0.15rem 0.5rem; border-radius:6px; font-weight:800; border:1px solid ${healthPassed ? 'rgba(0,223,137,0.3)' : 'rgba(239,68,68,0.3)'}; cursor:pointer; display:flex; align-items:center; gap:0.25rem;">
                   <span>${healthPassed ? '🟢' : '🔴'}</span> <span>${healthScore}/10</span>
                 </button>
                 <span style="font-size:0.75rem; background:${statusBg}; color:${statusColor}; padding:0.15rem 0.5rem; border-radius:6px; font-weight:800; border:1px solid ${statusBg};">
@@ -246,7 +249,7 @@ async function renderGigsView(container) {
           <!-- Action Footer -->
           <div style="display:flex; flex-direction:column; gap:0.5rem; border-top:1px solid var(--border-subtle, rgba(255,255,255,0.08)); padding-top:0.9rem;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-              <button onclick="window.GigsModule.openCopyStudio('${gig.id}')" class="btn-primary btn-sm" style="justify-content:center; font-weight:700; font-size:0.8rem; background:linear-gradient(135deg, #00df89, #00b36b); color:#09090b; border:none; cursor:pointer;">
+              <button onclick="window.GigsModule.openCopyStudio('${gig.id}')" class="btn-primary btn-sm btn-open-copy-studio" style="justify-content:center; font-weight:700; font-size:0.8rem; background:linear-gradient(135deg, #00df89, #00b36b); color:#09090b; border:none; cursor:pointer;">
                 📋 Open Copy Studio
               </button>
               <button onclick="window.GigsModule.dispatchToTelegram('${gig.id}')" class="btn-secondary btn-sm" style="justify-content:center; font-size:0.8rem; cursor:pointer;">
@@ -271,21 +274,21 @@ async function renderGigsView(container) {
     </div>
 
     <!-- Modal Container for Copy Studio -->
-    <div id="gigStudioModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(6px);">
+    <div id="gigStudioModalOverlay" onclick="if (event.target === this) window.GigsModule.closeModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(6px);">
       <div id="gigStudioModalContent" style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:16px; width:100%; max-width:850px; max-height:90vh; overflow-y:auto; padding:1.75rem; box-shadow:0 20px 60px rgba(0,0,0,0.6); position:relative;">
         <!-- Modal injected dynamically -->
       </div>
     </div>
 
     <!-- Modal Container for 10-Point Health Audit Inspector -->
-    <div id="gigHealthModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(6px);">
+    <div id="gigHealthModalOverlay" onclick="if (event.target === this) window.GigsModule.closeHealthInspector()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(6px);">
       <div id="gigHealthModalContent" style="background:#0f172a; border:1px solid rgba(56,189,248,0.3); border-radius:16px; width:100%; max-width:650px; max-height:90vh; overflow-y:auto; padding:1.75rem; box-shadow:0 20px 60px rgba(0,0,0,0.6); position:relative;">
         <!-- Health modal injected dynamically -->
       </div>
     </div>
 
     <!-- Confirmation Modal Overlay -->
-    <div id="gigConfirmModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:10000; align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(6px);">
+    <div id="gigConfirmModalOverlay" onclick="if (event.target === this) window.GigsModule.closeConfirmModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:10000; align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(6px);">
       <div id="gigConfirmModalContent" style="background:#131b2e; border:1px solid rgba(255,255,255,0.15); border-radius:14px; width:100%; max-width:440px; padding:1.5rem; box-shadow:0 20px 50px rgba(0,0,0,0.7); text-align:center;">
         <!-- Confirmation injected dynamically -->
       </div>
@@ -293,6 +296,50 @@ async function renderGigsView(container) {
   `;
 
   container.innerHTML = html;
+
+  // Escape key handler for gigs modals (deduplicated)
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      const confirmOverlay = document.getElementById('gigConfirmModalOverlay');
+      if (confirmOverlay && confirmOverlay.style.display === 'flex') {
+        window.GigsModule.closeConfirmModal();
+        return;
+      }
+      const healthOverlay = document.getElementById('gigHealthModalOverlay');
+      if (healthOverlay && healthOverlay.style.display === 'flex') {
+        window.GigsModule.closeHealthInspector();
+        return;
+      }
+      const studioOverlay = document.getElementById('gigStudioModalOverlay');
+      if (studioOverlay && studioOverlay.style.display === 'flex') {
+        window.GigsModule.closeModal();
+        return;
+      }
+    }
+  };
+  if (window._gigsKeyDownHandler) {
+    document.removeEventListener('keydown', window._gigsKeyDownHandler);
+  }
+  window._gigsKeyDownHandler = handleKeyDown;
+  document.addEventListener('keydown', handleKeyDown);
+
+  // Real-time SSE Subscriptions
+  if (window.APP_SSE) {
+    let _gigsDebounce = null;
+    const _refreshOnSSE = () => {
+      clearTimeout(_gigsDebounce);
+      _gigsDebounce = setTimeout(async () => {
+        await fetchGigs();
+        const c = document.getElementById('app-view');
+        if (c && document.querySelector('.gigs-cockpit')) {
+          renderGigsView(c);
+        }
+      }, 400);
+    };
+    window.APP_SSE.subscribe('engine_update', _refreshOnSSE);
+    window.APP_SSE.subscribe('invoice_update', _refreshOnSSE);
+    window.APP_SSE.subscribe('payment_update', _refreshOnSSE);
+  }
 }
 
 // ─── 6-STEP COPY STUDIO MODAL ───────────────────────────────────────────────────
@@ -355,7 +402,7 @@ function renderModalBody() {
   tabNames.forEach(t => {
     const isActive = currentModalTab === t.num;
     tabNavHtml += `
-      <button onclick="window.GigsModule.switchTab(${t.num})" style="padding:0.45rem 0.85rem; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; white-space:nowrap; border:1px solid ${isActive ? '#00df89' : 'rgba(255,255,255,0.08)'}; background:${isActive ? 'rgba(0,223,137,0.15)' : 'rgba(255,255,255,0.03)'}; color:${isActive ? '#00df89' : 'var(--text-muted)'}; display:flex; align-items:center; gap:0.35rem;">
+      <button id="copyStudioTabBtn${t.num}" class="tab-btn-${t.num}" onclick="window.GigsModule.switchTab(${t.num})" style="padding:0.45rem 0.85rem; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; white-space:nowrap; border:1px solid ${isActive ? '#00df89' : 'rgba(255,255,255,0.08)'}; background:${isActive ? 'rgba(0,223,137,0.15)' : 'rgba(255,255,255,0.03)'}; color:${isActive ? '#00df89' : 'var(--text-muted)'}; display:flex; align-items:center; gap:0.35rem;">
         <span>${t.icon}</span> <span>${t.label}</span>
       </button>
     `;
@@ -743,7 +790,7 @@ function renderModalBody() {
       </div>
       <div style="display:flex; align-items:center; gap:0.5rem;">
         <button onclick="window.GigsModule.dispatchToTelegram('${gig.id}')" class="btn-secondary btn-sm" style="font-size:0.75rem;">📲 Push to Telegram</button>
-        <button onclick="window.GigsModule.closeModal()" style="background:rgba(255,255,255,0.1); border:none; color:#fff; font-size:1.1rem; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+        <button id="btnCloseCopyStudio" onclick="window.GigsModule.closeModal()" style="background:rgba(255,255,255,0.1); border:none; color:#fff; font-size:1.1rem; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
       </div>
     </div>
 
@@ -1006,7 +1053,7 @@ function openHealthInspector(gigId) {
         <h3 style="font-size:1.15rem; font-weight:800; color:#ffffff; margin:0;">10-Point Marketplace Compliance Audit</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0.25rem 0 0 0;">${gig.title}</p>
       </div>
-      <button onclick="window.GigsModule.closeHealthInspector()" style="background:rgba(255,255,255,0.1); border:none; color:#ffffff; font-size:1.2rem; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+      <button id="btnCloseHealthInspector" onclick="window.GigsModule.closeHealthInspector()" style="background:rgba(255,255,255,0.1); border:none; color:#ffffff; font-size:1.2rem; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
     </div>
 
     <!-- Summary Score Banner -->
@@ -1168,6 +1215,11 @@ async function saveLiveUrlFromModal(gigId) {
     showToast('Please enter a valid Fiverr/Upwork URL', 3000, 'warning');
     return;
   }
+  const btn = document.querySelector('#liveGigUrlInput + button') || document.querySelector('[onclick*="saveLiveUrlFromModal"]');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Saving...';
+  }
   try {
     await APP_API.put(`/gigs/${gigId}`, { liveUrl: url, status: 'Live' });
     const gig = activeGigsData.find(g => g.id === gigId);
@@ -1181,6 +1233,11 @@ async function saveLiveUrlFromModal(gigId) {
     if (container) renderGigsView(container);
   } catch (err) {
     showToast('Error saving live URL: ' + err.message, 4000, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '💾 Save & Mark Live';
+    }
   }
 }
 
@@ -1240,24 +1297,40 @@ function resetFilters() {
   if (container) renderGigsView(container);
 }
 
-function toggleCurrency() {
-  activeCurrency = activeCurrency === 'USD' ? 'BDT' : 'USD';
+function setCurrency(currency) {
+  if (currency && (currency === 'USD' || currency === 'BDT')) {
+    activeCurrency = currency;
+  } else {
+    activeCurrency = activeCurrency === 'USD' ? 'BDT' : 'USD';
+  }
   localStorage.setItem('gro10x_currency', activeCurrency);
   window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: activeCurrency } }));
   const container = document.getElementById('app-view');
   if (container) renderGigsView(container);
 }
 
-// Synchronize if currency changes from top bar or other views
-window.addEventListener('gro10x_currency_changed', (e) => {
-  if (e.detail && e.detail.currency) {
+function toggleCurrency() {
+  setCurrency();
+}
+
+window.switchGigsCurrency = function(currency) {
+  setCurrency(currency);
+};
+
+// Synchronize if currency changes from top bar or other views (deduplicated)
+if (window._gigsCurrencyHandler) {
+  window.removeEventListener('gro10x_currency_changed', window._gigsCurrencyHandler);
+}
+window._gigsCurrencyHandler = (e) => {
+  if (e.detail && e.detail.currency && e.detail.currency !== activeCurrency) {
     activeCurrency = e.detail.currency;
     const container = document.getElementById('app-view');
     if (container && document.querySelector('.gigs-cockpit')) {
       renderGigsView(container);
     }
   }
-});
+};
+window.addEventListener('gro10x_currency_changed', window._gigsCurrencyHandler);
 
 window.APP_MODULES.gigs = renderGigsView;
 
@@ -1287,5 +1360,8 @@ window.GigsModule = {
   clearSearch,
   resetFilters,
   toggleCurrency,
+  setCurrency,
+  switchCurrency: setCurrency,
+  switchGigsCurrency: setCurrency,
   showToast
 };

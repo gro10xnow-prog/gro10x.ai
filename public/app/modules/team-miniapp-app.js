@@ -218,6 +218,45 @@
     const isTechAdmin = emp.id === 'PBD-000' || emp.role === 'Technology Admin';
     if (isTechAdmin) document.getElementById('adminSection').style.display = 'block';
 
+    // Engine & Seniority Tier Badges
+    const engineBadge = document.getElementById('heroEngineBadge');
+    if (engineBadge) {
+      const engineMap = {
+        'engine1': 'Engine 1 · Micro-SaaS',
+        'engine2': 'Engine 2 · AI Sprints',
+        'engine3': 'Engine 3 · DCE Commerce',
+        'engine4': 'Engine 4 · Enterprise B2B',
+        'engine5': 'Engine 5 · EdTech'
+      };
+      const eng = (emp.assignedEngine || emp.assigned_engine || 'engine2').toLowerCase();
+      engineBadge.textContent = engineMap[eng] || 'Engine 2 · AI Sprints';
+    }
+
+    const tierBadge = document.getElementById('heroTierBadge');
+    if (tierBadge) {
+      const tier = Number(emp.seniorityTier || emp.seniority_tier) || 1;
+      const tierMap = {
+        1: 'Tier 1 · Specialist',
+        2: 'Tier 2 · Manager',
+        3: 'Tier 3 · Command'
+      };
+      tierBadge.textContent = tierMap[tier] || 'Tier 1 · Specialist';
+    }
+
+    // Launch Web Workspace Bridge URL (mirror token for instant web session)
+    const launchBtn = document.getElementById('launchWorkspaceBridgeBtn');
+    if (launchBtn) {
+      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('gro10x_token');
+      launchBtn.href = token ? `/workspace?token=${encodeURIComponent(token)}` : '/workspace';
+    }
+
+    // Live Dhaka Operations Clock
+    startDhakaTransitClock();
+
+    // Manager Leave Approvals & Critical SLAs
+    loadManagerLeaves();
+    loadCriticalDefectSLAs();
+
     // Onboarding banner
     if (emp.onboardingComplete) {
       document.getElementById('onboardingBanner').style.display = 'none';
@@ -2434,6 +2473,127 @@
       alert(`✅ DBM Standup logged for ${brand} (${count} listings)!`);
     }).catch(e => alert('Error logging standup'));
   };
+
+  // ══════════════════════════════════════════
+  // TRANSIT HUB HELPERS & APPROVALS
+  // ══════════════════════════════════════════
+  function startDhakaTransitClock() {
+    const clockEl = document.getElementById('dhakaClockTime');
+    if (!clockEl) return;
+    function updateTime() {
+      try {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: false });
+        clockEl.textContent = timeStr;
+      } catch(_) {}
+    }
+    updateTime();
+    if (!window._dhakaTransitClockInterval) {
+      window._dhakaTransitClockInterval = setInterval(updateTime, 1000);
+    }
+  }
+
+  async function loadManagerLeaves() {
+    const tier = Number(currentUser?.seniorityTier || currentUser?.seniority_tier) || 1;
+    const access = String(currentUser?.accessLevel || currentUser?.role || '').toLowerCase();
+    const isMgr = tier >= 2 || access.includes('manager') || access.includes('director') || access.includes('owner') || access.includes('admin') || access.includes('lead');
+    const deck = document.getElementById('managerLeaveDeck');
+    if (!deck) return;
+    if (!isMgr) {
+      deck.style.display = 'none';
+      return;
+    }
+    deck.style.display = 'block';
+
+    try {
+      const res = await fetch('/api/leaves', { headers: authHeaders() });
+      if (!res.ok) return;
+      const leaves = await res.json();
+      const list = Array.isArray(leaves) ? leaves : [];
+      const pending = list.filter(l => (l.status || '').toLowerCase() === 'pending' || (l.status || '').toLowerCase() === 'pending line review');
+      const countBadge = document.getElementById('mgrLeaveCountBadge');
+      if (countBadge) countBadge.textContent = `${pending.length} Pending`;
+
+      const container = document.getElementById('mgrLeaveList');
+      if (!container) return;
+      if (pending.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding:0.75rem;"><div class="empty-icon" style="font-size:1.5rem;">🌴</div>No pending leave requests in your department</div>`;
+        return;
+      }
+      container.innerHTML = pending.map(l => `
+        <div style="padding:0.65rem 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
+          <div>
+            <div style="font-size:0.82rem;font-weight:700;color:var(--text);">${l.employeeName || l.staffName || 'Staff Member'}</div>
+            <div style="font-size:0.7rem;color:var(--muted);">${l.leaveType || l.type || 'Leave'} · ${l.totalDays || 1}d (${l.startDate || ''} to ${l.endDate || ''})</div>
+            ${l.reason ? `<div style="font-size:0.68rem;color:var(--text-2);font-style:italic;margin-top:0.1rem;">"${l.reason}"</div>` : ''}
+          </div>
+          <div style="display:flex;gap:0.35rem;flex-shrink:0;">
+            <button onclick="approveLeaveDirect('${l.id}')" style="padding:0.3rem 0.65rem;background:#d1fae5;color:#047857;border:1px solid rgba(5,150,105,0.3);border-radius:8px;font-size:0.75rem;font-weight:800;cursor:pointer;">✅</button>
+            <button onclick="rejectLeaveDirect('${l.id}')" style="padding:0.3rem 0.65rem;background:#fee2e2;color:#dc2626;border:1px solid rgba(220,38,38,0.3);border-radius:8px;font-size:0.75rem;font-weight:800;cursor:pointer;">❌</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.warn('loadManagerLeaves warning:', err.message);
+    }
+  }
+
+  window.approveLeaveDirect = async function(id) {
+    triggerHaptic('success');
+    try {
+      await fetch(`/api/leaves/${id}/approve`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ reviewedBy: currentUser?.name || 'Department Manager' })
+      });
+      if (tg?.showAlert) tg.showAlert('✅ Leave Approved!');
+      loadManagerLeaves();
+    } catch(e) {
+      alert('Failed to approve leave');
+    }
+  };
+
+  window.rejectLeaveDirect = async function(id) {
+    triggerHaptic('warning');
+    try {
+      await fetch(`/api/leaves/${id}/reject`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ reviewedBy: currentUser?.name || 'Department Manager' })
+      });
+      if (tg?.showAlert) tg.showAlert('❌ Leave Rejected.');
+      loadManagerLeaves();
+    } catch(e) {
+      alert('Failed to reject leave');
+    }
+  };
+
+  async function loadCriticalDefectSLAs() {
+    const deck = document.getElementById('criticalAlertsDeck');
+    const container = document.getElementById('criticalAlertsList');
+    if (!deck || !container) return;
+    try {
+      const res = await fetch('/api/tickets', { headers: authHeaders() });
+      if (!res.ok) return;
+      const tickets = await res.json();
+      const list = Array.isArray(tickets) ? tickets : (tickets.tickets || []);
+      const defects = list.filter(t => (t.severity === 'p0_blocker' || t.severity === 'p1_defect' || t.priority === 'Urgent') && !['resolved', 'closed', 'Approved'].includes(t.status));
+      if (defects.length === 0) {
+        deck.style.display = 'none';
+        return;
+      }
+      deck.style.display = 'block';
+      container.innerHTML = defects.slice(0, 3).map(d => `
+        <div style="padding:0.5rem 0;border-bottom:1px solid rgba(239,68,68,0.2);display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:0.78rem;font-weight:700;color:#991b1b;">⚠️ ${d.title}</div>
+            <div style="font-size:0.68rem;color:#b91c1c;">24h Defect SLA Window Active</div>
+          </div>
+          <a href="/workspace#operations" style="padding:0.25rem 0.55rem;background:#dc2626;color:#fff;border-radius:8px;font-size:0.68rem;font-weight:800;text-decoration:none;">View ↗</a>
+        </div>
+      `).join('');
+    } catch(_) {}
+  }
 
   // ══════════════════════════════════════════
   // START

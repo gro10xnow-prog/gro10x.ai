@@ -1,4 +1,4 @@
-﻿/**
+/**
  * public/client/api.js
  * Client Portal API Client
  */
@@ -7,9 +7,8 @@ window.CLIENT_API = {
   _cacheTTL: 30000,
 
   getToken() {
-    return localStorage.getItem('sb-access-token') ||
-           localStorage.getItem('gro10x_token') ||
-           localStorage.getItem('gro10x_token') || '';
+    return localStorage.getItem('gro10x_token') ||
+           localStorage.getItem('sb-access-token') || '';
   },
 
   getHeaders() {
@@ -41,6 +40,10 @@ window.CLIENT_API = {
       const response = await fetch(url, config);
       if (response.status === 401) {
         localStorage.removeItem('gro10x_token');
+        localStorage.removeItem('sb-access-token');
+        localStorage.removeItem('gro10x_user');
+        localStorage.removeItem('purple_user');
+        document.cookie = 'sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
         return null;
       }

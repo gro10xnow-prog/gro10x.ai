@@ -1,11 +1,11 @@
-﻿/**
+/**
  * public/crew/modules/earnings.js
  * Crew Workspace Earnings, Payroll Breakdown, Milestone Progress & Mood Analytics
  */
 window.CREW_MODULES = window.CREW_MODULES || {};
 
 // Canonical 6-Tier XP Ladder: mirrors src/utils/xp.js
-const CREW_XP_TIERS = [
+var CREW_XP_TIERS = window.CREW_XP_TIERS || [
   { level: 'LV6', minXP: 6000, name: 'Maestro', badge: '👑 Maestro' },
   { level: 'LV5', minXP: 3500, name: 'Veteran', badge: '🎖️ Veteran' },
   { level: 'LV4', minXP: 2000, name: 'Champion', badge: '💜 Champion' },

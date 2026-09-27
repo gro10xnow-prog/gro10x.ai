@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — Enterprise AI Readiness Diagnostic Scorecard</title>
+  <meta name="description" content="Evaluate your organization's data readiness, tech stack maturity, and AI automation priority. Receive an instant 0–100 AI Scorecard and 14-day rapid sprint blueprint.">
+
+  <!-- Favicons & App Icons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --bg-dark: #070b12;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(0, 223, 137, 0.22);
+      --card-border-glow: rgba(0, 223, 137, 0.45);
+      --accent-mint: #00df89;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #a855f7;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Subtle background grid & glow spheres */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-sphere-1 {
+      position: fixed;
+      width: 550px;
+      height: 550px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 223, 137, 0.12) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 70%);
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+      top: -120px;
+      left: 15%;
+    }
+
+    .glow-sphere-2 {
+      position: fixed;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      bottom: 50px;
+      right: 10%;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 5rem;
+    }
+
+    /* Top Nav */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .brand-logo span { color: var(--accent-mint); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .badge-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: rgba(0, 223, 137, 0.1);
+      border: 1px solid rgba(0, 223, 137, 0.3);
+      color: var(--accent-mint);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-portal {
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .btn-portal:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.1rem, 4.5vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ffffff 30%, #a7f3d0 70%, #00df89 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 1.75rem;
+    }
+
+    .trust-strip {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .trust-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+    }
+
+    /* Stepper Header */
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 2rem;
+      padding: 0 0.5rem;
+    }
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 30px;
+      right: 30px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 1;
+    }
+    .step-progress-bar {
+      position: absolute;
+      top: 18px;
+      left: 30px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-mint), var(--accent-cyan));
+      z-index: 2;
+      transition: width 0.35s ease;
+      width: 0%;
+    }
+    .step-node {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+    }
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #0f172a;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      transition: all 0.25s;
+    }
+    .step-node.active .step-circle {
+      border-color: var(--accent-mint);
+      color: #070b12;
+      background: var(--accent-mint);
+      box-shadow: 0 0 15px rgba(0, 223, 137, 0.5);
+    }
+    .step-node.completed .step-circle {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.15);
+    }
+    .step-label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .step-node.active .step-label { color: var(--accent-mint); }
+
+    /* Assessment Box / Card */
+    .diagnostic-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 2.25rem 2.25rem 2rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .diagnostic-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-mint), var(--accent-cyan), var(--accent-purple));
+    }
+
+    .step-panel { display: none; }
+    .step-panel.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .step-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+    .step-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+    }
+
+    /* Form Inputs */
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    @media (max-width: 640px) {
+      .form-grid-2 { grid-template-columns: 1fr; }
+      .diagnostic-card { padding: 1.5rem 1.25rem; }
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .field-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+    .field-input, .field-select {
+      background: rgba(10, 15, 28, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-size: 0.92rem;
+      color: #fff;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .field-input:focus, .field-select:focus {
+      border-color: var(--accent-mint);
+      box-shadow: 0 0 0 3px rgba(0, 223, 137, 0.15);
+      background: rgba(10, 15, 28, 1);
+    }
+
+    /* Option Cards Grid */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .option-card {
+      background: rgba(10, 15, 28, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.15rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      position: relative;
+    }
+    .option-card:hover {
+      border-color: rgba(0, 223, 137, 0.35);
+      background: rgba(15, 23, 42, 0.85);
+      transform: translateY(-2px);
+    }
+    .option-card.selected {
+      border-color: var(--accent-mint);
+      background: rgba(0, 223, 137, 0.08);
+      box-shadow: 0 0 20px rgba(0, 223, 137, 0.15);
+    }
+    .option-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent-mint);
+      color: #070b12;
+      font-size: 0.78rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .option-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+    .option-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .option-badge {
+      align-self: flex-start;
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--accent-cyan);
+    }
+
+    /* Multi-select Pills */
+    .pills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-bottom: 1.75rem;
+    }
+    .tech-pill {
+      background: rgba(10, 15, 28, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .tech-pill:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #fff;
+    }
+    .tech-pill.selected {
+      border-color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.15);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+
+    /* Stepper Action Bar */
+    .step-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-mint) 0%, #059669 100%);
+      color: #070b12;
+      font-weight: 800;
+      font-size: 0.92rem;
+      padding: 0.8rem 1.6rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(0, 223, 137, 0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 223, 137, 0.4);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 0.8rem 1.4rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Scanning Animation Screen */
+    #scanningScreen {
+      display: none;
+      text-align: center;
+      padding: 3.5rem 1.5rem;
+    }
+    .scanning-spinner {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 3px solid rgba(0, 223, 137, 0.15);
+      border-top-color: var(--accent-mint);
+      border-right-color: var(--accent-cyan);
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .scan-status-text {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--accent-mint);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Scorecard Results Reveal */
+    #scorecardResult {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .scorecard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .scorecard-lead-id {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .score-summary-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 2rem;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 700px) {
+      .score-summary-grid { grid-template-columns: 1fr; text-align: center; }
+    }
+
+    /* Radial Score Gauge */
+    .gauge-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto;
+    }
+    .gauge-svg {
+      width: 200px;
+      height: 200px;
+      transform: rotate(-90deg);
+    }
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.06);
+      stroke-width: 14;
+    }
+    .gauge-circle {
+      fill: none;
+      stroke: var(--accent-mint);
+      stroke-width: 14;
+      stroke-linecap: round;
+      stroke-dasharray: 565;
+      stroke-dashoffset: 565;
+      transition: stroke-dashoffset 1.4s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.5s;
+    }
+    .gauge-center-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-number {
+      font-size: 3.2rem;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      line-height: 1;
+      color: #fff;
+    }
+    .gauge-total {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tier-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      margin-bottom: 0.75rem;
+    }
+    .tier-pioneer {
+      background: rgba(0, 223, 137, 0.15);
+      border: 1px solid var(--accent-mint);
+      color: var(--accent-mint);
+      box-shadow: 0 0 15px rgba(0, 223, 137, 0.25);
+    }
+    .tier-ready {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.25);
+    }
+    .tier-exploratory {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid var(--accent-purple);
+      color: var(--accent-purple);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Pod & Roadmap Cards */
+    .breakdown-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 640px) {
+      .breakdown-row { grid-template-columns: 1fr; }
+    }
+    .metric-card {
+      background: rgba(10, 15, 28, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+    .metric-card-title {
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .metric-card-val {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.35rem;
+    }
+    .metric-card-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Action Plan Box */
+    .action-plan-box {
+      background: linear-gradient(135deg, rgba(0, 223, 137, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%);
+      border: 1.5px solid rgba(0, 223, 137, 0.35);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* Print Styles */
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .bg-grid, .glow-sphere-1, .glow-sphere-2, .nav-actions, .stepper, .step-actions, .result-actions { display: none !important; }
+      .diagnostic-card { border: 1px solid #ddd !important; box-shadow: none !important; background: #fff !important; color: #000 !important; }
+      .gauge-number, .metric-card-val, .step-title, h1, h2, h3 { color: #000 !important; -webkit-text-fill-color: initial !important; }
+      .metric-card, .action-plan-box { background: #f8fafc !important; border-color: #cbd5e1 !important; color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+  <div class="glow-sphere-1"></div>
+  <div class="glow-sphere-2"></div>
+
+  <div class="container">
+
+    <!-- Top Navigation -->
+    <header class="nav">
+      <a href="/" class="brand-logo">
+        <span>⚡</span> GRO10X <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-left:0.25rem;">ENGINE 2</span>
+      </a>
+      <div class="nav-actions">
+        <a href="/sprint" class="btn-portal">🚀 Sprint Blueprints</a>
+        <a href="/client" class="btn-portal">🔐 Client Portal</a>
+      </div>
+    </header>
+
+    <!-- Hero Header -->
+    <section class="hero" id="heroSection">
+      <div style="display:flex; justify-content:center; margin-bottom:1rem;">
+        <span class="badge-chip">⚡ Inbound AI Readiness Diagnostic</span>
+      </div>
+      <h1>Assess Your Enterprise <br><span style="color:var(--accent-mint);">AI Production Readiness</span></h1>
+      <p>Benchmark your data architecture, tech stack maturity, and operational bottlenecks. Receive your instant 0–100 scorecard, recommended autonomous pod, and 14-day execution blueprint.</p>
+
+      <div class="trust-strip">
+        <span class="trust-item">🔒 100% Confidential (NDA Shielded)</span>
+        <span class="trust-item">⚡ 2-Minute Diagnostic</span>
+        <span class="trust-item">🛡️ 30-Day Bug-Fix Warranty Standard</span>
+        <span class="trust-item">🎯 Algorithmic Pod Assignment</span>
+      </div>
+    </section>
+
+    <!-- Stepper Navigation Bar -->
+    <div class="stepper" id="stepperNav">
+      <div class="step-progress-bar" id="stepperProgressBar"></div>
+      <div class="step-node active" id="nodeStep1" onclick="goToStep(1)">
+        <div class="step-circle">1</div>
+        <div class="step-label">Organization</div>
+      </div>
+      <div class="step-node" id="nodeStep2" onclick="goToStep(2)">
+        <div class="step-circle">2</div>
+        <div class="step-label">Data Maturity</div>
+      </div>
+      <div class="step-node" id="nodeStep3" onclick="goToStep(3)">
+        <div class="step-circle">3</div>
+        <div class="step-label">Tech Stack</div>
+      </div>
+      <div class="step-node" id="nodeStep4" onclick="goToStep(4)">
+        <div class="step-circle">4</div>
+        <div class="step-label">Priorities</div>
+      </div>
+    </div>
+
+    <!-- Diagnostic Wizard Card -->
+    <div class="diagnostic-card" id="wizardCard">
+
+      <!-- STEP 1: ORGANIZATION & CONTACT PROFILE -->
+      <div class="step-panel active" id="stepPanel1">
+        <h2 class="step-title">1. Organization & Contact Profile</h2>
+        <p class="step-subtitle">Tell us about your organization so we can tailor the architectural evaluation and deliver your official scorecard.</p>
+
+        <div class="form-grid-2">
+          <div class="field-group">
+            <label class="field-label" for="auditCompanyName">Company / Organization *</label>
+            <input type="text" id="auditCompanyName" class="field-input" placeholder="e.g. Purplebot Digital Limited" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="auditContactName">Technical Lead / Contact Name *</label>
+            <input type="text" id="auditContactName" class="field-input" placeholder="e.g. Tanvir Ahmed" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="field-group">
+            <label class="field-label" for="auditEmail">Corporate Work Email *</label>
+            <input type="email" id="auditEmail" class="field-input" placeholder="e.g. tanvir@purplebot.digital" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="auditPhone">Direct WhatsApp / Mobile Phone *</label>
+            <input type="tel" id="auditPhone" class="field-input" placeholder="e.g. +880 1711 223344" required>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <span style="font-size:0.78rem; color:var(--text-muted);">Step 1 of 4: Organization Baseline</span>
+          <button type="button" class="btn-primary" onclick="validateAndNext(1)">Next: Data Architecture →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: DATA ARCHITECTURE MATURITY -->
+      <div class="step-panel" id="stepPanel2">
+        <h2 class="step-title">2. Data Architecture & Indexing Maturity</h2>
+        <p class="step-subtitle">Where does your core business data currently reside? High data quality allows immediate zero-shot agent orchestration.</p>
+
+        <div class="options-grid">
+          <div class="option-card selected" onclick="selectDataReadiness('clean_relational_db', this)">
+            <div class="option-head"><span>🗄️</span> Structured SQL / Supabase</div>
+            <div class="option-desc">Normalized relational databases (PostgreSQL, MySQL, Supabase) with primary keys, relationships, and clean schemas.</div>
+            <span class="option-badge">+25 Pts (Optimal)</span>
+          </div>
+
+          <div class="option-card" onclick="selectDataReadiness('cloud_lake', this)">
+            <div class="option-head"><span>☁️</span> Cloud Lake / BigQuery</div>
+            <div class="option-desc">Cloud analytical lakes (Snowflake, BigQuery, AWS S3, Redshift) with partitioned queryable event logs.</div>
+            <span class="option-badge">+20 Pts (Scalable)</span>
+          </div>
+
+          <div class="option-card" onclick="selectDataReadiness('unstructured_docs', this)">
+            <div class="option-head"><span>📄</span> Document Hubs & Notion</div>
+            <div class="option-desc">Rich unstructured documents: PDFs, Google Docs, Notion workspaces, customer chats, and ticket exports.</div>
+            <span class="option-badge">+12 Pts (RAG Ready)</span>
+          </div>
+
+          <div class="option-card" onclick="selectDataReadiness('legacy_spreadsheets', this)">
+            <div class="option-head"><span>📊</span> Spreadsheets & Local Files</div>
+            <div class="option-desc">Fragmented Excel sheets, CSV exports, or disconnected local files requiring schema standardization.</div>
+            <span class="option-badge">+5 Pts (Requires Prep)</span>
+          </div>
+        </div>
+        <input type="hidden" id="selectedDataReadiness" value="clean_relational_db">
+
+        <div class="step-actions">
+          <button type="button" class="btn-secondary" onclick="goToStep(1)">← Back</button>
+          <button type="button" class="btn-primary" onclick="validateAndNext(2)">Next: Tech Stack →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: TECH STACK & API READINESS -->
+      <div class="step-panel" id="stepPanel3">
+        <h2 class="step-title">3. Production Tech Stack & API Infrastructure</h2>
+        <p class="step-subtitle">Select the frameworks, databases, and APIs currently deployed in your engineering environment.</p>
+
+        <div class="pills-grid" id="techStackPills">
+          <div class="tech-pill selected" onclick="toggleTechPill(this, 'Python / FastAPI')">⚡ Python / FastAPI</div>
+          <div class="tech-pill selected" onclick="toggleTechPill(this, 'Node.js / Express')">🟢 Node.js / Express</div>
+          <div class="tech-pill selected" onclick="toggleTechPill(this, 'PostgreSQL / pgvector')">🐘 PostgreSQL / pgvector</div>
+          <div class="tech-pill selected" onclick="toggleTechPill(this, 'LangChain / LangGraph')">🦜 LangGraph / Multi-Agent</div>
+          <div class="tech-pill" onclick="toggleTechPill(this, 'Docker / Kubernetes')">🐳 Docker / Kubernetes</div>
+          <div class="tech-pill" onclick="toggleTechPill(this, 'Next.js / React')">⚛️ Next.js / React</div>
+          <div class="tech-pill" onclick="toggleTechPill(this, 'Supabase / Firebase')">🔥 Supabase / Firebase</div>
+          <div class="tech-pill" onclick="toggleTechPill(this, 'Enterprise SSO / OAuth')">🔐 Enterprise SSO / OAuth</div>
+          <div class="tech-pill" onclick="toggleTechPill(this, 'HubSpot / Salesforce API')">💼 CRM APIs (HubSpot/Salesforce)</div>
+          <div class="tech-pill" onclick="toggleTechPill(this, 'Stripe / Bank Webhooks')">💳 Stripe / Banking Webhooks</div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn-secondary" onclick="goToStep(2)">← Back</button>
+          <button type="button" class="btn-primary" onclick="validateAndNext(3)">Next: Automation Priority →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: AUTOMATION PRIORITY & INVESTMENT -->
+      <div class="step-panel" id="stepPanel4">
+        <h2 class="step-title">4. Automation Priority & Sprint Investment</h2>
+        <p class="step-subtitle">Define your immediate business objective and resource allocation to calculate exact sprint velocity.</p>
+
+        <div class="field-group" style="margin-bottom:1.5rem;">
+          <label class="field-label">Primary AI Automation Priority *</label>
+          <div class="options-grid">
+            <div class="option-card selected" onclick="selectAutomationPriority('custom_ai_agent', this)">
+              <div class="option-head"><span>🤖</span> Multi-Agent Systems & LangGraph</div>
+              <div class="option-desc">Autonomous multi-step agents that execute business logic, route tasks, and update internal databases.</div>
+            </div>
+
+            <div class="option-card" onclick="selectAutomationPriority('internal_ops', this)">
+              <div class="option-head"><span>⚡</span> Internal Ops & Doc Intelligence</div>
+              <div class="option-desc">Automated contract parsing, receipt extraction, customer review analysis, and PDF workflows.</div>
+            </div>
+
+            <div class="option-card" onclick="selectAutomationPriority('customer_support', this)">
+              <div class="option-head"><span>💬</span> Autonomous Customer Resolution</div>
+              <div class="option-desc">24/7 intelligent tier-1 support bot with human escalation and live transactional capabilities.</div>
+            </div>
+
+            <div class="option-card" onclick="selectAutomationPriority('lead_generation', this)">
+              <div class="option-head"><span>🎯</span> Inbound Enrichment & Sales Triage</div>
+              <div class="option-desc">Automated lead qualification, instant WhatsApp triage, and dynamic proposal generation.</div>
+            </div>
+          </div>
+          <input type="hidden" id="selectedAutomationPriority" value="custom_ai_agent">
+        </div>
+
+        <div class="form-grid-2">
+          <div class="field-group">
+            <label class="field-label" for="auditBudget">Planned Monthly Engineering Budget (USD) *</label>
+            <select id="auditBudget" class="field-select">
+              <option value="2500" selected>$1,500 – $3,500 / mo (Standard Solution Sprint)</option>
+              <option value="5000">$3,500 – $7,500 / mo (Enterprise Pod Retainer)</option>
+              <option value="10000">$7,500+ / mo (Multi-Agent Dedicated Pod)</option>
+              <option value="1000">&lt; $1,500 / mo (Exploratory / Discovery)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="auditTimeline">Deployment Urgency *</label>
+            <select id="auditTimeline" class="field-select">
+              <option value="immediate_1_2_weeks" selected>⚡ Immediate (1–2 Weeks)</option>
+              <option value="within_30_days">📅 Within 30 Days</option>
+              <option value="exploring_quarter">🔭 Exploring Next Quarter</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn-secondary" onclick="goToStep(3)">← Back</button>
+          <button type="button" class="btn-primary" id="btnSubmitAudit" onclick="submitDiagnosticAudit()">
+            🚀 Generate AI Readiness Scorecard →
+          </button>
+        </div>
+      </div>
+
+      <!-- SCANNING OVERLAY -->
+      <div id="scanningScreen">
+        <div class="scanning-spinner"></div>
+        <div class="scan-status-text" id="scanStatusMsg">Executing Vector Multi-Factor Evaluation...</div>
+        <p style="font-size:0.82rem; color:var(--text-muted);">Synthesizing data readiness, stack maturity, and pod assignment algorithms...</p>
+      </div>
+
+      <!-- SCORECARD RESULTS PANEL -->
+      <div id="scorecardResult">
+        <div class="scorecard-header">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.35rem;">
+              <span id="resCompanyName" style="font-size:1.4rem; font-weight:900; color:#fff;">Company Name</span>
+              <span class="badge-chip">CONFIDENTIAL REPORT</span>
+            </div>
+            <div style="font-size:0.82rem; color:var(--text-muted);" id="resTimestamp">Evaluated: September 2026</div>
+          </div>
+          <div class="scorecard-lead-id" id="resLeadId">REF: AUD-0000</div>
+        </div>
+
+        <!-- Gauge & Tier Highlight -->
+        <div class="score-summary-grid">
+          <div class="gauge-container">
+            <svg class="gauge-svg" viewBox="0 0 200 200">
+              <circle class="gauge-bg" cx="100" cy="100" r="90"></circle>
+              <circle class="gauge-circle" id="gaugeCircle" cx="100" cy="100" r="90"></circle>
+            </svg>
+            <div class="gauge-center-content">
+              <span class="gauge-number" id="resScoreNum">85</span>
+              <span class="gauge-total">Out of 100</span>
+            </div>
+          </div>
+
+          <div>
+            <div id="resTierBadge" class="tier-badge-pill tier-pioneer">⚡ Enterprise AI Pioneer</div>
+            <h3 style="font-size:1.25rem; font-weight:800; color:#fff; margin-bottom:0.4rem;" id="resTierHeadline">Highly Prepared for Production AI Deployment</h3>
+            <p style="font-size:0.88rem; color:var(--text-muted); line-height:1.5;" id="resTierSummary">
+              Your infrastructure demonstrates mature data structure and modern API orchestration capabilities. Your architecture is ready for immediate deployment under an autonomous solution sprint.
+            </p>
+          </div>
+        </div>
+
+        <!-- Breakdown Details -->
+        <div class="breakdown-row">
+          <div class="metric-card">
+            <div class="metric-card-title"><span>👥</span> Recommended Delivery Pod</div>
+            <div class="metric-card-val" id="resPodName" style="color:var(--accent-cyan);">⚡ MVP Rapid Delivery Pod</div>
+            <div class="metric-card-sub" id="resPodScope">Dedicated lead engineer + AI architect operating under deterministic definition of done.</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-card-title"><span>⏱️</span> Target Sprint Velocity</div>
+            <div class="metric-card-val" id="resVelocity" style="color:var(--accent-mint);">14-Day Delivery Target</div>
+            <div class="metric-card-sub">Includes 30-Day Zero-Cost Bug-Fix Warranty & Institutional MSA Protection.</div>
+          </div>
+        </div>
+
+        <!-- Action Plan & Bottlenecks -->
+        <div class="action-plan-box">
+          <div style="font-size:0.78rem; font-weight:800; color:var(--accent-mint); font-family:var(--font-mono); text-transform:uppercase; margin-bottom:0.5rem;">
+            🎯 Recommended Executive Action Plan
+          </div>
+          <div style="font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:0.75rem;" id="resActionPlan">
+            Initiate 14-Day Rapid AI Solution Sprint with GRO10X MVP Rapid Delivery Pod.
+          </div>
+          <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.5;">
+            <strong>Identified Architectural Focus Areas:</strong>
+            <ul id="resBottlenecksList" style="margin-top:0.4rem; padding-left:1.25rem;">
+              <li>Model fine-tuning latency & token caching optimization</li>
+              <li>Enterprise multi-tenant RBAC & webhook security hardening</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="result-actions">
+          <button type="button" class="btn-primary" onclick="openConsultationBooking()">
+            ⚡ Book 14-Day Sprint Consultation
+          </button>
+          <button type="button" class="btn-secondary" onclick="window.print()">
+            🖨️ Print / Save Official PDF Scorecard
+          </button>
+          <a href="/sprint" class="btn-secondary" style="text-decoration:none;">
+            🚀 Explore Sprint Blueprints
+          </a>
+          <button type="button" class="btn-secondary" style="margin-left:auto;" onclick="resetDiagnostic()">
+            🔄 Retake Diagnostic
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    let currentStep = 1;
+    const selectedTechStack = new Set(['Python / FastAPI', 'Node.js / Express', 'PostgreSQL / pgvector', 'LangChain / LangGraph']);
+
+    function updateStepperUI(step) {
+      currentStep = step;
+      const progressPercent = ((step - 1) / 3) * 100;
+      document.getElementById('stepperProgressBar').style.width = progressPercent + '%';
+
+      for (let i = 1; i <= 4; i++) {
+        const node = document.getElementById('nodeStep' + i);
+        const panel = document.getElementById('stepPanel' + i);
+        if (i < step) {
+          node.className = 'step-node completed';
+          panel.className = 'step-panel';
+        } else if (i === step) {
+          node.className = 'step-node active';
+          panel.className = 'step-panel active';
+        } else {
+          node.className = 'step-node';
+          panel.className = 'step-panel';
+        }
+      }
+    }
+
+    function goToStep(step) {
+      if (step < currentStep || validateStep(currentStep)) {
+        updateStepperUI(step);
+      }
+    }
+
+    function validateStep(step) {
+      if (step === 1) {
+        const comp = document.getElementById('auditCompanyName').value.trim();
+        const contact = document.getElementById('auditContactName').value.trim();
+        const email = document.getElementById('auditEmail').value.trim();
+        const phone = document.getElementById('auditPhone').value.trim();
+
+        if (!comp) { alert('Please provide your company or brand name.'); return false; }
+        if (!contact) { alert('Please provide a contact person name.'); return false; }
+        if (!email && !phone) { alert('Please enter at least an email or WhatsApp number for scorecard delivery.'); return false; }
+        return true;
+      }
+      return true;
+    }
+
+    function validateAndNext(step) {
+      if (validateStep(step)) {
+        updateStepperUI(step + 1);
+      }
+    }
+
+    function selectDataReadiness(val, el) {
+      document.getElementById('selectedDataReadiness').value = val;
+      el.parentElement.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function selectAutomationPriority(val, el) {
+      document.getElementById('selectedAutomationPriority').value = val;
+      el.parentElement.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function toggleTechPill(el, tech) {
+      if (selectedTechStack.has(tech)) {
+        selectedTechStack.delete(tech);
+        el.classList.remove('selected');
+      } else {
+        selectedTechStack.add(tech);
+        el.classList.add('selected');
+      }
+    }
+
+    async function submitDiagnosticAudit() {
+      if (!validateStep(1)) {
+        goToStep(1);
+        return;
+      }
+
+      // Hide panels and show scanning screen
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById('stepPanel' + i).style.display = 'none';
+      }
+      document.getElementById('stepperNav').style.display = 'none';
+      document.getElementById('scanningScreen').style.display = 'block';
+
+      const scanMsgs = [
+        'Evaluating relational database indexing & vector embeddings...',
+        'Benchmarking API orchestration throughput & security posture...',
+        'Calculating multi-agent delivery pod requirements...',
+        'Generating deterministic 14-day sprint roadmap...'
+      ];
+      let msgIdx = 0;
+      const interval = setInterval(() => {
+        msgIdx = (msgIdx + 1) % scanMsgs.length;
+        document.getElementById('scanStatusMsg').textContent = scanMsgs[msgIdx];
+      }, 600);
+
+      const payload = {
+        companyName: document.getElementById('auditCompanyName').value.trim(),
+        contactName: document.getElementById('auditContactName').value.trim(),
+        email: document.getElementById('auditEmail').value.trim(),
+        phone: document.getElementById('auditPhone').value.trim(),
+        dataReadiness: document.getElementById('selectedDataReadiness').value,
+        currentTechStack: Array.from(selectedTechStack),
+        automationPriority: document.getElementById('selectedAutomationPriority').value,
+        monthlyBudgetUsd: Number(document.getElementById('auditBudget').value) || 2500,
+        timelineUrgency: document.getElementById('auditTimeline').value
+      };
+
+      try {
+        const res = await fetch('/api/leads/ai-audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        clearInterval(interval);
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Failed to evaluate diagnostic scorecard.');
+        }
+
+        renderScorecardResult(data);
+      } catch (err) {
+        clearInterval(interval);
+        alert('Diagnostic Evaluation Error: ' + err.message);
+        document.getElementById('scanningScreen').style.display = 'none';
+        document.getElementById('stepperNav').style.display = 'flex';
+        updateStepperUI(4);
+      }
+    }
+
+    function renderScorecardResult(data) {
+      document.getElementById('scanningScreen').style.display = 'none';
+      const resultPanel = document.getElementById('scorecardResult');
+      resultPanel.style.display = 'block';
+
+      const card = data.scorecard;
+      document.getElementById('resCompanyName').textContent = data.companyName || 'Enterprise Partner';
+      document.getElementById('resLeadId').textContent = 'REF: ' + (data.leadId || 'AUD-ENG2');
+      document.getElementById('resTimestamp').textContent = 'Evaluated: ' + new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      // Animate Gauge
+      const score = card.score || 75;
+      document.getElementById('resScoreNum').textContent = score;
+
+      const circle = document.getElementById('gaugeCircle');
+      const circumference = 2 * Math.PI * 90; // approx 565.48
+      const offset = circumference - (score / 100) * circumference;
+
+      // Color mapping
+      let color = '#00df89';
+      let tierClass = 'tier-pioneer';
+      let tierHeadline = 'Highly Prepared for Production AI Deployment';
+      let tierSummary = 'Your infrastructure demonstrates mature data structure and modern API orchestration capabilities. Your architecture is ready for immediate deployment under an autonomous solution sprint.';
+
+      if (score >= 80) {
+        color = '#00df89';
+        tierClass = 'tier-pioneer';
+      } else if (score >= 65) {
+        color = '#06b6d4';
+        tierClass = 'tier-ready';
+        tierHeadline = 'Sprint Ready with Minor Bridge Architecture';
+        tierSummary = 'Your core systems are ready for autonomous agent deployment. A short 14-day rapid sprint will establish automated LangGraph orchestration and direct webhook integrations.';
+      } else {
+        color = '#a855f7';
+        tierClass = 'tier-exploratory';
+        tierHeadline = 'Exploratory AI Candidate';
+        tierSummary = 'Recommended first step is a structured Discovery & Data Pipeline Sprint to standardize data ingestion before full production agent rollout.';
+      }
+
+      circle.style.stroke = color;
+      circle.style.strokeDashoffset = offset;
+
+      const tierBadge = document.getElementById('resTierBadge');
+      tierBadge.className = 'tier-badge-pill ' + tierClass;
+      tierBadge.textContent = '⚡ ' + card.readinessTier;
+
+      document.getElementById('resTierHeadline').textContent = tierHeadline;
+      document.getElementById('resTierSummary').textContent = tierSummary;
+
+      // Pod info
+      const podNames = {
+        'MVP_BUILD_POD': '⚡ MVP Rapid Delivery Pod',
+        'ENTERPRISE_AUTOMATION_POD': '🏢 Enterprise Automation Pod',
+        'CREATIVE_AI_POD': '🎨 Programmatic AI Creative Pod'
+      };
+      document.getElementById('resPodName').textContent = podNames[card.recommendedPod] || card.recommendedPod;
+      document.getElementById('resVelocity').textContent = `${card.estimatedSprintDays || 14}-Day Sprint Velocity`;
+      document.getElementById('resActionPlan').textContent = card.immediateActionPlan;
+
+      // Bottlenecks list
+      const listEl = document.getElementById('resBottlenecksList');
+      listEl.innerHTML = (card.keyBottlenecks || ['Data pipeline standardization required', 'API rate limit governance setup']).map(b => `<li>${b}</li>`).join('');
+    }
+
+    function openConsultationBooking() {
+      const company = encodeURIComponent(document.getElementById('auditCompanyName').value.trim() || 'Enterprise Client');
+      const email = encodeURIComponent(document.getElementById('auditEmail').value.trim() || '');
+      const phone = encodeURIComponent(document.getElementById('auditPhone').value.trim() || '');
+      const msg = `Hello GRO10X team, we just completed the AI Readiness Diagnostic for ${decodeURIComponent(company)} and would like to schedule our 14-day sprint consultation.`;
+      
+      // Open WhatsApp or email trigger
+      window.open(`https://wa.me/8801708459008?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function resetDiagnostic() {
+      document.getElementById('scorecardResult').style.display = 'none';
+      document.getElementById('stepperNav').style.display = 'flex';
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById('stepPanel' + i).style.display = '';
+      }
+      updateStepperUI(1);
+    }
+  </script>
+</body>
+</html>

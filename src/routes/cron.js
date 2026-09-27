@@ -1097,6 +1097,59 @@ router.get('/dbm-standup-reminder', async (req, res) => {
   }
 });
 
+// GET /api/cron/dce-renewals
+router.get('/dce-renewals', async (req, res) => {
+  try {
+    const { runDCERenewalCheck } = require('../services/dce-renewal-cron');
+    const result = await runDCERenewalCheck();
+    return res.json(result);
+  } catch (error) {
+    console.error('❌ Error in DCE renewals cron:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/warranty-check
+router.get('/warranty-check', async (req, res) => {
+  try {
+    const { runWarrantyCheck } = require('../services/warranty-cron');
+    const result = await runWarrantyCheck();
+    return res.json(result);
+  } catch (error) {
+    console.error('❌ Error in warranty check cron:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/defect-escalation
+router.get('/defect-escalation', async (req, res) => {
+  try {
+    const { runDefectEscalationCheck } = require('../services/defect-escalation-cron');
+    const result = await runDefectEscalationCheck();
+    return res.json({
+      success: true,
+      evaluatedCount: result.evaluatedCount || 0,
+      escalatedCount: result.escalatedCount || 0,
+      escalations: result.escalations || []
+    });
+  } catch (error) {
+    console.error('❌ Error in defect escalation cron:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/weekly-executive
+router.get('/weekly-executive', async (req, res) => {
+  try {
+    const { runWeeklyExecutiveCheck } = require('../services/weekly-executive-cron');
+    const result = await runWeeklyExecutiveCheck();
+    return res.json(result);
+  } catch (error) {
+    console.error('❌ Error in weekly executive cron:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
 
 

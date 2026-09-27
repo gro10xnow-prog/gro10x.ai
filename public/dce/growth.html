@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — DCE Growth Engine & Attribution Command Deck</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22%20%2232%22><text y=%2224%22 font-size=%2224%22>📈</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #ec4899;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: relative;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .brand-logo .icon-badge {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+    }
+
+    .brand-logo h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-tab-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #111827;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .nav-tab-btn:hover:not(.active) {
+      background: #1f2937;
+      color: #fff;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #1f2937; color: var(--text); border: 1px solid #374151; }
+    .btn-secondary:hover { background: #374151; }
+    .btn-success { background: var(--success); color: #042f1f; font-weight: 700; }
+    .btn-success:hover { filter: brightness(1.1); }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #ec4899, #6366f1);
+    }
+
+    .kpi-card .title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .kpi-card .val {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .kpi-card .sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Tables */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: #0f172a;
+      padding: 12px 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #1a2234;
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-active { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-inactive { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .badge-promo { background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); color: #f472b6; font-family: var(--mono); }
+
+    .shortlink-pill {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      width: 90%; max-width: 550px;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; }
+    input, select {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: white;
+      font-family: inherit;
+      font-size: 13px;
+      margin-top: 6px;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="/dce" class="brand-logo">
+      <div class="icon-badge">📈</div>
+      <div>
+        <h1>GRO10X Growth Command Deck</h1>
+        <small style="color: var(--text-muted); font-size: 11px;">Attribution · Promo Codes · Affiliate Network · ROI Telemetry</small>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <div style="display: flex; gap: 6px; background: #090e17; padding: 4px; border-radius: 10px; border: 1px solid #1f2937;">
+        <button id="tabBtnCoupons" class="nav-tab-btn active" onclick="switchTab('tab-coupons')">🏷️ Coupons & Promos</button>
+        <button id="tabBtnPromoSimulator" class="nav-tab-btn" onclick="switchTab('tab-simulator')">🧪 Promo Simulator</button>
+        <button id="tabBtnAffiliateNetwork" class="nav-tab-btn" onclick="switchTab('tab-affiliates')">🤝 Affiliate Network</button>
+        <button id="tabBtnAttribution" class="nav-tab-btn" onclick="switchTab('tab-attribution')">📊 Attribution Ledger</button>
+        <button id="tabBtnROI" class="nav-tab-btn" onclick="switchTab('tab-roi')">📈 ROI & Leaderboards</button>
+      </div>
+
+      <a href="/dce" class="btn btn-secondary">⚡ Catalog</a>
+      <a href="/dce/orders" class="btn btn-secondary">🛒 Orders</a>
+      <a href="/dce/operations" class="btn btn-secondary">🛠️ Operations</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- KPI Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="title">Active Promo Coupons</div>
+        <div class="val" id="kpi-active-coupons" style="color: #ec4899;">—</div>
+        <div class="sub">Across brand & global catalogs</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Coupon Redemptions</div>
+        <div class="val" id="kpi-total-uses" style="color: #38bdf8;">—</div>
+        <div class="sub">Total discount codes claimed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Affiliate Referrers</div>
+        <div class="val" id="kpi-affiliates-count" style="color: #34d399;">—</div>
+        <div class="sub">Active creators driving traffic</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Commission Earned ($)</div>
+        <div class="val" id="kpi-commissions-earned" style="color: #facc15;">—</div>
+        <div class="sub">Attributed partner kickbacks</div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 1: COUPONS & PROMOS -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-coupons" class="tab-panel active">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3>🏷️ Active Promotion Codes</h3>
+        <button class="btn btn-primary" onclick="openNewCouponModal()">+ Create Coupon</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Promo Code</th>
+              <th>Brand Scope</th>
+              <th>Discount</th>
+              <th>Min Spend</th>
+              <th>Uses / Cap</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="coupons-table-body">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading coupons...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 2: PROMO SIMULATOR & VALIDATOR -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-simulator" class="tab-panel">
+      <div style="max-width: 600px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 24px;">
+        <h3 style="margin-bottom: 8px;">🧪 Cart Promo Code Simulator</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Test how coupon rules (spend thresholds, caps, brand scoping) evaluate in real time.</p>
+
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 12px; color: var(--text-muted);">Enter Promo Code:</label>
+          <input type="text" id="sim-code" placeholder="e.g. PQWELCOME10" value="PQWELCOME10" style="text-transform: uppercase;">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="font-size: 12px; color: var(--text-muted);">Order Total Amount ($):</label>
+          <input type="number" id="sim-amount" placeholder="e.g. 50.00" value="50.00" step="0.50">
+        </div>
+
+        <button id="btnRunPromoSim" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;" onclick="runPromoSimulation()">⚡ Evaluate & Compute Discount</button>
+
+        <div id="sim-result" style="margin-top: 20px; display: none; background: #090e17; border: 1px dashed #374151; border-radius: 10px; padding: 16px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 3: AFFILIATE NETWORK -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-affiliates" class="tab-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3>🤝 Affiliate & Creator Referral Network</h3>
+        <button class="btn btn-primary" onclick="openNewAffiliateModal()">+ Onboard Affiliate</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Partner Name</th>
+              <th>Contact Email</th>
+              <th>Payout Channel</th>
+              <th>Default Rate</th>
+              <th>Referral Short Link</th>
+              <th>Traffic Clicks</th>
+              <th>Conversions</th>
+              <th>Total Earned</th>
+            </tr>
+          </thead>
+          <tbody id="affiliates-table-body">
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading affiliates...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 4: ATTRIBUTION & CONVERSIONS LEDGER -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-attribution" class="tab-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3>📊 Attributed Orders & Commission Ledger</h3>
+        <button class="btn btn-secondary" onclick="loadAttribution()">Refresh Ledger</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Channel</th>
+              <th>Attributed Partner</th>
+              <th>Order GMV</th>
+              <th>Commission Rate</th>
+              <th>Earned Kickback</th>
+              <th>Status</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="attribution-table-body">
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading attribution records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- TAB 5: VISUAL ROI & GROWTH LEADERBOARD -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <div id="tab-roi" class="tab-panel">
+      <!-- 1. Channel Net Yield & Margin Efficiency Bar -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800;">⚖️ Omnichannel Margin Retention Efficiency</h3>
+            <p style="font-size: 12px; color: var(--text-muted);">Net commercial yield retained by GRO10X DCE after channel marketplace commissions</p>
+          </div>
+          <span class="badge badge-active">100% DIRECT YIELD TARGET</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+          <div style="background: #090e17; border: 1px solid #1f2937; border-radius: 12px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px;">
+              <span>🛍️ Direct Storefront</span>
+              <span style="color: #34d399;">100.0% Net</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden;">
+              <div style="width: 100%; height: 100%; background: #10b981;"></div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Fee: $0.00 (0% marketplace cut)</div>
+          </div>
+
+          <div style="background: #090e17; border: 1px solid #1f2937; border-radius: 12px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px;">
+              <span>🟣 Gumroad</span>
+              <span style="color: #818cf8;">89.5% Net</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden;">
+              <div style="width: 89.5%; height: 100%; background: #6366f1;"></div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Fee: 10% Flat Marketplace Fee</div>
+          </div>
+
+          <div style="background: #090e17; border: 1px solid #1f2937; border-radius: 12px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px;">
+              <span>🟠 Etsy</span>
+              <span style="color: #fbbf24;">88.5% Net</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden;">
+              <div style="width: 88.5%; height: 100%; background: #f59e0b;"></div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Fee: 6.5% Transaction + Listing</div>
+          </div>
+
+          <div style="background: #090e17; border: 1px solid #1f2937; border-radius: 12px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px;">
+              <span>📦 Amazon SP-API</span>
+              <span style="color: #f87171;">85.0% Net</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden;">
+              <div style="width: 85.0%; height: 100%; background: #ef4444;"></div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Fee: 15% Category Referral Fee</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Leaderboards Grid (Top Affiliates & Top Coupons) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px;">
+        <!-- Top Affiliates Leaderboard -->
+        <div class="card">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>🏆 Top Affiliates Leaderboard</span>
+          </h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Partner Name</th>
+                  <th>Clicks</th>
+                  <th>Conversions</th>
+                  <th>Referred GMV</th>
+                </tr>
+              </thead>
+              <tbody id="roi-affiliates-tbody">
+                <tr>
+                  <td><span style="font-size: 16px;">🥇</span></td>
+                  <td><strong>Alex Creator & Co.</strong></td>
+                  <td>52</td>
+                  <td><strong style="color: #34d399;">3</strong></td>
+                  <td><strong>$29.97</strong></td>
+                </tr>
+                <tr>
+                  <td><span style="font-size: 16px;">🥈</span></td>
+                  <td><strong>Sarah Aesthetic Vlogs</strong></td>
+                  <td>38</td>
+                  <td><strong style="color: #34d399;">2</strong></td>
+                  <td><strong>$19.98</strong></td>
+                </tr>
+                <tr>
+                  <td><span style="font-size: 16px;">🥉</span></td>
+                  <td><strong>Planner TikTok Club</strong></td>
+                  <td>24</td>
+                  <td><strong style="color: #34d399;">1</strong></td>
+                  <td><strong>$9.99</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Performing Promotion Coupons -->
+        <div class="card">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>🎟️ Coupon Campaign Performance</span>
+          </h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Coupon</th>
+                  <th>Discount</th>
+                  <th>Redemptions</th>
+                  <th>Unlocked GMV</th>
+                </tr>
+              </thead>
+              <tbody id="roi-coupons-tbody">
+                <tr>
+                  <td><span class="badge badge-promo">VIP50</span></td>
+                  <td>50% OFF</td>
+                  <td><strong>5</strong></td>
+                  <td style="color: #34d399; font-weight: 800;">$99.95</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-promo">PQWELCOME10</span></td>
+                  <td>10% OFF</td>
+                  <td><strong>24</strong></td>
+                  <td style="color: #34d399; font-weight: 800;">$239.76</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-promo">SAVE5NOW</span></td>
+                  <td>$5.00 OFF</td>
+                  <td><strong>12</strong></td>
+                  <td style="color: #34d399; font-weight: 800;">$119.88</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-promo">GROGLOBAL15</span></td>
+                  <td>15% OFF</td>
+                  <td><strong>65</strong></td>
+                  <td style="color: #34d399; font-weight: 800;">$649.35</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: NEW COUPON -->
+  <div id="modal-coupon" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Create Promotion Coupon</h3>
+        <button class="modal-close" onclick="closeModal('modal-coupon')">&times;</button>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Coupon Code (Uppercase):</label>
+        <input type="text" id="coup-code" placeholder="e.g. FLASH20" style="text-transform: uppercase;">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Discount Type:</label>
+        <select id="coup-type">
+          <option value="PERCENTAGE">Percentage (%)</option>
+          <option value="FIXED_AMOUNT">Fixed Dollar ($)</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Discount Value (% or $):</label>
+        <input type="number" id="coup-value" placeholder="e.g. 20" step="0.5">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Minimum Order Spend ($):</label>
+        <input type="number" id="coup-min" placeholder="e.g. 10.00" value="0">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Maximum Uses (Leave empty for unlimited):</label>
+        <input type="number" id="coup-max" placeholder="e.g. 500">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-coupon')">Cancel</button>
+        <button class="btn btn-success" onclick="saveCoupon()">Create Coupon</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NEW AFFILIATE -->
+  <div id="modal-affiliate" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Onboard Affiliate / Creator</h3>
+        <button class="modal-close" onclick="closeModal('modal-affiliate')">&times;</button>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Partner / Creator Name:</label>
+        <input type="text" id="aff-name" placeholder="e.g. Maya Vlogs">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Email Address:</label>
+        <input type="email" id="aff-email" placeholder="e.g. maya@creator.com">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Payout Channel:</label>
+        <select id="aff-channel">
+          <option value="BKASH">bKash (Bangladesh)</option>
+          <option value="BANK_WIRE">Bank Wire Transfer</option>
+          <option value="PAYPAL">PayPal</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Default Commission Rate (e.g. 0.20 = 20%):</label>
+        <input type="number" id="aff-rate" placeholder="0.20" value="0.20" step="0.01">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-affiliate')">Cancel</button>
+        <button class="btn btn-success" onclick="saveAffiliate()">Save Partner</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function openNewCouponModal() {
+      document.getElementById('modal-coupon').classList.add('active');
+    }
+
+    function openNewAffiliateModal() {
+      document.getElementById('modal-affiliate').classList.add('active');
+    }
+
+    async function loadAllGrowthData() {
+      loadCoupons();
+      loadAffiliates();
+      loadAttribution();
+    }
+
+    // 1. COUPONS
+    async function loadCoupons() {
+      try {
+        const res = await fetch('/api/dce/promotions/coupons').then(r => r.json());
+        const tbody = document.getElementById('coupons-table-body');
+        const coupons = res.data || [];
+
+        document.getElementById('kpi-active-coupons').innerText = coupons.filter(c => c.is_active).length;
+        const totalUses = coupons.reduce((sum, c) => sum + (c.used_count || 0), 0);
+        document.getElementById('kpi-total-uses').innerText = totalUses;
+
+        if (coupons.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No promotion coupons created.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = coupons.map(c => `
+          <tr>
+            <td><span class="badge badge-promo">${c.code}</span></td>
+            <td><strong>${c.brand_name || 'Global'}</strong></td>
+            <td>${c.discount_type === 'PERCENTAGE' ? `${c.discount_value}%` : `$${Number(c.discount_value).toFixed(2)}`}</td>
+            <td>$${Number(c.min_order_usd || 0).toFixed(2)}</td>
+            <td>${c.used_count || 0} / ${c.max_uses || '∞'}</td>
+            <td><span class="badge ${c.is_active ? 'badge-active' : 'badge-inactive'}">${c.is_active ? 'ACTIVE' : 'INACTIVE'}</span></td>
+            <td>
+              <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="toggleCoupon('${c.id}', ${!c.is_active})">${c.is_active ? 'Deactivate' : 'Activate'}</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {}
+    }
+
+    async function saveCoupon() {
+      const code = document.getElementById('coup-code').value;
+      const discount_type = document.getElementById('coup-type').value;
+      const discount_value = document.getElementById('coup-value').value;
+      const min_order_usd = document.getElementById('coup-min').value;
+      const max_uses = document.getElementById('coup-max').value;
+
+      if (!code || !discount_value) return alert('Code and Discount Value are required');
+
+      try {
+        await fetch('/api/dce/promotions/coupons', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, discount_type, discount_value, min_order_usd, max_uses })
+        });
+        closeModal('modal-coupon');
+        loadCoupons();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function toggleCoupon(id, targetState) {
+      try {
+        await fetch(`/api/dce/promotions/coupons/${id}/toggle`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_active: targetState })
+        });
+        loadCoupons();
+      } catch (e) { alert(e.message); }
+    }
+
+    // 2. SIMULATOR
+    async function runPromoSimulation() {
+      const code = document.getElementById('sim-code').value;
+      const orderTotal = document.getElementById('sim-amount').value;
+      const box = document.getElementById('sim-result');
+
+      try {
+        const res = await fetch('/api/dce/promotions/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, orderTotal })
+        }).then(r => r.json());
+
+        box.style.display = 'block';
+        if (res.data?.valid) {
+          box.innerHTML = `
+            <div style="color: #34d399; font-weight: 700; margin-bottom: 6px;">✅ Coupon Valid: ${res.data.code}</div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Original Total:</span><strong>$${res.data.originalTotal.toFixed(2)}</strong></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #f87171;"><span>Discount Applied:</span><strong>-$${res.data.discountAmount.toFixed(2)}</strong></div>
+            <div style="display: flex; justify-content: space-between; color: #38bdf8; font-size: 16px; font-weight: 800;"><span>Final Total:</span><span>$${res.data.finalAmount.toFixed(2)}</span></div>
+          `;
+        } else {
+          box.innerHTML = `
+            <div style="color: #f87171; font-weight: 700; margin-bottom: 6px;">❌ Invalid Coupon (${res.data?.reason || 'REJECTED'})</div>
+            <div style="font-size: 13px; color: var(--text-muted);">${res.data?.message || res.error || 'Failed validation'}</div>
+          `;
+        }
+      } catch (e) { alert(e.message); }
+    }
+
+    // 3. AFFILIATES
+    async function loadAffiliates() {
+      try {
+        const res = await fetch('/api/dce/affiliates').then(r => r.json());
+        const tbody = document.getElementById('affiliates-table-body');
+        const affiliates = res.data || [];
+
+        document.getElementById('kpi-affiliates-count').innerText = affiliates.length;
+        const totalEarned = affiliates.reduce((sum, a) => sum + Number(a.total_earned || 0), 0);
+        document.getElementById('kpi-commissions-earned').innerText = '$' + totalEarned.toFixed(2);
+
+        if (affiliates.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No affiliate partners onboarded yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = affiliates.map(a => {
+          const link = (a.links && a.links[0]) || {};
+          const shortUrl = link.short_code ? `/r/${link.short_code}` : '—';
+
+          return `
+            <tr>
+              <td><strong>${a.name}</strong></td>
+              <td>${a.email}</td>
+              <td><span class="badge" style="background: rgba(99,102,241,0.2); color: #a5b4fc;">${a.payout_channel}</span></td>
+              <td>${(Number(a.default_rate) * 100).toFixed(0)}%</td>
+              <td>${link.short_code ? `<a href="${shortUrl}" target="_blank" class="shortlink-pill">${shortUrl}</a>` : '—'}</td>
+              <td>${link.click_count || 0} clicks</td>
+              <td>${link.conversion_count || 0} orders</td>
+              <td style="color: #facc15; font-weight: 800;">$${Number(a.total_earned || 0).toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {}
+    }
+
+    async function saveAffiliate() {
+      const name = document.getElementById('aff-name').value;
+      const email = document.getElementById('aff-email').value;
+      const payout_channel = document.getElementById('aff-channel').value;
+      const default_rate = document.getElementById('aff-rate').value;
+
+      if (!name || !email) return alert('Name and email are required');
+
+      try {
+        await fetch('/api/dce/affiliates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, payout_channel, default_rate })
+        });
+        closeModal('modal-affiliate');
+        loadAffiliates();
+      } catch (e) { alert(e.message); }
+    }
+
+    // 4. ATTRIBUTION
+    async function loadAttribution() {
+      try {
+        const res = await fetch('/api/dce/affiliates/conversions').then(r => r.json());
+        const tbody = document.getElementById('attribution-table-body');
+        const list = res.data || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No attributed orders recorded yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(c => `
+          <tr>
+            <td><strong>${c.order_ref || c.order_id.slice(0, 12)}</strong></td>
+            <td><span class="badge" style="background: rgba(56,189,248,0.15); color: #38bdf8;">${c.channel_code || 'DIRECT'}</span></td>
+            <td><strong>${c.affiliate_name || 'Affiliate Partner'}</strong></td>
+            <td>$${Number(c.order_amount).toFixed(2)}</td>
+            <td>${(Number(c.commission_rate) * 100).toFixed(0)}%</td>
+            <td style="color: #facc15; font-weight: 800;">+$${Number(c.commission_earned).toFixed(2)}</td>
+            <td><span class="badge badge-active">${c.payout_status}</span></td>
+            <td><small style="color: var(--text-muted);">${new Date(c.created_at).toLocaleDateString()}</small></td>
+          </tr>
+        `).join('');
+      } catch (e) {}
+    }
+
+    // Boot
+    loadAllGrowthData();
+  </script>
+  <script src="/dce/nav.js"></script>
+</body>
+</html>

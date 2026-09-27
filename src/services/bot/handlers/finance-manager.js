@@ -68,7 +68,7 @@ async function handleExpenseQueueFinance(teamBot, msg) {
     }
 
     inlineKeyboard.push([
-      { text: '🌐 Open Web Finance Hub', web_app: { url: 'https://gro10x-ai.vercel.app/manager#finance' } },
+      { text: '🌐 Open Web Finance Hub', web_app: { url: 'https://gro10x-ai.vercel.app/workspace#claims' } },
       { text: '📊 Payroll Summary', callback_data: 'cmd_payroll_summary' }
     ]);
 

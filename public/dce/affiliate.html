@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Affiliate & Creator Partner Portal — GRO10X DCE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.9);
+      --card-border: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 450px),
+                        radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.08), transparent 450px);
+    }
+    header {
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; font-weight: 800; font-size: 17px; }
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+    }
+    .main-container {
+      max-width: 1000px;
+      width: 100%;
+      margin: 35px auto 60px;
+      padding: 0 20px;
+      flex: 1;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      margin-bottom: 24px;
+    }
+    .input-field {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid #334155;
+      padding: 11px 14px;
+      border-radius: 9px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .input-field:focus { border-color: var(--primary); }
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-green { background: #10b981; }
+    .btn-green:hover { background: #059669; }
+    .btn-secondary { background: #1f2937; color: #cbd5e1; border: 1px solid #374151; }
+    .btn-secondary:hover { background: #374151; }
+    
+    /* Metrics Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: #090e17;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .kpi-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-val { font-size: 24px; font-weight: 800; margin: 6px 0 2px; }
+    .kpi-sub { font-size: 11px; color: var(--text-muted); }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 12px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #1f2937; }
+    td { padding: 13px 12px; border-bottom: 1px solid #1e293b; }
+    
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: inline-block;
+      text-transform: uppercase;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+    /* Responsive Mobile Layout */
+    @media (max-width: 640px) {
+      header {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .main-container {
+        padding: 16px 12px 40px;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+      .kpi-card {
+        padding: 12px !important;
+      }
+      .kpi-val {
+        font-size: 20px !important;
+      }
+      .table-wrap {
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+    @media (max-width: 420px) {
+      .kpi-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/dce" class="brand">
+      <div class="brand-icon">🤝</div>
+      <div>
+        <div>GRO10X Partner Portal</div>
+        <div style="font-size: 11px; color: #94a3b8; font-weight: 500;">Affiliate & Creator Growth Hub</div>
+      </div>
+    </a>
+    <div id="headerUserWrap" style="display: none; align-items: center; gap: 12px;">
+      <span class="badge badge-green" id="partnerBadge">VERIFIED CREATOR</span>
+      <span id="partnerNameDisplay" style="font-size: 13px; font-weight: 700;"></span>
+      <button onclick="logout()" class="btn btn-secondary" style="padding: 5px 10px; font-size: 11px;">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+    
+    <!-- Login Screen -->
+    <div id="loginCard" class="card" style="max-width: 480px; margin: 60px auto; text-align: center;">
+      <div style="font-size: 38px; margin-bottom: 12px;">🤝</div>
+      <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 8px;">Affiliate Partner Access</h2>
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Enter your registered partner email to view your referral earnings, links, and click telemetry.</p>
+      
+      <form id="loginForm">
+        <div style="margin-bottom: 16px; text-align: left;">
+          <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 6px;">Partner Email Address</label>
+          <input type="email" id="partnerEmailInput" class="input-field" placeholder="e.g. alex.creator@example.com" value="alex.creator@example.com" required>
+        </div>
+        <button id="btnAccessAffiliateDashboard" type="submit" class="btn btn-green" style="width: 100%; justify-content: center; padding: 12px; font-size: 14px;">
+          <span>🚀 Access Dashboard</span>
+        </button>
+      </form>
+      <div id="loginErr" style="display: none; margin-top: 14px; color: #f87171; font-size: 12px; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;"></div>
+    </div>
+
+    <!-- Authenticated Dashboard -->
+    <div id="dashboardWrap" style="display: none;">
+      
+      <!-- KPI Row -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Link Clicks</div>
+          <div class="kpi-val" id="valClicks" style="color: #60a5fa;">0</div>
+          <div class="kpi-sub">Total visits referred</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Referred Orders</div>
+          <div class="kpi-val" id="valConversions" style="color: #34d399;">0</div>
+          <div class="kpi-sub" id="valConvRate">0.0% conversion rate</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Referred GMV ($)</div>
+          <div class="kpi-val" id="valReferredGMV" style="color: #facc15;">$0.00</div>
+          <div class="kpi-sub">Gross sales generated</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Total Commission ($)</div>
+          <div class="kpi-val" id="valEarned" style="color: #c084fc;">$0.00</div>
+          <div class="kpi-sub" id="valCommissionRate">20% commission tier</div>
+        </div>
+        <div class="kpi-card" style="border-color: rgba(16, 185, 129, 0.4);">
+          <div class="kpi-title">Unpaid Balance</div>
+          <div class="kpi-val" id="valUnpaid" style="color: #34d399;">$0.00</div>
+          <div class="kpi-sub" id="valPayoutChannel">bKash Payout</div>
+        </div>
+      </div>
+
+      <!-- Link Builder Card -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 800;">⚡ Instant Campaign Link Generator</h3>
+          <span style="font-size: 12px; color: var(--text-muted);">Custom 30-Day Attribution Cookies</span>
+        </div>
+        
+        <form id="linkGenForm" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">CUSTOM SHORT CODE / SLUG</label>
+            <input type="text" id="customSlug" class="input-field" placeholder="e.g. alex-planner-summer" required>
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">DESTINATION LANDING PAGE</label>
+            <select id="destinationUrl" class="input-field" style="background: #090e17;">
+              <option value="https://gro10x.ai/dce/store">🛍️ Direct Storefront (/dce/store)</option>
+              <option value="https://gro10x.ai/dce">⚡ DCE Catalog Hub (/dce)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-green" style="height: 42px;">
+            <span>+ Create Short Link</span>
+          </button>
+        </form>
+
+        <div style="margin-top: 24px;">
+          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Your Active Tracking Links</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Short Code</th>
+                  <th>Shareable Tracking URL</th>
+                  <th>Clicks</th>
+                  <th>Orders</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="linksTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversion History Ledger -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 800;">📋 Chronological Referral Conversion Ledger</h3>
+          <button onclick="refreshData()" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">🔄 Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Order Reference</th>
+                <th>Order GMV</th>
+                <th>Commission %</th>
+                <th>Earned Kickback</th>
+                <th>Disbursement Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="conversionsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Payout Settings Card -->
+      <div class="card">
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 6px;">💳 Payout Settings & Disbursement Routing</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">Automated weekly disbursements are credited directly to your preferred channel.</p>
+        
+        <form id="payoutSettingsForm" style="max-width: 500px;">
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">DISBURSEMENT METHOD</label>
+            <select id="payoutChannelSelect" class="input-field" style="background: #090e17;">
+              <option value="BKASH">📱 bKash Merchant / Personal Account</option>
+              <option value="BANK">🏦 Bank Wire Transfer</option>
+              <option value="PAYPAL">🅿️ PayPal Account</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">ACCOUNT NUMBER / WALLET IDENTIFIER</label>
+            <input type="text" id="payoutAccountInput" class="input-field" placeholder="e.g. +8801700000000 or IBAN / PayPal Email" required>
+          </div>
+          <button type="submit" class="btn btn-secondary" id="savePayoutBtn">
+            <span>💾 Save Payout Preferences</span>
+          </button>
+          <span id="payoutSaveMsg" style="display: none; color: #34d399; font-size: 12px; margin-left: 10px;">✅ Saved!</span>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentPartner = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get('email');
+      if (email) {
+        document.getElementById('partnerEmailInput').value = email;
+        login(email);
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('partnerEmailInput').value.trim();
+      login(email);
+    });
+
+    async function login(email) {
+      const errEl = document.getElementById('loginErr');
+      errEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/dce/affiliates/portal/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || data.error?.message || 'Login failed. Please check your email.');
+        }
+
+        if (data.data.token) {
+          sessionStorage.setItem('dce_affiliate_token', data.data.token);
+        }
+
+        currentPartner = data.data;
+        renderDashboard(data.data);
+      } catch (err) {
+        errEl.innerText = err.message;
+        errEl.style.display = 'block';
+      }
+    }
+
+    function renderDashboard(data) {
+      document.getElementById('loginCard').style.display = 'none';
+      document.getElementById('dashboardWrap').style.display = 'block';
+      document.getElementById('headerUserWrap').style.display = 'flex';
+      document.getElementById('partnerNameDisplay').innerText = data.affiliate.name;
+
+      // KPIs
+      document.getElementById('valClicks').innerText = data.metrics.totalClicks;
+      document.getElementById('valConversions').innerText = data.metrics.totalConversions;
+      document.getElementById('valConvRate').innerText = `${data.metrics.conversionRate} conversion rate`;
+      document.getElementById('valReferredGMV').innerText = `$${Number(data.metrics.grossReferredGMV).toFixed(2)}`;
+      document.getElementById('valEarned').innerText = `$${Number(data.metrics.totalEarned).toFixed(2)}`;
+      document.getElementById('valCommissionRate').innerText = `${(Number(data.affiliate.default_rate) * 100).toFixed(0)}% commission rate`;
+      document.getElementById('valUnpaid').innerText = `$${Number(data.metrics.unpaidBalance).toFixed(2)}`;
+      document.getElementById('valPayoutChannel').innerText = `${data.affiliate.payout_channel} Payout`;
+
+      // Links Table
+      const linksTbody = document.getElementById('linksTableBody');
+      if (data.links && data.links.length > 0) {
+        linksTbody.innerHTML = data.links.map(l => `
+          <tr>
+            <td><code style="color: #818cf8; font-weight: 700;">${l.shortCode}</code></td>
+            <td><a href="${l.shortUrl}" target="_blank" style="color: #fff; text-decoration: underline;">${l.shortUrl}</a></td>
+            <td><strong>${l.clickCount}</strong></td>
+            <td><strong style="color: #34d399;">${l.conversionCount}</strong></td>
+            <td>
+              <button onclick="copyLink('${l.shortUrl}')" class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;">📋 Copy Link</button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        linksTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No active links yet. Create your first link above!</td></tr>';
+      }
+
+      // Conversions Ledger
+      const convTbody = document.getElementById('conversionsTableBody');
+      if (data.conversions && data.conversions.length > 0) {
+        convTbody.innerHTML = data.conversions.map(c => `
+          <tr>
+            <td><code style="color: #fff;">${c.orderRef}</code></td>
+            <td>$${c.orderAmount}</td>
+            <td>${c.commissionRate}</td>
+            <td><strong style="color: #34d399;">+$${c.commissionEarned}</strong></td>
+            <td><span class="badge ${c.payoutStatus === 'PAID' ? 'badge-green' : 'badge-amber'}">${c.payoutStatus}</span></td>
+            <td>${new Date(c.createdAt).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } else {
+        convTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No referred conversions recorded yet. Share your links to earn!</td></tr>';
+      }
+
+      // Payout settings
+      document.getElementById('payoutChannelSelect').value = data.affiliate.payout_channel || 'BKASH';
+      document.getElementById('payoutAccountInput').value = data.affiliate.payout_details?.account || data.affiliate.phone || '';
+    }
+
+    function copyLink(url) {
+      navigator.clipboard.writeText(url);
+      alert('✅ Referral link copied to clipboard!');
+    }
+
+    function getAuthHeaders() {
+      const token = sessionStorage.getItem('dce_affiliate_token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      return headers;
+    }
+
+    // Link Creation Form
+    document.getElementById('linkGenForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const slug = document.getElementById('customSlug').value.trim();
+      const destination = document.getElementById('destinationUrl').value;
+
+      try {
+        const res = await fetch('/api/dce/affiliates/portal/links', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            email: currentPartner.affiliate.email,
+            shortCode: slug,
+            destinationUrl: destination
+          })
+        });
+        const data = await res.json();
+        if (res.status === 401) {
+          sessionStorage.removeItem('dce_affiliate_token');
+          alert('⚠️ Session expired. Please log in again.');
+          location.reload();
+          return;
+        }
+        if (!res.ok || !data.success) throw new Error(data.message || data.error?.message || 'Link creation failed');
+
+        alert(`✅ Created link: ${data.data.shortUrl}`);
+        document.getElementById('customSlug').value = '';
+        refreshData();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // Payout Preferences Form
+    document.getElementById('payoutSettingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const channel = document.getElementById('payoutChannelSelect').value;
+      const account = document.getElementById('payoutAccountInput').value.trim();
+
+      try {
+        const res = await fetch('/api/dce/affiliates/portal/payout-settings', {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            email: currentPartner.affiliate.email,
+            payoutChannel: channel,
+            payoutDetails: { account }
+          })
+        });
+        const data = await res.json();
+        if (res.status === 401) {
+          sessionStorage.removeItem('dce_affiliate_token');
+          alert('⚠️ Session expired. Please log in again.');
+          location.reload();
+          return;
+        }
+        if (!res.ok || !data.success) throw new Error(data.message || data.error?.message || 'Failed to save payout settings');
+
+        const msg = document.getElementById('payoutSaveMsg');
+        msg.style.display = 'inline';
+        setTimeout(() => msg.style.display = 'none', 3000);
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    function refreshData() {
+      if (currentPartner?.affiliate?.email) {
+        login(currentPartner.affiliate.email);
+      }
+    }
+
+    function logout() {
+      currentPartner = null;
+      document.getElementById('dashboardWrap').style.display = 'none';
+      document.getElementById('headerUserWrap').style.display = 'none';
+      document.getElementById('loginCard').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

@@ -1,17 +1,14 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS — Department Manager Portal</title>
+  <title>GRO10X OS — Department Manager Portal</title>
+  <meta http-equiv="refresh" content="0; url=/workspace#overview">
   <script>
     (function() {
-      var token = localStorage.getItem('sb-access-token') ||
-                  localStorage.getItem('gro10x_token') ||
-                  localStorage.getItem('gro10x_token');
-      if (!token) {
-        window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
-      }
+      var targetTab = window.location.hash.replace('#', '') || 'overview';
+      window.location.replace('/workspace#' + targetTab);
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -109,7 +106,11 @@
   <script>
     function mgrSignOut() {
       localStorage.removeItem('gro10x_token');
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('gro10x_user');
       localStorage.removeItem('purple_user');
+      sessionStorage.removeItem('jwt_token');
+      document.cookie = 'sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       window.location.href = '/auth';
     }
   </script>

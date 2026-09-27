@@ -63,6 +63,9 @@ window.CLIENT_MODULES.brief = async function(container) {
               <div class="form-group">
                 <label class="form-label">Primary Objective *</label>
                 <select id="briefObjective" class="form-select" required>
+                  <option value="AI Solution Sprint (14-Day MVP)">⚡ AI Solution Sprint (14-Day MVP)</option>
+                  <option value="Multi-Agent Automation Workflow">🤖 Multi-Agent Automation Workflow</option>
+                  <option value="Vertical AI OS Deployment">🏛️ Vertical AI OS Deployment</option>
                   <option value="Brand Awareness & Commercial Reach">🎯 Brand Awareness & Commercial Reach</option>
                   <option value="Product Launch / Seasonal Campaign">🚀 Product Launch / Seasonal Campaign</option>
                   <option value="Performance & Conversion Marketing">📈 Performance & Conversion Marketing</option>
@@ -104,7 +107,16 @@ window.CLIENT_MODULES.brief = async function(container) {
               <label class="form-label" style="font-weight:700;">Select Required Deliverables:</label>
               <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem; margin-top:0.3rem;">
                 <label style="display:flex; align-items:center; gap:0.6rem; font-size:0.85rem; color:var(--text-secondary); cursor:pointer; background:var(--surface-3); padding:0.75rem; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
-                  <input type="checkbox" name="briefDeliv" value="Short-form Reels / TikTok (9:16)" checked> 📱 Reels / TikTok (9:16)
+                  <input type="checkbox" name="briefDeliv" value="Full-Stack Web/MVP Codebase (GitHub Handover)"> 💻 Full-Stack MVP Codebase
+                </label>
+                <label style="display:flex; align-items:center; gap:0.6rem; font-size:0.85rem; color:var(--text-secondary); cursor:pointer; background:var(--surface-3); padding:0.75rem; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+                  <input type="checkbox" name="briefDeliv" value="Autonomous AI Agent Pipeline"> 🤖 AI Agent Workflow
+                </label>
+                <label style="display:flex; align-items:center; gap:0.6rem; font-size:0.85rem; color:var(--text-secondary); cursor:pointer; background:var(--surface-3); padding:0.75rem; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+                  <input type="checkbox" name="briefDeliv" value="Figma UX/UI System & Prototype"> 🎨 Figma UX/UI Prototype
+                </label>
+                <label style="display:flex; align-items:center; gap:0.6rem; font-size:0.85rem; color:var(--text-secondary); cursor:pointer; background:var(--surface-3); padding:0.75rem; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+                  <input type="checkbox" name="briefDeliv" value="Short-form Reels / TikTok (9:16)"> 📱 Reels / TikTok (9:16)
                 </label>
                 <label style="display:flex; align-items:center; gap:0.6rem; font-size:0.85rem; color:var(--text-secondary); cursor:pointer; background:var(--surface-3); padding:0.75rem; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
                   <input type="checkbox" name="briefDeliv" value="Static Social Graphics (1:1 / 4:5)"> 🎨 Static Social Graphics
@@ -134,24 +146,35 @@ window.CLIENT_MODULES.brief = async function(container) {
             </div>
           </div>
 
-          <!-- STEP 3: Creative Direction & Submission -->
+          <!-- STEP 3: Technical Architecture & Submission -->
           <div id="briefStep3" style="display:${currentStep === 3 ? 'block' : 'none'};">
             <div style="font-size:1.1rem; font-weight:800; font-family:var(--font-heading); margin-bottom:1rem; color:var(--text-primary);">
-              Step 3: Creative Direction & Reference Assets
+              Step 3: Technical Architecture & Sprint Specifications
             </div>
 
             <div class="form-group">
-              <label class="form-label" style="font-weight:700; color:#fff;">Campaign Scope, Key Hook & Description *</label>
-              <textarea id="briefDescription" class="form-input" rows="4" placeholder="Detail the campaign narrative, key product highlights, mandatory hashtags, and specific call-to-actions..." required></textarea>
+              <label class="form-label" style="font-weight:700; color:#fff;">Technical Architecture & Stack Specifications (Optional)</label>
+              <textarea id="briefTech" class="form-input" rows="2" placeholder="e.g. Next.js 14, Supabase pgvector, LangGraph multi-agent orchestration, Claude 3.5 Sonnet / Gemini 1.5 Pro API..."></textarea>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Reference Drive / Figma / Moodboard Link (Optional)</label>
-              <input type="url" id="briefAssetsUrl" class="form-input" placeholder="https://drive.google.com/... or https://figma.com/...">
+              <label class="form-label" style="font-weight:700; color:#fff;">Sprint Scope, User Stories & Description *</label>
+              <textarea id="briefDescription" class="form-input" rows="4" placeholder="Detail the core functional requirements, user journeys, edge cases, mandatory integrations, and sprint acceptance criteria..." required></textarea>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+              <div class="form-group">
+                <label class="form-label">Estimated Budget (BDT)</label>
+                <input type="number" id="briefBudget" class="form-input" placeholder="e.g. 150000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Reference Drive / Figma / GitHub Link (Optional)</label>
+                <input type="url" id="briefAssetsUrl" class="form-input" placeholder="https://github.com/... or https://figma.com/...">
+              </div>
             </div>
 
             <div style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 12px; padding: 0.85rem; margin-top: 1rem; font-size: 0.82rem; color: var(--text-secondary);">
-              ⚡ <strong>Production Kickoff SLA:</strong> Your dedicated Account Manager will review this brief, allocate production specialists, and schedule the kickoff review within <strong>4 business hours</strong>.
+              ⚡ <strong>Autonomous Pod Assignment:</strong> Upon submission, our AI router immediately parses your requirements, assigns the optimal Delivery Pod (MVP Rapid Delivery Pod, Enterprise Automation Pod, or Creative AI Pod), and alerts your Lead Architect.
             </div>
 
             <div style="display:flex; justify-content:space-between; margin-top:1.5rem;">
@@ -159,7 +182,7 @@ window.CLIENT_MODULES.brief = async function(container) {
                 ← Back
               </button>
               <button type="submit" id="btnSubmitBrief" class="btn-primary" style="box-shadow: 0 4px 20px rgba(236,72,153,0.4);">
-                🚀 Submit Campaign Brief to Production Team
+                🚀 Submit AI Sprint Intake to Pod Lead
               </button>
             </div>
           </div>
@@ -174,8 +197,8 @@ window.CLIENT_MODULES.brief = async function(container) {
       if (step === 2) {
         const title = document.getElementById('briefTitle')?.value?.trim();
         if (!title) {
-          if (window.showClientToast) window.showClientToast('Please enter a Campaign Title to proceed', 'error');
-          else alert('Please enter a Campaign Title');
+          if (window.showClientToast) window.showClientToast('Please enter a Sprint / Project Title to proceed', 'error');
+          else alert('Please enter a Sprint / Project Title');
           return;
         }
       }
@@ -191,8 +214,11 @@ window.CLIENT_MODULES.brief = async function(container) {
       const objective = document.getElementById('briefObjective')?.value;
       const timeline = document.getElementById('briefTimeline')?.value;
       const audience = document.getElementById('briefAudience')?.value?.trim();
+      const techRequirements = document.getElementById('briefTech')?.value?.trim();
       const description = document.getElementById('briefDescription')?.value?.trim();
       const assetsUrl = document.getElementById('briefAssetsUrl')?.value?.trim();
+      const budgetVal = document.getElementById('briefBudget')?.value;
+      const budget = budgetVal ? Number(budgetVal) : 0;
 
       const selectedDelivs = Array.from(document.querySelectorAll('input[name="briefDeliv"]:checked'))
         .map(cb => cb.value);
@@ -207,42 +233,41 @@ window.CLIENT_MODULES.brief = async function(container) {
       const submitBtn = document.getElementById('btnSubmitBrief');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerText = '⏳ Submitting Campaign Brief...';
+        submitBtn.innerText = '⏳ Initializing AI Delivery Pod...';
       }
 
-      const formattedDescription = `📌 Objective: ${objective}\n` +
-        (timeline ? `📅 Target Delivery: ${timeline}\n` : '') +
-        (selectedDelivs.length ? `🎬 Deliverables: ${selectedDelivs.join(', ')}\n` : '') +
-        (audience ? `👥 Target Audience: ${audience}\n` : '') +
-        (assetsUrl ? `🔗 Assets / References: ${assetsUrl}\n` : '') +
-        `\n📝 Campaign Scope & Notes:\n${description}`;
-
       try {
-        const res = await CLIENT_API.post('/tickets', {
-          category: 'Campaign Scope',
-          title: `[Campaign Brief] ${title}`,
-          priority: 'High',
-          description: formattedDescription
+        const res = await CLIENT_API.post('/projects/intake', {
+          title,
+          objective,
+          timeline,
+          deliverables: selectedDelivs,
+          techRequirements,
+          audience,
+          description,
+          assetsUrl,
+          budget
         });
 
-        if (res.success || res.ticket) {
+        if (res.ok || res.success || res.project) {
+          const podName = res.podRecommendation?.podName || 'MVP Rapid Delivery Pod';
           if (window.showClientToast) {
-            window.showClientToast('Campaign Brief submitted successfully! 🚀 Assigned to your AM.');
+            window.showClientToast(`Sprint Intake registered! 🚀 Auto-matched to ${podName}.`);
           } else {
-            alert('Campaign Brief submitted! Your AM will contact you.');
+            alert(`Sprint Intake registered! Auto-matched to ${podName}.`);
           }
-          window.location.hash = '#tickets';
+          window.location.hash = '#overview';
         } else {
-          throw new Error(res.error || 'Failed to submit brief');
+          throw new Error(res.error || 'Failed to initialize sprint intake');
         }
       } catch (err) {
-        if (window.showClientToast) window.showClientToast('Submission error: ' + err.message, 'error');
-        else alert('Error submitting brief: ' + err.message);
+        if (window.showClientToast) window.showClientToast('Intake submission error: ' + err.message, 'error');
+        else alert('Error submitting sprint intake: ' + err.message);
       } finally {
         isSubmitting = false;
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerText = '🚀 Submit Campaign Brief to Production Team';
+          submitBtn.innerText = '🚀 Submit AI Sprint Intake to Pod Lead';
         }
       }
     }

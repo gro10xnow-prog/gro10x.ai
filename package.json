@@ -12,7 +12,10 @@
     "test:e2e:prospect": "node scripts/e2e-prospect/runner.js",
     "db:seed": "node scripts/seed-supabase.js",
     "db:prod-reset": "node scripts/prepare-production-db.js",
-    "register-webhook": "node register-webhook.js"
+    "register-webhook": "node register-webhook.js",
+    "export:planner:pla14": "node scripts/export-planner-pdf.js",
+    "check:prod": "node scripts/check-production-readiness.js",
+    "agent:nishat": "node scripts/nishat-sales-agent.js"
   },
   "keywords": [
     "gro10x",

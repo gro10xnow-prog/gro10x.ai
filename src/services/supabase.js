@@ -56,7 +56,8 @@ async function ensureStorageBuckets() {
     { name: 'avatars', public: true },
     { name: 'brand-assets', public: true },
     { name: 'digi-payments', public: true },
-    { name: 'deliverables', public: true }
+    { name: 'deliverables', public: true },
+    { name: 'product-screenshots', public: true }
   ];
 
   try {

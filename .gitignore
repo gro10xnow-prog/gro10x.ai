@@ -1,8 +1,10 @@
 node_modules/
 .env
+.env.vercel*
 .DS_Store
 *.log
 .vercel
+dist/
 Thumbs.db
 
 # Backup files
@@ -17,6 +19,8 @@ tmp_test_assets/
 *.pdf
 !public/assets/**/*.pdf
 Screenshot*.png
+/image_*.png
+/*.wav
 scratch/
 .chrome-test-profile/
 __pycache__/

@@ -546,3 +546,66 @@ a {
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
+
+/* ── PlannerQueen Cross-Sell Spotlight (Phase C3) ── */
+.pq-spotlight-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(236, 72, 153, 0.08) 50%, rgba(168, 85, 247, 0.07) 100%);
+  border: 2px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 26px 28px;
+  box-shadow: 0 10px 40px rgba(245, 158, 11, 0.12);
+  margin-bottom: 32px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.pq-spotlight-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pq-spotlight-card:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 14px 50px rgba(245, 158, 11, 0.22);
+  transform: translateY(-2px);
+}
+
+.pq-spotlight-content {
+  position: relative;
+  z-index: 1;
+}
+
+.pq-spotlight-actions {
+  position: relative;
+  z-index: 1;
+  text-align: right;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .pq-spotlight-card {
+    grid-template-columns: 1fr;
+    text-align: left;
+    padding: 22px 18px;
+  }
+  .pq-spotlight-actions {
+    text-align: left;
+    min-width: 100%;
+  }
+}
+

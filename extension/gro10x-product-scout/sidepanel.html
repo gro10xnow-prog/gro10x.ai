@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X Product Scout</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="header">
+    <div class="brand-badge">
+      <span class="badge-logo">GRO10X</span>
+      <span class="brand-title">Product Scout</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.4rem;">
+      <span class="user-tag" id="userEmailBadge" title="Logged in user">DBM Team</span>
+      <button id="btnToggleSettings" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem;" title="Supabase & User Settings">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Supabase & User Credentials Drawer (Toggleable) -->
+  <div id="settingsDrawer" class="settings-drawer" style="display:none;">
+    <div style="font-size:0.75rem; font-weight:800; color:#00df89; margin-bottom:0.4rem;">
+      ⚡ SUPABASE SYNC CONFIGURATION
+    </div>
+    <label style="font-size:0.7rem; color:var(--text-muted);">Team Member / DBM Name:</label>
+    <input type="text" id="settingUserName" class="input-field" placeholder="e.g. Mahfuz / DBM 1">
+    
+    <label style="font-size:0.7rem; color:var(--text-muted); margin-top:0.4rem; display:block;">Supabase URL:</label>
+    <input type="text" id="settingSupabaseUrl" class="input-field" value="https://rlgsckzqieikjercfwan.supabase.co">
+    
+    <label style="font-size:0.7rem; color:var(--text-muted); margin-top:0.4rem; display:block;">Supabase Anon Key:</label>
+    <input type="password" id="settingSupabaseKey" class="input-field" placeholder="Anon Public Key">
+
+    <button id="btnSaveSettings" class="btn-capture" style="padding:0.45rem; font-size:0.78rem; margin-top:0.6rem;">
+      💾 Save Configuration
+    </button>
+  </div>
+
+  <!-- Current Active Tab Card -->
+  <div class="page-info-card">
+    <div class="page-domain-badge" id="activeDomainBadge">
+      🌐 Detecting Tab...
+    </div>
+    <div class="page-title" id="activePageTitle">
+      Navigate to Etsy, Amazon, Shopify, or any product page
+    </div>
+  </div>
+
+  <!-- Capture Controls -->
+  <div class="options-box">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnModeScroll" data-mode="scroll">
+        📜 Full-Page Scroll
+      </button>
+      <button class="mode-btn" id="btnModeViewport" data-mode="viewport">
+        🖼️ Viewport Only
+      </button>
+    </div>
+
+    <button id="btnCaptureProduct" class="btn-capture">
+      <span id="btnCaptureIcon">📸</span>
+      <span id="btnCaptureText">Capture This Product</span>
+    </button>
+
+    <!-- Progress & Status Notifications -->
+    <div id="statusBanner" class="status-banner"></div>
+  </div>
+
+  <!-- Realtime Extracted Preview (shown after capture) -->
+  <div id="previewCard" class="preview-card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase;">
+        ✅ Captured &amp; Uploaded
+      </span>
+      <span id="previewPrice" style="font-weight:900; color:#00df89; font-size:0.9rem;">$0.00</span>
+    </div>
+    <div class="preview-grid">
+      <img id="previewImage" class="preview-img" src="" alt="Product Thumbnail">
+      <div>
+        <div id="previewTitle" style="font-weight:700; font-size:0.8rem; color:#fff; margin-bottom:0.25rem;"></div>
+        <div id="previewSeller" style="font-size:0.72rem; color:var(--text-secondary);"></div>
+        <div id="previewTypeBadge" style="display:inline-block; font-size:0.68rem; font-weight:700; color:#06b6d4; background:rgba(6,182,212,0.15); padding:0.1rem 0.4rem; border-radius:4px; margin-top:0.3rem;"></div>
+      </div>
+    </div>
+    <div id="previewTags" style="display:flex; flex-wrap:wrap; gap:0.25rem; margin-top:0.5rem;"></div>
+  </div>
+
+  <!-- Recent Captures Section -->
+  <div class="recent-section">
+    <div class="section-header">
+      <span class="section-title">Team Inspiration Queue</span>
+      <button id="btnRefreshRecent" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:0.75rem;" title="Refresh from Supabase">🔄 Refresh</button>
+    </div>
+
+    <div id="recentCapturesList" class="recent-list">
+      <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.78rem;">
+        Loading recent captures...
+      </div>
+    </div>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

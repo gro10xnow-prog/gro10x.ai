@@ -779,7 +779,7 @@ async function persistBrandsState(state) {
     console.warn('[Brands DB] File write notice:', e.message);
   }
 
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && process.env.NODE_ENV !== 'test') {
     try {
       await dbSet('brands_empire_state', state, 'brand_state');
     } catch (e) {
@@ -855,7 +855,36 @@ async function persistDbmLogs(logs) {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const state = await loadBrandsState();
+    const isSlim = req.query.slim === '1';
+    if (isSlim && state.productsCatalog) {
+      const slimCatalog = {};
+      for (const [bId, prods] of Object.entries(state.productsCatalog)) {
+        slimCatalog[bId] = Array.isArray(prods) ? prods.map(p => {
+          const { blueprint, ...rest } = p;
+          if (blueprint) {
+            rest.hasBlueprint = Boolean(blueprint.geometry || blueprint.prompt);
+          }
+          return rest;
+        }) : prods;
+      }
+      return res.json({ success: true, ...state, productsCatalog: slimCatalog });
+    }
     res.json({ success: true, ...state });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/brands/:id/product/:code
+ * Returns the full product details including full blueprint and assets
+ */
+router.get('/:id/product/:code', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const fullProd = await loadFullProduct(brandId, productCode);
+    res.json({ success: true, product: fullProd });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -2340,10 +2369,10 @@ async function handleSubmitReview(req, res) {
       if (!prod.seo) prod.seo = {};
       prod.seo.tags = req.body.tags;
     }
-    if (req.body.mockups !== undefined && Array.isArray(req.body.mockups)) prod.mockups = req.body.mockups;
+    if (req.body.mockups !== undefined) prod.mockups = req.body.mockups;
     if (req.body.mockupsCount !== undefined && Number(req.body.mockupsCount) > 0) prod.mockupsCount = Number(req.body.mockupsCount);
-    if (req.body.video !== undefined && req.body.video) prod.video = req.body.video;
-    if (req.body.vault !== undefined && req.body.vault) prod.vault = req.body.vault;
+    if (req.body.video !== undefined) prod.video = req.body.video;
+    if (req.body.vault !== undefined) prod.vault = req.body.vault;
     if (req.body.canvaTemplateUrl || req.body.vaultUrl) {
       if (!prod.vault) prod.vault = {};
       if (req.body.canvaTemplateUrl) prod.vault.canvaTemplateUrl = req.body.canvaTemplateUrl;
@@ -2354,11 +2383,15 @@ async function handleSubmitReview(req, res) {
 
     // Validate minimum requirements
     const title = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
-    const hasVault = Boolean(prod.vault?.storagePath || prod.vault?.fileName || prod.vault?.canvaTemplateUrl || prod.vault?.notionTemplateUrl || prod.vault?.downloadUrl);
+    const hasVault = Boolean(prod.vault && (prod.vault.storagePath || prod.vault.fileName || prod.vault.canvaTemplateUrl || prod.vault.notionTemplateUrl || prod.vault.downloadUrl));
+    const mockupsCount = Array.isArray(prod.mockups) ? prod.mockups.length : (Number(prod.mockupsCount) || 0);
+    const hasVideo = Boolean(prod.video && (prod.video.url || prod.video.fileName || (typeof prod.video === 'string' && prod.video.trim().length > 0)));
 
     const missing = [];
     if (!title || title.length < 3) missing.push('SEO Title or Product Name is required');
-    if (!hasVault) missing.push('Canva template link or Vault deliverable file is required');
+    if (!hasVault) missing.push('Deliverable file (Vault or Canva template) is required');
+    if (mockupsCount < 4) missing.push('At least 4 mockup images are required (minimum 4 mockups)');
+    if (!hasVideo) missing.push('Product video preview is required');
 
     if (missing.length > 0) {
       return res.status(400).json({ success: false, error: `Cannot submit for review:\n• ${missing.join('\n• ')}` });
@@ -2949,6 +2982,577 @@ router.post('/trigger-20th-telegram-evaluation', requireAuth, requireAdmin, asyn
     });
   } catch (err) {
     console.error('[20th Telegram Eval Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// =============================================================================
+// 🧩 CHROME EXTENSIONS REGISTRY & PRODUCT SCOUT PIPELINE
+// =============================================================================
+
+const DEFAULT_CHROME_EXTENSIONS = [
+  {
+    id: 'ext-1',
+    name: 'GRO10X DBM Copilot',
+    slug: 'gro10x-dbm-copilot',
+    description: 'Side-panel AI assistant for Digital Brand Managers. Automates prompt generation, catalog tracking, and team workflow.',
+    type: 'internal',
+    status: 'in_dev',
+    version: '0.2.0',
+    target_users: 'All DBMs',
+    notes: 'Architecture under rebuild for tighter integration with Supabase and new studio flow.',
+    icon: '🤖',
+    folder_path: 'extension/gro10x-dbm-copilot',
+    features: ['Batch AI prompting', 'Etsy listing assistant', 'WhatsApp outreach automation', 'Social media publisher']
+  },
+  {
+    id: 'ext-2',
+    name: 'GRO10X QA Runner',
+    slug: 'gro10x-qa-runner',
+    description: 'Automated testing extension for running comprehensive browser QA suites across all GRO10X micro-apps and portals.',
+    type: 'internal',
+    status: 'active',
+    version: '1.0.0',
+    target_users: 'QA & Engineering',
+    notes: 'Active test runner for end-to-end regression testing.',
+    icon: '🧪',
+    folder_path: 'extension/gro10x-qa-runner',
+    features: ['Test suite runner', 'Regression report generator', 'Live error harvester', 'Portal health checks']
+  },
+  {
+    id: 'ext-3',
+    name: 'GRO10X Product Scout',
+    slug: 'gro10x-product-scout',
+    description: 'Universal e-commerce product inspiration scraper. Captures full-page scrolling screenshots and extracts product metadata into Supabase suggestions.',
+    type: 'internal',
+    status: 'in_dev',
+    version: '1.0.0',
+    target_users: 'All DBMs & Founders',
+    notes: 'Brand-agnostic inspiration collector. Saves directly to Product Suggestions queue for batch AI analysis.',
+    icon: '📸',
+    folder_path: 'extension/gro10x-product-scout',
+    features: ['Full-page scroll screenshot', 'Auto metadata extractor (Title, Price, Tags, Reviews)', 'Multi-platform support (Etsy, Amazon, Shopify, etc.)', 'Direct Supabase sync']
+  }
+];
+
+// GET /api/brands/extensions
+router.get('/extensions', async (req, res) => {
+  try {
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from('chrome_extensions')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        return res.json({ success: true, extensions: data });
+      }
+    }
+    return res.json({ success: true, extensions: DEFAULT_CHROME_EXTENSIONS });
+  } catch (err) {
+    console.warn('[Extensions API] Fallback to default extensions:', err.message);
+    return res.json({ success: true, extensions: DEFAULT_CHROME_EXTENSIONS });
+  }
+});
+
+const SUGGESTIONS_FILE = path.join(__dirname, '../../data/product_suggestions.json');
+
+function readLocalSuggestions() {
+  try {
+    if (fs.existsSync(SUGGESTIONS_FILE)) {
+      return JSON.parse(fs.readFileSync(SUGGESTIONS_FILE, 'utf8'));
+    }
+  } catch (e) {}
+  return [];
+}
+
+function writeLocalSuggestions(list) {
+  try {
+    const dir = path.dirname(SUGGESTIONS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(SUGGESTIONS_FILE, JSON.stringify(list, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('[writeLocalSuggestions Error]:', e.message);
+  }
+}
+
+// GET /api/brands/product-suggestions
+router.get('/product-suggestions', async (req, res) => {
+  try {
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from('product_suggestions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        return res.json({ success: true, suggestions: data });
+      }
+    }
+    const local = readLocalSuggestions();
+    return res.json({ success: true, suggestions: local });
+  } catch (err) {
+    const local = readLocalSuggestions();
+    return res.json({ success: true, suggestions: local });
+  }
+});
+
+// POST /api/brands/product-suggestions
+router.post('/product-suggestions', requireAuth, async (req, res) => {
+  try {
+    const payload = {
+      url: req.body.url || '',
+      domain: req.body.domain || '',
+      product_title: req.body.product_title || 'Untitled Product',
+      price: req.body.price || '',
+      currency: req.body.currency || 'USD',
+      description: req.body.description || '',
+      image_urls: req.body.image_urls || [],
+      reviews_count: Number(req.body.reviews_count) || 0,
+      star_rating: Number(req.body.star_rating) || 0,
+      tags: req.body.tags || [],
+      seller_name: req.body.seller_name || '',
+      product_type: req.body.product_type || 'unknown',
+      screenshot_url: req.body.screenshot_url || null,
+      raw_data: req.body.raw_data || {},
+      captured_by: req.user?.email || req.body.captured_by || 'Team Member',
+      status: 'suggestion'
+    };
+
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from('product_suggestions')
+        .insert([payload])
+        .select()
+        .single();
+
+      if (!error && data) {
+        return res.json({ success: true, suggestion: data });
+      }
+      console.warn('[Supabase Suggestion Fallback]:', error?.message);
+    }
+
+    const localPayload = {
+      id: 'sugg-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
+      ...payload,
+      created_at: new Date().toISOString()
+    };
+    const local = readLocalSuggestions();
+    local.unshift(localPayload);
+    writeLocalSuggestions(local);
+
+    return res.json({ success: true, suggestion: localPayload });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/brands/product-suggestions/upload-screenshot
+router.post('/product-suggestions/upload-screenshot', requireAuth, vaultUpload.single('screenshot'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No screenshot file provided' });
+    }
+
+    if (!isSupabaseConfigured()) {
+      return res.status(503).json({ success: false, error: 'Supabase storage is not configured' });
+    }
+
+    const filename = `screenshot_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.png`;
+    const { data, error } = await supabase.storage
+      .from('product-screenshots')
+      .upload(filename, req.file.buffer, {
+        contentType: req.file.mimetype || 'image/png',
+        upsert: true
+      });
+
+    if (error) {
+      console.error('[Screenshot Upload Error]:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    const { data: publicData } = supabase.storage
+      .from('product-screenshots')
+      .getPublicUrl(filename);
+
+    return res.json({
+      success: true,
+      screenshot_url: publicData?.publicUrl || ''
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI INSPIRATION ANALYZER & BRAND PROMOTION ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function analyzeAndAdaptProductSuggestion(suggestion, targetBrandId = null) {
+  const https = require('https');
+  const state = await loadBrandsState();
+  const brands = state.brands || SEED_BRANDS_DATA.brands;
+
+  // 1. Determine target brand or match best brand
+  let brand = targetBrandId ? brands.find(b => b.id === Number(targetBrandId)) : null;
+
+  if (!brand) {
+    const textBlob = `${suggestion.product_title || ''} ${suggestion.description || ''} ${Array.isArray(suggestion.tags) ? suggestion.tags.join(' ') : ''}`.toLowerCase();
+    if (/\b(pets?|dogs?|cats?|mutts?|puppy|puppies|breeds?|veterinary|paws?)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 2);
+    } else if (/\b(agency|b2b|invoices?|contracts?|notion client|pitch deck|proposals?|solopreneur)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 3);
+    } else if (/\b(kids?|child|children|preschool|homeschool|kindergarten|flashcards?|toddlers?|learning)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 4);
+    } else if (/\b(fitness|workouts?|gym|nutrition|muscle|calories?|macros?|exercises?|bodybuilding)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 5);
+    } else if (/\b(knitting|crochet|sewing|yarn|embroidery|quilts?|crafters?)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 6);
+    } else if (/\b(travel|itinerar(y|ies)|trips?|wanderlust|vacations?|flights?|packing list)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 7);
+    } else if (/\b(wall art|gallery wall|decor|neutral art|posters?|prints?|japandi|botanical)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 8);
+    } else if (/\b(mindful(ness)?|meditat(ion|e)|mental health|anxiety|therapy|shadow work|affirmations?|spiritual)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 9);
+    } else if (/\b(svgs?|cricut|laser cut|cut files?|silhouette|decals?|wood cut)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 10);
+    } else if (/\b(kdp|amazon kdp|paperback|hardcover|novels?|manuscripts?|publishing|low content)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 11);
+    } else if (/\b(fonts?|typefaces?|typography|calligraphy|script fonts?|lettering)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 12);
+    } else if (/\b(prompts?|midjourney|chatgpt|ai vault|llms?|comfyui|gpt-4|claude prompts?)\b/i.test(textBlob)) {
+      brand = brands.find(b => b.id === 13);
+    } else {
+      brand = brands.find(b => b.id === 1);
+    }
+  }
+
+  if (!brand) brand = brands[0];
+
+  const origTitle = (suggestion.product_title || 'Digital Product').replace(/[|]/g, '-').trim();
+  const rawPrice = parseFloat(String(suggestion.price || '').replace(/[^0-9.]/g, '')) || 7.49;
+  const targetCategory = (brand.categories && brand.categories[0]) || 'General';
+
+  // Smart fallback generator
+  const fallbackAnalysis = {
+    recommendedBrandId: brand.id,
+    recommendedBrandName: brand.name,
+    rationale: `Strategic addition to ${brand.name}'s "${brand.niche}" portfolio based on high buyer search demand.`,
+    adaptedTitle: `${origTitle} - Printable ${targetCategory.replace(/Planners|Trackers/i, 'Planner')} - ${brand.name} PDF`.slice(0, 138),
+    tags: [
+      'digital planner',
+      'printable kit',
+      'instant download',
+      'goodnotes template',
+      'notion template',
+      'aesthetic printable',
+      'daily life organizer',
+      'pdf download',
+      'undated tracker',
+      'ipad journal',
+      'lifestyle system',
+      'commercial license',
+      `${brand.name.toLowerCase().slice(0, 20)}`
+    ].slice(0, 13),
+    category: targetCategory,
+    suggestedPrice: rawPrice > 25 ? rawPrice : (rawPrice < 5 ? 7.49 : rawPrice),
+    description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `✨ ${origTitle.toUpperCase()} by ${brand.name.toUpperCase()}\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `🌟 TRANSFORM YOUR ROUTINE WITH THIS COMPREHENSIVE SYSTEM\n` +
+      `Engineered exclusively for ${brand.niche} enthusiasts, this premium digital package provides instant structure, aesthetic clarity, and proven productivity.\n\n` +
+      `📦 WHAT YOU RECEIVE:\n` +
+      `• High-Resolution Vector PDF (US Letter & A4 formats)\n` +
+      `• Hyperlinked interactive navigation for GoodNotes, Notability & iPad tablets\n` +
+      `• Detailed setup guide & video walkthrough\n\n` +
+      `⚡ INSTANT DOWNLOAD:\n` +
+      `Your files are accessible immediately upon checkout. No waiting, no physical shipping costs.\n\n` +
+      `🔒 Anti-Piracy & Commercial License: Single-user license included.`,
+    blueprint: {
+      concept: `Adapted digital product based on ${origTitle} (${suggestion.domain || 'scout inspiration'}). Formatted for ${brand.name} aesthetic.`,
+      deliverableFormat: suggestion.product_type === 'physical' ? 'Physical Merchandise' : 'Digital PDF + GoodNotes Template',
+      keyFeatures: [
+        'High-converting layout with brand typography and harmonious palette',
+        'Tablet hyperlinked tabs + printable US Letter & A4 vector spreads',
+        'Clean buyer onboarding guide with instant digital download delivery'
+      ]
+    },
+    generatedBy: 'deterministic_template'
+  };
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key || process.env.NODE_ENV === 'test') {
+    return fallbackAnalysis;
+  }
+
+  // Call Gemini AI
+  const prompt = `You are an elite Etsy listing copywriter and product development specialist for GRO10X brands.
+Analyze this scraped product inspiration and adapt it specifically for our brand:
+Brand Name: "${brand.name}"
+Brand Niche: "${brand.niche}"
+Brand Voice: "${brand.voice || 'Inspiring, practical, modern'}"
+Brand Categories: ${(brand.categories || []).join(', ')}
+
+Inspiration Product:
+Title: "${suggestion.product_title || ''}"
+Original Price: "${suggestion.price || ''}"
+Domain: "${suggestion.domain || 'etsy.com'}"
+Seller: "${suggestion.seller_name || ''}"
+Description Snippet: "${(suggestion.description || '').slice(0, 600)}"
+Scraped Tags: ${(suggestion.tags || []).join(', ')}
+
+Strict Etsy SEO Requirements:
+1. "adaptedTitle": STRICTLY 14 WORDS OR FEWER AND 140 CHARACTERS OR FEWER. Comply with Etsy SEO ranking rule. Front-load highest-volume buyer search terms separated by hyphens (NO vertical pipes |).
+2. "tags": EXACTLY 13 comma-separated tag phrases. EACH tag MUST BE 20 CHARACTERS OR FEWER. Long-tail buyer keywords.
+3. "description": Professional 5-part high-converting Etsy listing description.
+4. "category": Choose the single best category matching the brand's categories.
+5. "suggestedPrice": Realistic retail price in USD (number).
+6. "rationale": 1 sentence explaining why this product concept works for ${brand.name}.
+7. "blueprint": { "concept": string, "deliverableFormat": string, "keyFeatures": [4 concise strings] }
+
+Return STRICT JSON ONLY with keys:
+"adaptedTitle", "tags" (array of 13 strings), "description", "category", "suggestedPrice" (number), "rationale", "blueprint"`;
+
+  try {
+    const models = process.env.GEMINI_MODELS
+      ? process.env.GEMINI_MODELS.split(',').map(m => m.trim()).filter(Boolean)
+      : ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-flash-lite-latest', 'gemini-flash-latest'];
+
+    for (const model of models) {
+      try {
+        const payload = JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 3500, temperature: 0.4, responseMimeType: 'application/json' }
+        });
+        const respText = await new Promise((resolve, reject) => {
+          const req = https.request({
+            hostname: 'generativelanguage.googleapis.com',
+            path: '/v1beta/models/' + model + ':generateContent?key=' + key,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
+            timeout: 2500
+          }, (res) => {
+            let body = '';
+            res.on('data', c => body += c);
+            res.on('end', () => {
+              try {
+                const j = JSON.parse(body);
+                if (j.candidates && j.candidates[0] && j.candidates[0].content) {
+                  const txt = (j.candidates[0].content.parts || []).map(p => p.text || '').join('').trim();
+                  resolve(txt);
+                } else {
+                  reject(new Error('No candidate content'));
+                }
+              } catch (e) { reject(e); }
+            });
+          });
+          req.on('error', reject);
+          req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+          req.write(payload);
+          req.end();
+        });
+
+        if (respText) {
+          const parsed = JSON.parse(respText);
+          if (parsed && parsed.adaptedTitle) {
+            return {
+              recommendedBrandId: brand.id,
+              recommendedBrandName: brand.name,
+              rationale: parsed.rationale || fallbackAnalysis.rationale,
+              adaptedTitle: (parsed.adaptedTitle || fallbackAnalysis.adaptedTitle).slice(0, 140),
+              tags: Array.isArray(parsed.tags) && parsed.tags.length > 0 
+                ? parsed.tags.slice(0, 13).map(t => String(t).slice(0, 20)) 
+                : fallbackAnalysis.tags,
+              category: parsed.category || fallbackAnalysis.category,
+              suggestedPrice: Number(parsed.suggestedPrice) || fallbackAnalysis.suggestedPrice,
+              description: parsed.description || fallbackAnalysis.description,
+              blueprint: parsed.blueprint || fallbackAnalysis.blueprint,
+              generatedBy: 'gemini'
+            };
+          }
+        }
+      } catch (modelErr) {
+        console.warn(`[analyzeAndAdaptProductSuggestion] Skip model ${model}:`, modelErr.message);
+      }
+    }
+  } catch (err) {
+    console.warn('[analyzeAndAdaptProductSuggestion Gemini Error]:', err.message);
+  }
+
+  return fallbackAnalysis;
+}
+
+// POST /api/brands/product-suggestions/:id/ai-analyze
+router.post('/product-suggestions/:id/ai-analyze', async (req, res) => {
+  try {
+    const suggestionId = req.params.id;
+    const targetBrandId = req.body.brandId ? Number(req.body.brandId) : null;
+
+    let suggestion = null;
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from('product_suggestions')
+        .select('*')
+        .eq('id', suggestionId)
+        .maybeSingle();
+      if (!error && data) suggestion = data;
+    }
+    if (!suggestion) {
+      const local = readLocalSuggestions();
+      suggestion = local.find(s => s.id === suggestionId);
+    }
+    if (!suggestion) {
+      return res.status(404).json({ success: false, error: 'Product suggestion not found' });
+    }
+
+    const analysis = await analyzeAndAdaptProductSuggestion(suggestion, targetBrandId);
+
+    // Cache analysis in Supabase
+    if (isSupabaseConfigured()) {
+      await supabase.from('product_suggestions').update({
+        ai_status: 'analysed',
+        ai_summary: JSON.stringify(analysis)
+      }).eq('id', suggestion.id);
+    }
+
+    const localList = readLocalSuggestions();
+    const lIdx = localList.findIndex(s => s.id === suggestion.id);
+    if (lIdx >= 0) {
+      localList[lIdx].ai_status = 'analysed';
+      localList[lIdx].ai_summary = analysis;
+      writeLocalSuggestions(localList);
+    }
+
+    return res.json({ success: true, analysis });
+  } catch (err) {
+    console.error('[AI Analyze Suggestion Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/brands/product-suggestions/:id/promote
+router.post('/product-suggestions/:id/promote', async (req, res) => {
+  try {
+    const suggestionId = req.params.id;
+    let targetBrandId = req.body.brandId ? Number(req.body.brandId) : null;
+
+    // 1. Fetch suggestion
+    let suggestion = null;
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from('product_suggestions')
+        .select('*')
+        .eq('id', suggestionId)
+        .maybeSingle();
+      if (!error && data) suggestion = data;
+    }
+
+    if (!suggestion) {
+      const local = readLocalSuggestions();
+      suggestion = local.find(s => s.id === suggestionId);
+    }
+
+    if (!suggestion) {
+      return res.status(404).json({ success: false, error: 'Product suggestion not found' });
+    }
+
+    if (!targetBrandId && suggestion.brand_id) {
+      targetBrandId = Number(suggestion.brand_id);
+    }
+
+    // 2. Run or load AI analysis
+    let analysis = req.body.analysis;
+    if (!analysis) {
+      if (suggestion.ai_summary) {
+        try {
+          analysis = typeof suggestion.ai_summary === 'string' ? JSON.parse(suggestion.ai_summary) : suggestion.ai_summary;
+        } catch (_) {}
+      }
+      if (!analysis || (targetBrandId && analysis.recommendedBrandId !== targetBrandId)) {
+        analysis = await analyzeAndAdaptProductSuggestion(suggestion, targetBrandId);
+      }
+    }
+
+    // 3. Load Brand state
+    const state = await loadBrandsState();
+    const brandId = targetBrandId || analysis.recommendedBrandId || 1;
+    let brand = state.brands.find(b => b.id === brandId);
+    if (!brand) brand = state.brands[0];
+
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (!state.productsCatalog[brand.id]) {
+      state.productsCatalog[brand.id] = generateDefaultProductsForBrand(brand);
+    }
+
+    // 4. Generate next SKU
+    const codePrefix = (brand.name || 'PRD').slice(0, 3).toUpperCase();
+    let maxNum = 0;
+    for (const p of state.productsCatalog[brand.id]) {
+      const m = (p.code || '').match(new RegExp(`^${codePrefix}-(\\d+)`));
+      if (m) {
+        const n = parseInt(m[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+    }
+    if (maxNum === 0) maxNum = state.productsCatalog[brand.id].length;
+    const nextSku = `${codePrefix}-${(maxNum + 1).toString().padStart(2, '0')}`;
+
+    // 5. Create new product entry
+    const newProduct = {
+      code: nextSku,
+      name: req.body.customTitle || analysis.adaptedTitle || suggestion.product_title || `Product ${nextSku}`,
+      category: req.body.customCategory || analysis.category || suggestion.tags?.[0] || (brand.categories && brand.categories[0]) || 'General',
+      format: suggestion.product_type === 'physical' ? 'Physical Item' : 'Digital PDF',
+      price: Number(req.body.customPrice) || analysis.suggestedPrice || parseFloat(String(suggestion.price).replace(/[^0-9.]/g, '')) || 7.49,
+      status: 'SEO Ready',
+      hero: false,
+      seoTitle: analysis.adaptedTitle || suggestion.product_title,
+      seoTags: analysis.tags || suggestion.tags || [],
+      seoDescription: analysis.description || suggestion.description || '',
+      inspirationUrl: suggestion.url || '',
+      inspirationScreenshot: suggestion.screenshot_url || '',
+      sourceSuggestionId: suggestion.id,
+      sourceDomain: suggestion.domain || 'web',
+      blueprint: analysis.blueprint || {
+        concept: `Adapted from scout inspiration: ${suggestion.product_title}`,
+        inspirationSource: suggestion.url
+      },
+      mockupUrls: suggestion.image_urls || (suggestion.screenshot_url ? [suggestion.screenshot_url] : []),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // 6. Push to Brand Catalog & persist
+    state.productsCatalog[brand.id].push(newProduct);
+    await persistBrandsState(state);
+
+    // 7. Update Supabase & Local suggestions table
+    if (isSupabaseConfigured()) {
+      await supabase.from('product_suggestions').update({
+        brand_id: brand.id,
+        status: 'promoted',
+        ai_status: 'analysed',
+        ai_summary: typeof analysis === 'object' ? JSON.stringify(analysis) : analysis
+      }).eq('id', suggestion.id);
+    }
+
+    const localList = readLocalSuggestions();
+    const lIdx = localList.findIndex(s => s.id === suggestion.id);
+    if (lIdx >= 0) {
+      localList[lIdx].brand_id = brand.id;
+      localList[lIdx].status = 'promoted';
+      localList[lIdx].ai_status = 'analysed';
+      localList[lIdx].ai_summary = analysis;
+      writeLocalSuggestions(localList);
+    }
+
+    return res.json({
+      success: true,
+      product: newProduct,
+      brand: { id: brand.id, name: brand.name }
+    });
+  } catch (err) {
+    console.error('[Promote Suggestion Error]:', err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
