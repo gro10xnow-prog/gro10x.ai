@@ -705,7 +705,7 @@ router.post('/:id/create-proposal', async (req, res) => {
       }
     }
 
-    const shareUrl = `${process.env.PUBLIC_APP_URL || 'https://gro10x.ai'}/p/${shareToken}`;
+    const shareUrl = `${process.env.PUBLIC_APP_URL || 'https://gro10x-ai.vercel.app'}/p/${shareToken}`;
 
     res.status(201).json({
       success: true,

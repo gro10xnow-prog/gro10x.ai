@@ -31,9 +31,9 @@ let memVerticals = [
 ];
 
 let memBrands = [
-  { id: 'b-pq-01', vertical_id: 'v-prod-01', slug: 'plannerqueen', name: 'PlannerQueen', logo_url: 'https://gro10x.ai/images/plannerqueen-logo.png', brand_guidelines: { primaryColor: '#FF6B81', tone: 'Empowering & Aesthetic' }, is_active: true, created_at: new Date().toISOString() },
-  { id: 'b-oro-02', vertical_id: 'v-fnb-02', slug: 'oro-roasters', name: 'ORO Roasters', logo_url: 'https://gro10x.ai/images/oro-logo.png', brand_guidelines: { primaryColor: '#D4A373', tone: 'Artisanal & Premium' }, is_active: true, created_at: new Date().toISOString() },
-  { id: 'b-dv-03', vertical_id: 'v-sub-03', slug: 'digivault', name: 'DigiVault BD', logo_url: 'https://gro10x.ai/images/digivault-logo.png', brand_guidelines: { primaryColor: '#A855F7', tone: 'Fast, Verified & Trusted' }, is_active: true, created_at: new Date().toISOString() }
+  { id: 'b-pq-01', vertical_id: 'v-prod-01', slug: 'plannerqueen', name: 'PlannerQueen', logo_url: 'https://gro10x-ai.vercel.app/images/plannerqueen-logo.png', brand_guidelines: { primaryColor: '#FF6B81', tone: 'Empowering & Aesthetic' }, is_active: true, created_at: new Date().toISOString() },
+  { id: 'b-oro-02', vertical_id: 'v-fnb-02', slug: 'oro-roasters', name: 'ORO Roasters', logo_url: 'https://gro10x-ai.vercel.app/images/oro-logo.png', brand_guidelines: { primaryColor: '#D4A373', tone: 'Artisanal & Premium' }, is_active: true, created_at: new Date().toISOString() },
+  { id: 'b-dv-03', vertical_id: 'v-sub-03', slug: 'digivault', name: 'DigiVault BD', logo_url: 'https://gro10x-ai.vercel.app/images/digivault-logo.png', brand_guidelines: { primaryColor: '#A855F7', tone: 'Fast, Verified & Trusted' }, is_active: true, created_at: new Date().toISOString() }
 ];
 
 let memCategories = [
@@ -51,7 +51,7 @@ let memProducts = [
     title: 'Daily & Weekly Planners #1 — PlannerQueenGro Style',
     product_type: 'DIGITAL',
     description: 'Flagship productivity system for high-achievers. Includes daily time-blocking and digital GoodNotes templates.',
-    media_gallery: ['https://gro10x.ai/images/samples/planner-mockup-1.jpg'],
+    media_gallery: ['https://gro10x-ai.vercel.app/images/samples/planner-mockup-1.jpg'],
     digital_assets: { downloadUrl: 'https://vault.gro10x.ai/digital/plannerqueen-v1.pdf', format: 'PDF' },
     physical_attributes: {},
     is_active: true,

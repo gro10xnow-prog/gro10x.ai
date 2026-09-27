@@ -127,7 +127,7 @@ function generateAccessPassPdf({
   currentY -= 16;
 
   // Button A: Master Deliverable PDF / ZIP Cloud Vault Download
-  const effectiveDownloadUrl = downloadUrl || `https://gro10x.ai/vault/access/${productCode}`;
+  const effectiveDownloadUrl = downloadUrl || `https://gro10x-ai.vercel.app/vault/access/${productCode}`;
   const btnHeight = 44;
   currentY -= btnHeight;
 

@@ -12,7 +12,7 @@
 
 const { getServiceByCode } = require('./taxonomy');
 
-const BASE_URL = process.env.PUBLIC_APP_URL || 'https://gro10x.ai';
+const BASE_URL = process.env.PUBLIC_APP_URL || 'https://gro10x-ai.vercel.app';
 
 /**
  * Generate a complete, ready-to-deploy campaign pack for any canonical service

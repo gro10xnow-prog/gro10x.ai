@@ -26,7 +26,7 @@ async function handleServices(clientBot, msg) {
 
 async function handlePortfolio(clientBot, msg) {
   const chatId = msg.chat.id;
-  const text = `📁 *GRO10X — Solutions & Portfolio Showcase*\n\nExplore our latest AI apps, synthetic media workflows, and digital brand scaling cases:\n🔗 https://gro10x.ai\n\n_Scaling businesses 10x faster through software engineering and data science._`;
+  const text = `📁 *GRO10X — Solutions & Portfolio Showcase*\n\nExplore our latest AI apps, synthetic media workflows, and digital brand scaling cases:\n🔗 https://gro10x-ai.vercel.app\n\n_Scaling businesses 10x faster through software engineering and data science._`;
   clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 }
 

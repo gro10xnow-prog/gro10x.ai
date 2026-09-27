@@ -154,7 +154,7 @@ async function sendLeadConfirmationEmail({ contactPerson, email, service, compan
 
         <p style="color: #94a3b8; font-size: 13px;">Meanwhile, feel free to explore our growth engines and live case studies:</p>
         <div style="text-align: center; margin-top: 20px;">
-          <a href="https://gro10x.ai/#services" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+          <a href="https://gro10x-ai.vercel.app/#services" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
             🚀 Explore Our Services & Solutions
           </a>
         </div>
@@ -205,7 +205,7 @@ async function sendLeadFollowUpEmail({ contactPerson, email, service, company })
           <a href="https://wa.me/8801708459008?text=Hi%20GRO10X%20Team!%20Following%20up%20on%20my%20inquiry%20for%20${encodeURIComponent(svc)}" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
             📱 Chat on WhatsApp
           </a>
-          <a href="https://gro10x.ai/#services" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
+          <a href="https://gro10x-ai.vercel.app/#services" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
             🚀 See Our Services
           </a>
         </div>
@@ -314,7 +314,7 @@ async function sendDigitalDeliveryEmail({ customerEmail, customerName, brandName
   const name = customerName || 'Valued Customer';
   const brand = brandName || 'GRO10X Brand';
   const expiryText = expiresAt ? new Date(expiresAt).toLocaleDateString() : 'Lifetime Access';
-  const url = downloadUrl || 'https://gro10x.ai/dce/download';
+  const url = downloadUrl || 'https://gro10x-ai.vercel.app/dce/download';
   const subject = `🎉 Your ${brand} Order is Ready — Download Inside!`;
 
   const html = `
@@ -371,7 +371,7 @@ async function sendRenewalReminderEmail({ customerEmail, customerName, brandName
   }
   const name = customerName || 'Valued Customer';
   const brand = brandName || 'GRO10X Brand';
-  const url = renewalUrl || 'https://gro10x.ai/dce/renew';
+  const url = renewalUrl || 'https://gro10x-ai.vercel.app/dce/renew';
   const subject = `⏳ Your ${brand} Access Expires in ${daysRemaining} Days — Renew Now`;
 
   const html = `
@@ -417,8 +417,8 @@ async function sendServiceAssetDeliveryEmail({ email, contactPerson, serviceName
   const svcName = serviceName || 'AI Growth Sprint Architecture';
   const subject = `Your Requested Architecture Blueprint & Case Study: ${svcName} — GRO10X`;
 
-  const sUrl = slidesUrl || 'https://gro10x.ai/assets/case-studies/overview.pdf';
-  const bUrl = blueprintUrl || 'https://gro10x.ai/assets/blueprints/system.pdf';
+  const sUrl = slidesUrl || 'https://gro10x-ai.vercel.app/assets/case-studies/overview.pdf';
+  const bUrl = blueprintUrl || 'https://gro10x-ai.vercel.app/assets/blueprints/system.pdf';
   const aUrl = audioUrl || 'https://open.spotify.com/show/gro10x-ai-case-studies';
 
   const html = `
@@ -454,7 +454,7 @@ async function sendServiceAssetDeliveryEmail({ email, contactPerson, serviceName
           <a href="https://wa.me/8801708459008?text=Hi%20Tanvir!%20I%20reviewed%20the%20${encodeURIComponent(svcName)}%20blueprint%20and%20want%20to%20discuss%20a%20build." style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
             📱 Chat on WhatsApp
           </a>
-          <a href="https://gro10x.ai/services/${productCode || 'SVC-001'}" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
+          <a href="https://gro10x-ai.vercel.app/services/${productCode || 'SVC-001'}" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
             🚀 Service Scope & Pricing
           </a>
         </div>

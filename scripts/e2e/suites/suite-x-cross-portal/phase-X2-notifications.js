@@ -45,7 +45,7 @@ async function runPhaseX2(page) {
       contactPerson: 'Sarah Jenkins',
       email: 'sarah@apexbrand.com',
       company: 'Apex Brand Media',
-      portalUrl: 'https://gro10x.ai/auth'
+      portalUrl: 'https://gro10x-ai.vercel.app/auth'
     });
     tracker.assert(onboardingResult && onboardingResult.success, 'Client onboarding email should resolve with success');
   });

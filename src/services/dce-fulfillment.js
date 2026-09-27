@@ -93,7 +93,7 @@ async function fulfillOrder(orderId) {
       id: `item-${Date.now()}`,
       title: 'PlannerQueen Digital Daily & Weekly System',
       external_sku_ref: 'PLNRQN-PDF-USD9.99',
-      dce_skus: { sku: 'PLNRQN-PDF-ETSY-USD9.99', format: 'PDF', access_url: 'https://gro10x.ai/vault/plannerqueen' }
+      dce_skus: { sku: 'PLNRQN-PDF-ETSY-USD9.99', format: 'PDF', access_url: 'https://gro10x-ai.vercel.app/vault/plannerqueen' }
     }];
   }
 
@@ -386,7 +386,7 @@ async function resendDeliveryEmail(jobId) {
     brandName: job.brand_name || 'GRO10X Brand',
     productTitle: 'Digital Product',
     sku: job.sku || 'DCE-SKU',
-    downloadUrl: job.download_url || 'https://gro10x.ai/vault/download'
+    downloadUrl: job.download_url || 'https://gro10x-ai.vercel.app/vault/download'
   });
 
   return { success: emailRes.success, jobId, resentTo: job.delivery_target };

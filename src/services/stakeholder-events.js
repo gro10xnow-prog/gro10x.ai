@@ -86,7 +86,7 @@ class StakeholderEventBus extends EventEmitter {
           `Requested Scope: ${co.description}\n` +
           `Proposed Days: *+${co.proposedDays || co.timelineDays || 0}d* | Fee: *৳${Number(co.proposedFee || co.feeBDT || 0).toLocaleString()}*\n\n` +
           `⚡ Action required: Review and adjust or approve in Manager Desk.`;
-        const keyboard = [[{ text: '📝 Review in Manager Desk', url: `${process.env.BASE_URL || 'https://gro10x.ai'}/manager#tickets` }]];
+        const keyboard = [[{ text: '📝 Review in Manager Desk', url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/manager#tickets` }]];
         notifications.sendTelegramNotification(ownerChatId, msg, keyboard, true);
         break;
       }

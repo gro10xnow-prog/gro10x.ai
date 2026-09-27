@@ -1079,7 +1079,7 @@ function initBot() {
           `• Timeline: *${timeline}*\n\n` +
           `Our Account Director will review your requirements and reach out via WhatsApp at \`${cleanPhone}\` within 2 business hours with a custom proposal! 🚀\n\n` +
           `📞 *Direct Priority Line:* \`+880 1708-459008\`\n` +
-          `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://gro10x.ai'}`;
+          `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://gro10x-ai.vercel.app'}`;
 
         clientBot.sendMessage(chatId, successMsg, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
       }

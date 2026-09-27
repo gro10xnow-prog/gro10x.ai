@@ -24,7 +24,7 @@ let memAffiliates = [
       {
         id: 'link-01',
         short_code: 'pq-alex',
-        destination_url: 'https://gro10x.ai/dce',
+        destination_url: 'https://gro10x-ai.vercel.app/dce',
         brand_name: 'PlannerQueen',
         click_count: 52,
         conversion_count: 3,

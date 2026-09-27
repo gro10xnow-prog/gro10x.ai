@@ -131,7 +131,7 @@ async function publishSprintDeliverable(payload = {}) {
     { id: 'DOD-04', title: 'Automated Test Suite Passing', passed: true, verified_by: 'Lead Engineer' }
   ];
 
-  const primaryMediaUrl = stagingUrl || repoUrl || apiDocsUrl || mediaUrl || 'https://gro10x.ai/preview';
+  const primaryMediaUrl = stagingUrl || repoUrl || apiDocsUrl || mediaUrl || 'https://gro10x-ai.vercel.app/preview';
 
   const deliverable = {
     id: newId,

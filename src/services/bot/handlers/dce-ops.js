@@ -455,7 +455,7 @@ async function handleCustomerTrack(teamBot, msg, orderRef) {
     items = [{ title: 'PlannerQueen 2026 Life & Goal System', quantity: 1, unit_price: 19.99 }];
     if (order.fulfillment_type === 'DIGITAL') {
       licenseKey = 'GRO-A91B-4C2E-89DF-PQ26';
-      accessUrl = 'https://gro10x.ai/vault/plannerqueen';
+      accessUrl = 'https://gro10x-ai.vercel.app/vault/plannerqueen';
     } else {
       tracking = { carrier: 'DHL Express', tracking_number: 'DHL-9400111899223100', status: 'IN_TRANSIT' };
     }
@@ -470,7 +470,7 @@ async function handleCustomerTrack(teamBot, msg, orderRef) {
 
   if (isDigital && licenseKey) {
     text += `🔑 *Digital License Key:*\n\`${licenseKey}\`\n\n` +
-      `🌐 *Access & Downloads:*\n${accessUrl || 'https://gro10x.ai/vault/plannerqueen'}\n\n`;
+      `🌐 *Access & Downloads:*\n${accessUrl || 'https://gro10x-ai.vercel.app/vault/plannerqueen'}\n\n`;
   } else if (tracking) {
     text += `🚚 *Courier Carrier:* ${tracking.carrier}\n` +
       `📍 *Tracking Number:* \`${tracking.tracking_number}\`\n` +

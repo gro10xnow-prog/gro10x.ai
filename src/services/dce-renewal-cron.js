@@ -81,7 +81,7 @@ async function runDCERenewalCheck() {
               productTitle: lic.dce_skus?.title || 'Subscription Asset',
               sku: lic.dce_skus?.sku || lic.sku || 'DCE-SKU',
               daysRemaining: Math.max(0, daysRemaining),
-              renewalUrl: `https://gro10x.ai/dce/renew?lic=${lic.license_key}`
+              renewalUrl: `https://gro10x-ai.vercel.app/dce/renew?lic=${lic.license_key}`
             });
             remindersSent++;
 

@@ -140,7 +140,7 @@ router.post('/portal/login', affiliateLoginLimiter, asyncHandler(async (req, res
       id: l.id,
       shortCode: l.short_code,
       destinationUrl: l.destination_url,
-      shortUrl: `https://gro10x.ai/r/${l.short_code}`,
+      shortUrl: `https://gro10x-ai.vercel.app/r/${l.short_code}`,
       clickCount: l.click_count || 0,
       conversionCount: l.conversion_count || 0,
       commissionRate: l.commission_rate || affiliate.default_rate
@@ -175,13 +175,13 @@ router.post('/portal/links', requireAffiliateJWT, asyncHandler(async (req, res) 
       affiliateId: affiliate.id,
       brandId: brandId || null,
       shortCode,
-      destinationUrl: destinationUrl || 'https://gro10x.ai/dce/store',
+      destinationUrl: destinationUrl || 'https://gro10x-ai.vercel.app/dce/store',
       commissionRate: affiliate.default_rate
     });
 
     return ok(res, {
       ...link,
-      shortUrl: `https://gro10x.ai/r/${link.short_code}`
+      shortUrl: `https://gro10x-ai.vercel.app/r/${link.short_code}`
     });
   } catch (err) {
     return fail(res, err.message, 400);
