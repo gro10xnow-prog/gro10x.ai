@@ -34,7 +34,7 @@ async function runPhaseF3(page) {
       target: el.getAttribute('target')
     }));
 
-    tracker.assert(waLink.href.includes('8801708459008'), 'WhatsApp link must point to founder phone 8801708459008');
+    tracker.assert(waLink.href.includes('8801711019550') || waLink.href.includes('8801708459008'), 'WhatsApp link must point to approved agency WhatsApp');
     tracker.assert(waLink.href.includes('text='), 'WhatsApp link should have pre-filled intent message');
     tracker.assert(waLink.text.includes('WhatsApp'), 'CTA button text should mention WhatsApp');
     tracker.assertEqual(waLink.target, '_blank', 'External link should open in new tab');

@@ -11,10 +11,15 @@ var currentCurrency = localStorage.getItem('gro10x_currency') || 'USD';
     const src = params.get('utm_source') || (ref.includes('linkedin.com') ? 'linkedin' : '');
     const med = params.get('utm_medium') || (ref.includes('linkedin.com') ? 'founder_profile' : '');
     const camp = params.get('utm_campaign') || '';
+    const partnerRef = params.get('ref') || params.get('partner') || params.get('affiliate') || '';
 
     if (src) sessionStorage.setItem('gro10x_utm_source', src);
     if (med) sessionStorage.setItem('gro10x_utm_medium', med);
     if (camp) sessionStorage.setItem('gro10x_utm_campaign', camp);
+    if (partnerRef) {
+      sessionStorage.setItem('gro10x_aff_ref', partnerRef);
+      document.cookie = `gro10x_aff_ref=${encodeURIComponent(partnerRef)}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
+    }
   } catch (e) {}
 })();
 
@@ -371,16 +376,88 @@ var GRO10X_SERVICES = [
   }
 ];
 
+// Global Dynamic Agency Config (offline cached with fallback)
+window.GRO10X_CONFIG = (function() {
+  try {
+    return JSON.parse(localStorage.getItem('gro10x_config_cache') || '{}');
+  } catch (_) {
+    return {};
+  }
+})();
+
 // ── 3. DOM READY INITIALIZATION ──
 document.addEventListener('DOMContentLoaded', () => {
   initCurrency();
+  initDynamicCatalog();
   filterServices('all');
   initNavbarScroll();
   initMobileMenu();
   initScrollTop();
   initScrollSpy();
   setDynamicYear();
+  initCampaignRouteHandling();
 });
+
+// Dynamic Catalog & Config Loader
+async function initDynamicCatalog() {
+  // 1. Instant render from local cache if available
+  try {
+    const cached = localStorage.getItem('gro10x_catalog_cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        GRO10X_SERVICES = parsed;
+        const activeTab = document.querySelector('.cat-tab-btn.active');
+        const activeCat = activeTab ? activeTab.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] : 'all';
+        filterServices(activeCat || 'all');
+      }
+    }
+  } catch (_) {}
+
+  // 2. Fetch fresh catalog configuration & services in background
+  try {
+    const [cfgRes, svcRes] = await Promise.all([
+      fetch('/api/catalog/config').catch(() => null),
+      fetch('/api/services').catch(() => null)
+    ]);
+
+    if (cfgRes && cfgRes.ok) {
+      const cfgData = await cfgRes.json();
+      if (cfgData.ok) {
+        window.GRO10X_CONFIG = cfgData;
+        localStorage.setItem('gro10x_config_cache', JSON.stringify(cfgData));
+      }
+    }
+
+    if (svcRes && svcRes.ok) {
+      const svcData = await svcRes.json();
+      const list = Array.isArray(svcData.data) ? svcData.data : (Array.isArray(svcData) ? svcData : []);
+      if (list.length > 0) {
+        GRO10X_SERVICES = list.map(s => ({
+          id: s.id || s.product_code,
+          category: s.category || (s.category_id ? s.category_id.replace('cat-e2-', '') : 'mobile-web'),
+          categoryName: s.categoryName || s.category_name || 'AI Solutions',
+          icon: s.icon || '⚡',
+          title: s.title || s.name,
+          badge: s.badge || '',
+          description: s.description || s.metadata?.description || '',
+          priceUSD: s.priceUSD || (s.metadata?.price_usd ? `$${s.metadata.price_usd.toLocaleString()}` : '$2,500'),
+          priceBDT: s.priceBDT || (s.metadata?.price_bdt ? `৳${s.metadata.price_bdt.toLocaleString()}` : '৳295,000'),
+          priceCycle: s.priceCycle || '/ project',
+          features: s.features || s.metadata?.engineering?.core_deliverables || [],
+          details: s.details || s.description || ''
+        }));
+        localStorage.setItem('gro10x_catalog_cache', JSON.stringify(GRO10X_SERVICES));
+        const activeTab = document.querySelector('.cat-tab-btn.active');
+        const activeCat = activeTab ? activeTab.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] : 'all';
+        filterServices(activeCat || 'all');
+      }
+    }
+  } catch (err) {
+    console.warn('[Landing] Background catalog sync notice:', err.message);
+  }
+}
+window.initDynamicCatalog = initDynamicCatalog;
 
 // ── 4. DUAL CURRENCY ENGINE ──
 function initCurrency() {
@@ -672,6 +749,7 @@ async function submitLandingLead(e) {
         notes,
         currency: currentCurrency,
         source: sourceLabel,
+        referral_code: sessionStorage.getItem('gro10x_aff_ref') || null,
         utm_source: utmSrc || null,
         utm_medium: utmMed || null,
         utm_campaign: utmCamp || null
@@ -679,8 +757,13 @@ async function submitLandingLead(e) {
     });
 
     const data = await res.json();
-    const waText = encodeURIComponent(`Hi GRO10X, I just submitted an AI strategy audit request on gro10x.ai.\nName: ${name}\nService: ${service}\nEmail: ${email}`);
-    const waUrl = `https://wa.me/8801708459008?text=${waText}`;
+    const cfg = window.GRO10X_CONFIG || {};
+    const waNumber = (cfg.agencyWhatsApp || '+880 1711-019550').replace(/\D/g, '');
+    const displayPhone = cfg.agencyPhone || '+880 1711-019550';
+    const siteUrl = cfg.baseUrl || window.location.origin;
+
+    const waText = encodeURIComponent(`Hi GRO10X, I just submitted an AI strategy audit request on ${siteUrl}.\nName: ${name}\nService: ${service}\nEmail: ${email}`);
+    const waUrl = `https://wa.me/${waNumber}?text=${waText}`;
 
     feedback.style.display = 'block';
     feedback.style.background = 'rgba(0, 223, 137, 0.12)';
@@ -690,16 +773,19 @@ async function submitLandingLead(e) {
       <div style="font-size:1rem; font-weight:800; margin-bottom:0.4rem;">🎉 Request Received Successfully!</div>
       <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.85rem;">Our engineering team will prepare your proposal within 24 hours.</div>
       <a href="${waUrl}" target="_blank" class="pb-btn-primary" style="display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; padding:0.55rem 1rem; font-size:0.85rem; background:#25D366; color:#070b12;">
-        💬 Chat Directly on WhatsApp (+8801708459008) →
+        💬 Chat Directly on WhatsApp (${displayPhone}) →
       </a>
     `;
     document.getElementById('landingLeadForm').reset();
   } catch (err) {
+    const cfg = window.GRO10X_CONFIG || {};
+    const waNumber = (cfg.agencyWhatsApp || '+880 1711-019550').replace(/\D/g, '');
+    const displayPhone = cfg.agencyPhone || '+880 1711-019550';
     feedback.style.display = 'block';
     feedback.style.background = 'rgba(239, 68, 68, 0.15)';
     feedback.style.color = '#ef4444';
     feedback.style.border = '1px solid rgba(239, 68, 68, 0.35)';
-    feedback.innerHTML = `⚠️ Saved locally. Fast-track via <a href="https://wa.me/8801708459008" target="_blank" style="color:#00df89; font-weight:700;">WhatsApp: +8801708459008</a>.`;
+    feedback.innerHTML = `⚠️ Saved locally. Fast-track via <a href="https://wa.me/${waNumber}" target="_blank" style="color:#00df89; font-weight:700;">WhatsApp: ${displayPhone}</a>.`;
   } finally {
     btn.disabled = false;
     btn.innerText = '🚀 Submit Strategy Request →';
@@ -718,6 +804,10 @@ async function submitModalLead(e) {
 
   if (!name || !email || !phone) return;
 
+  const utmSrc = sessionStorage.getItem('gro10x_utm_source');
+  const utmMed = sessionStorage.getItem('gro10x_utm_medium');
+  const utmCamp = sessionStorage.getItem('gro10x_utm_campaign');
+
   try {
     await fetch('/api/leads', {
       method: 'POST',
@@ -729,12 +819,19 @@ async function submitModalLead(e) {
         service_interest: service,
         notes,
         currency: currentCurrency,
-        source: 'Interactive Service Modal'
+        source: utmCamp ? `Outbound Campaign (${utmCamp})` : 'Interactive Service Modal',
+        referral_code: sessionStorage.getItem('gro10x_aff_ref') || null,
+        utm_source: utmSrc || null,
+        utm_medium: utmMed || null,
+        utm_campaign: utmCamp || null
       })
     });
 
-    const waText = encodeURIComponent(`Hi GRO10X, I just booked a consultation for ${service} on gro10x.ai.\nName: ${name}\nPhone: ${phone}`);
-    const waUrl = `https://wa.me/8801708459008?text=${waText}`;
+    const cfg = window.GRO10X_CONFIG || {};
+    const waNumber = (cfg.agencyWhatsApp || '+880 1711-019550').replace(/\D/g, '');
+    const siteUrl = cfg.baseUrl || window.location.origin;
+    const waText = encodeURIComponent(`Hi GRO10X, I just booked a consultation for ${service} on ${siteUrl}.\nName: ${name}\nPhone: ${phone}`);
+    const waUrl = `https://wa.me/${waNumber}?text=${waText}`;
 
     feedback.style.display = 'block';
     feedback.innerHTML = `
@@ -756,6 +853,36 @@ async function submitModalLead(e) {
   }
 }
 window.submitModalLead = submitModalLead;
+
+// ── 9. INBOUND CAMPAIGN ROUTE & AUTO-MODAL HANDLER ──
+function initCampaignRouteHandling() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const path = window.location.pathname.toLowerCase();
+    const isClaim = path.includes('/leads/claim') || path.includes('/claim') || params.has('claim') || params.get('action') === 'claim';
+    const isBook = path.includes('/book-consultation') || path.includes('/book') || path.includes('/consultation') || params.get('action') === 'book' || params.has('book');
+    const targetService = params.get('service') || params.get('claim') || params.get('id');
+
+    if (isClaim) {
+      setTimeout(() => {
+        if (typeof openLeadModal === 'function') {
+          openLeadModal(targetService ? `Claim Blueprint: ${targetService}` : 'Claim 10-Slide Blueprint & Case Study');
+          const notesEl = document.getElementById('modalLeadNotes');
+          if (notesEl && !notesEl.value) {
+            notesEl.value = 'Claiming free engineering blueprint and 10-slide case study pack.';
+          }
+        }
+      }, 400);
+    } else if (isBook) {
+      setTimeout(() => {
+        if (typeof openLeadModal === 'function') {
+          openLeadModal(targetService ? `Book Consultation: ${targetService}` : 'Strategic AI Consultation (15-min)');
+        }
+      }, 400);
+    }
+  } catch (_) {}
+}
+window.initCampaignRouteHandling = initCampaignRouteHandling;
 
 // ── 9. NAVBAR SCROLL & UTILITIES ──
 function initNavbarScroll() {

@@ -28,6 +28,10 @@ function mapClient(c) {
     campaignsVal = Number(campaignsVal) || 1;
   }
 
+  const amId = c.account_manager_id || c.accountManagerId || null;
+  const am = c.account_manager || c.accountManager || null;
+  const retHours = Number(c.retainer_hours !== undefined ? c.retainer_hours : c.retainerHours) || 0;
+
   return {
     id: c.id,
     name: c.name || '',
@@ -44,6 +48,13 @@ function mapClient(c) {
     phone: c.phone || '',
     whatsapp: c.whatsapp || c.phone || '',
     status: c.status || 'Active Retainer',
+    accountManagerId: amId,
+    account_manager_id: amId,
+    accountManager: am,
+    account_manager: am,
+    accountManagerDetails: c.accountManagerDetails || c.account_manager_details || null,
+    retainerHours: retHours,
+    retainer_hours: retHours,
     totalSpent: parsedSpent,
     activeCampaigns: campaignsVal,
     pocs: c.pocs && Array.isArray(c.pocs) ? c.pocs : [],
@@ -85,33 +96,83 @@ router.get('/me', requireAuth, async (req, res) => {
   const isClient = req.user.linkedType === 'client';
   const clientId = isClient ? req.user.linkedId : null;
 
+  let rawClient = null;
+
   if (isSupabaseConfigured()) {
-    let query = supabase.from('clients').select('*');
-    if (clientId) {
-      query = query.eq('id', clientId);
-    } else {
-      query = query.ilike('name', `%${req.user.name || ''}%`);
-    }
-    const { data } = await query.maybeSingle();
-    if (data) return res.json({ success: true, client: mapClient(data) });
+    try {
+      let query = supabase.from('clients').select('*');
+      if (clientId) {
+        query = query.eq('id', clientId);
+      } else {
+        query = query.ilike('name', `%${req.user.name || ''}%`);
+      }
+      const { data } = await query.maybeSingle();
+      if (data) rawClient = data;
+    } catch (_) {}
   }
 
-  const db = await readDB();
-  const client = (db.clients || []).find(c => c.id === clientId || (c.name || '').toLowerCase().includes((req.user.name || '').toLowerCase()));
-  if (client) {
-    return res.json({ success: true, client: mapClient(client) });
+  if (!rawClient) {
+    const db = await readDB();
+    rawClient = (db.clients || []).find(c => c.id === clientId || (c.name || '').toLowerCase().includes((req.user.name || '').toLowerCase()));
   }
 
-  // Safe fallback to current user's profile rather than another tenant's data
-  return res.json({
-    success: true,
-    client: mapClient({
+  if (!rawClient) {
+    rawClient = {
       id: clientId || req.user.id || 'cli_current',
-      name: req.user.name || 'Client Partner',
+      name: req.user.company || req.user.name || 'Client Partner',
       status: 'Active Retainer',
       category: 'General Marketing',
       phone: req.user.phone || ''
-    })
+    };
+  }
+
+  // Resolve assigned Account Manager from team
+  let amMember = null;
+  const amId = rawClient.account_manager_id || rawClient.accountManagerId;
+  const amName = rawClient.account_manager || rawClient.accountManager;
+
+  if (isSupabaseConfigured()) {
+    try {
+      let q = supabase.from('team').select('*');
+      if (amId) q = q.or(`id.eq.${amId},emp_code.eq.${amId}`);
+      else if (amName) q = q.ilike('name', `%${amName}%`);
+      const { data } = await q.maybeSingle();
+      if (data) amMember = data;
+    } catch (_) {}
+  }
+
+  if (!amMember) {
+    try {
+      const db = await readDB();
+      amMember = (db.team || []).find(t =>
+        (amId && (t.id === amId || t.emp_code === amId)) ||
+        (amName && (t.name || '').toLowerCase().includes(String(amName).toLowerCase()))
+      );
+    } catch (_) {}
+  }
+
+  const amDetails = amMember ? {
+    name: amMember.name,
+    role: amMember.role || 'Account Director',
+    phone: amMember.phone || process.env.AGENCY_WHATSAPP || '+880 1711-019550',
+    email: amMember.email || 'gro10xnow@gmail.com'
+  } : {
+    name: 'GRO10X Executive Desk',
+    role: 'Client Experience & Partner Support',
+    phone: process.env.AGENCY_WHATSAPP || '+880 1711-019550',
+    email: 'gro10xnow@gmail.com'
+  };
+
+  const mapped = mapClient({
+    ...rawClient,
+    account_manager: rawClient.account_manager || amDetails.name,
+    accountManagerDetails: amDetails
+  });
+
+  return res.json({
+    success: true,
+    client: mapped,
+    ...mapped
   });
 });
 
@@ -956,6 +1017,7 @@ router.post('/:id/lockin-specs/:specId/kickoff', requireAuth, requireAdmin, asyn
     const projectId = spec.project_id || `PRJ-${Date.now().toString().slice(-6)}`;
     const newProject = {
       id: projectId,
+      client_id: req.params.id,
       name: spec.service_title || 'Engine 2 Sprint',
       client_name: req.body.clientName || 'Client Organization',
       description: spec.scope_boundaries?.definition_of_done || 'Full handover of AI application sprint.',

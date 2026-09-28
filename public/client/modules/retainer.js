@@ -13,7 +13,7 @@ window.CLIENT_MODULES.retainer = async function(container) {
     const user = me?.user || me || localUser;
     const clientName = user.company || user.name || '';
 
-    const [posts, clientInfo, reviews, projects] = await Promise.all([
+    const [posts, rawClientInfo, reviews, projects] = await Promise.all([
       clientName 
         ? CLIENT_API.get(`/posts/client/${encodeURIComponent(clientName)}`).catch(() => CLIENT_API.get('/posts').catch(() => []))
         : CLIENT_API.get('/posts').catch(() => []),
@@ -22,36 +22,37 @@ window.CLIENT_MODULES.retainer = async function(container) {
       CLIENT_API.get('/projects').catch(() => [])
     ]);
 
+    const clientInfo = rawClientInfo?.client || rawClientInfo || {};
+
     // Retainer Hours Bank (Engine 2)
     const projectList = Array.isArray(projects) ? projects : [];
-    const bankProject = projectList.find(p => p.id === 'proj-purplebot-01') || projectList[0] || { id: 'proj-purplebot-01', name: 'AI Agency OS & Retainer Infrastructure' };
+    const bankProject = projectList.find(p => p.retainerHours || p.retainer_hours || p.workflowType === 'composite_bundle' || p.workflow_type === 'composite_bundle') || projectList[0] || null;
 
     let bank = null;
-    try {
-      const bRes = await CLIENT_API.get(`/projects/${encodeURIComponent(bankProject.id)}/retainer-bank`).catch(() => null);
-      if (bRes && bRes.ok) {
-        bank = bRes.bank || bRes;
-      }
-    } catch (_) {}
+    if (bankProject) {
+      try {
+        const bRes = await CLIENT_API.get(`/projects/${encodeURIComponent(bankProject.id)}/retainer-bank`).catch(() => null);
+        if (bRes && (bRes.ok || bRes.bank)) {
+          bank = bRes.bank || bRes;
+        }
+      } catch (_) {}
+    }
+
+    const clientRetainerHours = Number(clientInfo.retainerHours || clientInfo.retainer_hours || 0);
 
     if (!bank) {
       bank = {
-        totalPurchasedHours: 30,
+        totalPurchasedHours: clientRetainerHours,
         rolloverHours: 0,
-        totalAvailableHours: 30,
-        usedHours: 25,
-        remainingHours: 5,
-        burnRatePercent: 83,
-        status: 'nearing_capacity',
-        hourlyRateUsd: 45,
-        billingCycleStart: '2026-09-01T00:00:00.000Z',
-        billingCycleEnd: '2026-09-30T23:59:59.000Z',
-        logs: [
-          { loggedAt: '2026-09-14T10:00:00.000Z', taskDescription: 'Handover Shield & Multi-day Invoicing Architecture', category: 'ai_development', loggedBy: 'Lead Engineer', hours: 5 },
-          { loggedAt: '2026-09-11T14:30:00.000Z', taskDescription: 'Telegram Bot Mesh & Notification Dispatcher', category: 'orchestration', loggedBy: 'Lead Engineer', hours: 8 },
-          { loggedAt: '2026-09-07T09:15:00.000Z', taskDescription: 'Review Room Approval Cascade & Warranty SLAs', category: 'governance', loggedBy: 'QA Engineer', hours: 6 },
-          { loggedAt: '2026-09-03T11:00:00.000Z', taskDescription: 'Sprint 1 Pipeline Setup & Core Infrastructure', category: 'architecture', loggedBy: 'Solutions Architect', hours: 6 }
-        ]
+        totalAvailableHours: clientRetainerHours,
+        usedHours: 0,
+        remainingHours: clientRetainerHours,
+        burnRatePercent: 0,
+        status: clientRetainerHours > 0 ? 'healthy' : 'unallocated',
+        hourlyRateUsd: 50,
+        billingCycleStart: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+        billingCycleEnd: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59).toISOString(),
+        logs: []
       };
     }
 
@@ -60,12 +61,16 @@ window.CLIENT_MODULES.retainer = async function(container) {
     const pendingPosts = (posts || []).filter(p => p.status === 'Pending Client Approval' || p.status === 'Client Review').length;
     const totalPosts = (posts || []).length;
 
-    // Monthly Quota Assumptions based on Retainer Level
-    const agreedQuota = {
-      reels: { agreed: 8, delivered: Math.min(8, (posts || []).filter(p => p.platform === 'Instagram' && (p.status === 'Approved' || p.status === 'Published')).length || 5) },
-      statics: { agreed: 16, delivered: Math.min(16, (posts || []).filter(p => (p.platform === 'Facebook' || p.platform === 'LinkedIn') && (p.status === 'Approved' || p.status === 'Published')).length || 11) },
-      commercials: { agreed: 1, delivered: reviews.filter(r => r.isApproved).length || 1 },
-      strategy: { agreed: 4, delivered: 4 }
+    const approvedReels = (posts || []).filter(p => (p.platform === 'Instagram' || p.format === 'reel') && (p.status === 'Approved' || p.status === 'Published')).length;
+    const approvedStatics = (posts || []).filter(p => (p.platform === 'Facebook' || p.platform === 'LinkedIn' || p.format === 'static') && (p.status === 'Approved' || p.status === 'Published')).length;
+    const approvedReviews = (reviews || []).filter(r => r.isApproved || r.status === 'Approved').length;
+
+    // Monthly Quota dynamically calculated from client profile or active deliverables
+    const agreedQuota = clientInfo.agreedQuota || {
+      reels: { agreed: Math.max(approvedReels, 4), delivered: approvedReels },
+      statics: { agreed: Math.max(approvedStatics, 8), delivered: approvedStatics },
+      commercials: { agreed: Math.max(approvedReviews, 1), delivered: approvedReviews },
+      strategy: { agreed: 2, delivered: Math.min(2, Math.ceil(totalPosts / 4) || 1) }
     };
 
     const totalAgreed = agreedQuota.reels.agreed + agreedQuota.statics.agreed + agreedQuota.commercials.agreed + agreedQuota.strategy.agreed;
@@ -79,6 +84,23 @@ window.CLIENT_MODULES.retainer = async function(container) {
     const monthProgressPct = Math.round((currentDay / daysInMonth) * 100);
 
     const isPaceHealthy = utilizationPct >= (monthProgressPct - 15);
+    const msaUrl = bankProject ? `/msa-view.html?id=${encodeURIComponent(bankProject.id)}` : '/msa-view.html';
+
+    let bankBadgeClass = 'badge-emerald';
+    let bankBadgeText = '🟢 Healthy Capacity';
+    if (bank.status === 'critical_overage') {
+      bankBadgeClass = 'badge-pink';
+      bankBadgeText = '🚨 Critical Overage';
+    } else if (bank.status === 'critical_capacity') {
+      bankBadgeClass = 'badge-pink';
+      bankBadgeText = '⚠️ High Utilization (< 15% Remaining)';
+    } else if (bank.status === 'nearing_capacity') {
+      bankBadgeClass = 'badge-amber';
+      bankBadgeText = '🟡 Nearing Capacity (>=75%)';
+    } else if (bank.status === 'unallocated') {
+      bankBadgeClass = 'badge-blue';
+      bankBadgeText = '⚪ Unallocated';
+    }
 
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
@@ -95,7 +117,7 @@ window.CLIENT_MODULES.retainer = async function(container) {
           <a href="#brief" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
             📝 Add Scope / Brief
           </a>
-          <a href="/msa-view.html?id=${encodeURIComponent(bankProject.id)}" target="_blank" class="btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+          <a href="${msaUrl}" target="_blank" class="btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
             📜 Legal MSA & NDA
           </a>
         </div>
@@ -107,8 +129,8 @@ window.CLIENT_MODULES.retainer = async function(container) {
           <div>
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
               <span class="badge badge-emerald" style="font-size:0.75rem;">⚡ Engineering Hours Bank</span>
-              <span class="badge ${bank.status === 'healthy' ? 'badge-emerald' : bank.status === 'nearing_capacity' ? 'badge-amber' : 'badge-pink'}" style="font-size:0.75rem;">
-                ${bank.status === 'healthy' ? '🟢 Healthy Capacity' : bank.status === 'nearing_capacity' ? '🟡 Nearing Capacity (>=75%)' : '🚨 Critical Overage'}
+              <span class="badge ${bankBadgeClass}" style="font-size:0.75rem;">
+                ${bankBadgeText}
               </span>
             </div>
             <h2 style="font-size:1.25rem; font-family:var(--font-heading); margin:0; color:#fff;">
@@ -132,7 +154,7 @@ window.CLIENT_MODULES.retainer = async function(container) {
         <!-- Progress Bar -->
         <div style="margin:1rem 0 1.25rem;">
           <div style="height:10px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
-            <div style="height:100%; width:${Math.min(100, bank.burnRatePercent)}%; background:linear-gradient(90deg, #10b981, ${bank.burnRatePercent >= 75 ? '#f59e0b' : '#34d399'}); border-radius:999px;"></div>
+            <div style="height:100%; width:${Math.min(100, bank.burnRatePercent)}%; background:linear-gradient(90deg, #10b981, ${bank.burnRatePercent >= 85 ? '#ec4899' : (bank.burnRatePercent >= 75 ? '#f59e0b' : '#34d399')}); border-radius:999px;"></div>
           </div>
         </div>
 
@@ -154,7 +176,13 @@ window.CLIENT_MODULES.retainer = async function(container) {
                 </tr>
               </thead>
               <tbody>
-                ${(bank.logs || []).map(l => `
+                ${(bank.logs || []).length === 0 ? `
+                  <tr>
+                    <td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+                      No billable engineering tasks logged yet for this billing cycle.
+                    </td>
+                  </tr>
+                ` : (bank.logs || []).map(l => `
                   <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
                     <td style="padding:0.55rem 1rem; color:var(--text-dim);">${new Date(l.loggedAt).toLocaleDateString('en-GB')}</td>
                     <td style="padding:0.55rem 1rem; font-weight:600; color:#fff;">${escapeHTML(l.taskDescription)}</td>
@@ -278,7 +306,7 @@ window.CLIENT_MODULES.retainer = async function(container) {
           <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.85rem;">
             <div style="display:flex; justify-content:space-between;">
               <span style="color:var(--text-muted);">Client Services Lead:</span>
-              <span style="font-weight:700; color:var(--purple-light);">${escapeHTML(clientInfo.accountManager || 'Tasin Kabir')}</span>
+              <span style="font-weight:700; color:var(--purple-light);">${escapeHTML(clientInfo.accountManagerDetails?.name || clientInfo.accountManager || clientInfo.account_manager || 'GRO10X Executive Desk')}</span>
             </div>
             <div style="display:flex; justify-content:space-between;">
               <span style="color:var(--text-muted);">Art & Design Direction:</span>

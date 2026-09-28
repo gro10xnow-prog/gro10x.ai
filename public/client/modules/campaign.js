@@ -289,11 +289,9 @@ window.CLIENT_MODULES.campaign = async function(container) {
       try {
         await CLIENT_API.patch(`/posts/${id}/status`, { status: 'Approved' });
         if (window.showClientToast) window.showClientToast('Post approved for scheduling! 🚀');
-        else alert('Post approved!');
         loadCampaignPosts();
       } catch (err) {
         if (window.showClientToast) window.showClientToast('Approval failed: ' + err.message, 'error');
-        else alert('Error approving post');
       }
     }
   };

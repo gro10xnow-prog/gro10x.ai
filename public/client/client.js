@@ -18,6 +18,18 @@
     '#account':  { module: 'account.js',  title: 'My Account & Contacts', icon: '👤' }
   };
 
+  const ROUTE_ALIASES = {
+    '#overview':  '#home',
+    '#dashboard': '#home',
+    '#sprint':    '#lockin',
+    '#handover':  '#lockin',
+    '#billing':   '#invoices',
+    '#support':   '#tickets'
+  };
+
+  window.ROUTES = ROUTES;
+  window.ROUTE_ALIASES = ROUTE_ALIASES;
+
   const loadedModules = {};
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -61,26 +73,70 @@
 
   async function handleRoute() {
     const currentSeq = ++routeNavSeq;
-    let hash = window.location.hash || '#home';
-    if (!ROUTES[hash]) hash = '#home';
+    let rawHash = window.location.hash || '#home';
+    let hash = rawHash;
+
+    if (ROUTE_ALIASES[hash]) {
+      hash = ROUTE_ALIASES[hash];
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', hash);
+      } else {
+        window.location.hash = hash;
+      }
+    }
+
+    if (!ROUTES[hash]) {
+      hash = '#home';
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', '#home');
+      }
+    }
 
     const routeInfo = ROUTES[hash];
 
     // Sync Desktop Sidebar Links
     document.querySelectorAll('.desktop-nav-link').forEach(link => {
-      if (link.getAttribute('href') === hash) {
+      const linkHash = link.getAttribute('href') || link.getAttribute('data-hash');
+      if (linkHash === hash) {
         link.classList.add('active');
       } else {
         link.classList.remove('active');
       }
     });
 
-    // Sync Mobile Bottom Nav Items
-    document.querySelectorAll('.bottom-nav-item').forEach(link => {
-      if (link.getAttribute('href') === hash) {
+    // Sync Mobile Bottom Nav Items (4 primary)
+    let isPrimaryRoute = false;
+    document.querySelectorAll('.bottom-nav-item:not(#btnMoreSheet)').forEach(link => {
+      const linkHash = link.getAttribute('href') || link.getAttribute('data-hash');
+      if (linkHash === hash) {
         link.classList.add('active');
+        isPrimaryRoute = true;
       } else {
         link.classList.remove('active');
+      }
+    });
+
+    // Sync Mobile "More" Button
+    const btnMore = document.getElementById('btnMoreSheet');
+    if (btnMore) {
+      if (!isPrimaryRoute && ROUTES[hash]) {
+        btnMore.classList.add('active');
+      } else {
+        btnMore.classList.remove('active');
+      }
+    }
+
+    // Sync Mobile Bottom Sheet Drawer Links
+    document.querySelectorAll('#mobileBottomSheet a').forEach(link => {
+      const linkHash = link.getAttribute('href') || link.getAttribute('data-hash');
+      if (linkHash === hash) {
+        link.classList.add('active');
+        link.style.borderColor = 'rgba(236,72,153,0.5)';
+        link.style.background = 'rgba(236,72,153,0.12)';
+      } else {
+        link.classList.remove('active');
+        link.style.borderColor = '';
+        link.style.background = '';
       }
     });
 

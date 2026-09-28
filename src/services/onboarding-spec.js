@@ -323,6 +323,10 @@ async function createProjectLockinSpec({
         status: 'UPON_DELIVERY'
       }
     },
+    deliverables: coreInclusions,
+    prerequisites: prerequisitesChecklist,
+    definition_of_done: definitionOfDone,
+    client_signoff_status: 'Pending Lock-In Review',
     status: 'LOCKED',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()

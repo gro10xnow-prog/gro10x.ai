@@ -9,6 +9,7 @@
 
 const express = require('express');
 const router = express.Router();
+const cache = require('../services/cache');
 const {
   getEngines,
   getVerticals,
@@ -17,6 +18,23 @@ const {
   getFullCatalogTree,
   resolveSku
 } = require('../services/taxonomy');
+
+/**
+ * 0. GET /api/catalog/config
+ * Returns public dynamic agency contact configuration, eliminating frontend hardcoding
+ */
+router.get('/config', (req, res) => {
+  res.json({
+    ok: true,
+    baseUrl: process.env.BASE_URL || 'https://gro10x-ai.vercel.app',
+    agencyPhone: process.env.AGENCY_PHONE || '+880 1711-019550',
+    agencyWhatsApp: process.env.AGENCY_WHATSAPP || '8801711019550',
+    agencyEmail: process.env.AGENCY_EMAIL || 'gro10xnow@gmail.com',
+    defaultCurrency: 'USD',
+    supportedCurrencies: ['USD', 'BDT'],
+    exchangeRateUsdToBdt: 118
+  });
+});
 
 /**
  * 1. GET /api/catalog/engines
@@ -96,9 +114,16 @@ router.get('/hierarchy', async (req, res) => {
 router.get('/products', async (req, res) => {
   try {
     const { categoryId, brandId } = req.query;
+    const cacheKey = `catalog:products:${categoryId || 'all'}:${brandId || 'all'}`;
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
     const { getProducts } = require('../services/taxonomy');
     const products = await getProducts({ categoryId, brandId });
-    res.json({ ok: true, count: products.length, data: products });
+    const responsePayload = { ok: true, count: products.length, data: products };
+    cache.set(cacheKey, responsePayload, 60000);
+    res.json(responsePayload);
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

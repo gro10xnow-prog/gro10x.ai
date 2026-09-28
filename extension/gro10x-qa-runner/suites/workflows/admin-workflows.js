@@ -199,6 +199,52 @@ const ADMIN_WORKFLOWS = {
     ]
   },
 
+  workflow_lead_inbound_audit_verification: {
+    id: 'workflow_lead_inbound_audit_verification',
+    platform: 'admin',
+    pageId: 'leads',
+    title: '🚀 Inbound Scorecard Lead: Filter ➔ Drawer Scorecard ➔ Conversion',
+    description: 'Filters for inbound AI Diagnostic Scorecard leads, verifies drawer scorecard card and gauge, and asserts conversion readiness.',
+    targetHash: '#leads',
+    steps: [
+      {
+        id: 'wf-lia-1',
+        title: '1. Navigate to Leads Pipeline (#leads)',
+        action: 'navigate_hash',
+        target: '#leads',
+        assertion: { type: 'wait_selector', selector: '#leads-pipeline-board, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-lia-2',
+        title: '2. Search for AI Readiness Scorecard Leads',
+        action: 'input_text',
+        selector: '#leadsSearchInput',
+        value: 'AI Readiness',
+        assertion: { type: 'custom_check', check: 'assert_leads_search' }
+      },
+      {
+        id: 'wf-lia-3',
+        title: '3. Open Lead Drawer & Inspect AI Scorecard',
+        action: 'workflow_verify_inbound_scorecard',
+        assertion: { type: 'custom_check', check: 'assert_leads_drawer_ai_scorecard' }
+      },
+      {
+        id: 'wf-lia-4',
+        title: '4. Verify WhatsApp Fast-CTA & Convert Button',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'element_exists', selector: '#leadProfileDrawer a[href*="wa.me"], #leadProfileDrawer button[onclick*="convertLead"]' }
+      },
+      {
+        id: 'wf-lia-5',
+        title: '5. Dismiss Lead Drawer & Clear Search Filter',
+        action: 'click',
+        selector: '#btnCloseDrawer',
+        assertion: { type: 'custom_check', check: 'assert_leads_drawer_closed' }
+      }
+    ]
+  },
+
   workflow_expense_approval: {
     id: 'workflow_expense_approval',
     platform: 'admin',
@@ -269,6 +315,53 @@ const ADMIN_WORKFLOWS = {
         title: '4. Teardown: Clean Test Ticket',
         action: 'workflow_cleanup_ticket',
         assertion: { type: 'custom_check', check: 'assert_ticket_cleaned_up' }
+      }
+    ]
+  },
+
+  workflow_proposal_acceptance_onboarding: {
+    id: 'workflow_proposal_acceptance_onboarding',
+    platform: 'admin',
+    pageId: 'proposals',
+    title: '🚀 SOW Acceptance ➔ Client Provisioning ➔ Project Lock-In Spec',
+    description: 'Simulates client proposal acceptance, verifies client auto-creation, tokenized handover URL generation, and lock-in spec linkage.',
+    targetHash: '#proposals',
+    steps: [
+      {
+        id: 'wf-prop-1',
+        title: '1. Navigate to Proposals Command Studio (#proposals)',
+        action: 'navigate_hash',
+        target: '#proposals',
+        assertion: { type: 'wait_selector', selector: '#proposalsTableBody, #kpiTotalProposals, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-prop-2',
+        title: '2. Verify Enterprise Proposals Present in Studio',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_proposals_table' }
+      },
+      {
+        id: 'wf-prop-3',
+        title: '3. Simulate SOW Proposal Acceptance via Public Rail',
+        action: 'workflow_accept_sow_proposal',
+        token: 'nhf-enterprise-ai-2026',
+        acceptedBy: 'MD Zahin Khandaker (NHF)',
+        assertion: { type: 'custom_check', check: 'assert_proposal_accepted_workflow' }
+      },
+      {
+        id: 'wf-prop-4',
+        title: '4. Verify 30-Day Client Session Token & Lock-In Spec Provisioned',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_client_token_provisioned' }
+      },
+      {
+        id: 'wf-prop-5',
+        title: '5. Audit Clean: Zero Native Dialogs & Zero Unhandled Rejections',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
       }
     ]
   }

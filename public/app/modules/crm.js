@@ -874,10 +874,12 @@ window.APP_MODULES.crm = async function(container) {
       this.closeHub();
       window.location.hash = '#proposals';
       setTimeout(() => {
-        if (window.PROPOSALS_MODULE && typeof window.PROPOSALS_MODULE.openCreateModal === 'function') {
-          window.PROPOSALS_MODULE.openCreateModal();
+        if (window.PROPOSALS_MODULE && typeof window.PROPOSALS_MODULE.openProposalModal === 'function') {
+          window.PROPOSALS_MODULE.openProposalModal();
           const nameInput = document.getElementById('propClientName');
           if (nameInput) nameInput.value = clientName;
+          const emailInput = document.getElementById('propClientEmail');
+          if (emailInput) emailInput.value = clientEmail || '';
         }
       }, 300);
     },

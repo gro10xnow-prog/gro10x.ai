@@ -122,7 +122,13 @@
 
     isAdmin: function() {
       var r = this.getRole();
-      return r === 'admin' || r === 'owner' || r === 'superadmin';
+      var user = this.getUser() || {};
+      var access = String(user.accessLevel || user.access_level || '').toLowerCase();
+      var empCode = String(user.emp_code || user.empCode || user.id || '').toUpperCase();
+      return r === 'admin' || r === 'owner' || r === 'superadmin' ||
+             r.includes('technology admin') || r.includes('business development lead') ||
+             access.includes('admin') || access.includes('owner') ||
+             ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-003'].indexOf(empCode) !== -1;
     },
 
     isManager: function() {
@@ -153,6 +159,9 @@
     },
 
     logout: function(redirectPath) {
+      try {
+        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(function() {});
+      } catch (_) {}
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       sessionStorage.removeItem(TOKEN_KEY);
@@ -264,8 +273,7 @@
           var isAuthPage = typeof window !== 'undefined' && window.location.pathname.includes('/auth');
           if (!isAuthPage && typeof window !== 'undefined') {
             console.warn('[GRO10XAuth] 401 Unauthorized — Session expired');
-            GRO10XAuth.clearSession();
-            window.location.href = '/auth?expired=1';
+            GRO10XAuth.logout('/auth?expired=1');
           }
         }
         return res;

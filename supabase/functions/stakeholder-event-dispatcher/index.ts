@@ -62,6 +62,10 @@ serve(async (req) => {
       eventName = record.status === "Resolved" ? "warranty.dispute_resolved" : "warranty.dispute_raised";
     } else if (table === "sla_holdbacks") {
       eventName = "ticket.sla_breach_holdback";
+    } else if (table === "catalog_products" || table === "services") {
+      eventName = "catalog.product_updated";
+    } else if (table === "leads" && type === "INSERT") {
+      eventName = "lead.created";
     }
 
     // Query active webhook subscriptions matching this event

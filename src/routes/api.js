@@ -243,6 +243,84 @@ router.get('/services', asyncHandler(async (req, res) => {
   return ok(res, DEFAULT_SERVICES);
 }));
 
+// Public Single Service Specification Endpoint (Supports code e.g. SVC-001 or slug e.g. ai-mobile-apps)
+router.get('/services/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const cleanId = String(id || '').trim().toLowerCase();
+  const cleanCode = String(id || '').trim().toUpperCase();
+
+  // 1. Check in-memory canonical DEFAULT_SERVICES
+  const matched = DEFAULT_SERVICES.find(s => 
+    (s.id && s.id.toUpperCase() === cleanCode) || 
+    (s.slug && s.slug.toLowerCase() === cleanId) ||
+    (s.id && s.id.toLowerCase() === cleanId)
+  );
+
+  if (matched) {
+    return ok(res, {
+      ...matched,
+      includedFeatures: matched.includedFeatures || matched.features || [],
+      public: matched.public ?? true
+    });
+  }
+
+  // 2. Check taxonomy service
+  try {
+    const { getServiceByCode } = require('../services/taxonomy');
+    const taxProduct = await getServiceByCode(cleanCode);
+    if (taxProduct) {
+      const meta = taxProduct.metadata || {};
+      const proof = meta.proof_pack || {};
+      const eng = meta.engineering || {};
+      return ok(res, {
+        id: taxProduct.product_code || cleanCode,
+        slug: meta.slug || cleanId,
+        title: taxProduct.name,
+        category: (taxProduct.category_id || '').replace('cat-e2-', ''),
+        categoryName: taxProduct.category_id,
+        icon: meta.icon || '⚡',
+        badge: meta.badge || '',
+        description: meta.description || '',
+        priceUSD: meta.price_usd ? `$${meta.price_usd.toLocaleString()}` : '$2,500',
+        priceBDT: meta.price_bdt ? `৳${meta.price_bdt.toLocaleString()}` : '৳295,000',
+        priceCycle: '/ project',
+        deliveryTime: `${eng.turnaround_days || 14} Days`,
+        features: eng.core_deliverables || [],
+        includedFeatures: eng.core_deliverables || [],
+        details: meta.description || '',
+        caseStudyTitle: proof.case_study_title || '',
+        caseStudyDesc: proof.case_study_title || '',
+        videoUrl: proof.video_url || '',
+        videoPoster: proof.video_poster || '/images/video-poster.webp',
+        slidesPdfUrl: proof.slides_pdf_url || '',
+        audioOverviewUrl: proof.audio_overview_url || '',
+        blueprintUrl: proof.blueprint_url || '',
+        faq: meta.faq || []
+      });
+    }
+  } catch (_) {}
+
+  // 3. Check Supabase services table if configured
+  if (isSupabaseConfigured()) {
+    try {
+      const { data } = await supabase
+        .from('services')
+        .select('*')
+        .or(`id.ilike.${cleanCode},slug.ilike.${cleanId}`)
+        .maybeSingle();
+      if (data) {
+        return ok(res, {
+          ...data,
+          includedFeatures: data.included_features || data.features || [],
+          public: data.is_public ?? true
+        });
+      }
+    } catch (_) {}
+  }
+
+  return fail(res, 404, `Service '${id}' not found in canonical catalog.`, 'SERVICE_NOT_FOUND');
+}));
+
 // Public / Client Testimonials Showcase Endpoint
 router.get('/testimonials', asyncHandler(async (req, res) => {
   const { getPublicTestimonials } = require('../services/post-delivery');

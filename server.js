@@ -570,6 +570,45 @@ app.get(['/partners', '/partners.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/partners.html'));
 });
 
+// Co-Branded Partner Referral Portal Redirect & 30-Day Attribution Cookie Stamping
+app.get(['/portal/:partnerCode', '/partners/:partnerCode'], async (req, res, next) => {
+  const { partnerCode } = req.params;
+  if (!partnerCode || partnerCode === 'index.html' || partnerCode.includes('.')) {
+    return next();
+  }
+  const cleanRef = partnerCode.trim().toUpperCase();
+
+  // Set 30-day attribution cookie
+  res.cookie('gro10x_aff_ref', cleanRef, {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    httpOnly: false,
+    sameSite: 'lax',
+    path: '/'
+  });
+
+  // Track click telemetry asynchronously
+  try {
+    const { getAffiliateRecord, memoryAffiliates } = require('./src/routes/affiliates');
+    if (getAffiliateRecord) {
+      const aff = await getAffiliateRecord(cleanRef);
+      if (aff) {
+        aff.clicks = (aff.clicks || 0) + 1;
+        if (memoryAffiliates) {
+          memoryAffiliates.set(aff.id || cleanRef, aff);
+        }
+        const { supabase, isSupabaseConfigured } = require('./src/services/supabase');
+        if (isSupabaseConfigured() && aff.id) {
+          supabase.from('affiliates').update({ clicks: aff.clicks }).eq('id', aff.id).then?.(() => {}).catch?.(() => {});
+        }
+        const { broadcast } = require('./src/services/sse');
+        broadcast('affiliate_click', { refCode: cleanRef, totalClicks: aff.clicks });
+      }
+    }
+  } catch (_) {}
+
+  return res.redirect(302, `/?ref=${encodeURIComponent(cleanRef)}#consultation`);
+});
+
 app.get(['/client', '/portal'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/client/index.html'));
 });
@@ -580,6 +619,28 @@ app.get(['/chat', '/bot-chat'], (req, res) => {
 
 app.get(['/proposal', '/proposal.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/proposal.html'));
+});
+
+// Public Proposal Share Link — /p/:token redirects to /proposal?t=TOKEN
+app.get('/p/:token', (req, res) => {
+  res.redirect(302, `/proposal?t=${encodeURIComponent(req.params.token)}`);
+});
+
+// Engine 1 Outbound Campaign & Vanity Service Routes
+app.get(['/services/:code', '/service-detail/:code'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/service-detail.html'));
+});
+
+app.get(['/services', '/services/'], (req, res) => {
+  res.redirect(302, '/#capabilities');
+});
+
+app.get(['/leads/claim', '/claim'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
+app.get(['/book-consultation', '/book', '/consultation'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 // Engine 2 Document & Stakeholder View Routes

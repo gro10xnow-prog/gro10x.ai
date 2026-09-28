@@ -164,6 +164,20 @@ window.APP_MODULES['proposals.js'] = {
                   </button>
                 </div>
               </div>
+
+              <!-- Enterprise Presets Bar -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; background: rgba(255, 255, 255, 0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.06);" id="enterprisePresetsBar">
+                <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Enterprise Presets:</span>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-outline" id="btnPresetNHF" style="padding: 4px 10px; font-size: 11px; border-color: rgba(6, 182, 212, 0.5); color: #38bdf8; display: flex; align-items: center; gap: 5px;">
+                    <span>🏛️</span> National Housing Finance (AI OS)
+                  </button>
+                  <button type="button" class="btn btn-outline" id="btnPresetUCB" style="padding: 4px 10px; font-size: 11px; border-color: rgba(0, 223, 137, 0.5); color: var(--primary, #00df89); display: flex; align-items: center; gap: 5px;">
+                    <span>🏦</span> UCB 24/7 Social AI
+                  </button>
+                </div>
+              </div>
+
               <textarea id="aiMeetingNotes" rows="4" class="form-textarea" placeholder="Speak or paste meeting notes here... (e.g. 'Client is UCB Bank. They want an automated chatbot for Facebook and Instagram to replace 2 human agents. Needs dedicated dashboard, Telegram human escalation, $400 one-time and 7.5k to 10k BDT monthly maintenance')..." style="width: 100%; background: rgba(7, 11, 18, 0.7); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 8px; color: #fff; padding: 12px; font-size: 13px;"></textarea>
             </div>
 
@@ -583,6 +597,14 @@ window.APP_MODULES['proposals.js'] = {
       this.runAIDraft();
     });
 
+    // Enterprise SOW Presets
+    document.getElementById('btnPresetNHF')?.addEventListener('click', () => {
+      this.applyEnterprisePreset('NATIONAL_HOUSING_FINANCE_AI_OS');
+    });
+    document.getElementById('btnPresetUCB')?.addEventListener('click', () => {
+      this.applyEnterprisePreset('UCB_BANK_AI_CHATBOT');
+    });
+
     // Convert Modal Actions
     document.getElementById('btnCloseConvertModal')?.addEventListener('click', () => {
       this.closeConvertModal();
@@ -775,6 +797,117 @@ window.APP_MODULES['proposals.js'] = {
         btn.disabled = false;
         btn.innerHTML = `<span>✨</span> Auto-Draft with AI`;
       }
+    }
+  },
+
+  async applyEnterprisePreset(presetKey) {
+    try {
+      let preset = null;
+      try {
+        const res = await (window.APP_API ? window.APP_API.get(`/proposals/presets/${presetKey}`) : fetch(`/api/proposals/presets/${presetKey}`).then(r => r.json()));
+        const payload = res?.data || res;
+        if (payload?.success && payload?.preset) {
+          preset = payload.preset;
+        }
+      } catch (e) {
+        console.warn('Preset fetch error, using local fallback:', e);
+      }
+
+      if (!preset) {
+        if (presetKey === 'NATIONAL_HOUSING_FINANCE_AI_OS') {
+          preset = {
+            clientName: 'National Housing Finance PLC',
+            clientCompany: 'National Housing Finance and Investments Limited',
+            clientEmail: 'digital@nationalhousingbd.com',
+            clientPhone: '+880 1711-000000',
+            currency: 'BDT',
+            projectTitle: 'Dedicated Enterprise AI Operating System & Autonomous Digital Mortgage Sales Officer',
+            projectSummary: 'Comprehensive enterprise AI digital transformation providing an autonomous 24/7 Digital Sales Officer for home loans, conversational EMI eligibility simulator with Bangladesh Bank regulatory DBR/LTV guardrails, REHAB developer project database synchronization, and private on-premise / hybrid cloud deployment with dedicated monthly SLA retainer maintenance.',
+            timeline: '3–4 Weeks from Kickoff',
+            terms: '1. One-time build cost is structured: 50% mobilization advance upon signing, 25% upon staging UAT deployment, 25% upon formal production handover.\n2. Monthly maintenance and dedicated AI compute retainer is billed at the beginning of each 30-day service cycle.\n3. National Housing Finance retains 100% proprietary data ownership and customer conversation history.\n4. Includes 30-day post-delivery bug-fix warranty shield with 24-hour defect SLA triage response.',
+            notes: 'Enterprise Banking Tier. Custom build for National Housing Finance Limited. Zero third-party telemetry leakage.',
+            scopeItems: [
+              { title: 'Dedicated AI Mortgage Sales Officer (Web & WhatsApp)', description: 'Bilingual conversational intelligence (Bangla + English) fine-tuned on National Housing loan products, interest rates, customer onboarding, and branch locator.' },
+              { title: 'Intelligent Home Loan Eligibility & EMI Simulator', description: 'Automated loan calculation engine enforcing Bangladesh Bank Debt Burden Ratio (DBR <= 50%) and Loan-to-Value (LTV <= 70%) regulatory compliance.' },
+              { title: 'REHAB Property Directory & Valuation Database Sync', description: 'Integrated lookup for approved developer projects, property valuation estimates, and instant applicant preliminary screening.' },
+              { title: 'Single-Tenant Private Cloud Infrastructure & Security Hardening', description: 'Zero data leakage, on-premise / hybrid cloud hosting, TLS 1.3 encryption, role-based access control, and bank CRM webhook bridge.' },
+              { title: '30-Day Defect-Free Warranty & Dedicated Monthly Retainer SLA', description: 'Proactive 24/7 system health monitoring, Bangladesh Bank rate updates, error triaging under 60 minutes, and continuous model refinement.' }
+            ],
+            oneTimeItems: [
+              { name: 'Custom AI Mortgage Officer Engine & Conversational Grounding', description: 'Fine-tuned LLM reasoning engine, banking FAQ vector knowledgebase & bilingual dialogue tuning', amount: 120000 },
+              { name: 'Home Loan Eligibility & EMI Simulator with BB DBR/LTV Guardrails', description: 'Real-time mathematical simulator enforcing central bank regulatory limits', amount: 85000 },
+              { name: 'REHAB Approved Property Directory & CRM Webhook Integration', description: 'Real estate project database synchronization and lead ingestion bridge', amount: 65000 },
+              { name: 'Private Cloud Infrastructure Setup & Bank Security Hardening', description: 'Single-tenant deployment, TLS 1.3 security audits, PII masking & UAT handover', amount: 50000 }
+            ],
+            recurringItems: [
+              { name: 'Dedicated Cloud Compute & High-Availability AI Inference Allocation', description: 'Enterprise server hosting, database backups, SSL certificates & model token quota', amount: 25000, frequency: 'Monthly' },
+              { name: 'Proactive Monitoring, Bangladesh Bank Compliance Updates & Priority SLA', description: 'Under-60-minute defect resolution, regulatory policy sync & monthly prompt optimization', amount: 15000, frequency: 'Monthly' }
+            ]
+          };
+        } else if (presetKey === 'UCB_BANK_AI_CHATBOT') {
+          preset = {
+            clientName: 'United Commercial Bank (UCB)',
+            clientCompany: 'United Commercial Bank PLC',
+            clientEmail: 'digital.banking@ucb.com.bd',
+            clientPhone: '+880 1700-000000',
+            currency: 'BDT',
+            projectTitle: '24/7 AI-Powered Social Media Customer Automation (Facebook & Instagram)',
+            projectSummary: 'Implementation of a dedicated, enterprise-grade conversational AI chatbot architecture across UCB Official Facebook and Instagram channels.',
+            timeline: '10–14 Working Days from Meta Credentials Handover',
+            terms: '1. One-time build cost is split: 50% advance upon kickoff, 50% upon successful UAT sign-off.\n2. Monthly maintenance and AI infrastructure retainer is billed at the beginning of each service cycle.\n3. Baseline monthly AI inference is included; any exceptional surges or additional third-party API compute will be billed at actuals with transparent usage telemetry.\n4. UCB retains full ownership of customer data and conversation history.\n5. Standard SLA response time for critical infrastructure triage is under 60 minutes.',
+            notes: 'Agency partner mark-up friendly. Baseline internal price: $400 one-time (~48,000 BDT) + 7,500–10,000 BDT/month retainer.',
+            scopeItems: [
+              { title: 'Meta Graph API & Webhook Infrastructure', description: 'Official Facebook Messenger & Instagram Direct Message API connection with dedicated webhook routing, real-time message handshake, and rate-limit buffering.' },
+              { title: 'Custom Conversational AI Engine (Gemini 3.6 Flash)', description: 'Bilingual conversational intelligence (Bangla + English) fine-tuned on UCB retail banking services, cards, loans, branch locator, and general FAQs with context memory.' },
+              { title: 'Dedicated Single-Tenant Control Dashboard', description: 'Private administrative dashboard with 100% data ownership (non-multi-tenant architecture). Real-time message logs, analytics, user session tracking, and manual override.' },
+              { title: 'Telegram Human-in-the-Loop Escalation Bridge', description: 'Instant automated notification alerts dispatched directly to duty officers on Telegram when complex inquiries or high-priority customer requests require human takeover.' }
+            ],
+            oneTimeItems: [
+              { name: 'Architecture Setup & Meta API Integration', description: 'Facebook & Instagram Direct Webhook setup, token management & Meta Graph integration', amount: 15000 },
+              { name: 'Conversational AI Model Grounding & Custom Training', description: 'Gemini AI prompt engineering, banking FAQ embedding & bilingual Bangla/English dialogue tuning', amount: 18000 },
+              { name: 'Dedicated Single-Tenant Management Dashboard', description: 'Custom web portal for message monitoring, live escalation controls & analytics', amount: 10000 },
+              { name: 'Telegram Real-Time Escalation Bot & Deployment', description: 'Human-in-the-loop notification bot, end-to-end UAT verification & cloud provisioning', amount: 5000 }
+            ],
+            recurringItems: [
+              { name: 'Conversational AI Inference & API Allocation (Baseline)', description: 'Standard Gemini Flash AI token quota covering high-volume 24/7 automated messaging.', amount: 4000, frequency: 'Monthly' },
+              { name: 'Dedicated Cloud Infrastructure & High-Availability Hosting', description: 'Secure, dedicated single-tenant server hosting, SSL encryption, continuous uptime', amount: 3000, frequency: 'Monthly' },
+              { name: '24/7 System Monitoring, SLA & Prompt Refinements', description: 'Proactive health checks, error logging, database backups & ongoing FAQ knowledgebase updates', amount: 2500, frequency: 'Monthly' }
+            ]
+          };
+        }
+      }
+
+      if (!preset) return;
+
+      if (preset.clientName) document.getElementById('propClientName').value = preset.clientName;
+      if (preset.clientCompany) document.getElementById('propClientCompany').value = preset.clientCompany;
+      if (preset.currency) document.getElementById('propCurrency').value = preset.currency;
+      if (preset.projectTitle) document.getElementById('propProjectTitle').value = preset.projectTitle;
+      if (preset.projectSummary) document.getElementById('propProjectSummary').value = preset.projectSummary;
+      if (preset.timeline) document.getElementById('propTimeline').value = preset.timeline;
+      if (preset.terms) document.getElementById('propTerms').value = preset.terms;
+      if (preset.notes) document.getElementById('propNotes').value = preset.notes;
+
+      const scopeWrap = document.getElementById('scopeItemsWrapper');
+      if (scopeWrap) scopeWrap.innerHTML = '';
+      (preset.scopeItems || []).forEach(s => this.addScopeItemRow(s.title, s.description));
+
+      const otWrap = document.getElementById('oneTimeItemsWrapper');
+      if (otWrap) otWrap.innerHTML = '';
+      (preset.oneTimeItems || []).forEach(i => this.addOneTimeItemRow(i.name, i.description, i.amount));
+
+      const recWrap = document.getElementById('recurringItemsWrapper');
+      if (recWrap) recWrap.innerHTML = '';
+      (preset.recurringItems || []).forEach(i => this.addRecurringItemRow(i.name, i.description, i.amount, i.frequency));
+
+      this.recalculateTotals();
+
+      if (window.showToast) {
+        window.showToast(`⚡ Enterprise Preset loaded: ${preset.projectTitle.slice(0, 45)}...`, 'success');
+      }
+    } catch (err) {
+      console.error('applyEnterprisePreset error:', err);
+      if (window.showToast) window.showToast('Failed to load enterprise preset: ' + err.message, 'error');
     }
   },
 

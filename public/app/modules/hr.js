@@ -39,7 +39,8 @@ window.APP_MODULES.hr = async function(container) {
 
   const DEFAULT_TEAM_MEMBERS = [
     { emp_code: 'GRO-000', name: 'Firoz Uddin Ahmed', role: 'Technology Admin', department: 'Tech & AI', status: 'In Studio', phone: '+8801708459008', accessLevel: 'Technology Admin', baseSalary: 95000, commissionRate: 5, onboardingComplete: true, surveyComplete: true, xp: 2500, badge: '⚡ Tech Admin' },
-    { emp_code: 'GRO-002', name: 'Anika Nower', role: 'Digital Brand Manager', department: 'Brand Operations', status: 'Active', phone: '+8801760753971', email: 'anikanower10152@gmail.com', accessLevel: 'Specialist / Crew', baseSalary: 20000, commissionRate: 10, dbm_id: 1, onboardingComplete: false, surveyComplete: false, xp: 100, badge: '🌱 DBM Recruit' }
+    { emp_code: 'GRO-002', name: 'Anika Nower', role: 'Digital Brand Manager & Operations Lead', department: 'Brand Operations', status: 'Active', phone: '+8801760753971', email: 'anikanower10152@gmail.com', accessLevel: 'Technology Admin', baseSalary: 20000, commissionRate: 10, dbm_id: 1, onboardingComplete: false, surveyComplete: false, xp: 100, badge: '🌱 DBM Recruit' },
+    { emp_code: 'GRO-003', name: 'Rafsan Ameen', role: 'Business Development Lead', department: 'Strategy & Account Management', status: 'Active', phone: '+8801798558479', accessLevel: 'Technology Admin', baseSalary: 0, commissionRate: 10, onboardingComplete: false, surveyComplete: false, xp: 100, badge: '🌱 Recruit' }
   ];
 
   async function loadHROps() {

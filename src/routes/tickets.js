@@ -3,8 +3,11 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
-const { sendTelegramNotification } = require('../services/bot');
+const sse = require('../services/sse');
+const broadcast = (...args) => sse.broadcast(...args);
+const broadcastToClient = (...args) => sse.broadcastToClient(...args);
+const botNotifications = require('../services/bot/notifications');
+const sendTelegramNotification = (...args) => botNotifications.sendTelegramNotification(...args);
 const { processAutomationEvent } = require('../services/automation');
 const { randomUUID } = require('crypto');
 
@@ -279,12 +282,19 @@ router.post('/', requireAuth, async (req, res) => {
       if (dbErr) console.warn('[Tickets API] insert note:', dbErr.message);
     }
 
-    try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
+    try {
+      broadcast('ticket_update', inMemoryTickets.map(mapTicket));
+      broadcast('ticket_created', formatted);
+      if (payload.client_id) {
+        broadcastToClient('ticket_update', inMemoryTickets.map(mapTicket), [payload.client_id]);
+      }
+    } catch (e) {}
 
     // Send Telegram Alert to Support / Admin / Lead Engineer
     try {
-      const adminTgId = process.env.OWNER_TELEGRAM_ID;
+      const adminTgId = process.env.OWNER_TELEGRAM_ID || process.env.ADMIN_TELEGRAM_CHAT_ID;
       if (adminTgId) {
+        const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
         const msg = isWarranty
           ? `🛡️ *WARRANTY BUG-FIX TICKET FILED*\n\n` +
             `• Project: *${linkedProject?.name || payload.project_id}*\n` +
@@ -304,7 +314,7 @@ router.post('/', requireAuth, async (req, res) => {
             `• Priority: *${payload.priority}*\n\n` +
             `*Details:*\n${payload.description || 'No additional details provided.'}`;
 
-        sendTelegramNotification(adminTgId, msg, null, true).catch(() => {});
+        sendTelegramNotification(adminTgId, msg, [[{ text: '🎟️ Triage in Support Desk', url: `${baseUrl}/app#tickets` }]], true);
       }
     } catch (e) {}
 
@@ -517,19 +527,36 @@ router.post('/:id/sla-holdback', requireAuth, requireManager, async (req, res) =
       } catch (_) {}
     }
 
-    try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
+    try {
+      broadcast('ticket_update', inMemoryTickets.map(mapTicket));
+      broadcast('sla_breach_holdback', {
+        ticketId: id,
+        ticketTitle: ticket.title || 'Warranty Defect',
+        contractorId: assignedContractor,
+        holdbackPercent: Number(holdbackPercent),
+        reason,
+        appliedAt: holdbackRecord.appliedAt
+      });
+    } catch (e) {}
 
     // Dispatch Telegram alert
     try {
-      const alertChatId = process.env.ADMIN_TELEGRAM_CHAT_ID || process.env.TELEGRAM_TEAM_GROUP_ID;
+      const alertChatId = process.env.ADMIN_TELEGRAM_CHAT_ID || process.env.TELEGRAM_TEAM_GROUP_ID || process.env.OWNER_TELEGRAM_ID;
       if (alertChatId) {
+        const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
         const alertMsg = `⚠️ *CONTRACTOR SLA HOLDBACK APPLIED*\n\n` +
           `• Ticket: \`${id}\` (${ticket.title || 'Warranty Defect'})\n` +
           `• Contractor: *${assignedContractor}*\n` +
           `• Holdback: *${holdbackPercent}% Milestone Escrow Frozen*\n` +
           `• Reason: ${reason}\n\n` +
           `_Release condition: Verified hotfix and QA approval._`;
-        sendTelegramNotification(alertChatId, alertMsg, null, true).catch(() => {});
+        const inlineKeyboard = [
+          [
+            { text: '🚨 Acknowledge Defect SLA', callback_data: `ack_defect_sla:${id}` },
+            { text: '🎟️ Open Ticket', url: `${baseUrl}/app#tickets` }
+          ]
+        ];
+        sendTelegramNotification(alertChatId, alertMsg, inlineKeyboard, true);
       }
     } catch (_) {}
 

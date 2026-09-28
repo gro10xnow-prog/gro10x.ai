@@ -8,38 +8,40 @@ var escapeHTML = window.escapeHTML || function(s) { return s ? String(s).replace
 window.CLIENT_MODULES.account = async function(container) {
   const me = await CLIENT_API.get('/auth/me').catch(() => ({}));
   const user = me.user || {};
-  const clientInfo = await CLIENT_API.get('/clients/me').catch(() => ({}));
+  const rawClientInfo = await CLIENT_API.get('/clients/me').catch(() => ({}));
+  const clientInfo = rawClientInfo?.client || rawClientInfo || {};
 
   const pocs = clientInfo.pocs && clientInfo.pocs.length > 0 
     ? clientInfo.pocs 
     : [{ name: user.name || 'Primary Contact', role: 'Account Lead', phone: user.phone || '' }];
 
-  // Resolve assigned Account Manager
-  let amName = clientInfo.accountManager || clientInfo.account_manager || 'Tasin Kabir';
-  let amRole = 'Senior Manager, Client Services';
-  let amPhone = '+880 1709-952672';
-  let amRawPhone = '8801709952672';
-  let amEmail = 'gro10xnow@gmail.com';
+  // Resolve assigned Account Manager dynamically
+  const amDetails = clientInfo.accountManagerDetails || {};
+  let amName = amDetails.name || clientInfo.accountManager || clientInfo.account_manager || 'GRO10X Executive Desk';
+  let amRole = amDetails.role || 'Senior Manager, Client Services';
+  let amPhone = amDetails.phone || '+880 1711-019550';
+  let amEmail = amDetails.email || 'gro10xnow@gmail.com';
 
-  if (amName.toLowerCase().includes('sayed')) {
-    amName = 'Sayed Ashraf';
-    amRole = 'Assistant Manager, Client Services';
-    amPhone = '+880 1617-410967';
-    amRawPhone = '8801617410967';
-    amEmail = 'gro10xnow@gmail.com';
-  } else if (amName.toLowerCase().includes('rimjhim')) {
-    amName = 'Rimjhim Rashid';
-    amRole = 'Assistant Manager, Client Services';
-    amPhone = '+880 1759-768962';
-    amRawPhone = '8801759768962';
-    amEmail = 'gro10xnow@gmail.com';
-  } else if (amName.toLowerCase().includes('mehedi')) {
-    amName = 'MD Mehedi Bin Jayed';
-    amRole = 'Head of Client & Growth';
-    amPhone = '+880 1874-079687';
-    amRawPhone = '8801874079687';
-    amEmail = 'gro10xnow@gmail.com';
+  if (!amDetails.name) {
+    try {
+      const teamRes = await CLIENT_API.get('/team').catch(() => []);
+      const teamList = Array.isArray(teamRes) ? teamRes : (teamRes?.team || []);
+      const amId = clientInfo.accountManagerId || clientInfo.account_manager_id;
+      const matched = teamList.find(t => 
+        (amId && (t.id === amId || t.emp_code === amId)) ||
+        (clientInfo.accountManager && t.name && t.name.toLowerCase().includes(String(clientInfo.accountManager).toLowerCase())) ||
+        (clientInfo.account_manager && t.name && t.name.toLowerCase().includes(String(clientInfo.account_manager).toLowerCase()))
+      );
+      if (matched) {
+        amName = matched.name;
+        amRole = matched.role || amRole;
+        amPhone = matched.phone || amPhone;
+        amEmail = matched.email || amEmail;
+      }
+    } catch (_) {}
   }
+
+  const amRawPhone = amPhone.replace(/[^0-9]/g, '');
 
   let activeProjectId = '';
   try {
@@ -436,7 +438,6 @@ window.CLIENT_MODULES.account = async function(container) {
 
       if (!name || !phone) {
         if (window.showClientToast) window.showClientToast('Name and phone are required (*)', 'error');
-        else alert('Name and phone are required');
         return;
       }
 
@@ -457,12 +458,10 @@ window.CLIENT_MODULES.account = async function(container) {
 
         if (res.success || res.ticket) {
           if (window.showClientToast) window.showClientToast('Access request submitted! Your AM will configure access credentials. 👥');
-          else alert('Access request submitted!');
           this.closeAddPocModal();
         }
       } catch (err) {
         if (window.showClientToast) window.showClientToast('Request error: ' + err.message, 'error');
-        else alert('Error submitting request');
       }
     }
   };

@@ -132,11 +132,18 @@ const LEADS_QA_SUITE = {
       assertion: { type: 'custom_check', check: 'assert_leads_currency_alias' }
     },
     {
-      id: 'step-19',
-      title: '19. Open Lead Profile Drawer',
+      id: 'step-18',
+      title: '18. Open Lead Profile Drawer',
       action: 'click',
       selector: '.btn-open-lead-drawer, .kanban-col .lead-card button[onclick*="openDrawer"]',
       assertion: { type: 'element_visible', selector: '#leadProfileDrawer' }
+    },
+    {
+      id: 'step-19',
+      title: '19. Verify Inbound AI Readiness Scorecard Card in Drawer',
+      action: 'wait_ms',
+      duration: 300,
+      assertion: { type: 'custom_check', check: 'assert_leads_drawer_ai_scorecard' }
     },
     {
       id: 'step-20',

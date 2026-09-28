@@ -49,32 +49,6 @@ async function requireAuth(req, res, next) {
     token = cookies['gro10x_token'] || cookies['sb-access-token'] || cookies['sb_access_token'] || cookies['purple_jwt'];
   }
 
-  // 0. QA Automation Runner Mock Token support
-  if (token && (token === 'mock_qa_token_enterprise' || token === 'mock_qa_token')) {
-    const db = await readDB();
-    const defaultEmp = (db.team && db.team[0]) || { name: 'Firoz Uddin Ahmed', role: 'Agency Founder & Master Owner' };
-    req.user = enrichUserContext({
-      id: defaultEmp.id || 'GRO-001',
-      email: defaultEmp.email || 'gro10xnow@gmail.com',
-      role: defaultEmp.role || 'Agency Founder & Master Owner',
-      accessLevel: 'Owner / Admin',
-      department: defaultEmp.department || 'Executive Leadership',
-      linkedType: 'team',
-      linkedId: defaultEmp.id || 'GRO-001',
-      profile: {
-        emp_code: defaultEmp.id || 'GRO-001',
-        name: defaultEmp.name || 'Firoz Uddin Ahmed',
-        email: defaultEmp.email || 'gro10xnow@gmail.com',
-        role: defaultEmp.role || 'Agency Founder & Master Owner',
-        accessLevel: 'Owner / Admin',
-        phone: defaultEmp.phone || '+8801708459008',
-        department: defaultEmp.department || 'Executive Leadership',
-        status: defaultEmp.status || 'Active'
-      }
-    });
-    return next();
-  }
-
   // 1. Verify Real Signed JWT first
   if (token) {
     const decodedPayload = verifyToken(token);
@@ -216,7 +190,7 @@ async function requireAuth(req, res, next) {
         email: defaultEmp.email || 'gro10xnow@gmail.com',
         role: defaultEmp.role || 'Agency Founder & Master Owner',
         accessLevel: 'Owner / Admin',
-        phone: defaultEmp.phone || '+8801708459008',
+        phone: defaultEmp.phone || process.env.AGENCY_PHONE || '+880 1711-019550',
         department: defaultEmp.department || 'Executive Leadership',
         status: defaultEmp.status || 'Active'
       }

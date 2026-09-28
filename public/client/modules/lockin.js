@@ -493,61 +493,135 @@ window.CLIENT_MODULES.lockin = async function(container) {
     },
 
     async promptPrerequisite(itemId, itemName) {
-      const note = prompt(`Submit credentials / instructions for: "${itemName}"\n\nProvide repository invite link, API key, or confirmation note:`);
-      if (note === null) return; // Cancelled
+      // Non-blocking submission without native prompt or alert
+      const existingModal = document.getElementById('prereqModalOverlay');
+      if (existingModal) existingModal.remove();
 
-      try {
-        const res = await CLIENT_API.put(`/clients/${currentClientId}/lockin-specs/${activeSpec.id}/prerequisites/${itemId}`, {
-          status: 'RECEIVED'
-        });
+      const modal = document.createElement('div');
+      modal.className = 'modal-backdrop active';
+      modal.id = 'prereqModalOverlay';
+      modal.style.cssText = 'position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; padding:1rem;';
+      modal.innerHTML = `
+        <div class="modal-box card-glass" style="max-width:480px; width:100%; padding:1.5rem; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:#0f172a; box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
+          <h3 style="margin:0 0 0.5rem; font-size:1.15rem; color:#fff;">🔐 Submit Prerequisite Credentials</h3>
+          <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">
+            Provide repository invite link, API key, credentials, or confirmation note for: <br/><strong style="color:var(--purple-light);">${escapeHTML(itemName)}</strong>
+          </div>
+          <textarea id="prereqSubmissionInput" rows="3" class="form-input" style="width:100%; box-sizing:border-box; padding:0.6rem 0.8rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-size:0.85rem;" placeholder="e.g. GitHub invite sent to tech@gro10x.ai or API token..."></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
+            <button type="button" class="btn-secondary" id="btnCancelPrereq" style="font-size:0.82rem; padding:0.4rem 0.8rem;">Cancel</button>
+            <button type="button" class="btn-primary" id="btnSubmitPrereq" style="font-size:0.82rem; padding:0.4rem 1rem;">Mark Received & Submit</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
 
-        if (res.ok) {
-          alert(`✅ Submitted! Item marked as RECEIVED. Our engineering team has been notified.`);
-          await loadSpecs();
-        } else {
-          alert(`Error: ${res.error || 'Failed to update prerequisite'}`);
+      modal.querySelector('#btnCancelPrereq').onclick = () => { modal.remove(); };
+      modal.querySelector('#btnSubmitPrereq').onclick = async () => {
+        const note = modal.querySelector('#prereqSubmissionInput').value.trim();
+        modal.remove();
+        try {
+          const res = await CLIENT_API.put(`/clients/${currentClientId}/lockin-specs/${activeSpec.id}/prerequisites/${itemId}`, {
+            status: 'RECEIVED',
+            note: note || 'Prerequisite provided by client'
+          });
+
+          if (res.ok) {
+            if (window.showClientToast) window.showClientToast('✅ Item marked as RECEIVED! Engineering team notified.', 'success');
+            await loadSpecs();
+          } else {
+            if (window.showClientToast) window.showClientToast(`Error: ${res.error || 'Failed to update prerequisite'}`, 'error');
+          }
+        } catch (err) {
+          if (window.showClientToast) window.showClientToast(`Failed to submit: ${err.message}`, 'error');
         }
-      } catch (err) {
-        alert(`Failed to submit: ${err.message}`);
-      }
+      };
     },
 
     async openAddPocModal() {
-      const name = prompt('Enter Contact Person Name:');
-      if (!name) return;
-      const email = prompt('Enter Email Address:') || '';
-      const phone = prompt('Enter WhatsApp / Phone:') || '';
-      const roleChoice = prompt('Select Role:\n1 = Technical Lead\n2 = Billing / Finance\n3 = Day-to-Day Operator', '1');
+      const existingModal = document.getElementById('addPocModalOverlay');
+      if (existingModal) existingModal.remove();
 
-      let decisionRole = 'TECHNICAL_LEAD';
-      let designation = 'Head of Engineering';
-      if (roleChoice === '2') {
-        decisionRole = 'BILLING_FINANCE';
-        designation = 'Finance / Accounts Lead';
-      } else if (roleChoice === '3') {
-        decisionRole = 'DAY_TO_DAY_OPERATOR';
-        designation = 'Operations Specialist';
-      }
+      const modal = document.createElement('div');
+      modal.className = 'modal-backdrop active';
+      modal.id = 'addPocModalOverlay';
+      modal.style.cssText = 'position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; padding:1rem;';
+      modal.innerHTML = `
+        <div class="modal-box card-glass" style="max-width:480px; width:100%; padding:1.5rem; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:#0f172a; box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
+          <h3 style="margin:0 0 0.5rem; font-size:1.15rem; color:#fff;">👤 Add Authorized Contact Person</h3>
+          <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">
+            Register a designated point of contact with role-based decision authority.
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Full Name *</label>
+              <input type="text" id="pocFullName" class="form-input" style="width:100%; box-sizing:border-box; padding:0.5rem 0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff;" placeholder="e.g. Asif Mahmud" />
+            </div>
+            <div>
+              <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Email Address</label>
+              <input type="email" id="pocEmail" class="form-input" style="width:100%; box-sizing:border-box; padding:0.5rem 0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff;" placeholder="asif@company.com" />
+            </div>
+            <div>
+              <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">WhatsApp / Phone</label>
+              <input type="text" id="pocPhone" class="form-input" style="width:100%; box-sizing:border-box; padding:0.5rem 0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff;" placeholder="+880 1711-019550" />
+            </div>
+            <div>
+              <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Authority Role</label>
+              <select id="pocRoleSelect" class="form-input" style="width:100%; box-sizing:border-box; padding:0.5rem 0.75rem; background:#1e293b; border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff;">
+                <option value="TECHNICAL_LEAD">Technical Lead / Head of Engineering</option>
+                <option value="BILLING_FINANCE">Billing & Finance / Commercial Approver</option>
+                <option value="DAY_TO_DAY_OPERATOR">Day-to-Day Operations Specialist</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+            <button type="button" class="btn-secondary" id="btnCancelPoc" style="font-size:0.82rem; padding:0.4rem 0.8rem;">Cancel</button>
+            <button type="button" class="btn-primary" id="btnSavePoc" style="font-size:0.82rem; padding:0.4rem 1rem;">Register Contact</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
 
-      try {
-        const res = await CLIENT_API.post(`/clients/${currentClientId}/pocs`, {
-          name,
-          email,
-          phone,
-          decision_role: decisionRole,
-          designation
-        });
+      modal.querySelector('#btnCancelPoc').onclick = () => { modal.remove(); };
+      modal.querySelector('#btnSavePoc').onclick = async () => {
+        const name = modal.querySelector('#pocFullName').value.trim();
+        const email = modal.querySelector('#pocEmail').value.trim();
+        const phone = modal.querySelector('#pocPhone').value.trim();
+        const roleChoice = modal.querySelector('#pocRoleSelect').value;
 
-        if (res.ok) {
-          alert('✅ Contact person successfully registered to your account.');
-          if (clientRecord) {
-            clientRecord.pocs = res.client?.pocs || clientRecord.pocs;
-          }
-          renderCockpit();
+        if (!name) {
+          if (window.showClientToast) window.showClientToast('Contact name is required', 'error');
+          return;
         }
-      } catch (err) {
-        alert(`Failed to add contact: ${err.message}`);
-      }
+
+        modal.remove();
+
+        let designation = 'Head of Engineering';
+        if (roleChoice === 'BILLING_FINANCE') designation = 'Finance / Accounts Lead';
+        else if (roleChoice === 'DAY_TO_DAY_OPERATOR') designation = 'Operations Specialist';
+
+        try {
+          const res = await CLIENT_API.post(`/clients/${currentClientId}/pocs`, {
+            name,
+            email,
+            phone,
+            decision_role: roleChoice,
+            designation
+          });
+
+          if (res.ok) {
+            if (window.showClientToast) window.showClientToast('✅ Contact person successfully registered to your account.', 'success');
+            if (clientRecord) {
+              clientRecord.pocs = res.client?.pocs || clientRecord.pocs;
+            }
+            renderCockpit();
+          } else {
+            if (window.showClientToast) window.showClientToast(`Failed to add contact: ${res.error || 'Server error'}`, 'error');
+          }
+        } catch (err) {
+          if (window.showClientToast) window.showClientToast(`Failed to add contact: ${err.message}`, 'error');
+        }
+      };
     }
   };
 

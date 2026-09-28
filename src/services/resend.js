@@ -2,6 +2,8 @@ const https = require('https');
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'GRO10X <gro10xnow@gmail.com>';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const AGENCY_WHATSAPP = process.env.AGENCY_WHATSAPP || '+880 1711-019550';
+const AGENCY_WHATSAPP_CLEAN = AGENCY_WHATSAPP.replace(/[^0-9]/g, '');
 
 /**
  * Sends an email via Resend HTTP API
@@ -84,8 +86,11 @@ async function sendClientOnboardingEmail({ clientName, email, magicLink }) {
       </div>
 
       <p style="font-size: 13px; color: #64748b;">Direct URL: <a href="${magicLink}" style="color: #00df89;">${magicLink}</a></p>
-      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
-      <p style="font-size: 12px; color: #64748b;">GRO10X AI Growth Agency • Dhaka, Bangladesh</p>
+      <div style="font-size: 13px; color: #64748b; text-align: center; margin-top: 24px;">
+        <p style="margin: 4px 0;">Dedicated Executive Desk: <a href="https://wa.me/${AGENCY_WHATSAPP_CLEAN}" style="color: #00df89; text-decoration: none;">${AGENCY_WHATSAPP}</a> | <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
+        <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;">
+        <p style="font-size: 11px; margin: 0;">GRO10X AI Growth Agency • Dhaka, Bangladesh</p>
+      </div>
     </div>
   `;
 
@@ -162,7 +167,7 @@ async function sendLeadConfirmationEmail({ contactPerson, email, service, compan
 
       <div style="font-size: 13px; color: #64748b; text-align: center;">
         <p style="margin: 4px 0;">Need immediate assistance? Reach our client desk:</p>
-        <p style="margin: 4px 0;">📱 WhatsApp: <a href="https://wa.me/8801708459008" style="color: #00df89; text-decoration: none;">+880 1708 459008</a> | 📧 Email: <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
+        <p style="margin: 4px 0;">📱 WhatsApp: <a href="https://wa.me/${AGENCY_WHATSAPP_CLEAN}" style="color: #00df89; text-decoration: none;">${AGENCY_WHATSAPP}</a> | 📧 Email: <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
         <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;">
         <p style="font-size: 11px; margin: 0;">GRO10X AI Growth Agency • Dhaka, Bangladesh</p>
       </div>
@@ -202,7 +207,7 @@ async function sendLeadFollowUpEmail({ contactPerson, email, service, company })
         </div>
 
         <div style="text-align: center; margin-top: 24px;">
-          <a href="https://wa.me/8801708459008?text=Hi%20GRO10X%20Team!%20Following%20up%20on%20my%20inquiry%20for%20${encodeURIComponent(svc)}" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
+          <a href="https://wa.me/${AGENCY_WHATSAPP_CLEAN}?text=Hi%20GRO10X%20Team!%20Following%20up%20on%20my%20inquiry%20for%20${encodeURIComponent(svc)}" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
             📱 Chat on WhatsApp
           </a>
           <a href="https://gro10x-ai.vercel.app/#services" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
@@ -212,7 +217,7 @@ async function sendLeadFollowUpEmail({ contactPerson, email, service, company })
       </div>
 
       <div style="font-size: 13px; color: #64748b; text-align: center;">
-        <p style="margin: 4px 0;">Direct Contact: <a href="tel:+8801708459008" style="color: #00df89; text-decoration: none;">+880 1708 459008</a> | <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
+        <p style="margin: 4px 0;">Direct Contact: <a href="tel:+${AGENCY_WHATSAPP_CLEAN}" style="color: #00df89; text-decoration: none;">${AGENCY_WHATSAPP}</a> | <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
         <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;">
         <p style="font-size: 11px; margin: 0;">GRO10X AI Growth Agency • Dhaka, Bangladesh</p>
       </div>
@@ -451,7 +456,7 @@ async function sendServiceAssetDeliveryEmail({ email, contactPerson, serviceName
         </div>
 
         <div style="text-align: center; margin-top: 24px;">
-          <a href="https://wa.me/8801708459008?text=Hi%20Tanvir!%20I%20reviewed%20the%20${encodeURIComponent(svcName)}%20blueprint%20and%20want%20to%20discuss%20a%20build." style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
+          <a href="https://wa.me/${AGENCY_WHATSAPP_CLEAN}?text=Hi%20Tanvir!%20I%20reviewed%20the%20${encodeURIComponent(svcName)}%20blueprint%20and%20want%20to%20discuss%20a%20build." style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
             📱 Chat on WhatsApp
           </a>
           <a href="https://gro10x-ai.vercel.app/services/${productCode || 'SVC-001'}" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
@@ -461,7 +466,70 @@ async function sendServiceAssetDeliveryEmail({ email, contactPerson, serviceName
       </div>
 
       <div style="font-size: 13px; color: #64748b; text-align: center;">
-        <p style="margin: 4px 0;">Direct Contact: <a href="tel:+8801708459008" style="color: #00df89; text-decoration: none;">+880 1708 459008</a> | <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
+        <p style="margin: 4px 0;">Direct Contact: <a href="tel:+${AGENCY_WHATSAPP_CLEAN}" style="color: #00df89; text-decoration: none;">${AGENCY_WHATSAPP}</a> | <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
+        <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;">
+        <p style="font-size: 11px; margin: 0;">GRO10X AI Growth Agency • Dhaka, Bangladesh</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({ to: email, subject, html });
+}
+
+/**
+ * Send Proposal Acceptance Confirmation & Onboarding Cockpit Launch Email
+ */
+async function sendProposalAcceptedClientEmail({ clientName, email, projectTitle, proposalId, onboardingUrl, invoiceUrl, currency, amount }) {
+  if (!email || !email.includes('@') || email.includes('example.com') || email.includes('.test')) {
+    return { success: false, reason: 'Invalid or placeholder client email' };
+  }
+
+  const name = clientName || 'Partner';
+  const title = projectTitle || 'AI Sprint Solution';
+  const propId = proposalId || 'PROP-2026';
+  const curr = currency || 'BDT';
+  const amtFormatted = amount ? Number(amount).toLocaleString() : null;
+  const launchUrl = onboardingUrl || 'https://gro10x-ai.vercel.app/client#lockin';
+  const invUrl = invoiceUrl || 'https://gro10x-ai.vercel.app/client#invoices';
+  const subject = `🎉 Proposal Executed & Workspace Active: ${title} [${propId}] — GRO10X`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 620px; margin: 0 auto; line-height: 1.6;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 36px;">⚡</span>
+        <h1 style="color: #00df89; margin: 8px 0 0 0; font-size: 26px;">GRO10X</h1>
+        <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">Autonomous Enterprise AI Ecosystem & Solutions</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(0, 223, 137, 0.25); border-radius: 12px; padding: 26px; margin-bottom: 24px;">
+        <div style="display: inline-block; padding: 4px 12px; background: rgba(0, 223, 137, 0.15); border: 1px solid rgba(0, 223, 137, 0.4); border-radius: 6px; color: #00df89; font-size: 12px; font-weight: 700; margin-bottom: 12px;">
+          SOW SIGNED & CONFIRMED
+        </div>
+        <h2 style="color: #f8fafc; font-size: 20px; margin: 0 0 12px 0;">Welcome to Your Dedicated Client Workspace!</h2>
+        <p style="color: #cbd5e1; font-size: 15px;">Dear <strong>${name}</strong> Team,</p>
+        <p style="color: #94a3b8; font-size: 14px;">Your digital SOW proposal for <strong>${title}</strong> (Ref: <code>${propId}</code>) has been successfully executed.</p>
+        
+        <div style="background: rgba(0, 0, 0, 0.25); border-radius: 8px; padding: 16px; margin: 18px 0;">
+          <div style="margin-bottom: 8px; font-size: 14px; color: #cbd5e1;">📋 <strong>Project:</strong> ${title}</div>
+          ${amtFormatted ? `<div style="margin-bottom: 8px; font-size: 14px; color: #cbd5e1;">💳 <strong>Milestone Deposit:</strong> ${curr} ${amtFormatted}</div>` : ''}
+          <div style="font-size: 14px; color: #cbd5e1;">🛡️ <strong>Governance:</strong> 30-Day Defect-Free Bug Fix Warranty & Dedicated SLA Active</div>
+        </div>
+
+        <p style="color: #94a3b8; font-size: 14px;">Your dedicated Project Lock-In & Handover Cockpit is now provisioned with 1-click tokenized entry. No password creation required:</p>
+
+        <div style="text-align: center; margin: 26px 0;">
+          <a href="${launchUrl}" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; display: inline-block; margin-bottom: 10px;">
+            🚀 Launch Project Handover Cockpit ➔
+          </a>
+          <br>
+          <a href="${invUrl}" style="color: #38bdf8; text-decoration: none; font-size: 13px; font-weight: 600;">
+            View Settlement Invoice & Bank Settlement Rails &rarr;
+          </a>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; color: #64748b; text-align: center;">
+        <p style="margin: 4px 0;">Dedicated Executive Desk: <a href="https://wa.me/${AGENCY_WHATSAPP_CLEAN}" style="color: #00df89; text-decoration: none;">${AGENCY_WHATSAPP}</a> | <a href="mailto:gro10xnow@gmail.com" style="color: #00df89; text-decoration: none;">gro10xnow@gmail.com</a></p>
         <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;">
         <p style="font-size: 11px; margin: 0;">GRO10X AI Growth Agency • Dhaka, Bangladesh</p>
       </div>
@@ -482,7 +550,8 @@ module.exports = {
   sendTicketResolutionEmail,
   sendDigitalDeliveryEmail,
   sendRenewalReminderEmail,
-  sendServiceAssetDeliveryEmail
+  sendServiceAssetDeliveryEmail,
+  sendProposalAcceptedClientEmail
 };
 
 

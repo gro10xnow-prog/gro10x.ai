@@ -79,12 +79,12 @@ const PORTAL_AUDITS = {
       },
       {
         "id": "ca-h-7",
-        "title": "7. Verify Sprint Execution Stages Bar",
+        "title": "7. Verify Sprint Execution Stages Bar or Kickoff CTA",
         "action": "wait_ms",
         "duration": 300,
         "assertion": {
           "type": "element_exists",
-          "selector": "#client-view [style*=\"background:linear-gradient(90deg, #8b5cf6, #00df89)\"]"
+          "selector": "#client-view [style*=\"background:linear-gradient(90deg, #8b5cf6, #00df89)\"], #client-view a[href=\"#brief\"]"
         }
       },
       {
@@ -5144,6 +5144,36 @@ const PORTAL_AUDITS = {
         }
       },
       {
+        "id": "pb-ld-3b",
+        "title": "3b. Verify Dynamic Services Catalog Grid & Dynamic Hydration",
+        "action": "wait_ms",
+        "duration": 400,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#servicesGrid, .pb-service-card, .pb-card-price"
+        }
+      },
+      {
+        "id": "pb-ld-3c",
+        "title": "3c. Filter Dynamic Catalog by Category & Verify Cards",
+        "action": "click",
+        "selector": "#serviceCategoryTabs button:nth-child(2)",
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#servicesGrid .pb-service-card, a[href*=\"service-detail.html\"]"
+        }
+      },
+      {
+        "id": "pb-ld-3d",
+        "title": "3d. Reset Category Filter to All Services",
+        "action": "click",
+        "selector": "#serviceCategoryTabs button:first-child",
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#servicesGrid .pb-service-card"
+        }
+      },
+      {
         "id": "pb-ld-4",
         "title": "4. Verify Interactive ROI Calculator & Savings Display",
         "action": "wait_ms",
@@ -5221,6 +5251,16 @@ const PORTAL_AUDITS = {
         "assertion": {
           "type": "element_exists",
           "selector": "#hero"
+        }
+      },
+      {
+        "id": "pb-ld-11b",
+        "title": "11b. Verify Inbound Campaign Auto-Modal Trigger & UTM Capture",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "custom_check",
+          "check": "assert_clean_audit"
         }
       },
       {
@@ -5441,6 +5481,16 @@ const PORTAL_AUDITS = {
         "assertion": {
           "type": "element_exists",
           "selector": "#scorecardResult, #resCompanyName, #resScoreNum, #resTierBadge"
+        }
+      },
+      {
+        "id": "pb-ai-11b",
+        "title": "11b. Verify Consultation Booking Action Button Present",
+        "action": "wait_ms",
+        "duration": 200,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#scorecardResult button[onclick*=\"openConsultationBooking\"]"
         }
       },
       {
@@ -5715,6 +5765,62 @@ const PORTAL_AUDITS = {
           "type": "custom_check",
           "check": "assert_clean_audit"
         }
+      }
+    ]
+  },
+  "public_proposal": {
+    "id": "public_proposal",
+    "title": "Public SOW Proposal Rail Health Audit",
+    "targetPath": "/proposal.html?token=nhf-enterprise-ai-2026",
+    "steps": [
+      {
+        "id": "pa-prop-1",
+        "title": "1. Verify Public Proposal Container Mounted",
+        "action": "wait_ms",
+        "duration": 400,
+        "assertion": { "type": "wait_selector", "selector": "#proposalStatusBadge, #btnAcceptProposal, h1", "timeout": 5000 }
+      },
+      {
+        "id": "pa-prop-2",
+        "title": "2. Verify Institutional SOW Metadata & Scope Deliverables Rendered",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": { "type": "custom_check", "check": "assert_public_proposal_rendered" }
+      },
+      {
+        "id": "pa-prop-3",
+        "title": "3. Audit Clean: Zero Native Dialogs",
+        "action": "wait_ms",
+        "duration": 200,
+        "assertion": { "type": "custom_check", "check": "assert_clean_audit" }
+      }
+    ]
+  },
+  "public_my_portal": {
+    "id": "public_my_portal",
+    "title": "PlannerQueenGro Members Vault & GroCredits Audit",
+    "targetPath": "/my-portal",
+    "steps": [
+      {
+        "id": "pa-mp-1",
+        "title": "1. Verify Customer Vault Brand & Header Mounted",
+        "action": "wait_ms",
+        "duration": 400,
+        "assertion": { "type": "wait_selector", "selector": ".brand-title, .portal-header, #authView, #dashboardView", "timeout": 5000 }
+      },
+      {
+        "id": "pa-mp-2",
+        "title": "2. Verify Activation Form & Instant Demo Buttons Present",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": { "type": "wait_selector", "selector": "#btnSubmitActivation, #btnInstantDemo, #inputCode", "timeout": 3000 }
+      },
+      {
+        "id": "pa-mp-3",
+        "title": "3. Audit Clean: Zero Native Dialogs and No Errors",
+        "action": "wait_ms",
+        "duration": 200,
+        "assertion": { "type": "custom_check", "check": "assert_clean_audit" }
       }
     ]
   }

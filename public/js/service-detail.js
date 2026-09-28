@@ -795,14 +795,59 @@ function setCurrency(curr, rehydrate = true) {
 window.setCurrency = setCurrency;
 
 // ── 5. URL SERVICE HYDRATION ──
-function loadServiceFromUrl() {
+async function loadServiceFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const serviceId = params.get('id') || params.get('service') || 'SVC-001';
-  const slug = params.get('slug');
+  const pathMatch = window.location.pathname.match(/\/(?:services|service-detail)\/([a-zA-Z0-9_-]+)/);
+  const serviceId = params.get('code') || params.get('id') || params.get('service') || (pathMatch ? pathMatch[1] : '') || 'SVC-001';
+  const slug = params.get('slug') || (pathMatch && !pathMatch[1].startsWith('SVC-') && !pathMatch[1].startsWith('SPRINT-') ? pathMatch[1] : null);
+  const targetId = slug || serviceId;
 
-  activeService = GRO10X_CATALOG.find(s => s.id === serviceId || (slug && s.slug === slug)) || GRO10X_CATALOG[0];
+  // 1. Instant hydration from localStorage cache or bundled catalog
+  let localCatalog = GRO10X_CATALOG;
+  try {
+    const cached = localStorage.getItem('gro10x_catalog_cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        localCatalog = parsed;
+      }
+    }
+  } catch (_) {}
 
-  hydrateServiceDOM(activeService);
+  activeService = localCatalog.find(s => 
+    (s.id && s.id.toUpperCase() === serviceId.toUpperCase()) || 
+    (slug && s.slug === slug) ||
+    (s.slug && s.slug === serviceId)
+  ) || GRO10X_CATALOG.find(s => s.id === serviceId) || GRO10X_CATALOG[0];
+
+  if (activeService) {
+    hydrateServiceDOM(activeService);
+  }
+
+  // 2. Fetch fresh canonical service details from API
+  try {
+    const res = await fetch(`/api/services/${encodeURIComponent(targetId)}`);
+    if (res.ok) {
+      const payload = await res.json();
+      const freshService = payload.data || payload;
+      if (freshService && (freshService.id || freshService.title)) {
+        activeService = {
+          ...freshService,
+          categoryName: freshService.categoryName || freshService.category_id || activeService?.categoryName || 'AI Solutions',
+          priceUSD: freshService.priceUSD || (freshService.metadata?.price_usd ? `$${freshService.metadata.price_usd.toLocaleString()}` : activeService?.priceUSD || '$2,500'),
+          priceBDT: freshService.priceBDT || (freshService.metadata?.price_bdt ? `৳${freshService.metadata.price_bdt.toLocaleString()}` : activeService?.priceBDT || '৳295,000'),
+          priceCycle: freshService.priceCycle || activeService?.priceCycle || '/ project',
+          deliveryTime: freshService.deliveryTime || `${freshService.metadata?.engineering?.turnaround_days || 14} Days`,
+          features: freshService.features || freshService.metadata?.engineering?.core_deliverables || activeService?.features || [],
+          includedFeatures: freshService.includedFeatures || freshService.metadata?.engineering?.core_deliverables || activeService?.includedFeatures || [],
+          faq: freshService.faq || activeService?.faq || []
+        };
+        hydrateServiceDOM(activeService);
+      }
+    }
+  } catch (err) {
+    console.warn('[ServiceDetail] Dynamic fetch notice:', err.message);
+  }
 }
 
 function hydrateServiceDOM(service) {

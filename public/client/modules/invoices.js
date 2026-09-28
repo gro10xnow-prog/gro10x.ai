@@ -8,7 +8,6 @@ var escapeHTML = window.escapeHTML || function(s) { return s ? String(s).replace
 window.generateInvoicePDF = function(invoice) {
   if (!window.jspdf || !window.jspdf.jsPDF) {
     if (window.showClientToast) window.showClientToast('jsPDF library not loaded', 'error');
-    else alert('jsPDF not loaded');
     return;
   }
   
@@ -251,7 +250,6 @@ window.CLIENT_MODULES.invoices = async function(container) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
           if (window.showClientToast) window.showClientToast(`Copied ${label} to clipboard! 📋`);
-          else alert(`Copied ${label}!`);
         }).catch(() => {});
       }
     },
@@ -275,17 +273,14 @@ window.CLIENT_MODULES.invoices = async function(container) {
 
       if (!invoiceId) {
         if (window.showClientToast) window.showClientToast('Invoice ID missing', 'error');
-        else alert('Invoice ID missing');
         return;
       }
       if (!amount) {
         if (window.showClientToast) window.showClientToast('Amount missing', 'error');
-        else alert('Amount missing');
         return;
       }
       if (!trxId) {
         if (window.showClientToast) window.showClientToast('Transaction ID / Reference is required', 'error');
-        else alert('Transaction ID is required');
         return;
       }
 
@@ -308,17 +303,14 @@ window.CLIENT_MODULES.invoices = async function(container) {
         
         if (data.success) {
           if (window.showClientToast) window.showClientToast('Payment proof submitted! Awaiting finance verification 💳');
-          else alert('Payment submitted! Waiting for finance verification.');
           window.CLIENT_INVOICES.closePayModal();
           loadInvoicesData();
         } else {
           const errMsg = data.error || 'Unknown error';
           if (window.showClientToast) window.showClientToast('Failed to submit: ' + errMsg, 'error');
-          else alert('Failed to submit: ' + errMsg);
         }
       } catch (err) {
         if (window.showClientToast) window.showClientToast('Payment Error: ' + err.message, 'error');
-        else alert('Payment Submission Error: ' + err.message);
       }
     }
   };

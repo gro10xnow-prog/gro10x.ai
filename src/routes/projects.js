@@ -10,7 +10,7 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const { broadcast, broadcastToClient } = require('../services/sse');
 
 function mapProject(p) {
   if (!p) return null;
@@ -21,22 +21,30 @@ function mapProject(p) {
     id: p.id,
     clientId: p.client_id || p.clientId,
     clientName: p.client_name || p.clientName,
+    client_id: p.client_id || p.clientId,
+    client_name: p.client_name || p.clientName,
     name: p.name,
     description: p.description || '',
     department: p.department || 'Production',
     workflowType: p.workflow_type || p.workflowType || 'video_production',
+    workflow_type: p.workflow_type || p.workflowType || 'video_production',
     status: p.status || 'Active',
     stage: p.stage || 'Discovery',
     startDate: p.start_date || p.startDate,
     dueDate: p.due_date || p.dueDate,
+    start_date: p.start_date || p.startDate,
+    due_date: p.due_date || p.dueDate,
     budget: Number(p.budget) || 0,
     stakeholders: p.stakeholders || {},
     lockinSpecId: p.lockin_spec_id || p.lockinSpecId || null,
     warrantyUntil: p.warranty_until || p.warrantyUntil || null,
     deliveryStatus: p.delivery_status || p.deliveryStatus || 'IN_PROGRESS',
+    delivery_status: p.delivery_status || p.deliveryStatus || 'IN_PROGRESS',
     deliveryPod: podId,
-    deliveryPodDetails: typeof pod === 'object' ? pod : null,
+    delivery_pod: podId,
+    deliveryPodDetails: typeof pod === 'object' ? pod : (p.delivery_pod_details || null),
     targetSlaDays: targetSla,
+    target_sla_days: targetSla,
     podLoadWarning: p.pod_load_warning || p.podLoadWarning || null,
     recommendedAction: p.recommended_action || p.recommendedAction || null,
     createdAt: p.created_at || p.createdAt,
@@ -300,6 +308,10 @@ router.post('/intake', requireAuth, async (req, res) => {
 
     broadcast('project_intake_created', { project: mapped, pod: podRecord });
     broadcast('project_update', mapped);
+    if (resolvedClientId) {
+      broadcastToClient('project_intake_created', { project: mapped, pod: podRecord }, [resolvedClientId]);
+      broadcastToClient('project_update', mapped, [resolvedClientId]);
+    }
 
     return res.status(201).json({
       ok: true,

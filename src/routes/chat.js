@@ -187,17 +187,17 @@ INSTRUCTIONS:
     } else {
       // 4. Prospective Client / Public Inquiry Mode
       if (lowerCmd.includes('/help') || lowerCmd === 'help') {
-        reply = "⚡ **GRO10X AI Growth Assistant:**\n\n• `pricing` — View our packages ($1,500 Setup, $500/mo Retainer, $49/mo SaaS)\n• `services` — Explore our 24 AI Services across 7 Verticals\n• `audit` — Request a Free 24-Hour AI Strategy Audit\n• `whatsapp` — Chat directly with our Tech Admin (+8801708459008)\n• `consultation` — Book an AI implementation sprint";
+        reply = "⚡ **GRO10X AI Growth Assistant:**\n\n• `pricing` — View our packages ($1,500 Setup, $500/mo Retainer, $49/mo SaaS)\n• `services` — Explore our 24 AI Services across 7 Verticals\n• `audit` — Request a Free 24-Hour AI Strategy Audit\n• `whatsapp` — Chat directly with our Tech Admin (+880 1711-019550)\n• `consultation` — Book an AI implementation sprint";
       } else if (lowerCmd.includes('rate') || lowerCmd.includes('package') || lowerCmd.includes('price') || lowerCmd.includes('pricing') || lowerCmd.includes('cost')) {
         reply = "💵 **GRO10X Transparent Pricing & Plans:**\n\n• 🚀 **AI Sprint Setup ($1,500 / ৳175,000 one-time):** Full custom AI bot, ComfyUI generation pipeline, or API software build delivered in 5–10 days.\n• ⭐ **Growth Retainer ($500/mo / ৳60,000/mo):** Dedicated AI engineering team for weekly creative assets, prompt tuning, and marketing loops.\n• 💻 **Micro-SaaS Access ($49/mo / ৳5,800/mo):** Instant cloud access to our generative visual & prompt tools.\n\nWould you like to book a free AI Strategy Audit for your project?";
       } else if (lowerCmd.includes('service') || lowerCmd.includes('vertical') || lowerCmd.includes('catalog') || lowerCmd.includes('build')) {
         reply = "🛠️ **GRO10X 7 Core AI Verticals (24 Services):**\n\n1. 📱 **AI Mobile & Web Apps** (iOS/Android/Next.js/Chatbots)\n2. 🎨 **AI Artists & ComfyUI** (Automated product photos, Midjourney)\n3. 📊 **Operational Data Intelligence** (ML models, Dashboards)\n4. 🎬 **AI Video & Avatars** (HeyGen Talking Avatars, UGC Clips)\n5. 🎙️ **AI Audio & Voice** (ElevenLabs clones, Narration)\n6. ✍️ **AI Content & Prompts** (Custom GPTs & RAG pipelines)\n7. ⚡ **Enterprise Strategy & Consulting**\n\nExplore details: https://gro10x-ai.vercel.app/#services";
       } else if (lowerCmd.includes('whatsapp') || lowerCmd.includes('call') || lowerCmd.includes('phone') || lowerCmd.includes('contact') || lowerCmd.includes('founder') || lowerCmd.includes('admin')) {
-        reply = "💬 **Connect Instantly with Tech Admin:**\n\n• **WhatsApp:** https://wa.me/8801708459008\n• **Direct Email:** gro10xnow@gmail.com\n• **Turnaround:** We typically respond within 15 minutes!";
+        reply = "💬 **Connect Instantly with Tech Admin:**\n\n• **WhatsApp:** https://wa.me/8801711019550\n• **Direct Email:** gro10xnow@gmail.com\n• **Turnaround:** We typically respond within 15 minutes!";
       } else if (lowerCmd.includes('audit') || lowerCmd.includes('consultation') || lowerCmd.includes('book')) {
         reply = "🎯 **Free AI Strategy Audit:**\n\nFill out our quick strategy form at https://gro10x-ai.vercel.app/#contact or reply here with your **Name**, **Email**, and **What you want to build**, and our team will prepare a custom proposal within 24 hours!";
       } else {
-        reply = `Thanks for reaching out to GRO10X! 🚀 Our AI engineering team has received your inquiry: "${command}". To fast-track your project, chat directly with our founder on WhatsApp: https://wa.me/8801708459008`;
+        reply = `Thanks for reaching out to GRO10X! 🚀 Our AI engineering team has received your inquiry: "${command}". To fast-track your project, chat directly with our founder on WhatsApp: https://wa.me/8801711019550`;
       }
     }
   }

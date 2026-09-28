@@ -1,12 +1,38 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireManager } = require('../middleware/rbac');
+const { requireManager, getSeniorityTier } = require('../middleware/rbac');
 const { verifyTelegramInitData, requireMiniAppAuth } = require('../middleware/telegramAuth');
 const rateLimit = require('express-rate-limit');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const cache = require('../services/cache');
+
+// Cached schema column detector for profiles table to prevent PGRST204 schema mismatch errors
+let _profilesColumnsCache = null;
+let _profilesColumnsCacheTime = 0;
+async function getProfilesSchemaColumns() {
+  const now = Date.now();
+  if (_profilesColumnsCache && (now - _profilesColumnsCacheTime < 300000)) {
+    return _profilesColumnsCache;
+  }
+  if (!supabase) return new Set();
+  try {
+    const { data, error } = await supabase.from('profiles').select('*').limit(1);
+    if (!error && data && data[0]) {
+      _profilesColumnsCache = new Set(Object.keys(data[0]));
+      _profilesColumnsCacheTime = now;
+      return _profilesColumnsCache;
+    }
+  } catch (_) {}
+  return new Set([
+    'id', 'emp_code', 'name', 'email', 'role', 'department', 'phone', 'telegram_id',
+    'base_salary', 'is_verified', 'pin_hash', 'created_at', 'updated_at', 'access_level',
+    'salary_type', 'join_date', 'leaves_balance', 'xp', 'badge', 'custom_fields',
+    'bank_info', 'documents', 'survey_status', 'survey_complete', 'agreement_stage',
+    'agreement_complete', 'status'
+  ]);
+}
 
 function broadcastTeamEvent(eventType, data) {
   cache.delByPrefix('team:');
@@ -35,7 +61,7 @@ const DEFAULT_TEAM = [
   {
     emp_code: 'GRO-000',
     name: 'Firoz Uddin Ahmed',
-    role: 'Technology Admin',
+    role: 'Technology Admin & Founder',
     department: 'Tech & AI',
     status: 'In Studio',
     phone: '+8801708459008',
@@ -50,12 +76,12 @@ const DEFAULT_TEAM = [
   {
     emp_code: 'GRO-002',
     name: 'Anika Nower',
-    role: 'Digital Brand Manager',
+    role: 'Digital Brand Manager & Operations Lead',
     department: 'Brand Operations',
     status: 'Active',
     phone: '+8801760753971',
     email: 'anikanower10152@gmail.com',
-    access_level: 'Specialist / Crew',
+    access_level: 'Technology Admin',
     base_salary: 20000,
     commission_rate: 10,
     dbm_id: 1,
@@ -63,19 +89,62 @@ const DEFAULT_TEAM = [
     survey_complete: false,
     xp: 100,
     badge: '🌱 DBM Recruit'
+  },
+  {
+    emp_code: 'GRO-003',
+    name: 'Rafsan Ameen',
+    role: 'Business Development Lead',
+    department: 'Strategy & Account Management',
+    status: 'Active',
+    phone: '+8801798558479',
+    access_level: 'Technology Admin',
+    base_salary: 0,
+    commission_rate: 10,
+    onboarding_complete: false,
+    survey_complete: false,
+    xp: 100,
+    badge: '🌱 Recruit'
   }
 ];
 
 function mapProfile(p) {
   if (!p) return null;
+  const cf = (p && typeof p.custom_fields === 'object' && p.custom_fields !== null) ? p.custom_fields : {};
+
+  const bloodGroup = p.blood_group || cf.blood_group || cf.bloodGroup || '';
+  const personalEmail = p.personal_email || cf.personal_email || cf.personalEmail || '';
+  const address = p.address || cf.address || '';
+  const permanentAddress = p.permanent_address || cf.permanent_address || cf.permanentAddress || '';
+  const emergencyContact = p.emergency_contact || cf.emergency_contact || cf.emergencyContact || '';
+  const nidNo = p.nid_no || cf.nid_no || cf.nidNo || '';
+  const primarySkill = p.primary_skill || cf.primary_skill || cf.primarySkill || '';
+  const secondarySkill = p.secondary_skill || cf.secondary_skill || cf.secondarySkill || '';
+  const portfolioUrl = p.portfolio_url || cf.portfolio_url || cf.portfolioUrl || '';
+  const avatarUrl = p.avatar_url || cf.avatar_url || cf.avatarUrl || '';
+  const tshirtSize = p.tshirt_size || cf.tshirt_size || cf.tshirtSize || '';
+  const dietaryPref = p.dietary_pref || cf.dietary_pref || cf.dietaryPref || '';
+  const laptopSerial = p.laptop_serial || cf.laptop_serial || cf.laptopSerial || '';
+  const studioGear = p.studio_gear || cf.studio_gear || cf.studioGear || '';
+  const tinNo = p.tin_no || cf.tin_no || cf.tinNo || '';
+  const drivingLicense = p.driving_license || cf.driving_license || cf.drivingLicense || '';
+  const educationDegree = p.education_degree || cf.education_degree || cf.educationDegree || '';
+  const institution = p.institution || cf.institution || '';
+  const passingYear = p.passing_year || cf.passing_year || cf.passingYear || '';
+  const emergencyRelation = p.emergency_relation || cf.emergency_relation || cf.emergencyRelation || '';
+  const maritalStatus = p.marital_status || cf.marital_status || cf.maritalStatus || '';
+  const dateOfBirth = p.date_of_birth || cf.date_of_birth || cf.dateOfBirth || '';
+  const joiningDate = p.joining_date || p.join_date || cf.joining_date || '';
+  const dependents = p.dependents !== undefined && p.dependents !== null ? p.dependents : (cf.dependents || null);
+  const onboardingComplete = Boolean(p.onboarding_complete || cf.onboarding_complete || (p.agreement_complete && p.survey_complete));
+  const surveyComplete = Boolean(p.survey_complete || cf.survey_complete);
 
   // Calculate surveyProgress from what fields are filled
   let surveyProgress = 0;
-  if (p.blood_group || p.personal_email || p.address || p.emergency_contact) surveyProgress = Math.max(surveyProgress, 1);
-  if (p.nid_no || p.permanent_address || p.education_degree || p.tin_no || p.driving_license) surveyProgress = Math.max(surveyProgress, 2);
+  if (bloodGroup || personalEmail || address || emergencyContact) surveyProgress = Math.max(surveyProgress, 1);
+  if (nidNo || permanentAddress || educationDegree || tinNo || drivingLicense) surveyProgress = Math.max(surveyProgress, 2);
   if (p.bank_info && (p.bank_info.accountNo || p.bank_info.accNo || p.bank_info.mfsNo || p.bank_info.bkashNo)) surveyProgress = Math.max(surveyProgress, 3);
-  if (p.primary_skill || p.secondary_skill || p.tshirt_size || p.portfolio_url) surveyProgress = Math.max(surveyProgress, 4);
-  if (p.onboarding_complete && surveyProgress >= 4) surveyProgress = 5;
+  if (primarySkill || secondarySkill || tshirtSize || portfolioUrl) surveyProgress = Math.max(surveyProgress, 4);
+  if (onboardingComplete && surveyProgress >= 4) surveyProgress = 5;
 
   const roleStr = String(p.role || '').toLowerCase();
   const dbmMatch = roleStr.match(/dbm\s*(\d)/i) || roleStr.match(/digital\s+brand\s+manager\s*(\d)/i);
@@ -90,7 +159,7 @@ function mapProfile(p) {
     dbmId: derivedDbmId,
     telegramId: p.telegram_id,
     phone: p.phone,
-    avatarUrl: p.avatar_url || '',
+    avatarUrl,
     baseSalary: Number(p.base_salary) || 0,
     commissionRate: Number(p.commission_rate) || 0,
     earnedCommissions: Number(p.earned_commissions) || 0,
@@ -98,37 +167,37 @@ function mapProfile(p) {
     activeBookings: p.active_bookings || 0,
     xp: p.xp || 0,
     badge: p.badge || '🌱 Recruit',
-    onboardingComplete: p.onboarding_complete || false,
-    surveyComplete: p.survey_complete || false,
+    onboardingComplete,
+    surveyComplete,
     surveyProgress,
     accessLevel: p.access_level || 'Specialist / Crew',
     bankInfo: p.bank_info || {},
-    email: p.email || p.work_email || '',
-    personalEmail: p.personal_email || '',
-    emergencyContact: p.emergency_contact || '',
-    address: p.address || '',
-    permanentAddress: p.permanent_address || '',
-    bloodGroup: p.blood_group || '',
-    nidNo: p.nid_no || '',
-    primarySkill: p.primary_skill || '',
-    joiningDate: p.joining_date || '',
-    reportsTo: p.reports_to || '',
+    email: p.email || p.work_email || personalEmail || '',
+    personalEmail,
+    emergencyContact,
+    address,
+    permanentAddress,
+    bloodGroup,
+    nidNo,
+    primarySkill,
+    joiningDate,
+    reportsTo: p.reports_to || cf.reports_to || '',
     weeklyCapacityHours: Number(p.weekly_capacity_hours) || 40,
-    emergencyRelation: p.emergency_relation || '',
-    maritalStatus: p.marital_status || '',
-    dateOfBirth: p.date_of_birth || '',
-    dependents: p.dependents || null,
-    tinNo: p.tin_no || '',
-    drivingLicense: p.driving_license || '',
-    educationDegree: p.education_degree || '',
-    institution: p.institution || '',
-    passingYear: p.passing_year || '',
-    secondarySkill: p.secondary_skill || '',
-    portfolioUrl: p.portfolio_url || '',
-    laptopSerial: p.laptop_serial || '',
-    studioGear: p.studio_gear || '',
-    tshirtSize: p.tshirt_size || '',
-    dietaryPref: p.dietary_pref || ''
+    emergencyRelation,
+    maritalStatus,
+    dateOfBirth,
+    dependents,
+    tinNo,
+    drivingLicense,
+    educationDegree,
+    institution,
+    passingYear,
+    secondarySkill,
+    portfolioUrl,
+    laptopSerial,
+    studioGear,
+    tshirtSize,
+    dietaryPref
   };
 }
 
@@ -608,29 +677,30 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
 
     // Build Supabase profile update based on part
     const profileUpdate = { xp: currentXP, badge, updated_at: new Date().toISOString() };
+    const extendedSurveyFields = {};
 
     if (part === 1 && partData) {
       const emerg = partData.emergencyPhone || partData.emergencyContact;
-      if (emerg) profileUpdate.emergency_contact = emerg;
-      if (partData.emergencyRelation) profileUpdate.emergency_relation = partData.emergencyRelation;
-      if (partData.maritalStatus) profileUpdate.marital_status = partData.maritalStatus;
-      if (partData.joiningDate) profileUpdate.joining_date = partData.joiningDate;
-      if (partData.dob) profileUpdate.date_of_birth = partData.dob;
-      if (partData.dependents) profileUpdate.dependents = partData.dependents;
-      if (partData.address) profileUpdate.address = partData.address;
-      if (partData.personalEmail) profileUpdate.personal_email = partData.personalEmail;
-      if (partData.bloodGroup) profileUpdate.blood_group = partData.bloodGroup;
+      if (emerg) extendedSurveyFields.emergency_contact = emerg;
+      if (partData.emergencyRelation) extendedSurveyFields.emergency_relation = partData.emergencyRelation;
+      if (partData.maritalStatus) extendedSurveyFields.marital_status = partData.maritalStatus;
+      if (partData.joiningDate) extendedSurveyFields.joining_date = partData.joiningDate;
+      if (partData.dob) extendedSurveyFields.date_of_birth = partData.dob;
+      if (partData.dependents) extendedSurveyFields.dependents = partData.dependents;
+      if (partData.address) extendedSurveyFields.address = partData.address;
+      if (partData.personalEmail) extendedSurveyFields.personal_email = partData.personalEmail;
+      if (partData.bloodGroup) extendedSurveyFields.blood_group = partData.bloodGroup;
     }
     if (part === 2 && partData) {
       const nid = partData.nidNo || partData.nid;
       const perm = partData.permanentAddress || partData.permAddress;
-      if (nid) profileUpdate.nid_no = nid;
-      if (perm) profileUpdate.permanent_address = perm;
-      if (partData.tin) profileUpdate.tin_no = partData.tin;
-      if (partData.license) profileUpdate.driving_license = partData.license;
-      if (partData.degree) profileUpdate.education_degree = partData.degree;
-      if (partData.institution) profileUpdate.institution = partData.institution;
-      if (partData.passingYear) profileUpdate.passing_year = partData.passingYear;
+      if (nid) extendedSurveyFields.nid_no = nid;
+      if (perm) extendedSurveyFields.permanent_address = perm;
+      if (partData.tin) extendedSurveyFields.tin_no = partData.tin;
+      if (partData.license) extendedSurveyFields.driving_license = partData.license;
+      if (partData.degree) extendedSurveyFields.education_degree = partData.degree;
+      if (partData.institution) extendedSurveyFields.institution = partData.institution;
+      if (partData.passingYear) extendedSurveyFields.passing_year = partData.passingYear;
     }
     if (part === 3 && partData) {
       const bkash = partData.bkashNo || partData.bkash || '';
@@ -651,20 +721,41 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
     }
     if (part === 4 && partData) {
       const skill = partData.primarySkill || partData.skillPrimary;
-      if (skill) profileUpdate.primary_skill = skill;
-      if (partData.skillSecondary) profileUpdate.secondary_skill = partData.skillSecondary;
-      if (partData.portfolio) profileUpdate.portfolio_url = partData.portfolio;
-      if (partData.laptopSerial) profileUpdate.laptop_serial = partData.laptopSerial;
-      if (partData.studioGear) profileUpdate.studio_gear = partData.studioGear;
-      if (partData.tshirtSize) profileUpdate.tshirt_size = partData.tshirtSize;
-      if (partData.dietary) profileUpdate.dietary_pref = partData.dietary;
+      if (skill) extendedSurveyFields.primary_skill = skill;
+      if (partData.skillSecondary) extendedSurveyFields.secondary_skill = partData.skillSecondary;
+      if (partData.portfolio) extendedSurveyFields.portfolio_url = partData.portfolio;
+      if (partData.laptopSerial) extendedSurveyFields.laptop_serial = partData.laptopSerial;
+      if (partData.studioGear) extendedSurveyFields.studio_gear = partData.studioGear;
+      if (partData.tshirtSize) extendedSurveyFields.tshirt_size = partData.tshirtSize;
+      if (partData.dietary) extendedSurveyFields.dietary_pref = partData.dietary;
       // Part 4 completion → survey done, unlock full menu after agreement
       profileUpdate.survey_complete = true;
     }
 
+    // Merge into custom_fields safely
+    const validCols = await getProfilesSchemaColumns();
+    const existingCf = (emp.custom_fields && typeof emp.custom_fields === 'object') ? { ...emp.custom_fields } : {};
+    Object.assign(existingCf, extendedSurveyFields);
+    profileUpdate.custom_fields = existingCf;
+
+    // Only copy extended fields to top-level if columns exist in DB
+    for (const [k, v] of Object.entries(extendedSurveyFields)) {
+      if (validCols.has(k)) {
+        profileUpdate[k] = v;
+      }
+    }
+
+    // Filter profileUpdate so we never send non-existent columns to Supabase
+    const sanitizedUpdate = {};
+    for (const [col, val] of Object.entries(profileUpdate)) {
+      if (validCols.has(col)) {
+        sanitizedUpdate[col] = val;
+      }
+    }
+
     // Update Supabase
     if (supabase) {
-      await supabase.from('profiles').update(profileUpdate).eq('emp_code', empCode);
+      await supabase.from('profiles').update(sanitizedUpdate).eq('emp_code', empCode);
     }
 
     broadcastTeamEvent('team_update', [{ emp_code: empCode, xp: currentXP, badge }]);
@@ -1059,6 +1150,19 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
     }
 
     const normalizedPhone = normalizePhone(phone);
+
+    // Prevent duplicate profiles if phone number is already registered
+    if (supabase) {
+      const { data: existingRows } = await supabase.from('profiles').select('id, emp_code, name, phone').eq('phone', normalizedPhone).limit(1);
+      const existingPhone = existingRows && existingRows[0];
+      if (existingPhone) {
+        return res.status(409).json({
+          error: `A team member with phone ${normalizedPhone} already exists: ${existingPhone.name} (${existingPhone.emp_code}). Please edit their existing profile instead.`,
+          existingMember: existingPhone
+        });
+      }
+    }
+
     const { data: countData } = await supabase.from('profiles').select('id');
     const newEmpCode = `GRO-${String((countData?.length || 0) + 1).padStart(3, '0')}`;
 
@@ -1099,7 +1203,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       pinRecord = await createTempPin(normalizedPhone, newEmpCode, 'team', '');
       // If a specific PIN was provided, update it immediately
       if (providedPin && pinRecord) {
-        await supabase.from('auth_pins').update({ pin: providedPin, is_permanent: true })
+        await supabase.from('auth_pins').update({ pin: providedPin, is_temp: false })
           .eq('phone', normalizedPhone);
         pinRecord.pin = providedPin;
       }
@@ -1142,7 +1246,7 @@ router.post('/:empCode/reset-pin', requireAuth, async (req, res) => {
     try {
       pinRecord = await createTempPin(targetPhone || '01700000000', empCode, 'team', '');
       if (customPin && pinRecord && supabase) {
-        await supabase.from('auth_pins').update({ pin: customPin, is_permanent: true }).eq('phone', targetPhone).catch(() => {});
+        await supabase.from('auth_pins').update({ pin: customPin, is_temp: false }).eq('phone', targetPhone).catch(() => {});
         pinRecord.pin = customPin;
       }
     } catch (e) {
@@ -1260,67 +1364,147 @@ router.get('/attendance-report', requireAuth, async (req, res) => {
 router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const body = req.body;
+    const body = req.body || {};
     
-    // Only allow self-edits or manager/admin edits
-    const userAccess = (req.user.accessLevel || req.user.role || '').toLowerCase();
-    const isOwner = userAccess.includes('admin') || userAccess.includes('owner') || userAccess.includes('technology');
-    if (!isOwner && req.user.linkedId !== id && req.user.id !== id && req.user.emp_code !== id) {
-      return res.status(403).json({ error: 'Unauthorized to edit this profile' });
-    }
-
-    const updates = {};
-    if (body.baseSalary !== undefined && isOwner) updates.base_salary = Number(body.baseSalary);
-    if (body.phone !== undefined) updates.phone = normalizePhone(body.phone);
-    if (body.role !== undefined && isOwner) updates.role = body.role;
-    if (body.department !== undefined && isOwner) updates.department = body.department;
-    if (body.blood_group !== undefined) updates.blood_group = body.blood_group;
-    if (body.personal_email !== undefined) updates.personal_email = body.personal_email;
-    if (body.address !== undefined) updates.address = body.address;
-    if (body.nid_no !== undefined) updates.nid_no = body.nid_no;
-    if (body.permanent_address !== undefined) updates.permanent_address = body.permanent_address;
-    if (body.primary_skill !== undefined) updates.primary_skill = body.primary_skill;
-    if (body.emergency_contact !== undefined) updates.emergency_contact = body.emergency_contact;
-    if (body.bank_info !== undefined) updates.bank_info = body.bank_info;
-    if (body.avatar_url !== undefined || body.avatarUrl !== undefined) updates.avatar_url = body.avatar_url || body.avatarUrl;
-    if (body.tshirt_size !== undefined || body.tshirtSize !== undefined) updates.tshirt_size = body.tshirt_size || body.tshirtSize;
-    if (body.dietary_pref !== undefined || body.dietaryPref !== undefined) updates.dietary_pref = body.dietary_pref || body.dietaryPref;
-    if (body.secondary_skill !== undefined || body.secondarySkill !== undefined) updates.secondary_skill = body.secondary_skill || body.secondarySkill;
-    if (body.portfolio_url !== undefined || body.portfolioUrl !== undefined) updates.portfolio_url = body.portfolio_url || body.portfolioUrl;
-    if (body.laptop_serial !== undefined || body.laptopSerial !== undefined) updates.laptop_serial = body.laptop_serial || body.laptopSerial;
-    if (body.studio_gear !== undefined || body.studioGear !== undefined) updates.studio_gear = body.studio_gear || body.studioGear;
-    if (body.onboarding_complete !== undefined) updates.onboarding_complete = Boolean(body.onboarding_complete);
-    if (body.survey_complete !== undefined) updates.survey_complete = Boolean(body.survey_complete);
-
-    updates.updated_at = new Date().toISOString();
-
-    let updatedProfile = null;
+    // 1. Find existing profile first by UUID, emp_code, or phone
+    let existingProfile = null;
     if (supabase) {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
       if (isUUID) {
-        const { data, error } = await supabase.from('profiles').update(updates).eq('id', id).select().maybeSingle();
-        if (!error && data) updatedProfile = data;
+        const { data } = await supabase.from('profiles').select('*').eq('id', id).limit(1);
+        existingProfile = data && data[0];
       } else {
-        const { data, error } = await supabase.from('profiles').update(updates).eq('emp_code', id).select().maybeSingle();
-        if (!error && data) {
-          updatedProfile = data;
-        } else {
-          const fallback = await supabase.from('profiles').update(updates).eq('id', id).select().maybeSingle();
-          if (fallback.data) updatedProfile = fallback.data;
-        }
+        const { data } = await supabase.from('profiles').select('*')
+          .or(`emp_code.eq.${id},emp_code.ilike.${id},phone.eq.${id}`)
+          .limit(1);
+        existingProfile = data && data[0];
       }
+    }
+
+    if (!existingProfile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    // 2. Authorization guard: self-edit or Tier >= 2 (Manager/Admin/Owner)
+    const userTier = getSeniorityTier(req.user);
+    const userAccess = (req.user.accessLevel || req.user.role || '').toLowerCase();
+    const isOwnerOrAdmin = userTier >= 2 || userAccess.includes('admin') || userAccess.includes('owner') || userAccess.includes('technology');
+    const isSelf = req.user.linkedId === existingProfile.emp_code || 
+                   req.user.emp_code === existingProfile.emp_code || 
+                   req.user.id === existingProfile.id || 
+                   (req.user.phone && existingProfile.phone && normalizePhone(req.user.phone) === normalizePhone(existingProfile.phone));
+
+    if (!isOwnerOrAdmin && !isSelf) {
+      return res.status(403).json({ error: 'Unauthorized to edit this profile' });
+    }
+
+    // 3. Prepare custom_fields for extended HR/survey attributes
+    const existingCf = (existingProfile.custom_fields && typeof existingProfile.custom_fields === 'object')
+      ? { ...existingProfile.custom_fields }
+      : {};
+
+    const extendedMap = {
+      blood_group: body.blood_group !== undefined ? body.blood_group : body.bloodGroup,
+      personal_email: body.personal_email !== undefined ? body.personal_email : body.personalEmail,
+      emergency_contact: body.emergency_contact !== undefined ? body.emergency_contact : body.emergencyContact,
+      emergency_relation: body.emergency_relation !== undefined ? body.emergency_relation : body.emergencyRelation,
+      address: body.address,
+      permanent_address: body.permanent_address !== undefined ? body.permanent_address : body.permanentAddress,
+      nid_no: body.nid_no !== undefined ? body.nid_no : body.nidNo,
+      tin_no: body.tin_no !== undefined ? body.tin_no : body.tinNo,
+      driving_license: body.driving_license !== undefined ? body.driving_license : body.drivingLicense,
+      education_degree: body.education_degree !== undefined ? body.education_degree : body.educationDegree,
+      institution: body.institution,
+      passing_year: body.passing_year !== undefined ? body.passing_year : body.passingYear,
+      primary_skill: body.primary_skill !== undefined ? body.primary_skill : body.primarySkill,
+      secondary_skill: body.secondary_skill !== undefined ? body.secondary_skill : body.secondarySkill,
+      portfolio_url: body.portfolio_url !== undefined ? body.portfolio_url : body.portfolioUrl,
+      avatar_url: body.avatar_url !== undefined ? body.avatar_url : body.avatarUrl,
+      laptop_serial: body.laptop_serial !== undefined ? body.laptop_serial : body.laptopSerial,
+      studio_gear: body.studio_gear !== undefined ? body.studioGear : body.studioGear,
+      tshirt_size: body.tshirt_size !== undefined ? body.tshirt_size : body.tshirtSize,
+      dietary_pref: body.dietary_pref !== undefined ? body.dietary_pref : body.dietaryPref,
+      marital_status: body.marital_status !== undefined ? body.marital_status : body.maritalStatus,
+      date_of_birth: body.date_of_birth !== undefined ? body.date_of_birth : body.dateOfBirth,
+      joining_date: body.joining_date !== undefined ? body.joining_date : body.joiningDate,
+      dependents: body.dependents,
+      onboarding_complete: body.onboarding_complete,
+      survey_complete: body.survey_complete
+    };
+
+    for (const [key, val] of Object.entries(extendedMap)) {
+      if (val !== undefined) {
+        existingCf[key] = val;
+      }
+    }
+
+    // 4. Schema-safe top-level column assignments
+    const validCols = await getProfilesSchemaColumns();
+    const updates = {
+      custom_fields: existingCf,
+      updated_at: new Date().toISOString()
+    };
+
+    if (body.name !== undefined && body.name.trim()) updates.name = body.name.trim();
+    if (body.phone !== undefined) updates.phone = normalizePhone(body.phone);
+    if (body.role !== undefined && isOwnerOrAdmin) updates.role = body.role;
+    if (body.department !== undefined && isOwnerOrAdmin) updates.department = body.department;
+    if (body.baseSalary !== undefined && isOwnerOrAdmin) updates.base_salary = Number(body.baseSalary);
+    if (body.base_salary !== undefined && isOwnerOrAdmin) updates.base_salary = Number(body.base_salary);
+    if (body.status !== undefined && isOwnerOrAdmin) updates.status = body.status;
+    if (body.access_level !== undefined && isOwnerOrAdmin) updates.access_level = body.access_level;
+    if (body.bank_info !== undefined) updates.bank_info = body.bank_info;
+    if (body.survey_complete !== undefined && validCols.has('survey_complete')) updates.survey_complete = Boolean(body.survey_complete);
+
+    // If personal email provided and email column is empty, populate email column too
+    if (body.personal_email && validCols.has('email') && !existingProfile.email) {
+      updates.email = body.personal_email.trim();
+    } else if (body.email && validCols.has('email')) {
+      updates.email = body.email.trim();
+    }
+
+    // Also populate any extended fields directly IF their column actually exists in database schema
+    for (const [key, val] of Object.entries(extendedMap)) {
+      if (val !== undefined && validCols.has(key)) {
+        updates[key] = val;
+      }
+    }
+
+    // Filter updates to strictly valid schema columns to prevent PGRST204 errors
+    const sanitizedUpdates = {};
+    for (const [col, val] of Object.entries(updates)) {
+      if (validCols.has(col)) {
+        sanitizedUpdates[col] = val;
+      }
+    }
+
+    let updatedProfile = null;
+    if (supabase) {
+      const { data: updatedData, error: updateErr } = await supabase
+        .from('profiles')
+        .update(sanitizedUpdates)
+        .eq('id', existingProfile.id)
+        .select()
+        .maybeSingle();
+
+      if (updateErr) {
+        console.error('[Team API] Profile update error:', updateErr.message);
+        return res.status(500).json({ error: updateErr.message || 'Database update failed' });
+      }
+
+      updatedProfile = updatedData;
     }
 
     if (updatedProfile) {
       const mapped = mapProfile(updatedProfile);
       broadcastTeamEvent('team_update', [mapped]);
-      res.json({ success: true, profile: mapped });
+      return res.json({ success: true, profile: mapped });
     } else {
-      res.status(404).json({ error: 'Profile not found' });
+      return res.status(404).json({ error: 'Profile not found' });
     }
   } catch (err) {
     console.error('PUT /team/:id error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -1959,10 +2143,12 @@ router.get('/invitation-status', requireAuth, async (req, res) => {
       try {
         const { data: pData, error: pErr } = await supabase
           .from('profiles')
-          .select('emp_code, name, role, phone, department, survey_complete, onboarding_complete, telegram_id')
-          .order('name');
+          .select('id, emp_code, name, role, phone, department, survey_complete, telegram_id, custom_fields, access_level, agreement_complete')
+          .order('emp_code', { ascending: true });
         if (!pErr && Array.isArray(pData) && pData.length > 0) {
           profiles = pData;
+        } else if (pErr) {
+          console.warn('[Team API] invitation-status profiles query error:', pErr.message);
         }
       } catch (e) {}
     }
@@ -1989,6 +2175,8 @@ router.get('/invitation-status', requireAuth, async (req, res) => {
 
     const members = profiles.map(p => {
       const pinRecord = p.phone ? pinMap[normalizePhone(p.phone)] : null;
+      const cf = (p && typeof p.custom_fields === 'object' && p.custom_fields !== null) ? p.custom_fields : {};
+      const onboardingComplete = Boolean(p.onboarding_complete || (p.agreement_complete && p.survey_complete) || cf.onboarding_complete);
       return {
         empCode: p.emp_code || p.id,
         name: p.name,
@@ -1998,8 +2186,8 @@ router.get('/invitation-status', requireAuth, async (req, res) => {
         telegramLinked: !!p.telegram_id,
         hasPIN: !!pinRecord,
         pinIsTemp: pinRecord ? (pinRecord.is_temp ?? true) : false,
-        surveyComplete: p.survey_complete === true,
-        onboardingComplete: p.onboarding_complete === true
+        surveyComplete: p.survey_complete === true || cf.survey_complete === true,
+        onboardingComplete
       };
     });
 

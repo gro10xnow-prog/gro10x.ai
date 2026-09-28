@@ -240,8 +240,8 @@ router.get('/payment-reminders', authorizeCron, async (req, res) => {
     const overdueInvoices = db.invoices.filter(inv => {
       if (inv.status === 'Paid') return false;
       const dateToCheck = new Date(inv.dueDate || inv.issueDate || inv.date || inv.createdAt);
-      const diffTime = Math.abs(now - dateToCheck);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // Positive diffDays = invoice date is in the past (overdue). Negative = future.
+      const diffDays = Math.floor((now - dateToCheck) / (1000 * 60 * 60 * 24));
       return diffDays >= 7;
     });
 

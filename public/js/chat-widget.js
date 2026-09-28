@@ -560,10 +560,10 @@ async function checkClientAndSubmitLead() {
       appendBotMsg('✅ <strong>Thank you ' + botState.name + '!</strong><br><br>Your brief for <strong>' + botState.company + '</strong> has been logged.<br><br>Our lead director will contact you via WhatsApp at <strong>' + botState.phone + '</strong> within 2 hours. 🚀');
       trackEvent('lead_captured', botState.service);
     } else {
-      appendBotMsg('⚠️ There was a slight issue saving your brief. Please WhatsApp us directly at <strong>+880 1708-459008</strong>.');
+      appendBotMsg('⚠️ There was a slight issue saving your brief. Please WhatsApp us directly at <strong>+880 1711-019550</strong>.');
     }
   } catch (err) {
-    appendBotMsg('⚠️ <strong>Something went wrong connecting to our servers.</strong><br><br>Please reach out directly via WhatsApp at <strong>+880 1708-459008</strong> or email <strong>gro10xnow@gmail.com</strong> and our team will prepare your proposal immediately. 🙏');
+    appendBotMsg('⚠️ <strong>Something went wrong connecting to our servers.</strong><br><br>Please reach out directly via WhatsApp at <strong>+880 1711-019550</strong> or email <strong>gro10xnow@gmail.com</strong> and our team will prepare your proposal immediately. 🙏');
   }
 
   botState.step = 'FINISHED';

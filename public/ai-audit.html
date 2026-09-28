@@ -1030,6 +1030,28 @@
       }
     }
 
+    function showAuditNotice(msg, isError = true) {
+      let banner = document.getElementById('auditNoticeBanner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'auditNoticeBanner';
+        banner.style.cssText = 'position:fixed; top:20px; right:20px; z-index:99999; padding:0.9rem 1.4rem; border-radius:10px; font-weight:700; font-size:0.88rem; box-shadow:0 10px 25px rgba(0,0,0,0.5); transition:all 0.3s ease; max-width:380px;';
+        document.body.appendChild(banner);
+      }
+      banner.style.background = isError ? 'rgba(239, 68, 68, 0.95)' : 'rgba(0, 223, 137, 0.95)';
+      banner.style.color = isError ? '#ffffff' : '#070b12';
+      banner.style.border = isError ? '1px solid #ef4444' : '1px solid #00df89';
+      banner.textContent = (isError ? '⚠️ ' : '✅ ') + msg;
+      banner.style.display = 'block';
+      banner.style.opacity = '1';
+
+      if (window._auditNoticeTimer) clearTimeout(window._auditNoticeTimer);
+      window._auditNoticeTimer = setTimeout(() => {
+        banner.style.opacity = '0';
+        setTimeout(() => { banner.style.display = 'none'; }, 300);
+      }, 4000);
+    }
+
     function validateStep(step) {
       if (step === 1) {
         const comp = document.getElementById('auditCompanyName').value.trim();
@@ -1037,9 +1059,9 @@
         const email = document.getElementById('auditEmail').value.trim();
         const phone = document.getElementById('auditPhone').value.trim();
 
-        if (!comp) { alert('Please provide your company or brand name.'); return false; }
-        if (!contact) { alert('Please provide a contact person name.'); return false; }
-        if (!email && !phone) { alert('Please enter at least an email or WhatsApp number for scorecard delivery.'); return false; }
+        if (!comp) { showAuditNotice('Please provide your company or brand name.'); return false; }
+        if (!contact) { showAuditNotice('Please provide a contact person name.'); return false; }
+        if (!email && !phone) { showAuditNotice('Please enter at least an email or WhatsApp number for scorecard delivery.'); return false; }
         return true;
       }
       return true;
@@ -1127,7 +1149,7 @@
         renderScorecardResult(data);
       } catch (err) {
         clearInterval(interval);
-        alert('Diagnostic Evaluation Error: ' + err.message);
+        showAuditNotice('Diagnostic Evaluation Error: ' + err.message);
         document.getElementById('scanningScreen').style.display = 'none';
         document.getElementById('stepperNav').style.display = 'flex';
         updateStepperUI(4);
@@ -1205,7 +1227,7 @@
       const msg = `Hello GRO10X team, we just completed the AI Readiness Diagnostic for ${decodeURIComponent(company)} and would like to schedule our 14-day sprint consultation.`;
       
       // Open WhatsApp or email trigger
-      window.open(`https://wa.me/8801708459008?text=${encodeURIComponent(msg)}`, '_blank');
+      window.open(`https://wa.me/8801711019550?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function resetDiagnostic() {

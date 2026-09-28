@@ -99,6 +99,9 @@ function computeBankSummary(bank) {
   if (overageHours > 0 || burnRatePercent >= 100) {
     status = 'critical_overage';
     alert = `⚠️ Retainer exceeded allocated capacity by ${overageHours} hours. Billable at standard overage rate ($${bank.hourlyRateUsd}/hr).`;
+  } else if (burnRatePercent >= 85 || (totalAvailable > 0 && remainingHours <= totalAvailable * 0.15)) {
+    status = 'critical_capacity';
+    alert = `🚨 Retainer has reached critical capacity with ${burnRatePercent}% consumed. Only ${remainingHours} hours remaining (< 15%).`;
   } else if (burnRatePercent >= 75) {
     status = 'nearing_capacity';
     alert = `🔔 Retainer has consumed ${burnRatePercent}% of monthly hours. Only ${remainingHours} hours remaining.`;
@@ -135,7 +138,9 @@ function computeBankSummary(bank) {
     hoursBanked: totalAvailable,
     hoursLogged: usedHours,
     hoursRemaining: remainingHours,
-    isNearCap: burnRatePercent >= 75,
+    isNearCap: burnRatePercent >= 75 || status === 'critical_capacity' || status === 'critical_overage',
+    isCriticalCap: status === 'critical_capacity' || status === 'critical_overage',
+    isOverage: overageHours > 0 || status === 'critical_overage',
     tasks
   };
 }
@@ -252,8 +257,8 @@ async function logRetainerHours(projectId, entry = {}) {
     } catch (_) {}
   }
 
-  // Dispatch Retainer Burndown Telegram Alert if nearing capacity (>=75%) or overage
-  if (summary.status === 'critical_overage' || summary.status === 'nearing_capacity') {
+  // Dispatch Retainer Burndown Telegram Alert if nearing capacity (>=75%), critical capacity (<15%), or overage
+  if (summary.status === 'critical_overage' || summary.status === 'critical_capacity' || summary.status === 'nearing_capacity') {
     try {
       const { sendRetainerBurndownAlert } = require('./bot/notifications');
       findProject(projectId).then(proj => {
@@ -264,6 +269,28 @@ async function logRetainerHours(projectId, entry = {}) {
     } catch (_) {}
   }
 
+  // SSE Real-Time Broadcast to Client Portal & Operational Hubs
+  try {
+    const { broadcast, broadcastToClient } = require('./sse');
+    const ssePayload = {
+      projectId,
+      log: newLog,
+      summary,
+      burnRatePercent: summary.burnRatePercent,
+      remainingHours: summary.remainingHours,
+      usedHours: summary.usedHours,
+      status: summary.status
+    };
+    broadcast('retainer_update', ssePayload);
+
+    findProject(projectId).then(proj => {
+      const targetClientId = proj?.clientId || proj?.client_id || proj?.clientAccountId;
+      if (targetClientId) {
+        broadcastToClient('retainer_update', ssePayload, [targetClientId]);
+      }
+    }).catch(() => {});
+  } catch (_) {}
+
   return {
     ok: true,
     log: newLog,
@@ -271,7 +298,9 @@ async function logRetainerHours(projectId, entry = {}) {
     hoursRemaining: summary.remainingHours,
     hoursLogged: summary.usedHours,
     hoursBanked: summary.totalAvailableHours,
-    isNearCap: summary.burnRatePercent >= 75,
+    isNearCap: summary.burnRatePercent >= 75 || summary.status === 'critical_capacity' || summary.status === 'critical_overage',
+    isCriticalCap: summary.status === 'critical_capacity' || summary.status === 'critical_overage',
+    isOverage: summary.overageHours > 0 || summary.status === 'critical_overage',
     tasks: summary.tasks
   };
 }

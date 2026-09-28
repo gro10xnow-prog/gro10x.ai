@@ -26,7 +26,7 @@ function getSeniorityTier(user) {
   // ── TIER 3: COMMAND & GOVERNANCE ─────────────────────────────
   // Founders, Executive Leadership, Managing Directors, Chairman, Engine Leads, Tech Admins
   const isTier3 =
-    ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-005', 'PBD-000', 'PBD-001', 'PBD-002', 'PBD-005', 'GRO-TEST', 'QA-ADMIN'].includes(empId) ||
+    ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-003', 'GRO-005', 'PBD-000', 'PBD-001', 'PBD-002', 'PBD-005', 'GRO-TEST', 'QA-ADMIN'].includes(empId) ||
     access.includes('owner') ||
     access.includes('admin') ||
     access.includes('executive') ||
@@ -35,6 +35,7 @@ function getSeniorityTier(user) {
     role.includes('managing director') ||
     role.includes('chairman') ||
     role.includes('technology admin') ||
+    role.includes('business development lead') ||
     role.includes('engine lead') ||
     role.includes('director') ||
     role.includes('cxo') ||
@@ -176,7 +177,7 @@ function requireDBM(req, res, next) {
   const empId = req.user.profile?.emp_code || req.user.id || '';
 
   const isAuthorized =
-    ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-005', 'GRO-TEST', 'PBD-000', 'PBD-001', 'PBD-002', 'PBD-005'].includes(empId) ||
+    ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-003', 'GRO-005', 'GRO-TEST', 'PBD-000', 'PBD-001', 'PBD-002', 'PBD-005'].includes(empId) ||
     access.includes('brand') ||
     access.includes('specialist') ||
     access.includes('crew') ||

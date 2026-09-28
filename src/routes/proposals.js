@@ -9,14 +9,19 @@
 
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 const https = require('https');
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const sse = require('../services/sse');
+const broadcast = (...args) => sse.broadcast(...args);
 const { readDB, writeDB } = require('../services/db');
 const { createProjectLockinSpec, standardizePOC } = require('../services/onboarding-spec');
+const { signToken } = require('../services/jwt');
+const { sendProposalAcceptedClientEmail } = require('../services/resend');
 const {
   sendProposalViewedNotification,
   sendProposalAcceptedNotification,
@@ -53,6 +58,8 @@ function mapProposal(p) {
     viewCount: Number(p.view_count || p.viewCount || 0),
     viewedAt: p.viewed_at || p.viewedAt || null,
     acceptedAt: p.accepted_at || p.acceptedAt || null,
+    acceptedBy: p.accepted_by || p.acceptedBy || null,
+    acceptedNotes: p.accepted_notes || p.acceptedNotes || null,
     convertedProjectId: p.converted_project_id || p.convertedProjectId || null,
     lockinSpecId: p.lockin_spec_id || p.lockinSpecId || null,
     createdAt: p.created_at || p.createdAt || new Date().toISOString(),
@@ -147,38 +154,342 @@ const DEFAULT_PROPOSALS = [
     view_count: 0,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
+  },
+  {
+    id: 'PROP-2026-002',
+    share_token: 'nhf-enterprise-ai-2026',
+    client_name: 'National Housing Finance PLC',
+    client_company: 'National Housing Finance and Investments Limited',
+    client_email: 'digital@nationalhousingbd.com',
+    client_phone: '+880 1711-000000',
+    project_title: 'Dedicated Enterprise AI Operating System & Autonomous Digital Mortgage Sales Officer',
+    project_summary: 'Comprehensive enterprise AI digital transformation providing an autonomous 24/7 Digital Sales Officer for home loans, conversational EMI eligibility simulator with Bangladesh Bank regulatory DBR/LTV guardrails, REHAB developer project database synchronization, and private on-premise / hybrid cloud deployment with dedicated monthly SLA retainer maintenance.',
+    canonical_service_code: 'SPRINT-01',
+    scope_items: [
+      {
+        title: 'Dedicated AI Mortgage Sales Officer (Web & WhatsApp)',
+        description: 'Bilingual conversational intelligence (Bangla + English) fine-tuned on National Housing loan products, interest rates, customer onboarding, and branch locator.'
+      },
+      {
+        title: 'Intelligent Home Loan Eligibility & EMI Simulator',
+        description: 'Automated loan calculation engine enforcing Bangladesh Bank Debt Burden Ratio (DBR <= 50%) and Loan-to-Value (LTV <= 70%) regulatory compliance.'
+      },
+      {
+        title: 'REHAB Property Directory & Valuation Database Sync',
+        description: 'Integrated lookup for approved developer projects, property valuation estimates, and instant applicant preliminary screening.'
+      },
+      {
+        title: 'Single-Tenant Private Cloud Infrastructure & Security Hardening',
+        description: 'Zero data leakage, on-premise / hybrid cloud hosting, TLS 1.3 encryption, role-based access control, and bank CRM webhook bridge.'
+      },
+      {
+        title: '30-Day Defect-Free Warranty & Dedicated Monthly Retainer SLA',
+        description: 'Proactive 24/7 system health monitoring, Bangladesh Bank rate updates, error triaging under 60 minutes, and continuous model refinement.'
+      }
+    ],
+    one_time_items: [
+      {
+        name: 'Custom AI Mortgage Officer Engine & Conversational Grounding',
+        description: 'Fine-tuned LLM reasoning engine, banking FAQ vector knowledgebase & bilingual dialogue tuning',
+        amount: 120000
+      },
+      {
+        name: 'Home Loan Eligibility & EMI Simulator with BB DBR/LTV Guardrails',
+        description: 'Real-time mathematical simulator enforcing central bank regulatory limits',
+        amount: 85000
+      },
+      {
+        name: 'REHAB Approved Property Directory & CRM Webhook Integration',
+        description: 'Real estate project database synchronization and lead ingestion bridge',
+        amount: 65000
+      },
+      {
+        name: 'Private Cloud Infrastructure Setup & Bank Security Hardening',
+        description: 'Single-tenant deployment, TLS 1.3 security audits, PII masking & UAT handover',
+        amount: 50000
+      }
+    ],
+    recurring_items: [
+      {
+        name: 'Dedicated Cloud Compute & High-Availability AI Inference Allocation',
+        description: 'Enterprise server hosting, database backups, SSL certificates & model token quota',
+        amount: 25000,
+        frequency: 'Monthly'
+      },
+      {
+        name: 'Proactive Monitoring, Bangladesh Bank Compliance Updates & Priority SLA',
+        description: 'Under-60-minute defect resolution, regulatory policy sync & monthly prompt optimization',
+        amount: 15000,
+        frequency: 'Monthly'
+      }
+    ],
+    one_time_total: 320000,
+    recurring_total: 40000,
+    currency: 'BDT',
+    timeline: '3–4 Weeks from Kickoff',
+    valid_until: '2026-10-31',
+    terms: '1. One-time build cost is structured: 50% mobilization advance upon signing, 25% upon staging UAT deployment, 25% upon formal production handover.\n2. Monthly maintenance and dedicated AI compute retainer is billed at the beginning of each 30-day service cycle.\n3. National Housing Finance retains 100% proprietary data ownership and customer conversation history.\n4. Includes 30-day post-delivery bug-fix warranty shield with 24-hour defect SLA triage response.',
+    notes: 'Enterprise Banking Tier. Custom build for National Housing Finance Limited. Zero third-party telemetry leakage.',
+    status: 'Sent',
+    created_by: 'GRO-001',
+    view_count: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
 
-let inMemoryProposals = [...DEFAULT_PROPOSALS];
+const ENTERPRISE_PRESETS = {
+  NATIONAL_HOUSING_FINANCE_AI_OS: {
+    id: 'nhf-enterprise-ai-os',
+    presetKey: 'NATIONAL_HOUSING_FINANCE_AI_OS',
+    name: 'National Housing Finance PLC — Dedicated Enterprise AI Operating System',
+    clientName: 'National Housing Finance PLC',
+    clientCompany: 'National Housing Finance and Investments Limited',
+    clientEmail: 'digital@nationalhousingbd.com',
+    clientPhone: '+880 1711-000000',
+    projectTitle: 'Dedicated Enterprise AI Operating System & Autonomous Digital Mortgage Sales Officer',
+    projectSummary: 'Comprehensive enterprise AI digital transformation providing an autonomous 24/7 Digital Sales Officer for home loans, conversational EMI eligibility simulator with Bangladesh Bank regulatory DBR/LTV guardrails, REHAB developer project database synchronization, and private on-premise / hybrid cloud deployment with dedicated monthly SLA retainer maintenance.',
+    canonicalServiceCode: 'SPRINT-01',
+    scopeItems: [
+      {
+        title: 'Dedicated AI Mortgage Sales Officer (Web & WhatsApp)',
+        description: 'Bilingual conversational intelligence (Bangla + English) fine-tuned on National Housing loan products, interest rates, customer onboarding, and branch locator.'
+      },
+      {
+        title: 'Intelligent Home Loan Eligibility & EMI Simulator',
+        description: 'Automated loan calculation engine enforcing Bangladesh Bank Debt Burden Ratio (DBR <= 50%) and Loan-to-Value (LTV <= 70%) regulatory compliance.'
+      },
+      {
+        title: 'REHAB Property Directory & Valuation Database Sync',
+        description: 'Integrated lookup for approved developer projects, property valuation estimates, and instant applicant preliminary screening.'
+      },
+      {
+        title: 'Single-Tenant Private Cloud Infrastructure & Security Hardening',
+        description: 'Zero data leakage, on-premise / hybrid cloud hosting, TLS 1.3 encryption, role-based access control, and bank CRM webhook bridge.'
+      },
+      {
+        title: '30-Day Defect-Free Warranty & Dedicated Monthly Retainer SLA',
+        description: 'Proactive 24/7 system health monitoring, Bangladesh Bank rate updates, error triaging under 60 minutes, and continuous model refinement.'
+      }
+    ],
+    oneTimeItems: [
+      {
+        name: 'Custom AI Mortgage Officer Engine & Conversational Grounding',
+        description: 'Fine-tuned LLM reasoning engine, banking FAQ vector knowledgebase & bilingual dialogue tuning',
+        amount: 120000
+      },
+      {
+        name: 'Home Loan Eligibility & EMI Simulator with BB DBR/LTV Guardrails',
+        description: 'Real-time mathematical simulator enforcing central bank regulatory limits',
+        amount: 85000
+      },
+      {
+        name: 'REHAB Approved Property Directory & CRM Webhook Integration',
+        description: 'Real estate project database synchronization and lead ingestion bridge',
+        amount: 65000
+      },
+      {
+        name: 'Private Cloud Infrastructure Setup & Bank Security Hardening',
+        description: 'Single-tenant deployment, TLS 1.3 security audits, PII masking & UAT handover',
+        amount: 50000
+      }
+    ],
+    recurringItems: [
+      {
+        name: 'Dedicated Cloud Compute & High-Availability AI Inference Allocation',
+        description: 'Enterprise server hosting, database backups, SSL certificates & model token quota',
+        amount: 25000,
+        frequency: 'Monthly'
+      },
+      {
+        name: 'Proactive Monitoring, Bangladesh Bank Compliance Updates & Priority SLA',
+        description: 'Under-60-minute defect resolution, regulatory policy sync & monthly prompt optimization',
+        amount: 15000,
+        frequency: 'Monthly'
+      }
+    ],
+    oneTimeTotal: 320000,
+    recurringTotal: 40000,
+    currency: 'BDT',
+    timeline: '3–4 Weeks from Kickoff',
+    terms: '1. One-time build cost is structured: 50% mobilization advance upon signing, 25% upon staging UAT deployment, 25% upon formal production handover.\n2. Monthly maintenance and dedicated AI compute retainer is billed at the beginning of each 30-day service cycle.\n3. National Housing Finance retains 100% proprietary data ownership and customer conversation history.\n4. Includes 30-day post-delivery bug-fix warranty shield with 24-hour defect SLA triage response.',
+    notes: 'Enterprise Banking Tier. Custom build for National Housing Finance Limited. Zero third-party telemetry leakage.'
+  },
+  UCB_BANK_AI_CHATBOT: {
+    id: 'ucb-meta-ai',
+    presetKey: 'UCB_BANK_AI_CHATBOT',
+    name: 'United Commercial Bank (UCB) — 24/7 Social Media Customer Automation',
+    clientName: 'United Commercial Bank (UCB)',
+    clientCompany: 'United Commercial Bank PLC',
+    clientEmail: 'digital.banking@ucb.com.bd',
+    clientPhone: '+880 1700-000000',
+    projectTitle: '24/7 AI-Powered Social Media Customer Automation (Facebook & Instagram)',
+    projectSummary: 'Implementation of a dedicated, enterprise-grade conversational AI chatbot architecture across UCB Official Facebook and Instagram channels.',
+    canonicalServiceCode: 'SVC-003',
+    oneTimeTotal: 48000,
+    recurringTotal: 9500,
+    currency: 'BDT',
+    timeline: '10–14 Working Days from Meta Credentials Handover'
+  }
+};
+
+const DB_JSON_PATH = path.join(__dirname, '../../data/db.json');
+
+function readLocalDBProposals() {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed.proposals) && parsed.proposals.length > 0) {
+        return parsed.proposals;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+function writeLocalDBProposals(proposals) {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      parsed.proposals = proposals;
+      fs.writeFileSync(DB_JSON_PATH, JSON.stringify(parsed, null, 2), 'utf8');
+    }
+  } catch (_) {}
+}
+
+let inMemoryProposals = readLocalDBProposals() || [...DEFAULT_PROPOSALS];
+
+async function getProposalsStore() {
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('proposals')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        inMemoryProposals = data;
+        writeLocalDBProposals(inMemoryProposals);
+        return inMemoryProposals;
+      }
+    } catch (_) {}
+  }
+
+  const localProps = readLocalDBProposals();
+  if (localProps && localProps.length > 0) {
+    inMemoryProposals = localProps;
+    return inMemoryProposals;
+  }
+
+  try {
+    const db = await readDB();
+    if (Array.isArray(db.proposals) && db.proposals.length > 0) {
+      inMemoryProposals = db.proposals;
+      writeLocalDBProposals(inMemoryProposals);
+      return inMemoryProposals;
+    }
+  } catch (_) {}
+
+  if (!inMemoryProposals || inMemoryProposals.length === 0) {
+    inMemoryProposals = [...DEFAULT_PROPOSALS];
+    writeLocalDBProposals(inMemoryProposals);
+  }
+  return inMemoryProposals;
+}
+
+async function persistProposal(proposal, isUpdate = false) {
+  if (!proposal || !proposal.id) return proposal;
+
+  // 1. Sync in-memory cache
+  const idx = inMemoryProposals.findIndex(p => p.id === proposal.id || (proposal.share_token && p.share_token === proposal.share_token));
+  if (idx !== -1) {
+    inMemoryProposals[idx] = { ...inMemoryProposals[idx], ...proposal };
+  } else {
+    inMemoryProposals.unshift(proposal);
+  }
+
+  // 2. Dual-persist to data/db.json
+  writeLocalDBProposals(inMemoryProposals);
+
+  try {
+    const db = await readDB();
+    db.proposals = db.proposals || [];
+    const dIdx = db.proposals.findIndex(p => p.id === proposal.id || (proposal.share_token && p.share_token === proposal.share_token));
+    if (dIdx !== -1) {
+      db.proposals[dIdx] = { ...db.proposals[dIdx], ...proposal };
+    } else {
+      db.proposals.unshift(proposal);
+    }
+    await writeDB(db);
+  } catch (err) {
+    console.warn('[Proposals Store] db.json write note:', err.message);
+  }
+
+  // 3. Persist to Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      if (isUpdate) {
+        await supabase.from('proposals').update(proposal).eq('id', proposal.id);
+      } else {
+        await supabase.from('proposals').upsert([proposal]);
+      }
+    } catch (e) {
+      console.warn('[Proposals Store] Supabase sync note:', e.message);
+    }
+  }
+
+  return inMemoryProposals.find(p => p.id === proposal.id) || proposal;
+}
+
+async function deleteProposalFromStore(id) {
+  inMemoryProposals = inMemoryProposals.filter(p => p.id !== id);
+  writeLocalDBProposals(inMemoryProposals);
+
+  try {
+    const db = await readDB();
+    if (Array.isArray(db.proposals)) {
+      db.proposals = db.proposals.filter(p => p.id !== id);
+      await writeDB(db);
+    }
+  } catch (_) {}
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('proposals').delete().eq('id', id);
+    } catch (_) {}
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
+// PRESET & TEMPLATE ENDPOINTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GET /api/proposals/presets — List pre-engineered enterprise SOW presets
+router.get(['/presets', '/public/presets'], (req, res) => {
+  return res.json({
+    success: true,
+    presets: Object.values(ENTERPRISE_PRESETS)
+  });
+});
+
+// GET /api/proposals/presets/:key — Retrieve specific enterprise preset
+router.get('/presets/:key', (req, res) => {
+  const { key } = req.params;
+  const preset = ENTERPRISE_PRESETS[key.toUpperCase()] || Object.values(ENTERPRISE_PRESETS).find(p => p.id === key);
+  if (!preset) {
+    return res.status(404).json({ error: 'Preset not found' });
+  }
+  return res.json({ success: true, preset });
+});
 // ADMIN ENDPOINTS (Restricted to Owner / Admin - Firoz)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // GET /api/proposals — List all proposals
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
   try {
-    let list = [];
-    if (isSupabaseConfigured()) {
-      try {
-        const { data, error } = await supabase
-          .from('proposals')
-          .select('*')
-          .order('created_at', { ascending: false });
-        if (!error && Array.isArray(data) && data.length > 0) {
-          list = data.map(mapProposal);
-        }
-      } catch (err) {
-        console.warn('[Proposals GET] Supabase query notice:', err.message);
-      }
-    }
-
-    if (list.length === 0) {
-      list = inMemoryProposals.map(mapProposal);
-    }
-
-    return res.json(list);
+    const items = await getProposalsStore();
+    return res.json(items.map(mapProposal));
   } catch (err) {
     console.error('Proposals list error:', err);
     return res.status(500).json({ error: err.message });
@@ -190,18 +501,20 @@ router.get('/:id', async (req, res, next) => {
   if (req.baseUrl && req.baseUrl.includes('/public')) {
     return next();
   }
+  // Share tokens are lowercase alphanumeric with hyphens (e.g. 'ucb-meta-ai-7x9q').
+  // If the :id looks like a share token (not a PROP- ID or UUID), pass to the
+  // public /:token handler below instead of requiring admin auth.
+  const isShareToken = /^[a-z0-9][a-z0-9-]{4,}$/.test(req.params.id) &&
+    !req.params.id.startsWith('PROP-') &&
+    !/^[0-9a-f]{8}-[0-9a-f]{4}/.test(req.params.id);
+  if (isShareToken) return next();
+
   return requireAuth(req, res, () => {
     return requireAdmin(req, res, async () => {
       const { id } = req.params;
       try {
-        if (isSupabaseConfigured()) {
-          try {
-            const { data, error } = await supabase.from('proposals').select('*').eq('id', id).maybeSingle();
-            if (!error && data) return res.json(mapProposal(data));
-          } catch (e) {}
-        }
-
-        const found = inMemoryProposals.find(p => p.id === id || p.share_token === id);
+        const items = await getProposalsStore();
+        const found = items.find(p => p.id === id || p.share_token === id);
         if (found) return res.json(mapProposal(found));
 
         return res.status(404).json({ error: 'Proposal not found' });
@@ -215,6 +528,7 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/proposals — Create new proposal
 router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
+    await getProposalsStore();
     const nextNum = inMemoryProposals.length + 1;
     const newId = `PROP-2026-${String(nextNum).padStart(3, '0')}`;
     const token = req.body.shareToken || req.body.share_token || generateShareToken();
@@ -252,16 +566,34 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       updated_at: new Date().toISOString()
     };
 
-    inMemoryProposals.unshift(payload);
+    await persistProposal(payload, false);
 
-    if (isSupabaseConfigured()) {
-      try {
-        const { error: insErr } = await supabase.from('proposals').insert([payload]);
-        if (insErr) console.warn('[Proposals POST] Supabase insert note:', insErr.message);
-      } catch (e) {}
-    }
+    try {
+      broadcast('proposal_created', mapProposal(payload));
+      broadcast('proposal_update', inMemoryProposals.map(mapProposal));
+    } catch (e) {}
 
-    try { broadcast('proposal_update', inMemoryProposals.map(mapProposal)); } catch (e) {}
+    // Send Telegram notification to agency owner / admin
+    try {
+      const ownerChatId = process.env.OWNER_TELEGRAM_ID || process.env.TELEGRAM_OWNER_CHAT_ID;
+      if (ownerChatId) {
+        const { sendTelegramNotification } = require('../services/bot/notifications');
+        const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+        const publicUrl = `${baseUrl}/p/${token}`;
+        const currSym = payload.currency === 'USD' ? '$' : '৳';
+        sendTelegramNotification(
+          ownerChatId,
+          `💼 *New Commercial SOW Proposal Created!*\n\n` +
+          `🏢 *Client:* ${payload.client_company || payload.client_name}\n` +
+          `📋 *Project:* ${payload.project_title}\n` +
+          `💵 *Investment:* ${currSym}${payload.one_time_total.toLocaleString()} + ${currSym}${payload.recurring_total.toLocaleString()}/mo\n` +
+          `🔗 *Public Link:* ${publicUrl}`,
+          [[{ text: '👁 View Proposal', url: publicUrl }]],
+          true
+        ).catch(() => {});
+      }
+    } catch (_) {}
+
     return res.status(201).json({ success: true, proposal: mapProposal(payload) });
   } catch (err) {
     console.error('Proposal create error:', err);
@@ -273,10 +605,15 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    const memIdx = inMemoryProposals.findIndex(p => p.id === id);
-    const existing = memIdx !== -1 ? inMemoryProposals[memIdx] : {};
+    const items = await getProposalsStore();
+    const memIdx = items.findIndex(p => p.id === id);
+    if (memIdx === -1) {
+      return res.status(404).json({ error: 'Proposal not found' });
+    }
+    const existing = items[memIdx];
 
     const updates = {
+      ...existing,
       updated_at: new Date().toISOString()
     };
 
@@ -302,17 +639,9 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
     if (req.body.notes !== undefined) updates.notes = req.body.notes;
     if (req.body.status !== undefined) updates.status = req.body.status;
 
-    if (memIdx !== -1) {
-      inMemoryProposals[memIdx] = { ...inMemoryProposals[memIdx], ...updates };
-    }
+    await persistProposal(updates, true);
 
-    if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('proposals').update(updates).eq('id', id);
-      } catch (e) {}
-    }
-
-    const updated = mapProposal(inMemoryProposals[memIdx] || { id, ...updates });
+    const updated = mapProposal(updates);
     try { broadcast('proposal_update', inMemoryProposals.map(mapProposal)); } catch (e) {}
     return res.json({ success: true, proposal: updated });
   } catch (err) {
@@ -324,12 +653,7 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    inMemoryProposals = inMemoryProposals.filter(p => p.id !== id);
-    if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('proposals').delete().eq('id', id);
-      } catch (e) {}
-    }
+    await deleteProposalFromStore(id);
     try { broadcast('proposal_update', inMemoryProposals.map(mapProposal)); } catch (e) {}
     return res.json({ success: true, deleted: id });
   } catch (err) {
@@ -341,8 +665,9 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    const memIdx = inMemoryProposals.findIndex(p => p.id === id);
-    const proposal = memIdx !== -1 ? inMemoryProposals[memIdx] : null;
+    const allProposals = await getProposalsStore();
+    const memIdx = allProposals.findIndex(p => p.id === id);
+    const proposal = memIdx !== -1 ? allProposals[memIdx] : null;
 
     if (!proposal) {
       return res.status(404).json({ error: 'Proposal not found' });
@@ -352,6 +677,7 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
     const newProject = {
       id: projectId,
       name: proposal.project_title || proposal.projectTitle || 'Client Project',
+      client_id: proposal.client_id || proposal.clientId || null,
       client_name: proposal.client_name || proposal.clientName || 'Client Partner',
       description: proposal.project_summary || proposal.projectSummary || '',
       department: 'Production',
@@ -364,22 +690,66 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
       created_at: new Date().toISOString()
     };
 
-    if (memIdx !== -1) {
-      inMemoryProposals[memIdx].status = 'Converted';
-      inMemoryProposals[memIdx].converted_project_id = projectId;
-      inMemoryProposals[memIdx].updated_at = new Date().toISOString();
-    }
+    const updatedProposal = {
+      ...proposal,
+      status: 'Converted',
+      converted_project_id: projectId,
+      updated_at: new Date().toISOString()
+    };
+    await persistProposal(updatedProposal, true);
+
+    // Dual-persist project in Supabase & data/db.json
+    try {
+      if (fs.existsSync(DB_JSON_PATH)) {
+        const dbContent = JSON.parse(fs.readFileSync(DB_JSON_PATH, 'utf8'));
+        dbContent.projects = dbContent.projects || [];
+        const pIdx = dbContent.projects.findIndex(p => p.id === projectId);
+        if (pIdx !== -1) {
+          dbContent.projects[pIdx] = { ...dbContent.projects[pIdx], ...newProject };
+        } else {
+          dbContent.projects.unshift(newProject);
+        }
+        fs.writeFileSync(DB_JSON_PATH, JSON.stringify(dbContent, null, 2), 'utf8');
+      }
+    } catch (_) {}
+
+    try {
+      const db = await readDB();
+      db.projects = db.projects || [];
+      const pIdx = db.projects.findIndex(p => p.id === projectId);
+      if (pIdx !== -1) {
+        db.projects[pIdx] = { ...db.projects[pIdx], ...newProject };
+      } else {
+        db.projects.unshift(newProject);
+      }
+      await writeDB(db);
+    } catch (_) {}
 
     if (isSupabaseConfigured()) {
       try {
         await supabase.from('projects').insert([newProject]);
-        await supabase.from('proposals').update({
-          status: 'Converted',
-          converted_project_id: projectId,
-          updated_at: new Date().toISOString()
-        }).eq('id', id);
       } catch (e) {}
     }
+
+    // Telegram Notification to Project Ops Lead / Admin
+    try {
+      const { sendTelegramNotification } = require('../services/bot/notifications');
+      const adminTg = process.env.OWNER_TELEGRAM_ID || process.env.TELEGRAM_ADMIN_CHAT_ID;
+      if (adminTg) {
+        const currSym = newProject.currency === 'USD' ? '$' : '৳';
+        sendTelegramNotification(
+          adminTg,
+          `🚀 *Production Project Spawned from Proposal!*\n\n` +
+          `• Project: *${newProject.name}* (\`${newProject.id}\`)\n` +
+          `• Client: *${newProject.client_name}*\n` +
+          `• Budget: *${currSym}${newProject.budget.toLocaleString()}*\n` +
+          `• Due Date: *${newProject.due_date}*\n` +
+          `• Converted from: *${proposal.id}*`,
+          null,
+          true
+        ).catch(() => {});
+      }
+    } catch (_) {}
 
     try {
       broadcast('proposal_update', inMemoryProposals.map(mapProposal));
@@ -391,7 +761,7 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
       message: 'Proposal successfully converted to project',
       projectId,
       project: newProject,
-      proposal: mapProposal(inMemoryProposals[memIdx] || proposal)
+      proposal: mapProposal(updatedProposal)
     });
   } catch (err) {
     console.error('Convert proposal to project error:', err);
@@ -489,6 +859,26 @@ router.post('/ai-draft', requireAuth, async (req, res) => {
   const key = process.env.GEMINI_API_KEY;
 
   function buildFallbackDraft() {
+    const isNHF = /national\s*housing|nhf|mortgage|home\s*loan|rehab/i.test(notes);
+    if (isNHF) {
+      const p = ENTERPRISE_PRESETS.NATIONAL_HOUSING_FINANCE_AI_OS;
+      return {
+        clientName: clientName || p.clientName,
+        clientCompany: p.clientCompany,
+        projectTitle: p.projectTitle,
+        projectSummary: p.projectSummary,
+        canonicalServiceCode: p.canonicalServiceCode,
+        scopeItems: p.scopeItems,
+        oneTimeItems: p.oneTimeItems,
+        recurringItems: p.recurringItems,
+        oneTimeTotal: selectedCurrency === 'USD' ? 2700 : p.oneTimeTotal,
+        recurringTotal: selectedCurrency === 'USD' ? 335 : p.recurringTotal,
+        currency: selectedCurrency,
+        timeline: p.timeline,
+        terms: p.terms
+      };
+    }
+
     return {
       clientName: clientName || 'Client Partner',
       clientCompany: clientName || 'Enterprise Client',
@@ -641,18 +1031,8 @@ router.get(['/public/:token', '/:token'], async (req, res) => {
       status: proposal.status === 'Draft' || proposal.status === 'Sent' ? 'Viewed' : proposal.status
     };
 
-    // Update in-memory
-    const memIdx = inMemoryProposals.findIndex(p => p.share_token === token || p.id === proposal.id);
-    if (memIdx !== -1) {
-      inMemoryProposals[memIdx] = { ...inMemoryProposals[memIdx], ...updates };
-    }
-
-    // Update Supabase
-    if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('proposals').update(updates).eq('id', proposal.id);
-      } catch (e) {}
-    }
+    // Dual-persist updated view count
+    await persistProposal({ ...proposal, ...updates }, true);
 
     // Trigger Telegram notification to Admin on first view or periodically
     if (isFirstView) {
@@ -662,6 +1042,20 @@ router.get(['/public/:token', '/:token'], async (req, res) => {
         console.warn('[Telegram Alert] Proposal viewed dispatch warning:', e.message);
       }
     }
+
+    // Broadcast real-time SSE event to admin proposals studio
+    try {
+      broadcast('proposal_update', inMemoryProposals.map(mapProposal));
+      broadcast('proposal_viewed', {
+        id: proposal.id,
+        shareToken: proposal.share_token || proposal.shareToken,
+        clientName: proposal.client_name || proposal.clientName,
+        clientCompany: proposal.client_company || proposal.clientCompany,
+        projectTitle: proposal.project_title || proposal.projectTitle,
+        viewCount: proposal.view_count || updates.view_count || updates.viewCount || 1,
+        viewedAt: updates.viewed_at || updates.viewedAt || new Date().toISOString()
+      });
+    } catch (e) {}
 
     // Return sanitized public proposal (omit internal notes)
     const publicData = mapProposal({ ...proposal, ...updates });
@@ -699,6 +1093,10 @@ router.post(['/public/:token/accept', '/:token/accept'], async (req, res) => {
     const updates = {
       status: 'Accepted',
       accepted_at: new Date().toISOString(),
+      accepted_by: acceptedBy || proposal.client_name || 'Client Representative',
+      acceptedBy: acceptedBy || proposal.client_name || 'Client Representative',
+      accepted_notes: clientNote || '',
+      acceptedNotes: clientNote || '',
       updated_at: new Date().toISOString()
     };
     if (affRef) {
@@ -848,44 +1246,89 @@ router.post(['/public/:token/accept', '/:token/accept'], async (req, res) => {
     if (invoiceId) {
       updates.invoice_id = invoiceId;
     }
+    updates.client_id = clientRecord.id;
 
-    if (memIdx !== -1) {
-      inMemoryProposals[memIdx] = { ...inMemoryProposals[memIdx], ...updates };
-    }
+    const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+    const clientSessionToken = signToken({
+      userId: clientRecord.id,
+      id: clientRecord.id,
+      email: clientRecord.email || proposal.client_email || '',
+      name: clientRecord.name,
+      role: 'Client Partner',
+      accessLevel: 'Client Partner',
+      linkedType: 'client',
+      linkedId: clientRecord.id
+    }, '30d');
 
-    if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('proposals').update(updates).eq('id', proposal.id);
-      } catch (e) {}
-    }
+    const onboardingUrl = `${baseUrl}/client?token=${clientSessionToken}${specId ? `&specId=${specId}#lockin` : '#account'}`;
+    const invoiceUrl = `${baseUrl}/client?token=${clientSessionToken}${invoiceId ? `&inv=${invoiceId}` : ''}#invoices`;
+    const invoicePublicUrl = invoiceId ? `${baseUrl}/invoices.html?inv=${invoiceId}` : null;
 
-    // Dispatch instant celebration Telegram alert to Owner/Admin with invoice reference
+    // Dual-persist accepted status
+    await persistProposal({ ...proposal, ...updates }, true);
+
+    // Dispatch instant celebration Telegram alert to Owner/Admin & DBM with invoice and cockpit reference
     try {
       sendProposalAcceptedNotification({
         ...proposal,
         ...updates,
         invoiceId,
         invoiceAmount: invoice ? invoice.amount : null,
-        acceptedBy: acceptedBy || proposal.client_name
+        acceptedBy: acceptedBy || proposal.client_name,
+        clientToken: clientSessionToken,
+        onboardingUrl
       });
     } catch (e) {
       console.warn('[Telegram Alert] Acceptance dispatch warning:', e.message);
     }
 
-    try { broadcast('proposal_update', inMemoryProposals.map(mapProposal)); } catch (e) {}
+    // Dispatch confirmation email with tokenized handover link to client
+    try {
+      sendProposalAcceptedClientEmail({
+        clientName: clientRecord.name || acceptedBy || proposal.client_name,
+        email: clientRecord.email || proposal.client_email,
+        projectTitle: proposal.project_title || proposal.projectTitle,
+        proposalId: proposal.id,
+        onboardingUrl,
+        invoiceUrl,
+        currency: proposal.currency || 'BDT',
+        amount: invoice ? invoice.amount : (proposal.one_time_total || 0)
+      });
+    } catch (emailErr) {
+      console.warn('[Resend Email] Proposal acceptance email dispatch warning:', emailErr.message);
+    }
+
+    try {
+      broadcast('proposal_update', inMemoryProposals.map(mapProposal));
+      broadcast('proposal_accepted', {
+        id: proposal.id,
+        shareToken: proposal.share_token || proposal.shareToken,
+        clientName: clientRecord?.name || acceptedBy || proposal.client_name,
+        clientCompany: proposal.client_company || proposal.clientCompany,
+        projectTitle: proposal.project_title || proposal.projectTitle,
+        convertedProjectId: proposal.converted_project_id || proposal.convertedProjectId || null,
+        invoiceId: invoiceId || null,
+        acceptedAt: updates.accepted_at || updates.acceptedAt || new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('[Proposals Accept] Broadcast warning:', e.message);
+    }
 
     return res.json({
       success: true,
       message: 'Proposal successfully accepted. Our team will coordinate next steps immediately.',
       proposal: mapProposal({ ...proposal, ...updates }),
       clientId: clientRecord.id,
+      clientToken: clientSessionToken,
+      sessionToken: clientSessionToken,
       specId: specId,
       lockinSpec,
       invoiceId: invoiceId,
       invoice: invoice,
       handoverUrl: `/handover-view.html?projectId=${encodeURIComponent(proposal.id)}`,
-      invoiceUrl: `/client#invoices`,
-      onboardingUrl: specId ? `/client#lockin?specId=${specId}` : '/client#account'
+      invoiceUrl,
+      invoicePublicUrl,
+      onboardingUrl
     });
   } catch (err) {
     console.error('Proposal acceptance error:', err);

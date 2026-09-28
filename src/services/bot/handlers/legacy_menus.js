@@ -8,10 +8,16 @@
 
 const state = require('../../state');
 const { supabase } = require('../../supabase');
-const { broadcast } = require('../../sse');
+const sse = require('../../sse');
+const broadcast = (...args) => sse.broadcast(...args);
 const { sendTelegramNotification, sendAgreementNotification } = require('../notifications');
 const { getRoleKeyboard } = require('../keyboards');
 const { getBadge } = require('../../../utils/xp');
+
+let ticketsModule = null;
+try {
+  ticketsModule = require('../../../routes/tickets');
+} catch (_) {}
 
 function registerLegacyTeamMenus(teamBot, readDB) {
   // Handle Telegram 1-Tap Button Click Callbacks (callback_query)
@@ -40,18 +46,88 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       // ─── DEFECT SLA ACKNOWLEDGMENT ──────────────────────────────────────────
       if (data.startsWith('ack_defect_sla:')) {
         const ticketId = data.split(':')[1];
+        try {
+          const ticketsList = ticketsModule ? ticketsModule.inMemoryTickets : null;
+          if (Array.isArray(ticketsList)) {
+            const memT = ticketsList.find(t => t.id === ticketId);
+            if (memT) {
+              memT.sla_acknowledged = true;
+              memT.sla_acknowledged_by = emp?.name || 'Admin';
+              memT.sla_acknowledged_at = new Date().toISOString();
+            }
+          }
+        } catch (_) {}
+        broadcast('sla_acknowledged', [{ ticketId, acknowledgedBy: emp?.name || 'Admin', time: new Date().toISOString() }]);
         if (supabase) {
           try {
             await supabase.from('tickets').update({
               sla_acknowledged: true,
-              sla_acknowledged_by: emp.name,
+              sla_acknowledged_by: emp?.name || 'Admin',
               sla_acknowledged_at: new Date().toISOString()
             }).eq('id', ticketId);
           } catch (_) {}
         }
-        broadcast('sla_acknowledged', [{ ticketId, acknowledgedBy: emp.name, time: new Date().toISOString() }]);
-        teamBot.sendMessage(chatId, `🚨 *SLA Warning Acknowledged for Ticket \`${ticketId}\`!*\n\nLogged by: *${emp.name}*\nStatus: Manager intervention recorded.`, { parse_mode: 'Markdown' }).catch(() => {});
+        teamBot.sendMessage(chatId, `🚨 *SLA Warning Acknowledged for Ticket \`${ticketId}\`!*\n\nLogged by: *${emp?.name || 'Admin'}*\nStatus: Manager intervention recorded.`, { parse_mode: 'Markdown' }).catch(() => {});
         return teamBot.answerCallbackQuery(queryId, { text: '🚨 SLA Acknowledged!' }).catch(() => {});
+      }
+
+      // ─── AFFILIATE COMMISSION PAYOUT ACTIONS ─────────────────────────────────
+      if (data.startsWith('payout_approve:') || data.startsWith('payout_reject:')) {
+        const isApprove = data.startsWith('payout_approve:');
+        const payoutId = data.split(':')[1];
+        const { memoryAffiliates } = require('../../../routes/affiliates');
+
+        let targetPayout = null;
+        let targetAff = null;
+        if (memoryAffiliates) {
+          for (const aff of memoryAffiliates.values()) {
+            if (Array.isArray(aff.payoutHistory)) {
+              const p = aff.payoutHistory.find(item => item.id === payoutId);
+              if (p) {
+                targetPayout = p;
+                targetAff = aff;
+                break;
+              }
+            }
+          }
+        }
+
+        if (targetPayout && targetAff) {
+          if (isApprove) {
+            targetPayout.status = 'Disbursed';
+            targetPayout.disbursedAt = new Date().toISOString();
+            if (supabase) {
+              try {
+                await supabase.from('affiliate_payouts').update({
+                  status: 'Disbursed',
+                  disbursed_at: targetPayout.disbursedAt
+                }).eq('id', targetPayout.id);
+              } catch (_) {}
+            }
+            broadcast('affiliate_payout_disbursed', { affiliateId: targetAff.id, payout: targetPayout });
+            teamBot.sendMessage(chatId, `✅ *Payout \`${payoutId}\` Approved & Disbursed!*\nPartner: *${targetAff.name}* (৳${targetPayout.amountBDT.toLocaleString()} BDT)\nAuthorized by: *${emp.name}*`, { parse_mode: 'Markdown' }).catch(() => {});
+          } else {
+            targetPayout.status = 'Rejected';
+            targetPayout.rejectedAt = new Date().toISOString();
+            targetAff.pendingBalanceBDT = (targetAff.pendingBalanceBDT || 0) + targetPayout.amountBDT;
+            targetAff.paidOutBDT = Math.max(0, (targetAff.paidOutBDT || 0) - targetPayout.amountBDT);
+            if (supabase) {
+              try {
+                await supabase.from('affiliate_payouts').update({
+                  status: 'Rejected',
+                  updated_at: targetPayout.rejectedAt
+                }).eq('id', targetPayout.id);
+                await supabase.from('affiliates').update({
+                  pending_balance_bdt: targetAff.pendingBalanceBDT,
+                  paid_out_bdt: targetAff.paidOutBDT
+                }).eq('id', targetAff.id);
+              } catch (_) {}
+            }
+            broadcast('affiliate_payout_rejected', { affiliateId: targetAff.id, payoutId: targetPayout.id, refundedAmount: targetPayout.amountBDT, newBalance: targetAff.pendingBalanceBDT });
+            teamBot.sendMessage(chatId, `❌ *Payout \`${payoutId}\` Rejected!*\nPartner: *${targetAff.name}*\n৳${targetPayout.amountBDT.toLocaleString()} BDT refunded to pending balance.\nRejected by: *${emp.name}*`, { parse_mode: 'Markdown' }).catch(() => {});
+          }
+        }
+        return teamBot.answerCallbackQuery(queryId, { text: isApprove ? '✅ Payout Approved' : '❌ Payout Rejected' }).catch(() => {});
       }
 
       // ─── DCE (DIGITAL COMMERCE ENGINE) CALLBACKS ──────────────────────────────

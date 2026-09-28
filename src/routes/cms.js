@@ -18,8 +18,8 @@ const defaultCMSContent = {
     heroTitle: "AI-First Growth Agency & Multi-Engine Ecosystem",
     heroSubtitle: "Build smart AI mobile apps, automate marketing, create synthetic media, and scale 10x faster through custom automation pipelines and intelligent agents.",
     email: "gro10xnow@gmail.com",
-    phone: "+8801708459008",
-    whatsapp: "+8801708459008",
+    phone: process.env.AGENCY_PHONE || "+880 1711-019550",
+    whatsapp: process.env.AGENCY_WHATSAPP || "+880 1711-019550",
     registeredAddress: "Dhaka, Bangladesh (BST / UTC+6)",
     operatingAddress: "Global Remote Operations & Dhaka Hub",
     stats: { years: "5+", clients: "50+", creatives: "10,000+", reach: "5M+" }

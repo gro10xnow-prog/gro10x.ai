@@ -78,8 +78,8 @@ async function clearSession(chatId) {
 
 // Payment Receiver Numbers (Can be customized via App Settings)
 const PAYMENT_CONFIG = {
-  bkash: process.env.BKASH_NUMBER || '01708459008',
-  nagad: process.env.NAGAD_NUMBER || '01708459008',
+  bkash: process.env.BKASH_NUMBER || '01711019550',
+  nagad: process.env.NAGAD_NUMBER || '01711019550',
   supportPhone: process.env.SUPPORT_WHATSAPP || '+880 1889-825025'
 };
 

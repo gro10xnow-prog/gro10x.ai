@@ -173,7 +173,7 @@ async function handleContactAM(clientBot, msg) {
       `💼 *Designation:* ${amDesignation}\n` +
       `📱 *Direct Phone:* \`${amPhone}\`\n` +
       `📧 *Work Email:* \`${amEmail}\`\n\n` +
-      `🏢 *GRO10X Client Desk:* \`gro10xnow@gmail.com\` | \`+880 1708-459008\`\n` +
+      `🏢 *GRO10X Client Desk:* \`gro10xnow@gmail.com\`\n` +
       `⏰ *Office Hours:* Sun–Thu · 9:30 AM – 6:30 PM BST\n\n` +
       `_Feel free to call or WhatsApp your AM directly during business hours for campaign adjustments._`;
 

@@ -12,6 +12,26 @@
         if (qToken) {
           localStorage.setItem('gro10x_token', qToken);
           localStorage.setItem('sb-access-token', qToken);
+
+          // Auto-hydrate Client Partner session from JWT claims
+          try {
+            var parts = qToken.split('.');
+            if (parts.length === 3) {
+              var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+              var clientUser = {
+                id: payload.userId || payload.id || 'CLI-001',
+                name: payload.name || payload.company || 'Client Partner',
+                company: payload.company || payload.name || 'Client Organization',
+                email: payload.email || '',
+                role: payload.role || 'Client Partner',
+                accessLevel: payload.accessLevel || 'Client Partner',
+                linkedType: payload.linkedType || 'client',
+                linkedId: payload.linkedId || payload.id || 'CLI-001'
+              };
+              localStorage.setItem('purple_user', JSON.stringify(clientUser));
+              localStorage.setItem('gro10x_user', JSON.stringify(clientUser));
+            }
+          } catch (jwtErr) {}
         }
       } catch (e) {}
 
@@ -125,6 +145,12 @@
 
     .bottom-nav-item.active {
       color: var(--pink-brand);
+      background: rgba(236, 72, 153, 0.12);
+    }
+
+    .mobile-bottom-sheet a.active {
+      border-color: rgba(236, 72, 153, 0.5) !important;
+      background: rgba(236, 72, 153, 0.15) !important;
     }
 
     .bottom-nav-item .icon {

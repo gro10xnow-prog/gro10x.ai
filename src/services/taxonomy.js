@@ -421,14 +421,18 @@ async function getServiceByCode(productCode) {
           brand:catalog_brands (*),
           skus:catalog_skus (*)
         `)
-        .eq('product_code', clean)
+        .or(`product_code.eq.${clean},product_code.eq.${clean.replace('SVC-', '')},metadata->>slug.eq.${productCode.trim().toLowerCase()}`)
         .maybeSingle();
 
       if (!error && data) return data;
     } catch (_) {}
   }
 
-  const product = FALLBACK_CATALOG.products.find(p => (p.product_code || '').toUpperCase() === clean);
+  const product = FALLBACK_CATALOG.products.find(p => 
+    (p.product_code || '').toUpperCase() === clean ||
+    (p.metadata?.slug || '').toLowerCase() === productCode.trim().toLowerCase() ||
+    (p.id || '').toUpperCase() === clean
+  );
   if (!product) return null;
 
   const brand = FALLBACK_CATALOG.brands.find(b => b.id === product.brand_id);

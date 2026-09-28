@@ -464,12 +464,10 @@ window.CLIENT_MODULES.tickets = async function(container) {
 
       if (!title || !description) {
         if (window.showClientToast) window.showClientToast('Title and description are required', 'error');
-        else alert('Title and description are required');
         return;
       }
       if (!pId) {
         if (window.showClientToast) window.showClientToast('No project selected for addendum', 'error');
-        else alert('No project selected');
         return;
       }
 
@@ -485,28 +483,22 @@ window.CLIENT_MODULES.tickets = async function(container) {
           this.closeChangeOrderModal();
           const msg = `⚡ Scope Change Order ${res.changeOrder?.id || ''} submitted! Pod Manager alerted.`;
           if (window.showClientToast) window.showClientToast(msg);
-          else alert(msg);
           await loadClientTickets();
         }
       } catch (err) {
         if (window.showClientToast) window.showClientToast('Error: ' + err.message, 'error');
-        else alert('Error: ' + err.message);
       }
     },
     async approveChangeOrder(projectId, coId) {
-      if (!confirm('Authorize this change order addendum and issue settlement invoice?')) return;
-
       try {
         const res = await CLIENT_API.put(`/projects/${projectId}/change-order/${coId}/approve`);
         if (res.ok || res.success) {
           const msg = `✅ Change Order Approved! Invoice ${res.invoiceId || 'issued'}.`;
           if (window.showClientToast) window.showClientToast(msg);
-          else alert(msg);
           await loadClientTickets();
         }
       } catch (err) {
         if (window.showClientToast) window.showClientToast('Error: ' + err.message, 'error');
-        else alert('Error: ' + err.message);
       }
     },
     openModal() {
@@ -572,7 +564,6 @@ window.CLIENT_MODULES.tickets = async function(container) {
 
       if (!title) {
         if (window.showClientToast) window.showClientToast('Please enter request title', 'error');
-        else alert('Please enter request title.');
         return;
       }
 
@@ -586,12 +577,10 @@ window.CLIENT_MODULES.tickets = async function(container) {
             ? '🚨 Escalation dispatched to Agency Leadership! 2h Priority SLA active.'
             : 'Ticket submitted successfully! 🎟️';
           if (window.showClientToast) window.showClientToast(msg);
-          else alert(msg);
           loadClientTickets();
         }
       } catch (e) {
         if (window.showClientToast) window.showClientToast('Failed to submit ticket: ' + e.message, 'error');
-        else alert('Failed to submit ticket: ' + e.message);
       }
     },
     async submitDispute() {
@@ -601,7 +590,7 @@ window.CLIENT_MODULES.tickets = async function(container) {
       const description = document.getElementById('clDispDesc').value.trim();
 
       if (!description) {
-        alert('Please describe the reason for your dispute.');
+        if (window.showClientToast) window.showClientToast('Please describe the reason for your dispute.', 'error');
         return;
       }
 
@@ -615,11 +604,10 @@ window.CLIENT_MODULES.tickets = async function(container) {
           this.closeDisputeModal();
           const alertMsg = '⚖️ Dispute recorded. Warranty timer has been FROZEN to protect your coverage. Leadership will reach out within 2 hours.';
           if (window.showClientToast) window.showClientToast(alertMsg);
-          else alert(alertMsg);
           loadClientTickets();
         }
       } catch (err) {
-        alert('Error submitting dispute: ' + err.message);
+        if (window.showClientToast) window.showClientToast('Error submitting dispute: ' + err.message, 'error');
       }
     },
     async submitTestimonial() {
@@ -631,7 +619,7 @@ window.CLIENT_MODULES.tickets = async function(container) {
       const consentShowcase = document.getElementById('clTstConsent').checked;
 
       if (!projectId) {
-        alert('No project found to attach testimonial.');
+        if (window.showClientToast) window.showClientToast('No project found to attach testimonial.', 'error');
         return;
       }
 
@@ -647,10 +635,9 @@ window.CLIENT_MODULES.tickets = async function(container) {
           this.closeTestimonialModal();
           const alertMsg = '🌟 Thank you for your review! Your feedback helps us continuously elevate our service.';
           if (window.showClientToast) window.showClientToast(alertMsg);
-          else alert(alertMsg);
         }
       } catch (err) {
-        alert('Error submitting testimonial: ' + err.message);
+        if (window.showClientToast) window.showClientToast('Error submitting testimonial: ' + err.message, 'error');
       }
     }
   };

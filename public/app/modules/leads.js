@@ -650,6 +650,23 @@ window.APP_MODULES.leads = async function(container) {
         </div>
       ` : ''}
 
+      <!-- AI Diagnostic Scorecard Profile Card -->
+      ${(lead.source === 'AI_Readiness_Scorecard' || (lead.notes || '').includes('AI Readiness')) ? `
+        <div id="drawerAiScorecardCard" class="ai-scorecard-card" data-qa="ai-scorecard-gauge" style="background:linear-gradient(135deg, rgba(6,182,212,0.15), rgba(0,223,137,0.08)); border:1px solid rgba(6,182,212,0.45); border-radius:12px; padding:1.1rem; margin-bottom:1rem; box-shadow:0 4px 20px rgba(6,182,212,0.12);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="font-size:0.82rem; font-weight:900; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:0.4rem;">
+              <span>🩺</span> Inbound AI Readiness Scorecard
+            </div>
+            <span id="drawerAiScoreVal" style="font-size:0.75rem; background:rgba(6,182,212,0.25); color:#38bdf8; padding:0.18rem 0.55rem; border-radius:999px; font-weight:900; border:1px solid rgba(6,182,212,0.4);">
+              SCORE: ${lead.lead_score || lead.score || 75}/100
+            </span>
+          </div>
+          <div style="background:rgba(7,11,18,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.85rem; font-size:0.82rem; line-height:1.6; color:#f1f5f9; white-space:pre-wrap; font-family:inherit;">
+            ${escapeHTML(lead.notes || '')}
+          </div>
+        </div>
+      ` : ''}
+
       <!-- Internal Notes -->
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; margin-bottom:1rem;">
         <div style="font-size:0.72rem; font-weight:800; color:#10b981; text-transform:uppercase; margin-bottom:0.6rem;">📝 Internal Notes</div>

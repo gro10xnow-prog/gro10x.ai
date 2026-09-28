@@ -193,12 +193,21 @@ function getActiveClientsCount() {
   return clients.length;
 }
 
+function broadcastCatalogUpdate(productCode) {
+  try {
+    const cache = require('./cache');
+    cache.delByPrefix('catalog:');
+  } catch (_) {}
+  broadcast('catalog_update', { productCode: productCode || 'all', timestamp: new Date().toISOString() });
+}
+
 module.exports = {
   sseHandler,
   broadcast,
   broadcastToRole,
   broadcastToEmployee,
   broadcastToClient,
+  broadcastCatalogUpdate,
   getActiveClientsCount,
   initRealtimePubSub
 };

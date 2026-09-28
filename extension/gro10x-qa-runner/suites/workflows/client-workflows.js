@@ -33,7 +33,14 @@ const CLIENT_WORKFLOWS = {
       },
       {
         id: 'wf-cb-4',
-        title: '4. Teardown: Clean Test Brief Submission',
+        title: '4. Assert Canonical Redirection to Home (#home) & Nav Sync',
+        action: 'workflow_assert_home_sync',
+        target: '#home',
+        assertion: { type: 'custom_check', check: 'assert_client_route_sync' }
+      },
+      {
+        id: 'wf-cb-5',
+        title: '5. Teardown: Clean Test Brief Submission',
         action: 'workflow_client_cleanup_brief',
         assertion: { type: 'custom_check', check: 'assert_brief_cleaned_up' }
       }

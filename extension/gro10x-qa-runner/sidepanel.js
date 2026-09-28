@@ -194,6 +194,7 @@
     if (window.CREW_WORKFLOWS) Object.assign(map, window.CREW_WORKFLOWS);
     if (window.MANAGER_WORKFLOWS) Object.assign(map, window.MANAGER_WORKFLOWS);
     if (window.DCE_WORKFLOWS) Object.assign(map, window.DCE_WORKFLOWS);
+    if (window.PUBLIC_WORKFLOWS) Object.assign(map, window.PUBLIC_WORKFLOWS);
     return map;
   }
 

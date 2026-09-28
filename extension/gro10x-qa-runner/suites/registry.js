@@ -19,8 +19,8 @@ const GRO10X_REGISTRY = {
       { id: 'platforms', name: '🏗️ Platform Portfolio', hash: '#platforms', auditSuiteId: 'platforms', workflows: [] },
       { id: 'gigs', name: '⚡ Marketplace Gig Studio', hash: '#gigs', auditSuiteId: 'gigs', workflows: [] },
       { id: 'analytics', name: '📈 Agency Analytics', hash: '#analytics', auditSuiteId: 'analytics', workflows: [] },
-      { id: 'leads', name: '🎯 Leads Pipeline', hash: '#leads', auditSuiteId: 'leads', workflows: ['workflow_lead_crm'] },
-      { id: 'proposals', name: '💼 Client Proposals Studio', hash: '#proposals', auditSuiteId: 'proposals', workflows: [] },
+      { id: 'leads', name: '🎯 Leads Pipeline', hash: '#leads', auditSuiteId: 'leads', workflows: ['workflow_lead_crm', 'workflow_lead_inbound_audit_verification'] },
+      { id: 'proposals', name: '💼 Client Proposals Studio', hash: '#proposals', auditSuiteId: 'proposals', workflows: ['workflow_proposal_acceptance_onboarding'] },
       { id: 'crm', name: '👥 Clients & Retainers CRM', hash: '#crm', auditSuiteId: 'crm', workflows: [] },
       { id: 'kanban', name: '📋 Project & Sprint Pipeline', hash: '#kanban', auditSuiteId: 'kanban', workflows: ['workflow_task_lifecycle'] },
       { id: 'reviews', name: '🎬 Review Room & Proofing Hub', hash: '#reviews', auditSuiteId: 'reviews', workflows: [] },
@@ -68,7 +68,7 @@ const GRO10X_REGISTRY = {
     description: 'Frame.io-style deliverable approvals and partner growth cockpit.',
     pages: [
       { id: 'deliverables', name: '🎬 Video Cut Approvals & Notes', section: 'deliverables', auditSuiteId: 'partners_deliverables', workflows: ['workflow_partner_cut_approval'] },
-      { id: 'affiliate', name: '🤝 Growth Cockpit & Revenue Share', section: 'affiliate', auditSuiteId: 'partners_affiliate', workflows: [] }
+      { id: 'affiliate', name: '🤝 Growth Cockpit & Revenue Share', section: 'affiliate', auditSuiteId: 'partners_affiliate', workflows: ['workflow_partner_payout_attribution'] }
     ]
   },
 
@@ -79,12 +79,14 @@ const GRO10X_REGISTRY = {
     containerSelector: 'body',
     description: 'Public marketing, capital investor intelligence, and inbound diagnostic tools.',
     pages: [
-      { id: 'landing', name: '🌐 Marketing Landing Page', path: '/', auditSuiteId: 'public_landing', workflows: [] },
+      { id: 'landing', name: '🌐 Marketing Landing Page', path: '/', auditSuiteId: 'public_landing', workflows: ['workflow_public_lead_capture', 'workflow_public_roi_calculator'] },
       { id: 'investors', name: '📈 Capital Investors Portal', path: '/investors.html', auditSuiteId: 'public_investors', workflows: [] },
       { id: 'aiAudit', name: '🩺 AI Diagnostic Audit Tool', path: '/ai-audit.html', auditSuiteId: 'public_ai_audit', workflows: ['workflow_public_ai_audit_score'] },
       { id: 'contractor', name: '🛡️ Contractor Scoped Gateway', path: '/contractor-view.html', auditSuiteId: 'public_contractor', workflows: ['workflow_contractor_defect_sla'] },
       { id: 'planner', name: '📅 Digital Planner Micro-App', path: '/planner', auditSuiteId: 'public_planner', workflows: [] },
-      { id: 'viewer3d', name: '🔮 3D Spatial Product Lab', path: '/3d-viewer', auditSuiteId: 'public_viewer3d', workflows: [] }
+      { id: 'viewer3d', name: '🔮 3D Spatial Product Lab', path: '/3d-viewer', auditSuiteId: 'public_viewer3d', workflows: [] },
+      { id: 'proposal', name: '💼 Public Proposal & SOW Rail', path: '/proposal.html?token=nhf-enterprise-ai-2026', auditSuiteId: 'public_proposal', workflows: ['workflow_public_proposal_lifecycle'] },
+      { id: 'myPortal', name: '👑 Members Vault & GroCredits', path: '/my-portal', auditSuiteId: 'public_my_portal', suiteFile: 'my-portal-qa.js', workflows: [] }
     ]
   },
 

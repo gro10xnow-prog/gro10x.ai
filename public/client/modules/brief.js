@@ -198,7 +198,6 @@ window.CLIENT_MODULES.brief = async function(container) {
         const title = document.getElementById('briefTitle')?.value?.trim();
         if (!title) {
           if (window.showClientToast) window.showClientToast('Please enter a Sprint / Project Title to proceed', 'error');
-          else alert('Please enter a Sprint / Project Title');
           return;
         }
       }
@@ -225,7 +224,6 @@ window.CLIENT_MODULES.brief = async function(container) {
 
       if (!title || !description) {
         if (window.showClientToast) window.showClientToast('Please fill in required fields (*)', 'error');
-        else alert('Please fill in required fields');
         return;
       }
 
@@ -252,17 +250,14 @@ window.CLIENT_MODULES.brief = async function(container) {
         if (res.ok || res.success || res.project) {
           const podName = res.podRecommendation?.podName || 'MVP Rapid Delivery Pod';
           if (window.showClientToast) {
-            window.showClientToast(`Sprint Intake registered! 🚀 Auto-matched to ${podName}.`);
-          } else {
-            alert(`Sprint Intake registered! Auto-matched to ${podName}.`);
+            window.showClientToast(`Campaign Brief & Sprint Intake registered! 🚀 Auto-matched to ${podName}.`);
           }
-          window.location.hash = '#overview';
+          window.location.hash = '#home';
         } else {
           throw new Error(res.error || 'Failed to initialize sprint intake');
         }
       } catch (err) {
         if (window.showClientToast) window.showClientToast('Intake submission error: ' + err.message, 'error');
-        else alert('Error submitting sprint intake: ' + err.message);
       } finally {
         isSubmitting = false;
         if (submitBtn) {

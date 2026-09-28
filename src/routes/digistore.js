@@ -137,7 +137,7 @@ function generateCustomerWhatsAppRejectionLink(order, reason = 'Payment verifica
   const msg = `Salam! Regarding your DigiVault order *${ref}* (${prodName}):\n\n` +
     `❌ We could not verify your payment.\n` +
     `⚠️ *Reason:* ${reason}\n\n` +
-    `Please Send Money to *01708459008* (bKash/Nagad Personal) and send your payment screenshot or TrxID.\n` +
+    `Please Send Money to *01711019550* (bKash/Nagad Personal) and send your payment screenshot or TrxID.\n` +
     `💬 Need help? Reply right here or contact: wa.me/8801889825025`;
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
 }

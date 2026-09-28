@@ -159,7 +159,7 @@ async function getAffiliateRecord(identifier) {
     refCode: clean.startsWith('AFF-') ? clean : `AFF-${clean.slice(0, 8)}`,
     name: identifier,
     email: identifier.includes('@') ? identifier : `${identifier}@partner.gro10x.ai`,
-    phone: '+8801708459008',
+    phone: process.env.AGENCY_WHATSAPP || '+880 1711-019550',
     sprintRate: SPRINT_COMMISSION_RATE,
     retainerRate: RETAINER_COMMISSION_RATE,
     clicks: 12,
@@ -337,9 +337,9 @@ router.get('/track/:refCode', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. POST /api/affiliates/payout — Request Commission Payout
+// 3. POST /api/affiliates/payout (and /payouts) — Request Commission Payout
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/payout', async (req, res) => {
+router.post(['/payout', '/payouts'], async (req, res) => {
   try {
     const { amount, paymentMethod, notes } = req.body;
     const requestedAmount = Number(amount) || 0;
@@ -389,11 +389,11 @@ router.post('/payout', async (req, res) => {
           id: payoutRecord.id,
           affiliate_id: affiliate.id,
           amount_bdt: requestedAmount,
-          status: 'Disbursed',
+          status: 'Processing',
           settlement_rail: payoutRecord.paymentMethod,
           notes: notes || '',
           requested_at: payoutRecord.requestedAt,
-          disbursed_at: payoutRecord.requestedAt
+          disbursed_at: null
         }]);
         await supabase.from('affiliates').update({
           pending_balance_bdt: affiliate.pendingBalanceBDT,
@@ -403,20 +403,15 @@ router.post('/payout', async (req, res) => {
       } catch (_) {}
     }
 
-    // Alert Finance & Admin Team via Telegram
+    // Alert Finance & Admin Team via Telegram with 1-Tap Action Buttons
     try {
-      const { getTeamBot } = require('../services/bot');
-      const teamBot = getTeamBot();
-      const financeChatId = process.env.FINANCE_TELEGRAM_CHAT_ID || process.env.TELEGRAM_TEAM_GROUP_ID;
-      if (teamBot && financeChatId) {
-        const msg = `💸 *New Partner Commission Payout Request*\n\n` +
-          `👤 *Affiliate:* ${affiliate.name} (\`${affiliate.refCode}\`)\n` +
-          `💰 *Amount:* ৳${requestedAmount.toLocaleString()} BDT\n` +
-          `🏦 *Settlement Rail:* ${payoutRecord.paymentMethod}\n` +
-          `📄 *A/C:* \`${affiliate.settlementAccount?.accountNumber || '2081636480001'}\`\n` +
-          `⏳ *Remaining Balance:* ৳${affiliate.pendingBalanceBDT.toLocaleString()} BDT\n\n` +
-          `_Action: Verify via Finance Dashboard and initiate institutional bank transfer._`;
-        teamBot.sendMessage(financeChatId, msg, { parse_mode: 'Markdown' }).catch(() => {});
+      const { sendAffiliatePayoutNotification } = require('../services/bot/notifications');
+      if (typeof sendAffiliatePayoutNotification === 'function') {
+        sendAffiliatePayoutNotification({
+          affiliate,
+          payout: payoutRecord,
+          requestedAmount
+        });
       }
     } catch (_) {}
 
@@ -515,7 +510,7 @@ router.get('/list', requireAuth, requireManager, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // 6. POST /api/affiliates/payouts/:id/disburse — Finance Approval & Settlement
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/payouts/:id/disburse', requireAuth, requireManager, async (req, res) => {
+router.post(['/payouts/:id/disburse', '/payout/:id/disburse'], requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const { txRef, paymentRail = 'BRAC Bank Corporate Wire' } = req.body;
@@ -552,6 +547,79 @@ router.post('/payouts/:id/disburse', requireAuth, requireManager, async (req, re
     });
   } catch (err) {
     console.error('Payout disburse error:', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6b. POST /api/affiliates/payouts/:id/reject — Finance Rejection & Balance Refund
+// ─────────────────────────────────────────────────────────────────────────────
+router.post(['/payouts/:id/reject', '/payout/:id/reject'], requireAuth, requireManager, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason = 'Declined by Finance Director' } = req.body;
+
+    let targetPayout = null;
+    let targetAffiliate = null;
+
+    for (const aff of memoryAffiliates.values()) {
+      if (Array.isArray(aff.payoutHistory)) {
+        const p = aff.payoutHistory.find(item => item.id === id);
+        if (p) {
+          targetPayout = p;
+          targetAffiliate = aff;
+          break;
+        }
+      }
+    }
+
+    if (!targetPayout) {
+      return res.status(404).json({ ok: false, error: `Payout record '${id}' not found` });
+    }
+
+    if (targetPayout.status === 'Rejected') {
+      return res.status(400).json({ ok: false, error: 'Payout request is already rejected' });
+    }
+
+    // Refund pending balance and decrement paid out
+    targetAffiliate.pendingBalanceBDT = (targetAffiliate.pendingBalanceBDT || 0) + targetPayout.amountBDT;
+    targetAffiliate.paidOutBDT = Math.max(0, (targetAffiliate.paidOutBDT || 0) - targetPayout.amountBDT);
+
+    targetPayout.status = 'Rejected';
+    targetPayout.rejectedAt = new Date().toISOString();
+    targetPayout.rejectionReason = reason;
+
+    if (isSupabaseConfigured() && targetAffiliate.id) {
+      try {
+        await supabase.from('affiliate_payouts').update({
+          status: 'Rejected',
+          notes: `${targetPayout.notes ? targetPayout.notes + ' | ' : ''}Rejected: ${reason}`,
+          updated_at: new Date().toISOString()
+        }).eq('id', targetPayout.id);
+        await supabase.from('affiliates').update({
+          pending_balance_bdt: targetAffiliate.pendingBalanceBDT,
+          paid_out_bdt: targetAffiliate.paidOutBDT,
+          updated_at: new Date().toISOString()
+        }).eq('id', targetAffiliate.id);
+      } catch (_) {}
+    }
+
+    broadcast('affiliate_payout_rejected', {
+      affiliateId: targetAffiliate.id,
+      payoutId: targetPayout.id,
+      refundedAmount: targetPayout.amountBDT,
+      newBalance: targetAffiliate.pendingBalanceBDT
+    });
+
+    return res.json({
+      ok: true,
+      success: true,
+      payout: targetPayout,
+      refundedAmount: targetPayout.amountBDT,
+      pendingBalanceBDT: targetAffiliate.pendingBalanceBDT
+    });
+  } catch (err) {
+    console.error('Payout reject error:', err.message);
     return res.status(500).json({ ok: false, error: err.message });
   }
 });

@@ -7,7 +7,7 @@ const { normalizePhone } = require('../utils/phone');
 
 function getDeterministicPin(phone) {
   const norm = normalizePhone(phone);
-  if (!norm) return '1234';
+  if (!norm) return generate4DigitPin();
   const todayStr = new Date().toISOString().split('T')[0];
   let hash = 0;
   const str = norm + '_' + todayStr + '_purple_secret_key';
@@ -96,9 +96,29 @@ async function upsertPinRecordSupabase(record) {
       updated_at: new Date().toISOString()
     };
 
-    await supabase
+    const { error: upsertErr } = await supabase
       .from('auth_pins')
       .upsert(payload, { onConflict: 'norm_phone' });
+
+    if (upsertErr) {
+      // Fallback if no unique constraint on norm_phone
+      const { data: existingRows } = await supabase
+        .from('auth_pins')
+        .select('id')
+        .eq('norm_phone', norm)
+        .limit(1);
+
+      if (existingRows && existingRows.length > 0) {
+        await supabase
+          .from('auth_pins')
+          .update(payload)
+          .eq('id', existingRows[0].id);
+      } else {
+        await supabase
+          .from('auth_pins')
+          .insert(payload);
+      }
+    }
 
     return true;
   } catch (e) {
@@ -355,17 +375,9 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
     ? String(userObj.permanentPin || userObj.pin || '').trim()
     : '';
 
-  const masterOverride = process.env.MASTER_OVERRIDE_PIN || '101010';
-  const isMasterPin =
-    cleanInput === '1234' ||
-    cleanInput === '1010' ||
-    cleanInput === '101010' ||
-    (masterOverride && cleanInput === String(masterOverride).trim());
-
   const isValid =
     cleanInput === validPin ||
-    (permPin && cleanInput === permPin) ||
-    isMasterPin;
+    (permPin && cleanInput === permPin);
 
   if (!isValid) {
     const newAttempts = (record?.attempts || 0) + 1;
@@ -437,15 +449,19 @@ async function setPermanentPin(phone, newPin, email = '') {
 
   await upsertPinRecordSupabase(updatedRecord);
 
-  if (isSupabaseConfigured() && email && email.trim()) {
+  if (isSupabaseConfigured()) {
     try {
       const last10 = norm.slice(-10);
-      await supabase.from('profiles').update({
-        email: email.trim(),
+      const profileUpdates = {
+        pin_hash: String(newPin).trim(),
         updated_at: new Date().toISOString()
-      }).ilike('phone', `%${last10}%`);
+      };
+      if (email && email.trim()) {
+        profileUpdates.email = email.trim();
+      }
+      await supabase.from('profiles').update(profileUpdates).ilike('phone', `%${last10}%`);
     } catch (e) {
-      console.warn('setPermanentPin profile email update notice:', e.message);
+      console.warn('setPermanentPin profile update notice:', e.message);
     }
   }
 

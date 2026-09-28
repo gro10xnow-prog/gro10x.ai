@@ -212,7 +212,7 @@ async function handleTeamContact(msg) {
     if (!emp) {
       const errorMsg = `🔒 <b>Access Restricted — GRO10X Internal Portal</b>\n\n` +
         `The phone number <b>+${normPhone}</b> is not registered in the GRO10X employee database.\n\n` +
-        `If you are an authorized employee, please contact Technology Admin <b>Firoz Uddin Ahmed</b> (01708-459008) to authorize your account.`;
+        `If you are an authorized employee, please contact Technology Admin <b>Firoz Uddin Ahmed</b> (+880 1711-019550) to authorize your account.`;
       return await teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'HTML' });
     }
 
@@ -478,7 +478,7 @@ function initBot() {
           if (!emp) {
             const errorMsg = `🔒 *Access Restricted — GRO10X Internal Portal*\n\n` +
               `The phone number *+${normPhone}* is not registered in the GRO10X employee database.\n\n` +
-              `If you are an authorized employee, please contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) to authorize your account.`;
+              `If you are an authorized employee, please contact Technology Admin *Firoz Uddin Ahmed* (+880 1711-019550) to authorize your account.`;
             return await teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
           }
 
@@ -1078,7 +1078,7 @@ function initBot() {
           `• Target Budget: *${budget}*\n` +
           `• Timeline: *${timeline}*\n\n` +
           `Our Account Director will review your requirements and reach out via WhatsApp at \`${cleanPhone}\` within 2 business hours with a custom proposal! 🚀\n\n` +
-          `📞 *Direct Priority Line:* \`+880 1708-459008\`\n` +
+          `📞 *Direct Priority Line:* \`+880 1711-019550\`\n` +
           `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://gro10x-ai.vercel.app'}`;
 
         clientBot.sendMessage(chatId, successMsg, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
@@ -1153,8 +1153,8 @@ function initBot() {
           `Schedule a 1-on-1 discovery call with our Account Director to discuss your brand's growth goals, video production scope, or tech requirements.\n\n` +
           `🕒 *Consultation Hours:* Sat – Thu (10:00 AM – 7:00 PM BST)\n` +
           `📍 *Format:* Google Meet, Zoom, or In-Person (Studio)\n\n` +
-          `💬 *Instant WhatsApp Booking:* [Chat Directly with Account Director](https://wa.me/8801708459008?text=Hi%20GRO10X,%20I'd%20like%20to%20book%20a%2015-min%20strategy%20consultation.)\n` +
-          `📞 *Direct Line:* \`+880 1708-459008\`\n\n` +
+          `💬 *Instant WhatsApp Booking:* [Chat Directly with Account Director](https://wa.me/8801711019550?text=Hi%20GRO10X,%20I'd%20like%20to%20book%20a%2015-min%20strategy%20consultation.)\n` +
+          `📞 *Direct Line:* \`+880 1711-019550\`\n\n` +
           `Prefer a written quote first? Tap *💬 Get a Custom Quote* below! 👇`;
         clientBot.sendMessage(chatId, bookText, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
       });
@@ -1383,7 +1383,7 @@ function initBot() {
             `• Tap *💬 Get a Custom Quote* to request a proposal\n` +
             `• Tap *📅 Book a Strategy Call* to schedule a consultation\n` +
             `• Tap *💰 Service Pricing & Plans* to view rates\n` +
-            `• Or call our team directly at \`+880 1708-459008\` 📞`,
+            `• Or call our team directly at \`+880 1711-019550\` 📞`,
             { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() }
           );
         }

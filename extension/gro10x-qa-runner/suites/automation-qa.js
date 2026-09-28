@@ -1,6 +1,6 @@
 /**
  * Bot Engine & Automation Workflows QA Test Suite (#automation)
- * 18-Step Comprehensive Automated Validation
+ * 20-Step Comprehensive Automated Validation
  */
 
 const AUTOMATION_QA_SUITE = {
@@ -175,7 +175,25 @@ const AUTOMATION_QA_SUITE = {
     },
     {
       id: 'step-18',
-      title: '18. Final Clean Audit — 0 Native Dialogs, 0 Unhandled Rejections',
+      title: '18. Verify Real-Time SSE Health & Event Listener State',
+      action: 'none',
+      assertion: {
+        type: 'custom_check',
+        check: 'assert_auto_sse_health'
+      }
+    },
+    {
+      id: 'step-19',
+      title: '19. Verify Telegram Notification Mesh & SLA Escalation Trigger',
+      action: 'none',
+      assertion: {
+        type: 'custom_check',
+        check: 'assert_auto_telegram_mesh'
+      }
+    },
+    {
+      id: 'step-20',
+      title: '20. Final Clean Audit — 0 Native Dialogs, 0 Unhandled Rejections',
       action: 'none',
       assertion: {
         type: 'custom_check',

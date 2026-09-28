@@ -3,7 +3,8 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * PlannerQueenGro · Universal Customer Portal Controller
  * Manages customer session, instant demo bypass, digital vault,
- * credit wallet ledger, and product unlocks.
+ * credit wallet ledger, real-time product unlocks, and in-app notifications.
+ * Strict Zero Native Dialogs Policy Enforced: 0 alerts, 0 confirms, 0 prompts.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -15,7 +16,94 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
 });
 
-// Check URL query params for auto-filling activation code
+// ──────── 1. IN-APP LUXURY TOAST & MODAL SYSTEM (Zero Native Dialogs) ────────
+
+function showToast(message, type = 'info', duration = 4000) {
+  let container = document.getElementById('portalToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'portalToastContainer';
+    container.className = 'portal-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `portal-toast portal-toast-${type}`;
+
+  let icon = 'ℹ️';
+  if (type === 'success') icon = '✨';
+  if (type === 'error') icon = '⚠️';
+  if (type === 'warning') icon = '⚡';
+
+  toast.innerHTML = `<span style="font-weight: 600; margin-right: 0.35rem;">${icon}</span> <span>${message}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('portal-toast-hiding');
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 300);
+  }, duration);
+}
+
+function showConfirmModal({ title, message, confirmText = 'Confirm', cancelText = 'Cancel', onConfirm, onCancel }) {
+  const existing = document.getElementById('portalModalOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'portalModalOverlay';
+  overlay.className = 'portal-modal-overlay';
+
+  overlay.innerHTML = `
+    <div class="portal-modal-card" role="dialog" aria-modal="true">
+      <h3 class="portal-modal-title">${title}</h3>
+      <div class="portal-modal-body">${message}</div>
+      <div class="portal-modal-actions">
+        <button type="button" class="btn-secondary-action" id="portalModalCancelBtn">
+          <span>${cancelText}</span>
+        </button>
+        <button type="button" class="btn-primary-action" id="portalModalConfirmBtn">
+          <span>${confirmText}</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const close = () => {
+    overlay.remove();
+    document.removeEventListener('keydown', handleKey);
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Escape') {
+      close();
+      if (typeof onCancel === 'function') onCancel();
+    }
+  };
+  document.addEventListener('keydown', handleKey);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      close();
+      if (typeof onCancel === 'function') onCancel();
+    }
+  });
+
+  document.getElementById('portalModalCancelBtn').addEventListener('click', () => {
+    close();
+    if (typeof onCancel === 'function') onCancel();
+  });
+
+  document.getElementById('portalModalConfirmBtn').addEventListener('click', async () => {
+    close();
+    if (typeof onConfirm === 'function') await onConfirm();
+  });
+}
+
+// ──────── 2. SESSION & URL PARAMETERS ────────
+
 function initURLParams() {
   const urlParams = new URLSearchParams(window.location.search);
   const codeParam = urlParams.get('code');
@@ -25,7 +113,6 @@ function initURLParams() {
   }
 }
 
-// Check if customer already has a stored JWT session
 async function checkSession() {
   const token = localStorage.getItem(TOKEN_KEY);
   if (!token) {
@@ -41,7 +128,6 @@ async function checkSession() {
     });
 
     if (!res.ok) {
-      // Token invalid or expired
       localStorage.removeItem(TOKEN_KEY);
       showAuthView();
       return;
@@ -79,6 +165,8 @@ function showDashboardView() {
   if (headerRight) headerRight.style.display = 'flex';
 }
 
+// ──────── 3. EVENT LISTENERS ────────
+
 function setupEventListeners() {
   // Activation Form Submit
   const activationForm = document.getElementById('activationForm');
@@ -101,26 +189,23 @@ function setupEventListeners() {
           body: JSON.stringify({ code, email, name })
         });
 
-        if (!res.ok) {
-          let errMsg = `Server returned status ${res.status}`;
-          try {
-            const errData = await res.json();
-            if (errData.error) errMsg = errData.error;
-          } catch (_) {}
-          alert('Activation notice: ' + errMsg);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          const errMsg = data.error || `Server returned status ${res.status}`;
+          showToast(errMsg, 'error');
           return;
         }
 
-        const data = await res.json();
-        if (data.ok && data.token) {
+        if (data.token) {
           localStorage.setItem(TOKEN_KEY, data.token);
+          showToast('🎉 Digital Vault activated successfully! Welcome to PlannerQueenGro.', 'success');
           await checkSession();
         } else {
-          alert('Activation error: ' + (data.error || 'Please check your details and try again.'));
+          showToast(data.error || 'Please check your details and try again.', 'error');
         }
       } catch (err) {
         console.error('Activation request error:', err);
-        alert('Unable to reach activation service: ' + err.message);
+        showToast('Unable to reach activation service: ' + err.message, 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
@@ -146,26 +231,23 @@ function setupEventListeners() {
           body: JSON.stringify({ code: demoCode, email: demoEmail, name: demoName })
         });
 
-        if (!res.ok) {
-          let errMsg = `Server returned status ${res.status}`;
-          try {
-            const errData = await res.json();
-            if (errData.error) errMsg = errData.error;
-          } catch (_) {}
-          alert('Demo access notice: ' + errMsg);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          const errMsg = data.error || `Server returned status ${res.status}`;
+          showToast(errMsg, 'error');
           return;
         }
 
-        const data = await res.json();
-        if (data.ok && data.token) {
+        if (data.token) {
           localStorage.setItem(TOKEN_KEY, data.token);
+          showToast('⚡ Instant Demo Vault initialized with 200 GroCredits.', 'success');
           await checkSession();
         } else {
-          alert('Demo access notice: ' + (data.error || 'Server error'));
+          showToast(data.error || 'Server error', 'error');
         }
       } catch (err) {
         console.error('Demo access error:', err);
-        alert('Unable to reach demo portal: ' + err.message);
+        showToast('Unable to reach demo portal: ' + err.message, 'error');
       } finally {
         btnInstantDemo.disabled = false;
         btnInstantDemo.innerHTML = '<span>⚡ 1-Click Instant Demo Access</span>';
@@ -173,14 +255,21 @@ function setupEventListeners() {
     });
   }
 
-  // Sign Out Button
+  // Sign Out Button (In-App Confirmation Modal, 0 Native Dialogs)
   const btnSignOut = document.getElementById('btnSignOut');
   if (btnSignOut) {
     btnSignOut.addEventListener('click', () => {
-      if (confirm('Sign out of your PlannerQueenGro Customer Vault?')) {
-        localStorage.removeItem(TOKEN_KEY);
-        showAuthView();
-      }
+      showConfirmModal({
+        title: 'Sign Out Confirmation',
+        message: 'Are you sure you want to sign out of your PlannerQueenGro Customer Vault?',
+        confirmText: 'Sign Out',
+        cancelText: 'Stay in Vault',
+        onConfirm: () => {
+          localStorage.removeItem(TOKEN_KEY);
+          showToast('Signed out of customer vault.', 'info');
+          showAuthView();
+        }
+      });
     });
   }
 
@@ -188,7 +277,7 @@ function setupEventListeners() {
   const btnUnlockPla15 = document.getElementById('btnUnlockPla15');
   if (btnUnlockPla15) {
     btnUnlockPla15.addEventListener('click', () => {
-      handleProductRedemption('PLA-15', 150, 'ADHD Low-Dopamine Daily Planner');
+      window.handleProductRedemption('PLA-15', 150, 'ADHD Low-Dopamine Daily Planner');
     });
   }
 
@@ -196,12 +285,13 @@ function setupEventListeners() {
   const btnRedeemMerch = document.getElementById('btnRedeemMerch');
   if (btnRedeemMerch) {
     btnRedeemMerch.addEventListener('click', () => {
-      handleProductRedemption('MERCH-01', 100, '$10 Custom Apparel Voucher');
+      window.handleProductRedemption('MERCH-01', 100, '$10 Custom Apparel Voucher');
     });
   }
 }
 
-// Render member dashboard data
+// ──────── 4. DASHBOARD & LEDGER RENDERING ────────
+
 function renderDashboard(data) {
   const { customer, wallet, transactions, products } = data;
 
@@ -236,7 +326,6 @@ function renderProductsVault(products, unlockedSkus) {
   const container = document.getElementById('productsVaultGrid');
   if (!container) return;
 
-  // Render cards for products
   container.innerHTML = products.map(p => {
     const isUnlocked = unlockedSkus.includes(p.sku);
     const badgeColor = isUnlocked ? 'var(--accent-sage)' : 'var(--primary-plum)';
@@ -251,7 +340,7 @@ function renderProductsVault(products, unlockedSkus) {
         </div>
         <div class="product-actions">
           ${isUnlocked ? `
-            <a href="${p.interactiveUrl}" class="btn-primary-action">
+            <a href="${p.interactiveUrl || '#'}" class="btn-primary-action">
               <span>✨ Launch Interactive App</span>
             </a>
             ${p.pdfDownloadUrl && p.pdfDownloadUrl !== '#' ? `
@@ -320,23 +409,53 @@ function renderTransactions(txns) {
   }).join('');
 }
 
-// Window-level redemption handler
-window.handleProductRedemption = function(sku, cost, name) {
+// ──────── 5. REAL-TIME REDEMPTION HANDLER (API Driven, Zero Native Dialogs) ────────
+
+window.handleProductRedemption = async function(sku, cost, name) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) {
+    showToast('Customer session required. Please activate or sign in.', 'error');
+    showAuthView();
+    return;
+  }
+
   const walletBalEl = document.getElementById('walletBalance');
   const currentBal = parseInt(walletBalEl?.textContent || '0', 10);
 
   if (currentBal < cost) {
-    alert(`Insufficient GroCredits balance. You have ${currentBal} credits, but unlocking ${name} requires ${cost} credits.`);
+    showToast(`Insufficient GroCredits. You have ${currentBal} credits, but unlocking ${name || sku} requires ${cost} credits.`, 'error');
     return;
   }
 
-  if (confirm(`Unlock ${name} for ${cost} GroCredits?`)) {
-    alert(`🎉 Successfully unlocked ${name}! Your license is active in your vault.`);
-    // In production this triggers /api/portal/redeem. For now, reflect client-side update:
-    walletBalEl.textContent = currentBal - cost;
-    const heroCreditBal = document.getElementById('heroCreditBal');
-    const headerCreditBal = document.getElementById('headerCreditBal');
-    if (heroCreditBal) heroCreditBal.textContent = `${currentBal - cost} GroCredits`;
-    if (headerCreditBal) headerCreditBal.textContent = `${currentBal - cost} GroCredits`;
-  }
+  showConfirmModal({
+    title: 'Unlock Companion Product',
+    message: `Unlock <strong>${name || sku}</strong> (${sku}) for <strong>${cost} GroCredits</strong> from your universal wallet?`,
+    confirmText: `⚡ Unlock (${cost} Credits)`,
+    cancelText: 'Keep Credits',
+    onConfirm: async () => {
+      try {
+        const res = await fetch('/api/portal/redeem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ sku, creditsCost: cost, name })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          showToast(data.error || 'Failed to unlock product. Please check your credit balance.', 'error');
+          return;
+        }
+
+        showToast(`🎉 Successfully unlocked ${name || sku}! Your companion license is active.`, 'success');
+        // Re-hydrate session to update wallet, product cards, and transaction ledger
+        await checkSession();
+      } catch (err) {
+        console.error('Redemption error:', err);
+        showToast('Unable to connect to vault redemption service: ' + err.message, 'error');
+      }
+    }
+  });
 };

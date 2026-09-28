@@ -640,18 +640,42 @@ window.CLIENT_MODULES.review = async function(container) {
 
     openAdjustModal(id, title, round, maxRounds) {
       activeItem = reviews.find(r => r.id === id) || { id, title };
+      const currentRound = round || activeItem.revisionRound || 1;
+      const limitRounds = maxRounds || activeItem.maxRevisions || 2;
+      const isLimitReached = currentRound >= limitRounds;
+
       const nameEl = document.getElementById('clFeedbackItemName');
       if (nameEl) {
-        nameEl.innerHTML = `<strong>Item:</strong> ${escapeHTML(title)} · <span style="color:var(--purple-light);">Round ${round || 1} of ${maxRounds || 2}</span>`;
+        nameEl.innerHTML = `<strong>Item:</strong> ${escapeHTML(title)} · <span style="color:${isLimitReached ? '#f87171' : 'var(--purple-light)'}; font-weight:700;">Round ${currentRound} of ${limitRounds}${isLimitReached ? ' (Limit Reached)' : ''}</span>`;
       }
       const timecode = document.getElementById('clFeedbackTimecode');
       const text = document.getElementById('clFeedbackText');
       const banner = document.getElementById('clScopeWarningBanner');
       const sel = document.getElementById('clFeedbackType');
+      const btn = document.getElementById('clSubmitFeedbackBtn');
+
       if (timecode) timecode.value = '';
       if (text) text.value = '';
-      if (banner) banner.style.display = 'none';
-      if (sel) sel.value = 'BUG_FIX';
+      if (sel) sel.value = isLimitReached ? 'OUT_OF_SCOPE' : 'BUG_FIX';
+
+      if (banner) {
+        if (isLimitReached) {
+          banner.style.display = 'block';
+          banner.style.background = 'rgba(239,68,68,0.15)';
+          banner.style.border = '1px solid rgba(239,68,68,0.35)';
+          banner.style.color = '#fca5a5';
+          banner.innerHTML = `<strong>⚠️ Contractual Revision Limit Reached (${currentRound}/${limitRounds} Rounds Used):</strong> Under the standard Service Level Agreement, additional structural adjustments will be reviewed by your Pod Lead as a formal Scope Change Order.`;
+        } else {
+          banner.style.display = 'none';
+          banner.style.background = '';
+          banner.style.border = '';
+          banner.style.color = '';
+        }
+      }
+
+      if (btn) {
+        btn.textContent = isLimitReached ? '📋 Request Scope Change Order' : '🚀 Dispatch to Engineering';
+      }
 
       document.getElementById('clFeedbackModal').classList.add('active');
     },
@@ -693,7 +717,6 @@ window.CLIENT_MODULES.review = async function(container) {
 
       if (!notes) {
         if (window.showClientToast) window.showClientToast('Please describe your observations or changes needed', 'error');
-        else alert('Please describe the adjustments needed');
         return;
       }
 
@@ -715,26 +738,33 @@ window.CLIENT_MODULES.review = async function(container) {
             commentType
           });
 
-          // Also request revision round advancement if not approved
-          await CLIENT_API.post(`/reviews/${activeItem.id}/request-revisions`, {
-            feedback: notes,
-            author
-          });
+          // Also request revision round advancement or change order if limit reached
+          let revResult = null;
+          try {
+            revResult = await CLIENT_API.post(`/reviews/${activeItem.id}/request-revisions`, {
+              feedback: notes,
+              author
+            });
+          } catch (revErr) {
+            revResult = { ok: false, error: revErr.message, requiresChangeOrder: true };
+          }
 
-          if (window.showClientToast) window.showClientToast('Feedback dispatched! Production team alerted. 🎬');
-          else alert('Feedback submitted!');
+          if (revResult?.requiresChangeOrder) {
+            if (window.showClientToast) window.showClientToast('Revision limit reached. Scope Change Order requested for Pod Lead triage. 📋', 'warning');
+          } else {
+            if (window.showClientToast) window.showClientToast('Feedback dispatched! Production team alerted. 🎬', 'success');
+          }
         } else {
           // Legacy post update
           const feedback = timecode ? `[At ${timecode}] ${notes}` : notes;
           await CLIENT_API.patch(`/posts/${activeItem.id}/status`, { status: 'Changes Requested', feedback });
-          if (window.showClientToast) window.showClientToast('Feedback dispatched to production team! 🎬');
+          if (window.showClientToast) window.showClientToast('Feedback dispatched to production team! 🎬', 'success');
         }
 
         this.closeAdjustModal();
         await loadReviewItems();
       } catch (e) {
         if (window.showClientToast) window.showClientToast('Error submitting feedback: ' + e.message, 'error');
-        else alert('Error: ' + e.message);
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '🚀 Dispatch to Engineering'; }
       }
@@ -983,7 +1013,6 @@ window.CLIENT_MODULES.review = async function(container) {
         await loadReviewItems();
       } catch (e) {
         if (window.showClientToast) window.showClientToast('Error processing sign-off: ' + e.message, 'error');
-        else alert('Error: ' + e.message);
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '✅ Accept & Activate Warranty'; }
       }

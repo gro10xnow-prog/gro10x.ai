@@ -253,7 +253,8 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
   const whatsappLink = `https://wa.me/${cleanPhone.replace('+', '')}?text=${waText}`;
 
   let telegramPushed = false;
-  if (sendTelegram && userObj && userObj.telegramId) {
+  const targetTelegramId = userObj?.telegram_id || userObj?.telegramId;
+  if (sendTelegram && userObj && targetTelegramId) {
     const pushMsg = `🔑 *Your GRO10X Login PIN Code*\n\n` +
       `Hello ${name}! Here is your login PIN code for the portal:\n\n` +
       `• Mobile: \`${cleanPhone}\`\n` +
@@ -264,7 +265,7 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
     const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
     const appUrl = targetType === 'team' ? `${baseUrl}/team-miniapp` : `${baseUrl}/client`;
 
-    sendTelegramNotification(userObj.telegramId, pushMsg, [
+    sendTelegramNotification(targetTelegramId, pushMsg, [
       [{ text: btnText, web_app: { url: appUrl } }]
     ], targetType === 'team');
     telegramPushed = true;
@@ -336,7 +337,7 @@ router.post('/pin/verify', pinVerifyLimiter, async (req, res) => {
 
 // Set Permanent PIN / Change PIN
 router.post(['/pin/set', '/change-pin'], requireAuth, async (req, res) => {
-  const phone = req.body.phone || req.user?.profile?.phone || req.user?.phone || '01708459008';
+  const phone = req.body.phone || req.user?.profile?.phone || req.user?.phone || process.env.AGENCY_PHONE || '01711019550';
   const newPin = req.body.newPin || req.body.pin;
   const email = req.body.email || req.user?.email;
 
@@ -411,6 +412,12 @@ router.post('/logout', requireAuth, (req, res) => {
     revokeToken(req.user.jti);
   }
   res.clearCookie('sb-access-token', { path: '/' });
+  res.clearCookie('gro10x_token', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
+  res.clearCookie('purple_jwt', { path: '/' });
+  try {
+    const { broadcast } = require('../services/sse');
+    broadcast('auth_event', { type: 'logout', userId: req.user?.id, name: req.user?.name, ts: new Date().toISOString() });
+  } catch (_) {}
   return res.json({ success: true, message: 'Logged out successfully' });
 });
 

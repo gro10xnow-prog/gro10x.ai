@@ -13,7 +13,7 @@ window.CLIENT_MODULES.home = async function(container) {
     const user = me?.user || me || localUser;
     const clientName = user.company || user.name || '';
 
-    const [posts, invoices, tickets, clientInfo, projects] = await Promise.all([
+    const [posts, invoices, tickets, rawClientInfo, projects] = await Promise.all([
       clientName 
         ? CLIENT_API.get(`/posts/client/${encodeURIComponent(clientName)}`).catch(() => CLIENT_API.get('/posts').catch(() => []))
         : CLIENT_API.get('/posts').catch(() => []),
@@ -23,6 +23,7 @@ window.CLIENT_MODULES.home = async function(container) {
       CLIENT_API.get('/projects').catch(() => [])
     ]);
 
+    const clientInfo = rawClientInfo?.client || rawClientInfo || {};
     const projectList = Array.isArray(projects) ? projects : [];
     
     // Resolve active warranty project
@@ -47,29 +48,26 @@ window.CLIENT_MODULES.home = async function(container) {
       }
     }
 
-    // Resolve active sprint project (default to first active project or Purplebot sprint)
-    const activeSprint = projectList.find(p => p.delivery_status !== 'WARRANTY_CLOSED') || {
-      id: 'proj-purplebot-01',
-      name: 'AI Agency OS & Automated Retainer Sprint',
-      delivery_status: 'DELIVERED',
-      delivery_pod: {
-        podName: 'MVP Rapid Delivery Pod',
+    // Resolve active sprint project from API data
+    const activeSprint = projectList.find(p => p.delivery_status !== 'WARRANTY_CLOSED' && p.deliveryStatus !== 'WARRANTY_CLOSED') || projectList[0] || null;
+
+    let pod = null;
+    let isDelivered = false;
+    let isApproved = false;
+    let sprintPct = 0;
+
+    if (activeSprint) {
+      const rawPod = activeSprint.delivery_pod || activeSprint.deliveryPod || activeSprint.deliveryPodDetails || activeSprint.delivery_pod_details;
+      pod = typeof rawPod === 'object' && rawPod !== null ? rawPod : {
+        podName: typeof rawPod === 'string' ? rawPod : 'AI Delivery Pod',
         icon: '⚡',
-        targetVelocityDays: 14,
-        leadEngineer: 'Fahim Rahman'
-      }
-    };
-
-    const pod = activeSprint.delivery_pod || activeSprint.deliveryPod || {
-      podName: 'MVP Rapid Delivery Pod',
-      icon: '⚡',
-      targetVelocityDays: 14,
-      leadEngineer: 'Fahim Rahman'
-    };
-
-    const isDelivered = activeSprint.delivery_status === 'DELIVERED' || activeSprint.delivery_status === 'APPROVED' || activeSprint.deliveryStatus === 'DELIVERED';
-    const isApproved = activeSprint.delivery_status === 'APPROVED' || activeSprint.deliveryStatus === 'APPROVED';
-    const sprintPct = isApproved ? 100 : isDelivered ? 90 : 65;
+        targetVelocityDays: activeSprint.targetSlaDays || activeSprint.target_sla_days || 14,
+        leadEngineer: 'Pod Lead Architect'
+      };
+      isDelivered = activeSprint.delivery_status === 'DELIVERED' || activeSprint.delivery_status === 'APPROVED' || activeSprint.deliveryStatus === 'DELIVERED';
+      isApproved = activeSprint.delivery_status === 'APPROVED' || activeSprint.deliveryStatus === 'APPROVED';
+      sprintPct = isApproved ? 100 : isDelivered ? 90 : 65;
+    }
 
     const pendingApprovals = (posts || []).filter(p => p.status === 'Pending Client Approval' || p.status === 'Client Review').length;
     const totalScheduled = (posts || []).filter(p => p.status === 'Approved' || p.status === 'Scheduled' || p.status === 'Draft').length;
@@ -82,6 +80,8 @@ window.CLIENT_MODULES.home = async function(container) {
       .filter(p => p.scheduledDate)
       .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
     const nextPost = upcomingPosts[0];
+
+    const msaUrl = activeSprint ? `/msa-view.html?id=${encodeURIComponent(activeSprint.id)}` : '/msa-view.html';
 
     container.innerHTML = `
       <!-- Greeting & Retainer Status Header -->
@@ -107,7 +107,7 @@ window.CLIENT_MODULES.home = async function(container) {
           <a href="#brief" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
             📝 Submit Brief
           </a>
-          <a href="/msa-view.html?id=${encodeURIComponent(activeSprint.id || 'proj-purplebot-01')}" target="_blank" class="btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+          <a href="${msaUrl}" target="_blank" class="btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
             📜 Legal MSA & NDA
           </a>
         </div>
@@ -143,13 +143,14 @@ window.CLIENT_MODULES.home = async function(container) {
         </div>
       ` : ''}
 
-      <!-- Engine 2: Active Rapid Sprint Progress Cockpit -->
+      <!-- Engine 2: Active Rapid Sprint Progress Cockpit / Empty State -->
+      ${activeSprint ? `
       <div class="card-glass" style="background:linear-gradient(135deg, rgba(124,58,237,0.14), rgba(15,23,42,0.6)); border:1px solid rgba(139,92,246,0.35); margin-bottom:1.5rem; padding:1.25rem 1.4rem; border-radius:14px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
           <div>
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
               <span class="badge badge-purple" style="font-size:0.75rem;">
-                ${pod.icon || '⚡'} ${escapeHTML(pod.podName || 'MVP Rapid Delivery Pod')}
+                ${pod.icon || '⚡'} ${escapeHTML(pod.podName || pod.name || 'AI Delivery Pod')}
               </span>
               <span class="badge ${isApproved ? 'badge-emerald' : isDelivered ? 'badge-blue' : 'badge-amber'}" style="font-size:0.75rem;">
                 ${isApproved ? '✅ Handover Approved' : isDelivered ? '🚀 Deliverables Released' : '⚡ In Active Sprint'}
@@ -159,7 +160,7 @@ window.CLIENT_MODULES.home = async function(container) {
               ${escapeHTML(activeSprint.name || 'AI Solution Sprint')}
             </h2>
             <div style="font-size:0.8rem; color:var(--text-secondary);">
-              Velocity Target: <strong>${pod.targetVelocityDays || 14} Days</strong> · Lead Engineer: <strong>${escapeHTML(pod.leadEngineer || 'Fahim Rahman')}</strong>
+              Velocity Target: <strong>${pod.targetVelocityDays || 14} Days</strong> · Lead Engineer: <strong>${escapeHTML(pod.leadEngineer || 'Pod Lead Architect')}</strong>
             </div>
           </div>
 
@@ -194,6 +195,20 @@ window.CLIENT_MODULES.home = async function(container) {
           </div>
         </div>
       </div>
+      ` : `
+      <div class="card-glass" style="padding:2.25rem; text-align:center; border:1px dashed rgba(139,92,246,0.35); margin-bottom:1.5rem; border-radius:14px;">
+        <div style="font-size:2.2rem; margin-bottom:0.5rem;">🚀</div>
+        <h2 style="font-size:1.2rem; font-weight:800; font-family:var(--font-heading); margin:0 0 0.4rem; color:#fff;">
+          No Active Delivery Sprints Yet
+        </h2>
+        <p style="color:var(--text-muted); font-size:0.85rem; max-width:440px; margin:0 auto 1.25rem; line-height:1.5;">
+          Your workspace is verified. Submit your campaign objectives, tech specifications, or AI requirements to kick off your first sprint with our engineering pod.
+        </p>
+        <a href="#brief" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; font-weight:700;">
+          📝 Kick Off Your First Sprint →
+        </a>
+      </div>
+      `}
 
       <!-- 4 KPI Tiles Grid -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.15rem; margin-bottom: 1.5rem;">

@@ -117,6 +117,42 @@ function calculateWarrantyStatus(project) {
 }
 
 /**
+ * Activates the 30-day bug-fix warranty clock on a project
+ */
+async function startWarrantyClock(projectId, days = 30) {
+  if (!projectId) return null;
+  const warrantyEndDate = new Date(Date.now() + (days * 24 * 60 * 60 * 1000));
+  const warrantyUntil = warrantyEndDate.toISOString();
+
+  let project = await findProject(projectId);
+  if (project) {
+    project.warranty_until = warrantyUntil;
+    project.warrantyUntil = warrantyUntil;
+    project.delivery_status = 'APPROVED';
+    project.deliveryStatus = 'APPROVED';
+    saveMemoryProject(project);
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('projects').update({
+        warranty_until: warrantyUntil,
+        delivery_status: 'APPROVED',
+        status: 'Completed',
+        updated_at: new Date().toISOString()
+      }).eq('id', projectId);
+    } catch (_) {}
+  }
+
+  return {
+    projectId,
+    warrantyUntil,
+    warrantyDays: days,
+    status: calculateWarrantyStatus(project || { warranty_until: warrantyUntil })
+  };
+}
+
+/**
  * 2. Generate or Retrieve Formal Handover & IP Transfer Manifest
  */
 async function getOrCreateHandoverManifest(projectId) {
@@ -718,6 +754,7 @@ module.exports = {
   findProject,
   saveMemoryProject,
   calculateWarrantyStatus,
+  startWarrantyClock,
   getOrCreateHandoverManifest,
   signHandoverManifest,
   raiseProjectDispute,

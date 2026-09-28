@@ -82,6 +82,38 @@ const DCE_WORKFLOWS = {
     ]
   },
 
+  workflow_partner_payout_attribution: {
+    id: 'workflow_partner_payout_attribution',
+    platform: 'partners',
+    pageId: 'affiliate',
+    title: '🤝 Partner Growth: Verify Attribution Links ➔ Inspect Ledger ➔ Submit Payout',
+    description: 'Validates partner attribution link, white-label portal URL, commission ledger, and minimum ৳5,000 payout modal.',
+    targetPath: '/partners.html',
+    steps: [
+      {
+        id: 'wf-ppa-1',
+        title: '1. Switch to Partner Growth Cockpit (#tabBtnAffiliate)',
+        action: 'click',
+        selector: '#tabBtnAffiliate',
+        assertion: { type: 'wait_selector', selector: '#affiliateCockpitView', timeout: 5000 }
+      },
+      {
+        id: 'wf-ppa-2',
+        title: '2. Verify Live Attribution Link and White-Label Portal Route',
+        action: 'wait_selector',
+        selector: '#affiliateLinkInput, #whiteLabelLinkInput',
+        timeout: 4000
+      },
+      {
+        id: 'wf-ppa-3',
+        title: '3. Open Payout Modal and Verify Threshold Validation Controls',
+        action: 'click',
+        selector: 'button[onclick*="openAffiliatePayoutModal"]',
+        assertion: { type: 'wait_selector', selector: '#affiliatePayoutModal, #btnSubmitPayout', timeout: 4000 }
+      }
+    ]
+  },
+
   workflow_public_ai_audit_score: {
     id: 'workflow_public_ai_audit_score',
     platform: 'public',

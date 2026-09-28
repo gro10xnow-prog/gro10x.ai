@@ -118,14 +118,14 @@
               <div style="font-size: 12px; color: var(--text-main); line-height: 1.5;">
                 অনুগ্রহ করে নিচের নম্বরে <strong>Send Money</strong> করুন:<br>
                 <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px; position: relative;">
-                  <input type="text" id="inpSendNo" value="01708459008" readonly style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
+                  <input type="text" id="inpSendNo" value="01711019550" readonly style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
                   <button type="button" class="btn btn-secondary btn-sm" id="btnCopySendNo" style="padding: 8px 14px; font-weight: 700; white-space: nowrap;">
                     📋 কপি নম্বর
                   </button>
                   <div id="tooltipSendNo" class="dv-tooltip">✓ নম্বর কপি হয়েছে!</div>
                 </div>
                 <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 6px;">
-                  (বিকাশ ও নগদ পার্সোনাল নম্বর: 01708-459008)
+                  (বিকাশ ও নগদ পার্সোনাল নম্বর: 01711-019550)
                 </span>
               </div>
             </div>
@@ -441,7 +441,7 @@
                   💳 Send Money নম্বর (বিকাশ ও নগদ পার্সোনাল):
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
-                  <input type="text" value="01708459008" readonly id="inpModalSendNo" style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
+                  <input type="text" value="01711019550" readonly id="inpModalSendNo" style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
                   <button type="button" class="btn btn-primary" id="btnCopyPayNo" style="padding: 8px 14px; font-size: 12px; white-space: nowrap;">
                     📋 কপি নম্বর
                   </button>
@@ -471,7 +471,12 @@
           const inp = document.getElementById('inpModalSendNo');
           if (inp) {
             navigator.clipboard.writeText(inp.value);
-            alert('বিকাশ ও নগদ নম্বর কপি করা হয়েছে: 01708459008');
+            const copyBtn = document.getElementById('btnCopyPayNo');
+            if (copyBtn) {
+              const origText = copyBtn.textContent;
+              copyBtn.textContent = '✓ নম্বর কপি হয়েছে!';
+              setTimeout(() => { copyBtn.textContent = origText; }, 2500);
+            }
           }
         });
       }

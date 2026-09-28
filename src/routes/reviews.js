@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast, broadcastToClient, broadcastToEmployee } = require('../services/sse');
+const sse = require('../services/sse');
+const broadcast = (...args) => sse.broadcast(...args);
+const broadcastToClient = (...args) => sse.broadcastToClient(...args);
+const broadcastToEmployee = (...args) => sse.broadcastToEmployee(...args);
 const { mapTask } = require('./tasks');
 const multer = require('multer');
 const upload = multer({
@@ -772,6 +775,37 @@ async function handleReviewApproveInternal(req, res) {
 
     const finalInvoiceId = milestoneInvoice?.id || ('INV-' + id.replace('REV-', ''));
 
+    // Generate or seed Formal Handover & IP Transfer Manifest
+    let handoverManifest = null;
+    try {
+      const { getOrCreateHandoverManifest, startWarrantyClock } = require('../services/post-delivery');
+      if (projectId) {
+        await startWarrantyClock(projectId, 30);
+        handoverManifest = await getOrCreateHandoverManifest(projectId).catch(() => null);
+      }
+    } catch (manErr) {
+      console.warn('[Handover Manifest Auto-Creation Note]:', manErr.message);
+    }
+
+    // Broadcast warranty_update and handover_update via SSE
+    try {
+      const { broadcast, broadcastToClient } = require('../services/sse');
+      const warrantyPayload = {
+        projectId,
+        warrantyUntil,
+        warrantyDays: 30,
+        isActive: true,
+        approvedBy: approverName,
+        reviewId: id
+      };
+      broadcast('warranty_update', warrantyPayload);
+      broadcast('handover_update', { projectId, manifestId: handoverManifest?.manifestId });
+      if (reviewData.client_id) {
+        broadcastToClient('warranty_update', warrantyPayload, [reviewData.client_id]);
+        broadcastToClient('handover_update', { projectId, manifestId: handoverManifest?.manifestId }, [reviewData.client_id]);
+      }
+    } catch (_) {}
+
     res.json({
       success: true,
       review: mapped,
@@ -783,7 +817,9 @@ async function handleReviewApproveInternal(req, res) {
       },
       invoiceId: finalInvoiceId,
       milestoneInvoice: milestoneInvoice || null,
-      milestoneInvoiceReleased: true
+      milestoneInvoiceReleased: true,
+      handoverManifest: handoverManifest || null,
+      handoverManifestId: handoverManifest?.manifestId || null
     });
   } catch (err) {
     console.error('Review Approve error:', err.message);
@@ -796,7 +832,7 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
   try {
     const { id } = req.params;
     const { feedback, notes } = req.body;
-    const requesterName = req.user?.name || 'Client Partner';
+    const requesterName = req.body.requesterName || req.user?.name || 'Client Partner';
     const revisionText = feedback || notes || 'Revisions requested.';
 
     let reviewData = null;
@@ -825,8 +861,24 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
     const maxRounds = Number(reviewData.max_revisions) || 2;
 
     if (currentRound >= maxRounds) {
+      try {
+        const { sendTelegramNotification } = require('../services/bot/notifications');
+        const ownerId = process.env.TELEGRAM_OWNER_CHAT_ID || '7754769807';
+        const msg = `⚠️ *SCOPE LIMIT REACHED — Round ${currentRound}/${maxRounds} Exhausted*\n\n` +
+          `Project: *${reviewData.project_name || 'Sprint Project'}* (${reviewData.client || 'Client'})\n` +
+          `Requested by: *${requesterName}*\n` +
+          `Notes: "${revisionText}"\n\n` +
+          `📌 *Status:* Additional revisions blocked. Scope Change Order Addendum required.`;
+        sendTelegramNotification(ownerId, msg, [[{ text: '📋 View in Change Order Studio', url: 'https://gro10x-ai.vercel.app/app#engines' }]]);
+      } catch (_) {}
+
       return res.status(400).json({
-        error: `Revision limit reached (${currentRound}/${maxRounds} rounds used). Additional revisions require a formal Phase 2 Add-On.`
+        ok: false,
+        success: false,
+        error: `Revision limit reached (${currentRound}/${maxRounds} rounds used). Additional revisions require a formal Phase 2 Add-On.`,
+        requiresChangeOrder: true,
+        currentRound,
+        maxRounds
       });
     }
 
@@ -909,6 +961,21 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
       }
     }
 
+    // Dispatch instant Telegram notification to Creative Specialist & Team Group
+    try {
+      const { sendTelegramNotification } = require('../services/bot/notifications');
+      const alertChatId = process.env.TELEGRAM_TEAM_GROUP_ID || process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.OWNER_TELEGRAM_ID || '7754769807';
+      const roundNum = reviewData.revisions_used || 1;
+      const msg = `✂️ *Client Deliverable Revision Requested (Round ${roundNum})*\n\n` +
+        `• Project: *${reviewData.project_name || 'Deliverable'}* (${reviewData.client || 'Client'})\n` +
+        `• Requested by: *${requesterName}*\n` +
+        `• Version: \`${reviewData.version || 'v1.0'}\`\n` +
+        `• Notes: _"${revisionText}"_\n\n` +
+        `_Action: Open task board and implement revision feedback._`;
+      const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+      sendTelegramNotification(alertChatId, msg, [[{ text: '🎬 Open Review Room', url: `${baseUrl}/app#reviews` }]], true);
+    } catch (_) {}
+
     const mapped = {
       ...mapReview(reviewData),
       status: 'revision_requested',
@@ -919,6 +986,16 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
     };
 
     broadcast('review_update', [mapped]);
+    try {
+      broadcast('review_revision_requested', {
+        reviewId: id,
+        projectName: reviewData.project_name,
+        clientName: reviewData.client,
+        revisionNotes: revisionText,
+        requestedBy: requesterName,
+        requestedAt: mapped.revisionRequestedAt
+      });
+    } catch (_) {}
     if (mapped.clientId) {
       broadcastToClient('review_update', [mapped], [mapped.clientId]);
     }
@@ -1058,4 +1135,5 @@ router.get('/testimonials/showcase', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.fallbackReviews = fallbackReviews;
 

@@ -206,24 +206,38 @@ function sendProposalAcceptedNotification(proposal = {}) {
   const oneTime = Number(proposal.one_time_total || proposal.oneTimeTotal || 0).toLocaleString();
   const recurring = Number(proposal.recurring_total || proposal.recurringTotal || 0).toLocaleString();
   const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+  const cockpitUrl = proposal.onboardingUrl || `${baseUrl}/client${proposal.clientToken ? `?token=${proposal.clientToken}` : ''}#lockin`;
 
   const invoiceRef = proposal.invoiceId || proposal.invoice_id ? `\n💳 Settlement Invoice: *${proposal.invoiceId || proposal.invoice_id}* (5% VAT Included)` : '';
 
-  const text = `🎉 *PROPOSAL ACCEPTED!* 🚀\n\n` +
+  const text = `🎉 *PROPOSAL ACCEPTED & SOW SIGNED!* 🚀\n\n` +
     `Client: *${client}*\n` +
     `Project: *${title}* (${propId})\n` +
     `Build Total: *${currency} ${oneTime}*\n` +
     `Monthly Retainer: *${currency} ${recurring}/mo*` +
     `${invoiceRef}\n` +
     `Accepted At: *${new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })} BST*\n\n` +
-    `⚡ Client confirmed acceptance! Open Admin to convert this into an active production project.`;
+    `⚡ Client confirmed acceptance! Project Lock-In Spec and Client Workspace provisioned with 1-click tokenized entry.`;
 
   const inlineKeyboard = [
-    [{ text: '🚀 Convert to Project in Admin', url: `${baseUrl}/app#proposals` }]
+    [{ text: '🚀 Open Client Handover Cockpit', url: cockpitUrl }],
+    [
+      { text: '📊 Convert in Admin', url: `${baseUrl}/app#proposals` },
+      { text: '💳 View Invoice in Finance', url: `${baseUrl}/app#finance` }
+    ]
   ];
 
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_OWNER_CHAT_ID || '7754769807';
-  return sendTelegramNotification(adminChatId, text, inlineKeyboard, true);
+  const adminRes = sendTelegramNotification(adminChatId, text, inlineKeyboard, true);
+
+  const dbmChatId = process.env.TELEGRAM_DBM_CHAT_ID;
+  if (dbmChatId && dbmChatId !== adminChatId) {
+    try {
+      sendTelegramNotification(dbmChatId, text, inlineKeyboard, true);
+    } catch (_) {}
+  }
+
+  return adminRes;
 }
 
 function sendProposalCallRequestNotification(proposal = {}, contact = {}) {
@@ -340,10 +354,12 @@ function sendRetainerBurndownAlert(bank = {}, project = {}, logEntry = {}) {
   const title = project.name || bank.projectName || 'AI Retainer';
   const client = project.client_name || bank.clientName || 'Client Partner';
   const isOverage = bank.status === 'critical_overage' || (bank.overageHours || 0) > 0;
+  const isCriticalCap = bank.status === 'critical_capacity' || (!isOverage && (bank.burnRatePercent >= 85 || (bank.remainingHours <= (bank.totalAvailableHours * 0.15) && bank.totalAvailableHours > 0)));
   const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
 
-  const text = isOverage
-    ? `🚨 *RETAINER CRITICAL OVERAGE — Engine 2*\n\n` +
+  let text;
+  if (isOverage) {
+    text = `🚨 *RETAINER CRITICAL OVERAGE — Engine 2*\n\n` +
       `Project: *${title}* (${client})\n` +
       `Logged: *+${logEntry.hours} hrs* by ${logEntry.loggedBy || 'Pod Engineer'}\n` +
       `Task: "${logEntry.taskDescription || 'Sprint Task'}"\n\n` +
@@ -351,8 +367,19 @@ function sendRetainerBurndownAlert(bank = {}, project = {}, logEntry = {}) {
       `• Consumed: *${bank.usedHours} / ${bank.totalAvailableHours} hrs* (${bank.burnRatePercent}%)\n` +
       `• Overage: *${bank.overageHours} hrs*\n` +
       `• Billing Rate: *$${bank.hourlyRateUsd || 45}/hr*\n\n` +
-      `⚠️ *Action Required:* Billable capacity exceeded. Review overage with client.`
-    : `⚠️ *RETAINER CAPACITY WARNING — Engine 2*\n\n` +
+      `⚠️ *Action Required:* Billable capacity exceeded. Review overage with client.`;
+  } else if (isCriticalCap) {
+    text = `🚨 *RETAINER CRITICAL CAPACITY (<15% REMAINING) — Engine 2*\n\n` +
+      `Project: *${title}* (${client})\n` +
+      `Logged: *+${logEntry.hours} hrs* by ${logEntry.loggedBy || 'Pod Engineer'}\n` +
+      `Task: "${logEntry.taskDescription || 'Sprint Task'}"\n\n` +
+      `📊 *Burndown Status:*\n` +
+      `• Consumed: *${bank.usedHours} / ${bank.totalAvailableHours} hrs* (${bank.burnRatePercent}%)\n` +
+      `• Remaining: *${bank.remainingHours} hrs*\n` +
+      `• Status: *Critical Capacity (< 15% Remaining / >= 85% Consumed)*\n\n` +
+      `⚠️ *Action Required:* Hours nearly exhausted. Prepare renewal or change order.`;
+  } else {
+    text = `⚠️ *RETAINER CAPACITY WARNING — Engine 2*\n\n` +
       `Project: *${title}* (${client})\n` +
       `Logged: *+${logEntry.hours} hrs* by ${logEntry.loggedBy || 'Pod Engineer'}\n` +
       `Task: "${logEntry.taskDescription || 'Sprint Task'}"\n\n` +
@@ -360,6 +387,7 @@ function sendRetainerBurndownAlert(bank = {}, project = {}, logEntry = {}) {
       `• Consumed: *${bank.usedHours} / ${bank.totalAvailableHours} hrs* (${bank.burnRatePercent}%)\n` +
       `• Remaining: *${bank.remainingHours} hrs*\n` +
       `• Status: *Nearing Capacity (>=75%)*`;
+  }
 
   const inlineKeyboard = [
     [{ text: '⏳ Retainer Bank in Admin', url: `${baseUrl}/app#engines` }]
@@ -412,6 +440,36 @@ function sendWarrantyExpiryAlert(project = {}, daysRemaining = 7, isClient = tru
   }
 }
 
+/**
+ * Dispatches commission payout request alert to Finance & Admin with 1-tap Approve & Reject buttons
+ */
+function sendAffiliatePayoutNotification({ affiliate, payout, requestedAmount }) {
+  const financeChatId = process.env.FINANCE_TELEGRAM_CHAT_ID || process.env.TELEGRAM_TEAM_GROUP_ID || process.env.TELEGRAM_ADMIN_CHAT_ID || '7754769807';
+  const amountVal = Number(requestedAmount || payout.amountBDT || 0);
+  const affName = affiliate.name || 'Partner';
+  const affRef = affiliate.refCode || affiliate.id || 'AFF-PARTNER';
+  const paymentMethod = payout.paymentMethod || affiliate.settlementAccount?.type || 'BRAC Bank Corporate Wire';
+  const accountNum = affiliate.settlementAccount?.accountNumber || payout.notes || '2081636480001';
+  const remainingBal = Number(affiliate.pendingBalanceBDT || 0);
+
+  const text = `💸 *New Partner Commission Payout Request*\n\n` +
+    `👤 *Affiliate:* ${affName} (\`${affRef}\`)\n` +
+    `💰 *Amount:* ৳${amountVal.toLocaleString()} BDT\n` +
+    `🏦 *Settlement Rail:* ${paymentMethod}\n` +
+    `📄 *A/C:* \`${accountNum}\`\n` +
+    `⏳ *Remaining Balance:* ৳${remainingBal.toLocaleString()} BDT\n\n` +
+    `_Action: Verify institutional bank details and authorize disbursement._`;
+
+  const inlineKeyboard = [
+    [
+      { text: '✅ Approve & Disburse', callback_data: `payout_approve:${payout.id}` },
+      { text: '❌ Reject', callback_data: `payout_reject:${payout.id}` }
+    ]
+  ];
+
+  return module.exports.sendTelegramNotification(financeChatId, text, inlineKeyboard, true);
+}
+
 module.exports = {
   sendTelegramNotification,
   sendToGroup,
@@ -425,7 +483,8 @@ module.exports = {
   sendTeamWarrantyAlert,
   sendSprintDeliveredNotification,
   sendRetainerBurndownAlert,
-  sendWarrantyExpiryAlert
+  sendWarrantyExpiryAlert,
+  sendAffiliatePayoutNotification
 };
 
 

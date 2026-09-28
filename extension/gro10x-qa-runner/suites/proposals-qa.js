@@ -133,6 +133,13 @@ const PROPOSALS_QA_SUITE = {
       assertion: { type: 'custom_check', check: 'assert_proposals_currency_alias' }
     },
     {
+      id: 'step-18',
+      title: '18. Verify Enterprise SOW Preset Selector Present in Modal',
+      action: 'wait_ms',
+      duration: 200,
+      assertion: { type: 'custom_check', check: 'assert_proposals_enterprise_preset' }
+    },
+    {
       id: 'step-19',
       title: '19. Filter Chip: Sent Proposals',
       action: 'click',

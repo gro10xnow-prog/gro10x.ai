@@ -12,7 +12,8 @@
 
 const { getServiceByCode } = require('./taxonomy');
 
-const BASE_URL = process.env.PUBLIC_APP_URL || 'https://gro10x-ai.vercel.app';
+const BASE_URL = process.env.BASE_URL || process.env.PUBLIC_APP_URL || 'https://gro10x-ai.vercel.app';
+const AGENCY_WHATSAPP = process.env.AGENCY_WHATSAPP || '+880 1711-019550';
 
 /**
  * Generate a complete, ready-to-deploy campaign pack for any canonical service
@@ -71,7 +72,7 @@ async function generateServiceCampaignPack(productCode) {
         `How we cut 70% off ${product.name} build times`,
         `${primaryIcp} bottleneck — case study inside`
       ],
-      bodyText: `Hi {{firstName}},\n\nNoticed {{company}} is scaling rapidly and likely tackling complex digital infrastructure this quarter.\n\nMost ${primaryIcp.toLowerCase()} we speak with are frustrated by legacy agency quotes: 3–4 months of billable hours and $15,000+ invoices before ever seeing a production MVP.\n\nWe recently tackled this exact friction: ${caseStudyTitle}.\n\nBy leveraging modern ${techStack.slice(0, 3).join(', ')} cloud architecture, we engineer and deploy production-grade solutions in as fast as ${turnaround} days with 100% full source code ownership.\n\nWould it be useful if I sent over our 10-slide case study breakdown and architecture diagram for your team to review?\n\nBest,\n\nTanvir Rahman\nFounder & Principal Architect, GRO10X AI Agency\nWhatsApp: +880 1708 459008 | Web: ${utmLinks.emailLink}`
+      bodyText: `Hi {{firstName}},\n\nNoticed {{company}} is scaling rapidly and likely tackling complex digital infrastructure this quarter.\n\nMost ${primaryIcp.toLowerCase()} we speak with are frustrated by legacy agency quotes: 3–4 months of billable hours and $15,000+ invoices before ever seeing a production MVP.\n\nWe recently tackled this exact friction: ${caseStudyTitle}.\n\nBy leveraging modern ${techStack.slice(0, 3).join(', ')} cloud architecture, we engineer and deploy production-grade solutions in as fast as ${turnaround} days with 100% full source code ownership.\n\nWould it be useful if I sent over our 10-slide case study breakdown and architecture diagram for your team to review?\n\nBest,\n\nTanvir Rahman\nFounder & Principal Architect, GRO10X AI Agency\nWhatsApp: ${AGENCY_WHATSAPP} | Web: ${utmLinks.emailLink}`
     },
     {
       touchNumber: 2,
@@ -91,7 +92,7 @@ async function generateServiceCampaignPack(productCode) {
         `14-day sprint scope for {{company}}`,
         `Closing the loop on ${product.name}`
       ],
-      bodyText: `Hi {{firstName}},\n\nFinal check-in before I close this thread.\n\nIf you have an upcoming project or internal tool requirement, we package ${product.name} into a dedicated fixed-price sprint ($${priceUsd.toLocaleString()} one-time):\n\nKey Deliverables:\n${deliverables.slice(0, 4).map(d => `• ${d}`).join('\n')}\n• 100% Intellectual Property & GitHub Handover\n• 30 Days Bug-Fix Warranty & Direct Support\n\nIf timing is right to discuss, you can grab 15 minutes on our founder calendar: ${BASE_URL}/book-consultation?service=${cleanCode}\n\nOr feel free to message me directly on WhatsApp at +880 1708 459008.\n\nBest regards,\nTanvir`
+      bodyText: `Hi {{firstName}},\n\nFinal check-in before I close this thread.\n\nIf you have an upcoming project or internal tool requirement, we package ${product.name} into a dedicated fixed-price sprint ($${priceUsd.toLocaleString()} one-time):\n\nKey Deliverables:\n${deliverables.slice(0, 4).map(d => `• ${d}`).join('\n')}\n• 100% Intellectual Property & GitHub Handover\n• 30 Days Bug-Fix Warranty & Direct Support\n\nIf timing is right to discuss, you can grab 15 minutes on our founder calendar: ${BASE_URL}/book-consultation?service=${cleanCode}\n\nOr feel free to message me directly on WhatsApp at ${AGENCY_WHATSAPP}.\n\nBest regards,\nTanvir`
     }
   ];
 

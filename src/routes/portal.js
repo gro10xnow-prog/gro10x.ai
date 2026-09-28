@@ -13,6 +13,14 @@ const path = require('path');
 const { signToken, verifyToken } = require('../services/jwt');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { getTeamBot } = require('../services/bot');
+const sse = require('../services/sse');
+const broadcast = (...args) => (sse && typeof sse.broadcast === 'function' ? sse.broadcast(...args) : null);
+let botNotifications = null;
+try {
+  botNotifications = require('../services/bot/notifications');
+} catch (_) {
+  try { botNotifications = require('../services/bot'); } catch (__) {}
+}
 
 // Local-first persistent state file for testing and offline resilience
 const PORTAL_STATE_FILE = path.join(__dirname, '../../data/portal_state.json');
@@ -150,21 +158,53 @@ router.post('/activate', async (req, res) => {
       role: 'customer'
     }, 30 * 24 * 60 * 60);
 
+    // Broadcast Real-Time SSE
+    try {
+      broadcast('customer_activated', {
+        customerId,
+        email: cleanEmail,
+        name: customerName,
+        sku,
+        isNewCustomer,
+        credits: state.wallets[customerId].balance
+      });
+    } catch (_) {}
+
+    // Background Supabase Sync
+    if (isSupabaseConfigured && supabase) {
+      try {
+        supabase.from('customer_vault').upsert({
+          customer_id: customerId,
+          email: cleanEmail,
+          name: customerName,
+          unlocked_skus: state.customers[customerId].unlockedSkus,
+          gro_credits_balance: state.wallets[customerId].balance,
+          updated_at: new Date().toISOString()
+        }).catch(() => {});
+      } catch (_) {}
+    }
+
     // Optional Telegram Bot Notification
     try {
       const teamBot = getTeamBot();
       const teamChatId = process.env.TELEGRAM_TEAM_CHAT_ID;
+      const alertMsg =
+        `🎉 *Digital Customer Activated!*\n\n` +
+        `👤 *Name:* ${customerName}\n` +
+        `📧 *Email:* ${cleanEmail}\n` +
+        `📦 *Product:* ${sku}\n` +
+        `⚡ *GroCredits:* ${state.wallets[customerId].balance}\n` +
+        `🏷️ *Code Used:* \`${cleanCode}\``;
+
       if (teamBot && teamChatId) {
-        teamBot.sendMessage(
-          teamChatId,
-          `🎉 *Digital Customer Activated!*\n\n` +
-          `👤 *Name:* ${customerName}\n` +
-          `📧 *Email:* ${cleanEmail}\n` +
-          `📦 *Product:* ${sku}\n` +
-          `⚡ *GroCredits:* ${state.wallets[customerId].balance}\n` +
-          `🏷️ *Code Used:* \`${cleanCode}\``,
-          { parse_mode: 'Markdown' }
-        ).catch(() => {});
+        teamBot.sendMessage(teamChatId, alertMsg, { parse_mode: 'Markdown' }).catch(() => {});
+      } else if (botNotifications && botNotifications.sendTelegramNotification) {
+        botNotifications.sendTelegramNotification(
+          process.env.TELEGRAM_ADMIN_CHAT_ID || '7754769807',
+          alertMsg,
+          null,
+          true
+        );
       }
     } catch (_) {}
 
@@ -232,7 +272,7 @@ router.get('/me', requireCustomerAuth, (req, res) => {
       sku: 'MERCH-01',
       name: 'Custom Organic Cotton Planner Queen T-Shirt ($10 Voucher)',
       brand: 'PlannerQueenGro Apparel',
-      status: 'redeemable',
+      status: customer.unlockedSkus.includes('MERCH-01') ? 'unlocked' : 'redeemable',
       creditsCost: 100
     }
   ];
@@ -244,6 +284,153 @@ router.get('/me', requireCustomerAuth, (req, res) => {
     transactions,
     products
   });
+});
+
+/**
+ * 2b. POST /api/portal/redeem
+ * Redeems GroCredits for companion digital product unlocks (e.g., PLA-15) or merchandise vouchers
+ */
+router.post('/redeem', requireCustomerAuth, async (req, res) => {
+  try {
+    const { sku, creditsCost, name } = req.body;
+    const { customerId } = req.customer;
+
+    if (!sku) {
+      return res.status(400).json({ ok: false, error: 'Product SKU is required for redemption.' });
+    }
+
+    const state = loadPortalState();
+    let customer = state.customers[customerId];
+    if (!customer) {
+      customer = {
+        id: customerId,
+        email: req.customer.email,
+        name: req.customer.name,
+        unlockedSkus: ['PLA-14']
+      };
+      state.customers[customerId] = customer;
+    }
+
+    let wallet = state.wallets[customerId];
+    if (!wallet) {
+      wallet = { balance: 200, lifetimeEarned: 200, tier: 'VIP Creator' };
+      state.wallets[customerId] = wallet;
+    }
+
+    // Default cost resolution
+    let cost = typeof creditsCost === 'number' ? creditsCost : parseInt(creditsCost, 10);
+    if (isNaN(cost) || cost <= 0) {
+      if (sku === 'PLA-15') cost = 150;
+      else if (sku === 'MERCH-01') cost = 100;
+      else cost = 100;
+    }
+
+    // Prevent double-unlock for digital companion SKUs
+    if (customer.unlockedSkus && customer.unlockedSkus.includes(sku) && sku.startsWith('PLA-')) {
+      return res.status(400).json({
+        ok: false,
+        error: `SKU ${sku} is already unlocked in your vault.`,
+        unlockedSkus: customer.unlockedSkus,
+        balance: wallet.balance
+      });
+    }
+
+    // Credit Gate: Check balance
+    if (wallet.balance < cost) {
+      return res.status(402).json({
+        ok: false,
+        error: `Insufficient GroCredits. You have ${wallet.balance} credits, but unlocking ${name || sku} requires ${cost} credits.`,
+        balance: wallet.balance,
+        required: cost
+      });
+    }
+
+    // Deduct credits
+    wallet.balance -= cost;
+    state.wallets[customerId] = wallet;
+
+    // Unlock digital SKU
+    if (!customer.unlockedSkus) customer.unlockedSkus = [];
+    if (!customer.unlockedSkus.includes(sku)) {
+      customer.unlockedSkus.push(sku);
+    }
+    state.customers[customerId] = customer;
+
+    // Record Transaction Ledger Entry
+    const txnId = 'TXN-RED-' + Date.now();
+    const txn = {
+      id: txnId,
+      amount: -cost,
+      type: 'debit',
+      reason: `Unlocked Companion: ${name || sku} (${sku})`,
+      timestamp: new Date().toISOString()
+    };
+    if (!state.transactions[customerId]) state.transactions[customerId] = [];
+    state.transactions[customerId].unshift(txn);
+
+    savePortalState(state);
+
+    // Sync to Supabase in background
+    if (isSupabaseConfigured && supabase) {
+      try {
+        supabase.from('customer_vault').upsert({
+          customer_id: customerId,
+          email: customer.email,
+          name: customer.name,
+          unlocked_skus: customer.unlockedSkus,
+          gro_credits_balance: wallet.balance,
+          updated_at: new Date().toISOString()
+        }).catch(() => {});
+      } catch (_) {}
+    }
+
+    // Broadcast Real-Time SSE
+    try {
+      broadcast('vault_redeemed', {
+        customerId,
+        sku,
+        name: name || sku,
+        cost,
+        balance: wallet.balance
+      });
+    } catch (_) {}
+
+    // Dispatch Telegram Bot Alert
+    try {
+      const teamBot = getTeamBot();
+      const teamChatId = process.env.TELEGRAM_TEAM_CHAT_ID;
+      const alertMsg =
+        `🎁 *Digital Product Vault: Perk Redeemed!*\n\n` +
+        `👤 *Customer:* ${customer.name || 'Creator'} (\`${customer.email}\`)\n` +
+        `📦 *Unlocked:* ${name || sku} (\`${sku}\`)\n` +
+        `⚡ *Credits Spent:* -${cost} (New Balance: ${wallet.balance})\n` +
+        `🔖 *Txn ID:* \`${txnId}\``;
+
+      if (teamBot && teamChatId) {
+        teamBot.sendMessage(teamChatId, alertMsg, { parse_mode: 'Markdown' }).catch(() => {});
+      } else if (botNotifications && botNotifications.sendTelegramNotification) {
+        botNotifications.sendTelegramNotification(
+          process.env.TELEGRAM_ADMIN_CHAT_ID || '7754769807',
+          alertMsg,
+          null,
+          true
+        );
+      }
+    } catch (_) {}
+
+    return res.json({
+      ok: true,
+      message: `Successfully unlocked ${name || sku}!`,
+      unlockedSkus: customer.unlockedSkus,
+      newBalance: wallet.balance,
+      wallet,
+      transaction: txn
+    });
+
+  } catch (err) {
+    console.error('Portal redeem error:', err);
+    return res.status(500).json({ ok: false, error: 'Internal redemption error: ' + err.message });
+  }
 });
 
 /**
@@ -271,8 +458,8 @@ router.post('/ai-assist', requireCustomerAuth, async (req, res) => {
 
     let coachingText = '';
 
-    // Attempt Live Gemini Call if GEMINI_API_KEY is available
-    if (process.env.GEMINI_API_KEY) {
+    // Attempt Live Gemini Call if GEMINI_API_KEY is available (skipped during testing for deterministic speed)
+    if (process.env.GEMINI_API_KEY && process.env.NODE_ENV !== 'test') {
       try {
         const { GoogleGenAI } = require('@google/genai');
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -338,6 +525,15 @@ Keep the response crisp, practical, and under 180 words.`;
     });
 
     savePortalState(state);
+
+    // Broadcast Real-Time SSE
+    try {
+      broadcast('ai_coach_invoked', {
+        customerId,
+        cost: COST,
+        newBalance: wallet.balance
+      });
+    } catch (_) {}
 
     return res.json({
       ok: true,

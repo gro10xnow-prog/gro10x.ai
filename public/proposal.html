@@ -975,10 +975,17 @@
         });
         const data = await res.json();
         if (data.success) {
-          const onboardingUrl = data.onboardingUrl || `/client#lockin?specId=${data.specId || ''}`;
+          if (data.clientToken) {
+            try {
+              localStorage.setItem('gro10x_token', data.clientToken);
+              localStorage.setItem('sb-access-token', data.clientToken);
+            } catch (e) {}
+          }
+
+          const onboardingUrl = data.onboardingUrl || `/client?token=${data.clientToken || ''}${data.specId ? `&specId=${data.specId}#lockin` : '#account'}`;
+          const invoiceLink = data.invoiceUrl || `/client?token=${data.clientToken || ''}#invoices`;
           const modalInner = document.querySelector('#acceptModal .modal-card');
           if (modalInner) {
-            const invoiceLink = data.invoiceUrl || '/client#invoices';
             const invoiceBadge = data.invoiceId ? `
               <div style="display:inline-block; padding:6px 14px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:var(--primary); font-size:13px; font-weight:600; margin-bottom:18px;">
                 💳 Settlement Invoice <strong>#${escapeHTML(data.invoiceId)}</strong> (5% VAT Included) Generated
@@ -995,10 +1002,10 @@
                   Proceed to verify technical contacts, inspect scope boundaries, and settle the initial milestone deposit.
                 </p>
                 <div style="display:flex; flex-direction:column; gap:12px;">
-                  <a href="${onboardingUrl}" class="btn btn-primary" style="display:flex; justify-content:center; align-items:center; gap:8px; text-decoration:none; padding:14px 20px; font-size:15px;">
+                  <a href="${onboardingUrl}" id="btnOpenClient" class="btn btn-primary" style="display:flex; justify-content:center; align-items:center; gap:8px; text-decoration:none; padding:14px 20px; font-size:15px; font-weight:700;">
                     <span>🚀</span> Enter Project Handover Cockpit ➔
                   </a>
-                  <a href="${invoiceLink}" class="btn" style="display:flex; justify-content:center; align-items:center; gap:8px; text-decoration:none; padding:12px 20px; font-size:14px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:var(--primary);">
+                  <a href="${invoiceLink}" id="btnOpenInvoice" class="btn" style="display:flex; justify-content:center; align-items:center; gap:8px; text-decoration:none; padding:12px 20px; font-size:14px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:var(--primary);">
                     <span>💳</span> View Corporate Settlement Invoice ➔
                   </a>
                   <button class="btn btn-outline" onclick="closeModal('acceptModal'); downloadProposalPDF();" style="display:flex; justify-content:center; align-items:center; gap:8px;">
@@ -1079,7 +1086,7 @@
       doc.setTextColor(148, 163, 184);
       doc.setFont("helvetica", "normal");
       doc.text("Enterprise AI Growth & Digital Solutions · gro10x.ai · Dhaka, BD", 14, 25);
-      doc.text("Direct Contact: gro10xnow@gmail.com | +880 1708-459008", 14, 30);
+      doc.text("Direct Contact: gro10xnow@gmail.com | +880 1711-019550", 14, 30);
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);

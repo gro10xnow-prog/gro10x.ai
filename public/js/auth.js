@@ -193,21 +193,24 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
 
     const role = (user?.role || '').toLowerCase();
     const access = (user?.accessLevel || '').toLowerCase();
-
-    const isDBM = role.includes('brand') || role.includes('dbm') || role.includes('digital brand') || role.includes('etsy');
+    const empId = String(user?.id || user?.emp_code || '').toUpperCase();
 
     const isOwnerAdmin = access.includes('owner') || access.includes('admin') || 
       role === 'owner' ||
       role.includes('owner') || role.includes('managing director') || 
-      role.includes('chairman') || role.includes('admin') || role.includes('head');
+      role.includes('chairman') || role.includes('admin') || role.includes('head') ||
+      role.includes('business development lead') ||
+      ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-003'].includes(empId);
+
+    const isDBM = !isOwnerAdmin && (role.includes('brand') || role.includes('dbm') || role.includes('digital brand') || role.includes('etsy'));
 
     const isManager = !isOwnerAdmin && !isDBM && (access.includes('director') || access.includes('manager') ||
       role.includes('director') || role.includes('manager'));
 
-    if (isDBM) {
-      window.location.href = '/dbm';
-    } else if (isOwnerAdmin) {
+    if (isOwnerAdmin) {
       window.location.href = '/app';
+    } else if (isDBM) {
+      window.location.href = '/dbm';
     } else if (isManager) {
       window.location.href = '/manager';
     } else if (linkedType === 'client' || role.includes('client')) {

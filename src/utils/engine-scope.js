@@ -46,15 +46,19 @@ function resolveUserEngine(user) {
   const dept = String(user.department || prof.department || '').toLowerCase();
   const access = String(user.accessLevel || prof.accessLevel || prof.access_level || '').toLowerCase();
 
+  const empId = String(user.emp_code || user.id || prof.emp_code || '').toUpperCase();
+
   // Executive / Central Command defaults to all engines
   if (
+    ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-003'].includes(empId) ||
     access.includes('owner') ||
     access.includes('admin') ||
     role.includes('owner') ||
     role.includes('founder') ||
     role.includes('managing director') ||
     role.includes('chairman') ||
-    role.includes('technology admin')
+    role.includes('technology admin') ||
+    role.includes('business development lead')
   ) {
     return 'all';
   }
