@@ -485,8 +485,8 @@
   ],
   "proposals": [
     {
-      "id": "PROP-2026-006",
-      "share_token": "ba2cb43a404a",
+      "id": "PROP-2026-005",
+      "share_token": "10fd600fa9db",
       "client_name": "City Bank Capital PLC",
       "client_company": "City Bank Capital",
       "client_email": "corporate@citybankcapital.com",
@@ -525,67 +525,11 @@
       "status": "Draft",
       "created_by": "GRO-001",
       "view_count": 0,
-      "created_at": "2026-09-29T08:49:13.591Z",
-      "updated_at": "2026-09-29T08:49:13.591Z"
-    },
-    {
-      "id": "PROP-2026-005",
-      "share_token": "nhf-brand-transformation-2026",
-      "client_name": "National Housing Finance Limited",
-      "client_company": "National Housing Finance and Investments Limited",
-      "client_email": "brand@nationalhousingbd.com",
-      "client_phone": "+880 1711-019550",
-      "project_title": "Omnichannel Brand Transformation, Digital Revamp & Performance Lead Engine",
-      "project_summary": "",
-      "canonical_service_code": "BRAND-TRANSFORM-PILOT",
-      "scope_items": [
-        {
-          "title": "Digital Brand & Channel Overhaul",
-          "description": "Complete design and messaging revamp across Website, LinkedIn, Facebook page, YouTube channel, and brand touchpoints maintaining brand consistency without altering the core logo."
-        },
-        {
-          "title": "Integrated CMS & Lead Capture Architecture",
-          "description": "Modern CMS setup with high-converting landing pages, lead capture funnels, and web application synchronization."
-        },
-        {
-          "title": "Monthly Multi-Channel Content & Management",
-          "description": "Active content creation, scheduled distribution, community engagement, and brand channel maintenance across all platforms."
-        },
-        {
-          "title": "Qualified Lead Operations & Revenue Engine",
-          "description": "End-to-end performance funnel optimization and qualified lead handoff with performance-linked attribution."
-        }
-      ],
-      "one_time_items": [
-        {
-          "name": "Website Revamp & Channel Architecture Overhaul",
-          "description": "Initial complete overhaul of web portal, CMS setup, and communication channels (Website, LinkedIn, Facebook, YouTube)",
-          "amount": 25000
-        }
-      ],
-      "recurring_items": [
-        {
-          "name": "Monthly Content Creation, Channel Maintenance & Lead Ops",
-          "description": "Ongoing monthly content production, channel management, and lead generation operations (3-Month Pilot)",
-          "amount": 25000,
-          "frequency": "Monthly"
-        }
-      ],
-      "one_time_total": 25000,
-      "recurring_total": 25000,
-      "currency": "BDT",
-      "timeline": "3-Month Pilot ending December 27",
-      "valid_until": "2026-12-27",
-      "terms": "Pilot Phase: BDT 50,000/month (BDT 25,000 platform overhaul + BDT 25,000 monthly maintenance/content) for the first 3 months. Performance Revenue Share: Qualified lead conversion incentive agreed upon milestone delivery. Terms: 50% advance on monthly cycle; cancel or renew at end of 3-month pilot evaluation.",
-      "notes": "3-Month Pilot brand transformation for National Housing Finance Limited. Pilot budget 50,000 BDT/month (25k platform overhaul + 25k monthly retainer).",
-      "status": "Sent",
-      "created_by": "GRO-001",
-      "view_count": 0,
-      "viewed_at": null,
+      "viewed_at": "2026-09-29T08:52:21.279Z",
       "accepted_at": null,
       "converted_project_id": null,
-      "created_at": "2026-09-29T08:48:16.272995+00:00",
-      "updated_at": "2026-09-29T08:48:15.259+00:00"
+      "created_at": "2026-09-29T09:03:02.964Z",
+      "updated_at": "2026-09-29T09:03:02.964Z"
     },
     {
       "id": "PROP-2026-002",
@@ -664,7 +608,7 @@
       "notes": "Enterprise Banking Tier. Custom build for National Housing Finance Limited. Zero third-party telemetry leakage.",
       "status": "Viewed",
       "created_by": "GRO-001",
-      "view_count": 3,
+      "view_count": 4,
       "viewed_at": "2026-09-29T06:58:47.619Z",
       "accepted_at": null,
       "converted_project_id": null,
@@ -760,53 +704,6 @@
       "converted_project_id": null,
       "created_at": "2026-09-29T08:46:54.371375+00:00",
       "updated_at": "2026-09-29T08:46:53.923+00:00"
-    },
-    {
-      "id": "PROP-2026-003",
-      "share_token": "7abe6e63e57a",
-      "client_name": "City Bank Capital PLC",
-      "client_company": "City Bank Capital",
-      "client_email": "corporate@citybankcapital.com",
-      "client_phone": "+880 1711-998877",
-      "project_title": "Private Equity AI Deal Screener & Portfolio Copilot",
-      "project_summary": "",
-      "canonical_service_code": null,
-      "scope_items": [],
-      "one_time_items": [
-        {
-          "name": "Financial Model Parser Engine",
-          "description": "Audited DCF / LBO extraction",
-          "amount": 150000
-        },
-        {
-          "name": "Private Cloud On-Premise Vector Store",
-          "description": "Zero telemetry leakage vault",
-          "amount": 100000
-        }
-      ],
-      "recurring_items": [
-        {
-          "name": "Dedicated High-Compute GPU Cluster & Retainer",
-          "description": "Monthly dedicated inference & SLA",
-          "amount": 35000,
-          "frequency": "Monthly"
-        }
-      ],
-      "one_time_total": 250000,
-      "recurring_total": 35000,
-      "currency": "BDT",
-      "timeline": "4 Weeks",
-      "valid_until": null,
-      "terms": "50% advance upon kickoff; 50% upon UAT sign-off.",
-      "notes": "",
-      "status": "Draft",
-      "created_by": "GRO-001",
-      "view_count": 0,
-      "viewed_at": null,
-      "accepted_at": null,
-      "converted_project_id": null,
-      "created_at": "2026-09-29T08:46:53.849907+00:00",
-      "updated_at": "2026-09-29T08:46:53.563+00:00"
     },
     {
       "id": "PROP-2026-004",

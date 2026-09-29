@@ -1070,154 +1070,419 @@
       }
 
       const p = currentProposal;
-      const doc = new window.jspdf.jsPDF();
+      const doc = new window.jspdf.jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
       const currSymbol = p.currency === 'USD' ? '$' : 'BDT ';
 
-      // Luxury Cyber Stealth Brand Header
+      // Helper: Draw running top header on pages > 1
+      function drawSubHeader(docPage) {
+        docPage.setFillColor(7, 11, 18);
+        docPage.rect(0, 0, 210, 16, 'F');
+
+        docPage.setFont("helvetica", "bold");
+        docPage.setFontSize(9);
+        docPage.setTextColor(0, 223, 137);
+        docPage.text("GRO10X AI AGENCY", 14, 10.5);
+
+        docPage.setFont("helvetica", "normal");
+        docPage.setFontSize(8);
+        docPage.setTextColor(148, 163, 184);
+        const subTitle = `Institutional SOW · Ref: ${p.id || 'PROP-2026-001'} · ${p.clientCompany || p.clientName || 'Partner'}`;
+        docPage.text(docPage.splitTextToSize(subTitle, 110)[0], 55, 10.5);
+
+        docPage.setFont("helvetica", "bold");
+        docPage.setFontSize(8);
+        docPage.setTextColor(6, 182, 212);
+        docPage.text("COMMERCIAL PROPOSAL", 160, 10.5);
+
+        docPage.setDrawColor(0, 223, 137);
+        docPage.setLineWidth(0.6);
+        docPage.line(0, 16, 210, 16);
+      }
+
+      // Page 1 Header Banner (36mm)
       doc.setFillColor(7, 11, 18);
-      doc.rect(0, 0, 210, 38, 'F');
+      doc.rect(0, 0, 210, 36, 'F');
+
+      // Emerald accent stripe
+      doc.setFillColor(0, 223, 137);
+      doc.rect(0, 35, 210, 1.5, 'F');
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.setTextColor(0, 223, 137); // Cyber Emerald
-      doc.text("GRO10X AI AGENCY", 14, 18);
+      doc.setFontSize(20);
+      doc.setTextColor(0, 223, 137);
+      doc.text("GRO10X AI AGENCY", 14, 16);
 
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(148, 163, 184);
       doc.setFont("helvetica", "normal");
-      doc.text("Enterprise AI Growth & Digital Solutions · gro10x.ai · Dhaka, BD", 14, 25);
-      doc.text("Direct Contact: gro10xnow@gmail.com | +880 1711-019550", 14, 30);
+      doc.text("Enterprise AI Growth & Digital Engineering · gro10x.ai · Dhaka, BD", 14, 23);
+      doc.text("Direct Contact: gro10xnow@gmail.com | +880 1711-019550", 14, 28);
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
+      doc.setFontSize(13);
       doc.setTextColor(255, 255, 255);
-      doc.text("PROJECT PROPOSAL", 140, 20);
-      doc.setFontSize(9);
+      doc.text("PROJECT PROPOSAL", 145, 17);
+
+      doc.setFontSize(8.5);
       doc.setTextColor(6, 182, 212);
-      doc.text(`REF: ${p.id || 'PROP-2026-001'}`, 140, 27);
+      doc.text(`REF: ${p.id || 'PROP-2026-001'}`, 145, 24);
 
-      // Meta Block
-      let y = 48;
-      doc.setFontSize(10);
-      doc.setTextColor(30, 41, 59);
       doc.setFont("helvetica", "bold");
-      doc.text("PREPARED FOR:", 14, y);
-      doc.text("PROJECT TITLE:", 110, y);
+      doc.setFontSize(7.5);
+      doc.setTextColor(0, 223, 137);
+      doc.text(`STATUS: ${(p.status || 'SENT').toUpperCase()}`, 145, 30);
 
-      y += 6;
-      doc.setFont("helvetica", "normal");
+      // Metadata Block (Clean 2-Column Rounded Box with Zero Overlap)
+      let y = 43;
+
+      const clientStr = p.clientCompany && p.clientName && p.clientCompany !== p.clientName
+        ? `${p.clientCompany}\nAttn: ${p.clientName}`
+        : (p.clientCompany || p.clientName || 'Valued Client');
+
+      const splitClient = doc.splitTextToSize(clientStr, 82);
+      const splitTitle = doc.splitTextToSize(p.projectTitle || 'AI Growth & Digital Transformation', 86);
+
+      const metaContentHeight = Math.max(splitClient.length, splitTitle.length) * 4.5;
+      const metaBoxHeight = metaContentHeight + 20;
+
+      // Outer light container
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(14, y, 182, metaBoxHeight, 2.5, 2.5, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(14, y, 182, metaBoxHeight, 2.5, 2.5, 'S');
+
+      // Left Column: Client & Date
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("PREPARED FOR", 20, y + 7);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
       doc.setTextColor(15, 23, 42);
-      doc.text(p.clientCompany ? `${p.clientCompany} (${p.clientName})` : p.clientName, 14, y);
-      
-      const splitTitle = doc.splitTextToSize(p.projectTitle, 85);
-      doc.text(splitTitle, 110, y);
+      doc.text(splitClient, 20, y + 12.5);
 
-      y += Math.max(14, splitTitle.length * 5 + 4);
+      const dateY = y + 12.5 + splitClient.length * 4.5 + 1.5;
       doc.setFont("helvetica", "bold");
-      doc.text("DATE:", 14, y);
-      doc.text("ESTIMATED TIMELINE:", 110, y);
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("ISSUED DATE", 20, dateY);
 
-      y += 6;
-      doc.setFont("helvetica", "normal");
-      doc.text(new Date(p.createdAt || Date.now()).toLocaleDateString('en-GB'), 14, y);
-      doc.text(p.timeline || '2–3 Weeks', 110, y);
-
-      // Executive Summary
-      y += 12;
-      doc.setFillColor(241, 245, 249);
-      doc.rect(14, y, 182, 24, 'F');
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(15, 23, 42);
-      doc.text("Executive Summary:", 18, y + 6);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
-      const summaryLines = doc.splitTextToSize(p.projectSummary || '', 174);
-      doc.text(summaryLines, 18, y + 12);
+      doc.setTextColor(30, 41, 59);
+      doc.text(new Date(p.createdAt || Date.now()).toLocaleDateString('en-GB'), 20, dateY + 4.5);
 
-      y += 32;
+      // Vertical Divider
+      doc.setDrawColor(226, 232, 240);
+      doc.line(106, y + 4, 106, y + metaBoxHeight - 4);
 
-      // Scope Deliverables
+      // Right Column: Project Title & Timeline
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("PROJECT SOW & ENGAGEMENT", 112, y + 7);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
       doc.setTextColor(15, 23, 42);
-      doc.text("Key Deliverables & System Architecture:", 14, y);
-      y += 6;
+      doc.text(splitTitle, 112, y + 12.5);
 
-      const scopeRows = (p.scopeItems || []).map(s => [s.title, s.description]);
-      if (doc.autoTable) {
-        doc.autoTable({
-          startY: y,
-          head: [['Deliverable Component', 'Scope Details']],
-          body: scopeRows,
-          theme: 'striped',
-          headStyles: { fillColor: [7, 11, 18], textColor: [0, 223, 137], fontStyle: 'bold' },
-          styles: { fontSize: 8, cellPadding: 3 },
-          columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' }, 1: { cellWidth: 122 } }
-        });
-        y = doc.lastAutoTable.finalY + 8;
+      const timelineY = y + 12.5 + splitTitle.length * 4.5 + 1.5;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("ENGAGEMENT TIMELINE", 112, timelineY);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(30, 41, 59);
+      doc.text(p.timeline || '2–3 Weeks', 112, timelineY + 4.5);
+
+      y += metaBoxHeight + 6;
+
+      // Executive Summary Card (Dynamic Height - No Spilling or Overlapping)
+      let rawSummary = (p.projectSummary || '').trim();
+      if (!rawSummary) {
+        rawSummary = `GRO10X AI Agency will deliver a comprehensive digital solution for ${p.clientCompany || p.clientName}, providing end-to-end architecture, implementation, automated workflows, and continuous maintenance under dedicated SLA governance.`;
       }
 
-      // One-time build table
-      if (y > 220) { doc.addPage(); y = 20; }
+      const summaryLines = doc.splitTextToSize(rawSummary, 170);
+      const summaryBoxHeight = Math.max(18, summaryLines.length * 4.1 + 10);
+
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(14, y, 182, summaryBoxHeight, 2, 2, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(14, y, 182, summaryBoxHeight, 2, 2, 'S');
+
+      // Left Emerald accent stripe
+      doc.setFillColor(0, 223, 137);
+      doc.roundedRect(14, y, 2.5, summaryBoxHeight, 1, 1, 'F');
+
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(15, 23, 42);
-      doc.text("Phase 1: One-Time Build Investment", 14, y);
-      y += 4;
+      doc.setFontSize(8.5);
+      doc.setTextColor(0, 150, 90);
+      doc.text("EXECUTIVE SUMMARY & BUSINESS OBJECTIVES", 20, y + 6);
 
-      const oneTimeRows = (p.oneTimeItems || []).map(i => [i.name, i.description, `${currSymbol}${Number(i.amount).toLocaleString()}`]);
-      oneTimeRows.push([{ content: 'Total One-Time Build', colSpan: 2, styles: { fontStyle: 'bold', halign: 'right' } }, { content: `${currSymbol}${Number(p.oneTimeTotal).toLocaleString()}`, styles: { fontStyle: 'bold', textColor: [0, 150, 90] } }]);
-
-      if (doc.autoTable) {
-        doc.autoTable({
-          startY: y,
-          head: [['Component', 'Description', 'Amount']],
-          body: oneTimeRows,
-          theme: 'grid',
-          headStyles: { fillColor: [14, 21, 34], textColor: [255, 255, 255] },
-          styles: { fontSize: 8, cellPadding: 3 },
-          columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 85 }, 2: { cellWidth: 37, halign: 'right' } }
-        });
-        y = doc.lastAutoTable.finalY + 8;
-      }
-
-      // Recurring table
-      if (y > 220) { doc.addPage(); y = 20; }
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.text("Phase 2: Monthly Infrastructure & Maintenance Retainer", 14, y);
-      y += 4;
-
-      const recRows = (p.recurringItems || []).map(i => [i.name, i.description, `${currSymbol}${Number(i.amount).toLocaleString()} / mo`]);
-      recRows.push([{ content: 'Total Monthly Retainer', colSpan: 2, styles: { fontStyle: 'bold', halign: 'right' } }, { content: `${currSymbol}${Number(p.recurringTotal).toLocaleString()}/mo`, styles: { fontStyle: 'bold', textColor: [6, 182, 212] } }]);
-
-      if (doc.autoTable) {
-        doc.autoTable({
-          startY: y,
-          head: [['Service / Resource', 'Description', 'Monthly Fee']],
-          body: recRows,
-          theme: 'grid',
-          headStyles: { fillColor: [14, 21, 34], textColor: [255, 255, 255] },
-          styles: { fontSize: 8, cellPadding: 3 },
-          columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 85 }, 2: { cellWidth: 37, halign: 'right' } }
-        });
-        y = doc.lastAutoTable.finalY + 8;
-      }
-
-      // Commercial Terms
-      if (y > 240) { doc.addPage(); y = 20; }
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text("Commercial Terms:", 14, y);
-      y += 5;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      const termsLines = doc.splitTextToSize(p.terms || 'Standard terms apply.', 182);
+      doc.setTextColor(51, 65, 85);
+      doc.text(summaryLines, 20, y + 11);
+
+      y += summaryBoxHeight + 8;
+
+      // Section 1: Scope Deliverables Table
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      doc.text("1. Key Deliverables & System Architecture", 14, y);
+      y += 4;
+
+      const scopeRows = (p.scopeItems || []).map((s, idx) => [
+        `0${idx + 1}. ${s.title}`,
+        s.description
+      ]);
+
+      if (doc.autoTable) {
+        doc.autoTable({
+          startY: y,
+          head: [['Deliverable Component', 'Detailed Scope of Work & Deliverables']],
+          body: scopeRows,
+          theme: 'striped',
+          headStyles: {
+            fillColor: [14, 21, 34],
+            textColor: [0, 223, 137],
+            fontStyle: 'bold',
+            fontSize: 8,
+            cellPadding: 3.5
+          },
+          styles: {
+            fontSize: 7.5,
+            cellPadding: 3.5,
+            textColor: [30, 41, 59],
+            valign: 'middle'
+          },
+          alternateRowStyles: {
+            fillColor: [248, 250, 252]
+          },
+          columnStyles: {
+            0: { cellWidth: 55, fontStyle: 'bold' },
+            1: { cellWidth: 127 }
+          },
+          margin: { left: 14, right: 14 },
+          pageBreak: 'auto'
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      }
+
+      // If y > 165mm, transition cleanly to Page 2 with subheader so Page 2 is full and executive
+      if (y > 165) {
+        doc.addPage();
+        drawSubHeader(doc);
+        y = 24;
+      }
+
+      // Section 2: Phase 1 One-Time Build Investment
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      doc.text("2. Phase 1: One-Time Build Investment", 14, y);
+      y += 4;
+
+      const oneTimeRows = (p.oneTimeItems || []).map(i => [
+        i.name,
+        i.description,
+        `${currSymbol}${Number(i.amount).toLocaleString()}`
+      ]);
+      oneTimeRows.push([
+        { content: 'Total Phase 1 Build Investment', colSpan: 2, styles: { fontStyle: 'bold', halign: 'right', fillColor: [241, 245, 249] } },
+        { content: `${currSymbol}${Number(p.oneTimeTotal).toLocaleString()}`, styles: { fontStyle: 'bold', halign: 'right', textColor: [0, 150, 90], fillColor: [241, 245, 249] } }
+      ]);
+
+      if (doc.autoTable) {
+        doc.autoTable({
+          startY: y,
+          head: [['Build Component', 'Description of Implementation', 'Investment']],
+          body: oneTimeRows,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [14, 21, 34],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 8,
+            cellPadding: 3.5
+          },
+          styles: {
+            fontSize: 7.5,
+            cellPadding: 3.5,
+            textColor: [30, 41, 59]
+          },
+          columnStyles: {
+            0: { cellWidth: 55, fontStyle: 'bold' },
+            1: { cellWidth: 90 },
+            2: { cellWidth: 37, halign: 'right' }
+          },
+          margin: { left: 14, right: 14 }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      }
+
+      // Check height before Phase 2
+      if (y > 200) {
+        doc.addPage();
+        drawSubHeader(doc);
+        y = 24;
+      }
+
+      // Section 3: Phase 2 Monthly Retainer
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      doc.text("3. Phase 2: Monthly Infrastructure, Operations & SLA Retainer", 14, y);
+      y += 4;
+
+      const recRows = (p.recurringItems || []).map(i => [
+        i.name,
+        i.description,
+        `${currSymbol}${Number(i.amount).toLocaleString()} / mo`
+      ]);
+      recRows.push([
+        { content: 'Total Monthly Recurring Retainer', colSpan: 2, styles: { fontStyle: 'bold', halign: 'right', fillColor: [241, 245, 249] } },
+        { content: `${currSymbol}${Number(p.recurringTotal).toLocaleString()} / mo`, styles: { fontStyle: 'bold', halign: 'right', textColor: [6, 182, 212], fillColor: [241, 245, 249] } }
+      ]);
+
+      if (doc.autoTable) {
+        doc.autoTable({
+          startY: y,
+          head: [['Service / Resource', 'SLA Support & Operational Maintenance', 'Monthly Fee']],
+          body: recRows,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [14, 21, 34],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 8,
+            cellPadding: 3.5
+          },
+          styles: {
+            fontSize: 7.5,
+            cellPadding: 3.5,
+            textColor: [30, 41, 59]
+          },
+          columnStyles: {
+            0: { cellWidth: 55, fontStyle: 'bold' },
+            1: { cellWidth: 90 },
+            2: { cellWidth: 37, halign: 'right' }
+          },
+          margin: { left: 14, right: 14 }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      }
+
+      // Check height before Commercial Terms
+      if (y > 215) {
+        doc.addPage();
+        drawSubHeader(doc);
+        y = 24;
+      }
+
+      // Section 4: Commercial Terms & Governance
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text("4. Commercial Terms & Engagement Governance", 14, y);
+      y += 5;
+
+      const termsText = (p.terms || '1. 50% mobilization advance upon signing, 50% upon project handover and UAT sign-off.\n2. Monthly retainer billed in advance at the start of each service cycle.\n3. Client retains full proprietary ownership of intellectual property and conversation logs.\n4. Standard 30-day post-delivery bug-fix warranty shield included.').trim();
+      const termsLines = doc.splitTextToSize(termsText, 182);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(71, 85, 105);
       doc.text(termsLines, 14, y);
+      y += termsLines.length * 3.8 + 8;
+
+      // Section 5: Executive Sign-off & Acceptance Block
+      if (y > 235) {
+        doc.addPage();
+        drawSubHeader(doc);
+        y = 24;
+      }
+
+      // Sign-off Card
+      const signBoxY = y;
+      const signBoxHeight = 32;
+
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(14, signBoxY, 182, signBoxHeight, 2, 2, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(14, signBoxY, 182, signBoxHeight, 2, 2, 'S');
+
+      // Left Signature: GRO10X
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("PREPARED & AUTHORIZED BY", 20, signBoxY + 6);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text("GRO10X AI AGENCY", 20, signBoxY + 11);
+
+      doc.setDrawColor(148, 163, 184);
+      doc.setLineWidth(0.3);
+      doc.line(20, signBoxY + 22, 90, signBoxY + 22);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Firoz Uddin Ahmed · Founder & Technology Admin", 20, signBoxY + 26);
+      doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 20, signBoxY + 30);
+
+      // Right Signature: Client
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("ACCEPTED & AGREED BY", 112, signBoxY + 6);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(15, 23, 42);
+      const clientSignName = (p.clientCompany || p.clientName || 'CLIENT PARTNER').toUpperCase();
+      doc.text(doc.splitTextToSize(clientSignName, 78)[0], 112, signBoxY + 11);
+
+      doc.line(112, signBoxY + 22, 186, signBoxY + 22);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Authorized Signatory · Signature & Stamp", 112, signBoxY + 26);
+      doc.text("Date: ________________________", 112, signBoxY + 30);
+
+      // Running Footer on Every Page
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.4);
+        doc.line(14, 286, 196, 286);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(148, 163, 184);
+        doc.text("GRO10X AI Agency · Institutional AI Solutions · gro10x.ai · Dhaka, BD · +880 1711-019550", 14, 291);
+        doc.text(`Page ${i} of ${totalPages}`, 182, 291);
+      }
 
       doc.save(`GRO10X_Proposal_${p.id || '2026'}_${(p.clientName || 'Client').replace(/\s+/g, '_')}.pdf`);
-      showToast('📄 Proposal PDF downloaded successfully!');
+      showToast('📄 Executive Proposal PDF generated & downloaded successfully!');
     }
 
     document.addEventListener('DOMContentLoaded', loadProposal);
