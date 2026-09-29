@@ -102,7 +102,7 @@
     },
     {
       "path": "/api/cron/dce-renewals",
-      "schedule": "0 3,15 * * *"
+      "schedule": "0 15 * * *"
     },
     {
       "path": "/api/cron/warranty-check",
@@ -110,7 +110,7 @@
     },
     {
       "path": "/api/cron/defect-escalation",
-      "schedule": "0 * * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/weekly-executive",
