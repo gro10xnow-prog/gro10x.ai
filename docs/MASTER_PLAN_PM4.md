@@ -54,7 +54,7 @@ This plan is the result of a full multi-stakeholder audit across the **Core OS I
 
 **Verification:** `node scripts/check-production-readiness.js` must remain 10/10 ✅
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -67,7 +67,7 @@ This plan is the result of a full multi-stakeholder audit across the **Core OS I
 **Files to Change:**
 - `public/js/auth-session.js:273` — Replace `GRO10XAuth.clearSession()` with `GRO10XAuth.logout()`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -80,7 +80,7 @@ This plan is the result of a full multi-stakeholder audit across the **Core OS I
 **Files to Change:**
 - `public/client/modules/account.js:22` — Replace with: `const amPhone = amDetails.phone || '+880 1711-019550';`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -96,7 +96,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 - `src/routes/proposals.js` — Move `router.get(['/public/:token', '/:token'], ...)` BEFORE `router.get('/:id', requireAuth, ...)`, OR add token format check to `/:id` so non-UUID tokens fall through with `next()`
 - `server.js` — Add `app.get(['/p/:token', '/proposal/:token'], ...)` to serve `public/proposal.html`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -109,7 +109,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 **Files to Change:**
 - `src/routes/cron.js:242-246` — Fix: `const diffDays = Math.floor((now - dateToCheck) / (1000 * 60 * 60 * 24)); return diffDays >= 7;`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -123,7 +123,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 - `src/routes/auth.js:413` — Add `res.clearCookie('gro10x_token', { path: '/', httpOnly: true, secure: true, sameSite: 'Strict' });`
 - `public/js/auth-session.js:161` — Also call `await fetch('/api/auth/logout', { method: 'POST' })` on client-side logout
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -136,7 +136,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 **Files to Change:**
 - `src/routes/auth.js:256` — Replace `userObj.telegramId` with `(userObj.telegram_id || userObj.telegramId)`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -149,7 +149,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 **Files to Change:**
 - `public/app/modules/crm.js:878` — Replace `openCreateModal()` with `openProposalModal()`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -163,7 +163,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 - `src/routes/proposals.js:578-590` — Add `client_id: proposal.client_id || proposal.clientId || null`
 - `src/routes/clients.js:1018-1031` — Add `client_id: id` (the client's ID from `req.params.id`)
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -190,7 +190,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 
 **QA Suite to Update:** `extension/gro10x-qa-runner/suites/proposals-qa.js`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -212,7 +212,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 
 **QA Suite to Update:** `extension/gro10x-qa-runner/suites/digistore-qa.js`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 

@@ -773,7 +773,13 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
 // AI PROPOSAL DRAFTING (Gemini Integration)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.5-pro', 'gemini-1.5-pro'];
+const GEMINI_MODELS = [
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-3.1-flash-lite-preview',
+  'gemma-4-26b-a4b-it',
+  'gemini-flash-latest'
+];
 
 function callGeminiAPI(model, prompt, key) {
   return new Promise((resolve, reject) => {
@@ -859,8 +865,11 @@ router.post('/ai-draft', requireAuth, async (req, res) => {
   const key = process.env.GEMINI_API_KEY;
 
   function buildFallbackDraft() {
-    const isNHF = /national\s*housing|nhf|mortgage|home\s*loan|rehab/i.test(notes);
-    if (isNHF) {
+    const isBrandRevamp = /brand|revamp|website|cms|channel|facebook|linkedin|youtube|lead\s*collection|pilot/i.test(notes);
+    const isMortgageOS = /mortgage|home\s*loan|rehab/i.test(notes);
+
+    // If explicit mortgage request and not a brand revamp, return the enterprise mortgage preset (used in tests & mortgage proposals)
+    if (isMortgageOS && !isBrandRevamp) {
       const p = ENTERPRISE_PRESETS.NATIONAL_HOUSING_FINANCE_AI_OS;
       return {
         clientName: clientName || p.clientName,
@@ -876,6 +885,36 @@ router.post('/ai-draft', requireAuth, async (req, res) => {
         currency: selectedCurrency,
         timeline: p.timeline,
         terms: p.terms
+      };
+    }
+
+    if (isBrandRevamp) {
+      const isNHF = /national\s*housing|nhf/i.test(notes);
+      return {
+        clientName: clientName || (isNHF ? 'National Housing Finance PLC' : 'Client Partner'),
+        clientCompany: isNHF ? 'National Housing Finance Limited' : (clientName || 'Enterprise Partner'),
+        projectTitle: isNHF
+          ? 'Omnichannel Brand Transformation, Digital Revamp & Performance Lead Engine'
+          : 'Omnichannel Brand Transformation & Integrated Growth Engine',
+        projectSummary: `Comprehensive digital presence revamp and lead generation infrastructure. Phase 1 executes a complete overhaul of web and multi-channel touchpoints (Website, LinkedIn, Facebook, YouTube), coupled with an integrated CMS, automated lead capture, and a 3-month performance pilot.`,
+        canonicalServiceCode: 'BRAND-TRANSFORM-PILOT',
+        scopeItems: [
+          { title: 'Digital Brand & Channel Overhaul', description: 'Complete design and messaging revamp across Website, LinkedIn, Facebook page, YouTube channel, and brand touchpoints.' },
+          { title: 'Integrated CMS & Lead Capture Architecture', description: 'Modern CMS setup with high-converting landing pages, lead capture funnels, and CRM pipeline synchronization.' },
+          { title: 'Monthly Multi-Channel Content & Management', description: 'Active content creation, scheduled distribution, community engagement, and brand channel maintenance.' },
+          { title: 'Qualified Lead Operations & Revenue Engine', description: 'End-to-end performance funnel optimization and qualified lead handoff with performance-linked attribution.' }
+        ],
+        oneTimeItems: [
+          { name: 'Website Revamp & Channel Architecture Overhaul', description: 'Initial complete overhaul of web portal, CMS setup, and communication channels (Website, LinkedIn, Facebook, YouTube)', amount: selectedCurrency === 'USD' ? 250 : 25000 }
+        ],
+        recurringItems: [
+          { name: 'Monthly Content Creation, Channel Maintenance & Lead Ops', description: 'Ongoing monthly content production, channel management, and lead generation operations (3-Month Pilot)', amount: selectedCurrency === 'USD' ? 250 : 25000, frequency: 'Monthly' }
+        ],
+        oneTimeTotal: selectedCurrency === 'USD' ? 250 : 25000,
+        recurringTotal: selectedCurrency === 'USD' ? 250 : 25000,
+        currency: selectedCurrency,
+        timeline: '3-Month Pilot ending December 27',
+        terms: 'Pilot Phase: BDT 50,000/month (BDT 25,000 platform overhaul + BDT 25,000 monthly maintenance/content) for the first 3 months. Performance Revenue Share: Qualified lead conversion incentive agreed upon milestone delivery. Terms: 50% advance on monthly cycle; cancel or renew at end of 3-month pilot evaluation.'
       };
     }
 
@@ -916,6 +955,7 @@ You are the Chief AI Solutions Architect and Proposal Writer for "GRO10X" (gro10
 
 A team member has just completed a client meeting or call and dumped their voice notes / context below.
 Transform this raw briefing into a high-converting, professional, executive-grade project proposal.
+Pay close attention to specific budgets, tasks, phases, and commercial structure described in the notes.
 
 RAW BRIEFING NOTES:
 """
@@ -974,14 +1014,16 @@ You must respond with valid JSON strictly conforming to this JSON schema:
       }
     }
 
+    let generatedBy = 'gemini';
     if (!parsedDraft) {
       parsedDraft = buildFallbackDraft();
+      generatedBy = 'template_fallback';
     }
 
     return res.json({
       success: true,
       draft: parsedDraft,
-      generatedBy: 'gemini'
+      generatedBy
     });
   } catch (err) {
     console.error('AI Draft Generation error:', err);

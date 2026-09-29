@@ -10,7 +10,7 @@
 const https = require('https');
 const { DEFAULT_SERVICES } = require('../constants/services');
 
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
+const GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-flash-lite-latest', 'gemini-flash-latest'];
 
 /**
  * 10-Point Gig Health Check Engine

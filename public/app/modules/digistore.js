@@ -215,7 +215,7 @@ var DigistoreModule = window.DigistoreModule || {
         sse.onmessage = (e) => {
           try {
             const payload = JSON.parse(e.data);
-            if (payload.type && payload.type.startsWith('digistore_')) {
+            if (payload.type && (payload.type.startsWith('digistore_') || payload.type.startsWith('dce_') || payload.type.startsWith('DCE_'))) {
               this.handleRealtimeEvent(payload);
             }
           } catch (err) {}
@@ -226,6 +226,12 @@ var DigistoreModule = window.DigistoreModule || {
         sse.addEventListener('digistore_order_updated', (e) => {
           try { this.handleRealtimeEvent({ type: 'digistore_order_updated', data: JSON.parse(e.data) }); } catch (err) {}
         });
+        sse.addEventListener('dce_order_created', (e) => {
+          try { this.handleRealtimeEvent({ type: 'dce_order_created', data: JSON.parse(e.data) }); } catch (err) {}
+        });
+        sse.addEventListener('dce_order_update', (e) => {
+          try { this.handleRealtimeEvent({ type: 'dce_order_update', data: JSON.parse(e.data) }); } catch (err) {}
+        });
         this._sseConnected = true;
       }
     } catch (e) {
@@ -235,11 +241,13 @@ var DigistoreModule = window.DigistoreModule || {
 
   handleRealtimeEvent(event) {
     const { type, data } = event;
-    const orderNum = data?.order_number || data?.orderNumber || 'Order Event';
-    const amount = data?.sale_price ? ` (৳${Number(data.sale_price).toLocaleString()})` : '';
+    const orderNum = data?.order_number || data?.orderNumber || data?.external_order_id || data?.id || 'Order Event';
+    const amount = data?.sale_price ? ` (৳${Number(data.sale_price).toLocaleString()})` : (data?.total_amount ? ` ($${Number(data.total_amount).toFixed(2)})` : '');
 
-    if (type === 'digistore_order_created') {
-      this.showToast(`🛒 নতুন অর্ডার এসেছে: ${orderNum}${amount}`, 'success');
+    if (type === 'digistore_order_created' || type === 'dce_order_created') {
+      this.showToast(`🛒 New Order Received: ${orderNum}${amount}`, 'success');
+    } else if (type === 'dce_order_update' || type === 'DCE_ORDER_STATUS_CHANGED') {
+      this.showToast(`🔄 DCE Omnichannel Orders Synced`, 'info');
     } else if (type === 'digistore_payment_proof') {
       this.showToast(`📸 পেমেন্ট স্ক্রিনশট আপলোড হয়েছে: ${orderNum}`, 'info');
     } else if (type === 'digistore_delivered') {

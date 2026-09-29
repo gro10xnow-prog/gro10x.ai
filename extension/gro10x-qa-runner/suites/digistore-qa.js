@@ -1,6 +1,6 @@
 /**
  * DigiVault Commerce & Subscriptions QA Test Suite (#digistore)
- * 18-Step Comprehensive Automated Validation
+ * 19-Step Comprehensive Automated Validation
  */
 
 const DIGISTORE_QA_SUITE = {
@@ -189,6 +189,15 @@ const DIGISTORE_QA_SUITE = {
       assertion: {
         type: 'custom_check',
         check: 'assert_clean_audit'
+      }
+    },
+    {
+      id: 'step-19',
+      title: '19. DCE Omnichannel Orders Realtime & Persistence Verification',
+      action: 'none',
+      assertion: {
+        type: 'custom_check',
+        check: 'assert_dce_orders_persistence'
       }
     }
   ]

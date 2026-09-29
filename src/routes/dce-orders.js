@@ -14,6 +14,8 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { ok, fail, paginated, getPaginationParams, asyncHandler } = require('../utils/response');
 const { getConnector, ingestCanonicalOrder } = require('../services/dce-connectors');
@@ -23,106 +25,134 @@ const { requireDCEAdmin } = require('../middleware/dce-auth');
 const { trackLimiter, isValidUUID, EMAIL_REGEX } = require('../middleware/dce-validate');
 const { validateCoupon } = require('../services/dce-promo');
 const { fulfillOrder } = require('../services/dce-fulfillment');
+const { sendTelegramNotification } = require('../services/bot/notifications');
 
-// In-Memory Order Fallback for Instant Testing & Offline Resilience
-let memOrders = [
-  {
-    id: 'ord-etsy-01',
-    channel_code: 'ETSY',
-    external_order_id: 'ETSY-REC-902184',
-    customer_id: 'cust-sarah',
-    customer_name: 'Sarah Miller',
-    customer_email: 'sarah.miller@example.com',
-    brand_id: 'b-pq-01',
-    brand_name: 'PlannerQueen',
-    total_amount: 9.99,
-    currency: 'USD',
-    channel_fee: 1.15,
-    net_amount: 8.84,
-    status: 'COMPLETED',
-    fulfillment_type: 'DIGITAL',
-    placed_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-    items: [
-      {
-        id: 'item-01',
-        sku_id: 'sku-01',
-        sku: 'PLNRQN-PDF-ETSY-USD9.99',
-        title: 'Daily & Weekly Planner GoodNotes Aesthetic Digital Template 2026',
-        quantity: 1,
-        unit_price: 9.99,
-        line_total: 9.99
+const DB_JSON_PATH = path.join(__dirname, '../../data/db.json');
+
+function readLocalDCEOrders() {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed.dce_orders)) {
+        return parsed.dce_orders;
       }
-    ],
-    events: [
-      { id: 'ev-01', event_type: 'ORDER_SYNCED', new_status: 'COMPLETED', source: 'poll', created_at: new Date(Date.now() - 172800000).toISOString() }
-    ]
-  },
-  {
-    id: 'ord-gum-02',
-    channel_code: 'GUMROAD',
-    external_order_id: 'GUM-SALE-783921',
-    customer_id: 'cust-sarah',
-    customer_name: 'Sarah Miller',
-    customer_email: 'sarah.miller@example.com',
-    brand_id: 'b-pq-01',
-    brand_name: 'PlannerQueen',
-    total_amount: 7.99,
-    currency: 'USD',
-    channel_fee: 1.30,
-    net_amount: 6.69,
-    status: 'COMPLETED',
-    fulfillment_type: 'DIGITAL',
-    placed_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-    items: [
-      {
-        id: 'item-02',
-        sku_id: 'sku-02',
-        sku: 'PLNRQN-PDF-GUMROAD-USD7.99',
-        title: 'PlannerQueen Digital Daily & Weekly System (PDF Download)',
-        quantity: 1,
-        unit_price: 7.99,
-        line_total: 7.99
+    }
+  } catch (_) {}
+  return null;
+}
+
+function writeLocalDCEOrders(orders) {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      parsed.dce_orders = orders;
+      fs.writeFileSync(DB_JSON_PATH, JSON.stringify(parsed, null, 2), 'utf8');
+    }
+  } catch (_) {}
+}
+
+let memOrders = readLocalDCEOrders() || [];
+
+async function getDCEOrdersStore() {
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('dce_orders')
+        .select(`
+          *,
+          dce_brands(name, slug),
+          dce_customers(full_name, email, phone),
+          dce_order_items(
+            id, external_sku_ref, title, quantity, unit_price, line_total, sku_id,
+            dce_skus(sku, format, channel_code)
+          )
+        `)
+        .order('placed_at', { ascending: false });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const formatted = data.map(o => ({
+          ...o,
+          brand_name: o.dce_brands?.name || 'Brand',
+          customer_name: o.dce_customers?.full_name || 'Customer',
+          customer_email: o.dce_customers?.email || '',
+          customer_phone: o.dce_customers?.phone || '',
+          items: o.dce_order_items || []
+        }));
+        memOrders = formatted;
+        writeLocalDCEOrders(memOrders);
+        return memOrders;
       }
-    ],
-    events: [
-      { id: 'ev-02', event_type: 'WEBHOOK_RECEIVED', new_status: 'COMPLETED', source: 'webhook', created_at: new Date(Date.now() - 86400000).toISOString() }
-    ]
-  },
-  {
-    id: 'ord-amz-03',
-    channel_code: 'AMAZON',
-    external_order_id: '114-8392019-3829104',
-    customer_id: 'cust-alex',
-    customer_name: 'Alex Reed',
-    customer_email: 'alex.reed@example.com',
-    brand_id: 'b-pq-01',
-    brand_name: 'PlannerQueen',
-    total_amount: 14.99,
-    currency: 'USD',
-    channel_fee: 2.25,
-    net_amount: 12.74,
-    status: 'DISPATCHED',
-    fulfillment_type: 'PHYSICAL',
-    tracking_number: 'TBA9382019482',
-    shipping_carrier: 'Amazon Logistics',
-    placed_at: new Date(Date.now() - 14400000).toISOString(), // 4 hours ago
-    items: [
-      {
-        id: 'item-03',
-        sku_id: 'sku-03',
-        sku: 'PLNRQN-PRINT-AMAZON-USD14.99',
-        title: 'PlannerQueen Hardcover Daily & Weekly Undated Productivity Journal',
-        quantity: 1,
-        unit_price: 14.99,
-        line_total: 14.99
-      }
-    ],
-    events: [
-      { id: 'ev-03', event_type: 'ORDER_SYNCED', new_status: 'PROCESSING', source: 'poll', created_at: new Date(Date.now() - 14400000).toISOString() },
-      { id: 'ev-04', event_type: 'STATUS_CHANGE', old_status: 'PROCESSING', new_status: 'DISPATCHED', source: 'poll', created_at: new Date(Date.now() - 7200000).toISOString() }
-    ]
+    } catch (_) {}
   }
-];
+
+  const local = readLocalDCEOrders();
+  if (local && Array.isArray(local) && local.length > 0) {
+    memOrders = local;
+    return memOrders;
+  }
+
+  return memOrders;
+}
+
+async function persistDCEOrder(order, isUpdate = false) {
+  if (!order || !order.id) return order;
+
+  // 1. Sync in-memory cache
+  const idx = memOrders.findIndex(o => o.id === order.id || (order.external_order_id && o.external_order_id === order.external_order_id));
+  if (idx !== -1) {
+    memOrders[idx] = { ...memOrders[idx], ...order };
+  } else {
+    memOrders.unshift(order);
+  }
+
+  // 2. Dual-persist to data/db.json
+  writeLocalDCEOrders(memOrders);
+
+  // 3. Persist to Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      const record = {
+        id: order.id,
+        channel_code: order.channel_code,
+        external_order_id: order.external_order_id,
+        customer_id: order.customer_id || null,
+        brand_id: order.brand_id || null,
+        total_amount: Number(order.total_amount || 0),
+        currency: order.currency || 'USD',
+        channel_fee: Number(order.channel_fee || 0),
+        net_amount: Number(order.net_amount !== undefined ? order.net_amount : (order.total_amount || 0)),
+        status: order.status,
+        fulfillment_type: order.fulfillment_type || 'DIGITAL',
+        placed_at: order.placed_at || new Date().toISOString(),
+        raw_payload: order.raw_payload || {},
+        synced_at: new Date().toISOString()
+      };
+      if (isUpdate) {
+        await supabase.from('dce_orders').update(record).eq('id', order.id);
+      } else {
+        await supabase.from('dce_orders').upsert([record]);
+      }
+    } catch (e) {
+      console.warn('[DCE Orders Store] Supabase sync note:', e.message);
+    }
+  }
+
+  return memOrders.find(o => o.id === order.id) || order;
+}
+
+async function deleteDCEOrder(id) {
+  memOrders = memOrders.filter(o => o.id !== id && o.external_order_id !== id);
+  writeLocalDCEOrders(memOrders);
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('dce_orders').delete().or(`id.eq.${id},external_order_id.eq.${id}`);
+    } catch (_) {}
+  }
+}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. ORDER METRICS & KPI AGGREGATION
@@ -165,6 +195,7 @@ router.get('/metrics', requireDCEAdmin, asyncHandler(async (req, res) => {
   }
 
   // Fallback in-memory calculations
+  await getDCEOrdersStore();
   let grossGMV = 0;
   let totalFees = 0;
   let netRevenue = 0;
@@ -244,6 +275,7 @@ router.get('/', requireDCEAdmin, asyncHandler(async (req, res) => {
   }
 
   // Fallback in-memory filtering
+  await getDCEOrdersStore();
   let results = [...memOrders];
   if (channel_code && channel_code !== 'ALL') {
     results = results.filter(o => o.channel_code === channel_code.toUpperCase());
@@ -303,6 +335,7 @@ router.get('/export/csv', requireDCEAdmin, asyncHandler(async (req, res) => {
   }
 
   if (orders.length === 0) {
+    await getDCEOrdersStore();
     orders = [...memOrders];
     if (channel_code && channel_code !== 'ALL') orders = orders.filter(o => o.channel_code === channel_code.toUpperCase());
     if (status && status !== 'ALL') orders = orders.filter(o => o.status === status.toUpperCase());
@@ -353,6 +386,11 @@ router.post('/bulk-status', requireDCEAdmin, asyncHandler(async (req, res) => {
     }
   }
 
+  if (updatedIds.length > 0) {
+    writeLocalDCEOrders(memOrders);
+    broadcast('dce_order_update', memOrders);
+  }
+
   return ok(res, { updatedCount: updatedIds.length, updatedIds, status: newStatus });
 }));
 
@@ -380,7 +418,11 @@ router.get('/:id', requireDCEAdmin, asyncHandler(async (req, res) => {
     } catch (e) {}
   }
 
-  const found = memOrders.find(o => o.id === id || o.external_order_id === id);
+  let found = memOrders.find(o => o.id === id || o.external_order_id === id);
+  if (!found) {
+    await getDCEOrdersStore();
+    found = memOrders.find(o => o.id === id || o.external_order_id === id);
+  }
   if (!found) return fail(res, 'Order not found', 404);
   return ok(res, found);
 }));
@@ -430,6 +472,7 @@ router.put('/:id/status', requireDCEAdmin, asyncHandler(async (req, res) => {
             orderId: id,
             newStatus: status.toUpperCase()
           });
+          broadcast('dce_order_update', memOrders);
         }
 
         return ok(res, updated);
@@ -438,7 +481,11 @@ router.put('/:id/status', requireDCEAdmin, asyncHandler(async (req, res) => {
   }
 
   // Fallback in-memory
-  const idx = memOrders.findIndex(o => o.id === id || o.external_order_id === id);
+  let idx = memOrders.findIndex(o => o.id === id || o.external_order_id === id);
+  if (idx === -1) {
+    await getDCEOrdersStore();
+    idx = memOrders.findIndex(o => o.id === id || o.external_order_id === id);
+  }
   if (idx === -1) return fail(res, 'Order not found', 404);
 
   const oldStatus = memOrders[idx].status;
@@ -452,6 +499,17 @@ router.put('/:id/status', requireDCEAdmin, asyncHandler(async (req, res) => {
     source: actor,
     created_at: new Date().toISOString()
   });
+
+  await persistDCEOrder(memOrders[idx], true);
+
+  if (typeof broadcast === 'function') {
+    broadcast('dce_order_update', memOrders);
+    broadcast({
+      type: 'DCE_ORDER_STATUS_CHANGED',
+      orderId: id,
+      newStatus: status.toUpperCase()
+    });
+  }
 
   return ok(res, memOrders[idx]);
 }));
@@ -570,8 +628,9 @@ router.post('/track', trackLimiter, asyncHandler(async (req, res) => {
 
   // Memory fallback lookup
   if (!order) {
+    await getDCEOrdersStore();
     const foundMem = memOrders.find(o =>
-      (o.id.toLowerCase() === cleanRef.toLowerCase() || o.external_order_id.toLowerCase() === cleanRef.toLowerCase())
+      (o.id.toLowerCase() === cleanRef.toLowerCase() || (o.external_order_id && o.external_order_id.toLowerCase() === cleanRef.toLowerCase()))
     );
 
     if (foundMem) {
@@ -772,8 +831,8 @@ router.post('/checkout', asyncHandler(async (req, res) => {
   const ingestRes = await ingestCanonicalOrder(canonicalPayload, canonicalPayload.rawPayload);
   const orderId = ingestRes.orderId;
 
-  // Also add to memOrders for local continuity if memory mode
-  memOrders.unshift({
+  // Persist canonical order to dual storage (local db.json + Supabase)
+  const createdOrder = {
     id: orderId,
     channel_code: 'DIRECT',
     external_order_id: externalOrderId,
@@ -783,14 +842,15 @@ router.post('/checkout', asyncHandler(async (req, res) => {
     brand_id: 'b-pq-01',
     brand_name: 'PlannerQueen',
     total_amount: finalTotal,
-    currency: 'USD',
+    currency: sku.currency || 'USD',
     channel_fee: 0.00,
     net_amount: finalTotal,
     status: isPhysical ? 'PROCESSING' : 'COMPLETED',
     fulfillment_type: isPhysical ? 'PHYSICAL' : 'DIGITAL',
     placed_at: canonicalPayload.placed_at,
     items: canonicalPayload.items
-  });
+  };
+  await persistDCEOrder(createdOrder);
 
   // 4. Trigger Automatic Fulfillment
   let licenseKey = null;
@@ -811,6 +871,31 @@ router.post('/checkout', asyncHandler(async (req, res) => {
     const seg2 = crypto.randomBytes(4).toString('hex').toUpperCase();
     const seg3 = crypto.randomBytes(4).toString('hex').toUpperCase();
     licenseKey = `GRO-${seg1}-${seg2}-${seg3}`;
+  }
+
+  // Real-time SSE Broadcasts
+  if (typeof broadcast === 'function') {
+    broadcast('dce_order_created', createdOrder);
+    broadcast('dce_order_update', memOrders);
+    broadcast({ type: 'DCE_ORDER_CREATED', order: createdOrder });
+  }
+
+  // Telegram Owner Notification
+  const telegramTarget = process.env.OWNER_TELEGRAM_ID || process.env.TELEGRAM_ADMIN_CHAT_ID;
+  if (telegramTarget && typeof sendTelegramNotification === 'function') {
+    try {
+      const text = `🛍️ *New Direct Order Placed!*\n\n` +
+        `• *Order:* \`${externalOrderId}\`\n` +
+        `• *Customer:* ${customer.name} (${customer.email})\n` +
+        `• *Total:* $${finalTotal.toFixed(2)} ${sku.currency || 'USD'}\n` +
+        `• *Product:* ${sku.title}\n` +
+        `• *Fulfillment:* ${isPhysical ? 'PHYSICAL' : 'DIGITAL'}\n` +
+        `• *Status:* ${isPhysical ? 'PROCESSING' : 'COMPLETED'}\n` +
+        (licenseKey ? `• *License:* \`${licenseKey}\`\n` : '');
+      sendTelegramNotification(telegramTarget, text);
+    } catch (err) {
+      console.warn('[DCE Telegram Alert Note]:', err.message);
+    }
   }
 
   return ok(res, {
@@ -834,5 +919,8 @@ router.post('/checkout', asyncHandler(async (req, res) => {
 }));
 
 router.getOrders = () => memOrders;
+router.getDCEOrdersStore = getDCEOrdersStore;
+router.persistDCEOrder = persistDCEOrder;
+router.deleteDCEOrder = deleteDCEOrder;
 
 module.exports = router;
