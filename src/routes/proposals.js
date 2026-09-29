@@ -521,7 +521,7 @@ async function persistProposal(proposal, isUpdate = false) {
   }
 
   // 3. Persist to Supabase
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && process.env.NODE_ENV !== 'test') {
     try {
       if (isUpdate) {
         await supabase.from('proposals').update(proposal).eq('id', proposal.id);
@@ -556,7 +556,7 @@ async function deleteProposalFromStore(id) {
     }
   } catch (_) {}
 
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && process.env.NODE_ENV !== 'test') {
     try {
       await supabase.from('proposals').delete().eq('id', id);
     } catch (_) {}
@@ -1148,21 +1148,24 @@ You must respond with valid JSON strictly conforming to this JSON schema:
 router.get(['/public/:token', '/:token'], async (req, res) => {
   const { token } = req.params;
   try {
-    let proposal = null;
+    const store = await getProposalsStore();
+    const cleanTok = String(token || '').toLowerCase().trim();
 
-    if (isSupabaseConfigured()) {
+    let proposal = store.find(p =>
+      (p.share_token && p.share_token.toLowerCase() === cleanTok) ||
+      (p.shareToken && p.shareToken.toLowerCase() === cleanTok) ||
+      (p.id && p.id.toLowerCase() === cleanTok)
+    );
+
+    if (!proposal && isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
           .from('proposals')
           .select('*')
-          .eq('share_token', token)
+          .or(`share_token.eq.${token},id.eq.${token}`)
           .maybeSingle();
         if (!error && data) proposal = data;
       } catch (e) {}
-    }
-
-    if (!proposal) {
-      proposal = inMemoryProposals.find(p => p.share_token === token || p.id === token);
     }
 
     if (!proposal) {
@@ -1221,14 +1224,19 @@ router.post(['/public/:token/accept', '/:token/accept'], async (req, res) => {
   const { acceptedBy, clientNote } = req.body;
 
   try {
-    let proposal = null;
-    const memIdx = inMemoryProposals.findIndex(p => p.share_token === token || p.id === token);
+    const store = await getProposalsStore();
+    const cleanTok = String(token || '').toLowerCase().trim();
+    let proposal = store.find(p =>
+      (p.share_token && p.share_token.toLowerCase() === cleanTok) ||
+      (p.shareToken && p.shareToken.toLowerCase() === cleanTok) ||
+      (p.id && p.id.toLowerCase() === cleanTok)
+    );
 
-    if (memIdx !== -1) {
-      proposal = inMemoryProposals[memIdx];
-    } else if (isSupabaseConfigured()) {
-      const { data } = await supabase.from('proposals').select('*').eq('share_token', token).maybeSingle();
-      if (data) proposal = data;
+    if (!proposal && isSupabaseConfigured()) {
+      try {
+        const { data } = await supabase.from('proposals').select('*').or(`share_token.eq.${token},id.eq.${token}`).maybeSingle();
+        if (data) proposal = data;
+      } catch (_) {}
     }
 
     if (!proposal) {
@@ -1489,10 +1497,19 @@ router.post(['/public/:token/schedule-call', '/:token/schedule-call'], async (re
   const { name, phone, email, note } = req.body;
 
   try {
-    let proposal = inMemoryProposals.find(p => p.share_token === token || p.id === token);
+    const store = await getProposalsStore();
+    const cleanTok = String(token || '').toLowerCase().trim();
+    let proposal = store.find(p =>
+      (p.share_token && p.share_token.toLowerCase() === cleanTok) ||
+      (p.shareToken && p.shareToken.toLowerCase() === cleanTok) ||
+      (p.id && p.id.toLowerCase() === cleanTok)
+    );
+
     if (!proposal && isSupabaseConfigured()) {
-      const { data } = await supabase.from('proposals').select('*').eq('share_token', token).maybeSingle();
-      if (data) proposal = data;
+      try {
+        const { data } = await supabase.from('proposals').select('*').or(`share_token.eq.${token},id.eq.${token}`).maybeSingle();
+        if (data) proposal = data;
+      } catch (_) {}
     }
 
     if (!proposal) {

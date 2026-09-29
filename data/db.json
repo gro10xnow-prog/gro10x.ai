@@ -486,7 +486,7 @@
   "proposals": [
     {
       "id": "PROP-2026-005",
-      "share_token": "10fd600fa9db",
+      "share_token": "5d73d6e92993",
       "client_name": "City Bank Capital PLC",
       "client_company": "City Bank Capital",
       "client_email": "corporate@citybankcapital.com",
@@ -525,11 +525,11 @@
       "status": "Draft",
       "created_by": "GRO-001",
       "view_count": 0,
-      "viewed_at": "2026-09-29T08:52:21.279Z",
+      "viewed_at": null,
       "accepted_at": null,
       "converted_project_id": null,
-      "created_at": "2026-09-29T09:03:02.964Z",
-      "updated_at": "2026-09-29T09:03:02.964Z"
+      "created_at": "2026-09-29T09:20:18.850Z",
+      "updated_at": "2026-09-29T09:20:18.850Z"
     },
     {
       "id": "PROP-2026-002",

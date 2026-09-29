@@ -886,7 +886,7 @@
     }
 
     async function loadProposal() {
-      const token = getQueryParam('t') || getQueryParam('token') || 'ucb-meta-ai-7x9q';
+      const token = getQueryParam('t') || getQueryParam('token') || getQueryParam('id') || 'nhf-brand-transformation-2026';
       try {
         const res = await fetch(`/api/public/proposals/${token}`);
         if (!res.ok) throw new Error('Proposal not found');
