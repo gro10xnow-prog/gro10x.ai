@@ -1111,14 +1111,25 @@ window.APP_MODULES['proposals.js'] = {
 
     try {
       if (editId) {
-        await APP_API.patch(`/proposals/${editId}`, payload);
+        const updateRes = await APP_API.patch(`/proposals/${editId}`, payload);
+        const updated = updateRes?.data?.proposal || updateRes?.proposal;
+        if (updated) {
+          const idx = this.proposals.findIndex(p => p.id === editId);
+          if (idx !== -1) this.proposals[idx] = updated;
+        }
         if (window.showToast) window.showToast('✅ Proposal updated successfully', 'success');
       } else {
-        await APP_API.post('/proposals', payload);
+        const createRes = await APP_API.post('/proposals', payload);
+        const created = createRes?.data?.proposal || createRes?.proposal;
+        if (created && !this.proposals.some(p => p.id === created.id)) {
+          this.proposals.unshift(created);
+        }
         if (window.showToast) window.showToast('🚀 Proposal created & link activated!', 'success');
       }
 
       this.closeProposalModal();
+      this.renderTable();
+      this.updateKPIS();
       await this.loadProposals();
     } catch (err) {
       console.error('Save proposal failed:', err);

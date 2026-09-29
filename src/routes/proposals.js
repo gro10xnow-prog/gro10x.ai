@@ -359,6 +359,86 @@ function writeLocalDBProposals(proposals) {
   } catch (_) {}
 }
 
+function proposalToQuoteRecord(p) {
+  const meta = {
+    share_token: p.share_token || p.shareToken,
+    client_company: p.client_company || p.clientCompany || '',
+    client_email: p.client_email || p.clientEmail || '',
+    client_phone: p.client_phone || p.clientPhone || '',
+    project_summary: p.project_summary || p.projectSummary || '',
+    canonical_service_code: p.canonical_service_code || p.canonicalServiceCode || null,
+    scope_items: p.scope_items || p.scopeItems || [],
+    one_time_items: p.one_time_items || p.oneTimeItems || [],
+    recurring_items: p.recurring_items || p.recurringItems || [],
+    one_time_total: Number(p.one_time_total !== undefined ? p.one_time_total : (p.oneTimeTotal || 0)),
+    recurring_total: Number(p.recurring_total !== undefined ? p.recurring_total : (p.recurringTotal || 0)),
+    timeline: p.timeline || '2–3 Weeks',
+    terms: p.terms || '',
+    notes: p.notes || '',
+    created_by: p.created_by || p.createdBy || 'GRO-001',
+    view_count: Number(p.view_count || p.viewCount || 0),
+    viewed_at: p.viewed_at || p.viewedAt || null,
+    accepted_at: p.accepted_at || p.acceptedAt || null,
+    converted_project_id: p.converted_project_id || p.convertedProjectId || null
+  };
+
+  return {
+    id: p.id,
+    client_name: p.client_name || p.clientName || '',
+    project_title: p.project_title || p.projectTitle || '',
+    scope: JSON.stringify(meta.scope_items),
+    amount: meta.one_time_total,
+    currency: p.currency || 'BDT',
+    status: p.status || 'Draft',
+    valid_until: p.valid_until || p.validUntil || null,
+    line_items: JSON.stringify(meta),
+    notes: p.notes || '',
+    updated_at: p.updated_at || new Date().toISOString()
+  };
+}
+
+function quoteRecordToProposal(q) {
+  let meta = {};
+  try {
+    meta = typeof q.line_items === 'string' ? JSON.parse(q.line_items) : (q.line_items || {});
+  } catch (_) {}
+
+  let scopeItems = [];
+  try {
+    scopeItems = typeof q.scope === 'string' ? JSON.parse(q.scope) : (q.scope || []);
+  } catch (_) {}
+
+  return {
+    id: q.id,
+    share_token: meta.share_token || q.id.toLowerCase(),
+    client_name: q.client_name,
+    client_company: meta.client_company || '',
+    client_email: meta.client_email || '',
+    client_phone: meta.client_phone || '',
+    project_title: q.project_title,
+    project_summary: meta.project_summary || '',
+    canonical_service_code: meta.canonical_service_code || null,
+    scope_items: meta.scope_items && meta.scope_items.length > 0 ? meta.scope_items : scopeItems,
+    one_time_items: meta.one_time_items || [],
+    recurring_items: meta.recurring_items || [],
+    one_time_total: Number(meta.one_time_total !== undefined ? meta.one_time_total : q.amount || 0),
+    recurring_total: Number(meta.recurring_total || 0),
+    currency: q.currency || 'BDT',
+    timeline: meta.timeline || '2–3 Weeks',
+    valid_until: q.valid_until,
+    terms: meta.terms || '',
+    notes: q.notes || meta.notes || '',
+    status: q.status || 'Draft',
+    created_by: meta.created_by || 'GRO-001',
+    view_count: Number(meta.view_count || 0),
+    viewed_at: meta.viewed_at || null,
+    accepted_at: meta.accepted_at || null,
+    converted_project_id: meta.converted_project_id || null,
+    created_at: q.created_at || meta.created_at || new Date().toISOString(),
+    updated_at: q.updated_at || new Date().toISOString()
+  };
+}
+
 let inMemoryProposals = readLocalDBProposals() || [...DEFAULT_PROPOSALS];
 
 async function getProposalsStore() {
@@ -370,6 +450,20 @@ async function getProposalsStore() {
         .order('created_at', { ascending: false });
       if (!error && Array.isArray(data) && data.length > 0) {
         inMemoryProposals = data;
+        writeLocalDBProposals(inMemoryProposals);
+        return inMemoryProposals;
+      }
+    } catch (_) {}
+
+    // Cloud fallback for Vercel: read from Supabase quotes table where id begins with PROP-
+    try {
+      const { data: qData, error: qErr } = await supabase
+        .from('quotes')
+        .select('*')
+        .like('id', 'PROP-%')
+        .order('created_at', { ascending: false });
+      if (!qErr && Array.isArray(qData) && qData.length > 0) {
+        inMemoryProposals = qData.map(quoteRecordToProposal);
         writeLocalDBProposals(inMemoryProposals);
         return inMemoryProposals;
       }
@@ -437,6 +531,14 @@ async function persistProposal(proposal, isUpdate = false) {
     } catch (e) {
       console.warn('[Proposals Store] Supabase sync note:', e.message);
     }
+
+    // Always mirror to quotes table with PROP- ID to guarantee cloud persistence on Vercel
+    try {
+      const qRecord = proposalToQuoteRecord(proposal);
+      await supabase.from('quotes').upsert([qRecord], { onConflict: 'id' });
+    } catch (e) {
+      console.warn('[Proposals Store] Supabase quotes table fallback note:', e.message);
+    }
   }
 
   return inMemoryProposals.find(p => p.id === proposal.id) || proposal;
@@ -457,6 +559,9 @@ async function deleteProposalFromStore(id) {
   if (isSupabaseConfigured()) {
     try {
       await supabase.from('proposals').delete().eq('id', id);
+    } catch (_) {}
+    try {
+      await supabase.from('quotes').delete().eq('id', id);
     } catch (_) {}
   }
 }
@@ -1409,5 +1514,12 @@ router.post(['/public/:token/schedule-call', '/:token/schedule-call'], async (re
   }
 });
 
+router.getProposalsStore = getProposalsStore;
+router.persistProposal = persistProposal;
+router.deleteProposalFromStore = deleteProposalFromStore;
+
 module.exports = router;
+module.exports.getProposalsStore = getProposalsStore;
+module.exports.persistProposal = persistProposal;
+module.exports.deleteProposalFromStore = deleteProposalFromStore;
 module.exports.inMemoryProposals = inMemoryProposals;
