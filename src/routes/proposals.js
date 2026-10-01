@@ -341,11 +341,19 @@ function readLocalDBProposals() {
       const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
       const parsed = JSON.parse(content);
       if (Array.isArray(parsed.proposals) && parsed.proposals.length > 0) {
-        return parsed.proposals;
+        const existingIds = new Set(parsed.proposals.map(p => (p.id || '').toLowerCase()));
+        const existingTokens = new Set(parsed.proposals.map(p => (p.share_token || p.shareToken || '').toLowerCase()));
+        const merged = [...parsed.proposals];
+        for (const dp of DEFAULT_PROPOSALS) {
+          if (!existingIds.has((dp.id || '').toLowerCase()) && !existingTokens.has((dp.share_token || '').toLowerCase())) {
+            merged.push(dp);
+          }
+        }
+        return merged;
       }
     }
   } catch (_) {}
-  return null;
+  return [...DEFAULT_PROPOSALS];
 }
 
 function writeLocalDBProposals(proposals) {
@@ -442,7 +450,7 @@ function quoteRecordToProposal(q) {
 let inMemoryProposals = readLocalDBProposals() || [...DEFAULT_PROPOSALS];
 
 async function getProposalsStore() {
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && process.env.NODE_ENV !== 'test') {
     try {
       const { data, error } = await supabase
         .from('proposals')
@@ -633,9 +641,12 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/proposals — Create new proposal
 router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
-    await getProposalsStore();
-    const nextNum = inMemoryProposals.length + 1;
-    const newId = `PROP-2026-${String(nextNum).padStart(3, '0')}`;
+    let nextNum = inMemoryProposals.length + 1;
+    let newId = req.body.id || `PROP-2026-${String(nextNum).padStart(3, '0')}`;
+    while (!req.body.id && inMemoryProposals.some(p => p.id === newId)) {
+      nextNum++;
+      newId = `PROP-2026-${String(nextNum).padStart(3, '0')}`;
+    }
     const token = req.body.shareToken || req.body.share_token || generateShareToken();
 
     const oneTimeItems = Array.isArray(req.body.oneTimeItems) ? req.body.oneTimeItems : (Array.isArray(req.body.one_time_items) ? req.body.one_time_items : []);
@@ -676,6 +687,8 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
     try {
       broadcast('proposal_created', mapProposal(payload));
       broadcast('proposal_update', inMemoryProposals.map(mapProposal));
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('proposal.created', { proposal: payload }, { stakeholderId: payload.id, stakeholderType: 'proposal' }).catch(() => {});
     } catch (e) {}
 
     // Send Telegram notification to agency owner / admin
@@ -859,6 +872,8 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
     try {
       broadcast('proposal_update', inMemoryProposals.map(mapProposal));
       broadcast('project_update', newProject);
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('proposal.converted', { proposal: updatedProposal, project: newProject }, { stakeholderId: proposal.id, stakeholderType: 'proposal' }).catch(() => {});
     } catch (e) {}
 
     return res.json({
@@ -1169,6 +1184,14 @@ router.get(['/public/:token', '/:token'], async (req, res) => {
     }
 
     if (!proposal) {
+      proposal = DEFAULT_PROPOSALS.find(p =>
+        (p.share_token && p.share_token.toLowerCase() === cleanTok) ||
+        (p.shareToken && p.shareToken.toLowerCase() === cleanTok) ||
+        (p.id && p.id.toLowerCase() === cleanTok)
+      );
+    }
+
+    if (!proposal) {
       return res.status(404).json({ error: 'Proposal not found or link has expired' });
     }
 
@@ -1240,6 +1263,14 @@ router.post(['/public/:token/accept', '/:token/accept'], async (req, res) => {
     }
 
     if (!proposal) {
+      proposal = DEFAULT_PROPOSALS.find(p =>
+        (p.share_token && p.share_token.toLowerCase() === cleanTok) ||
+        (p.shareToken && p.shareToken.toLowerCase() === cleanTok) ||
+        (p.id && p.id.toLowerCase() === cleanTok)
+      );
+    }
+
+    if (!proposal) {
       return res.status(404).json({ error: 'Proposal not found' });
     }
 
@@ -1248,10 +1279,10 @@ router.post(['/public/:token/accept', '/:token/accept'], async (req, res) => {
     const updates = {
       status: 'Accepted',
       accepted_at: new Date().toISOString(),
-      accepted_by: acceptedBy || proposal.client_name || 'Client Representative',
-      acceptedBy: acceptedBy || proposal.client_name || 'Client Representative',
-      accepted_notes: clientNote || '',
-      acceptedNotes: clientNote || '',
+      accepted_by: acceptedBy || req.body.signee_name || proposal.client_name || 'Client Representative',
+      acceptedBy: acceptedBy || req.body.signee_name || proposal.client_name || 'Client Representative',
+      accepted_notes: clientNote || req.body.signee_title || '',
+      acceptedNotes: clientNote || req.body.signee_title || '',
       updated_at: new Date().toISOString()
     };
     if (affRef) {
@@ -1469,6 +1500,19 @@ router.post(['/public/:token/accept', '/:token/accept'], async (req, res) => {
       console.warn('[Proposals Accept] Broadcast warning:', e.message);
     }
 
+    try {
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('proposal.accepted', {
+        proposal: { ...proposal, ...updates },
+        client: clientRecord,
+        invoiceId: invoiceId || null,
+        lockinSpec
+      }, {
+        stakeholderId: clientRecord.id,
+        stakeholderType: 'client'
+      }).catch(() => {});
+    } catch (_) {}
+
     return res.json({
       success: true,
       message: 'Proposal successfully accepted. Our team will coordinate next steps immediately.',
@@ -1534,9 +1578,18 @@ router.post(['/public/:token/schedule-call', '/:token/schedule-call'], async (re
 router.getProposalsStore = getProposalsStore;
 router.persistProposal = persistProposal;
 router.deleteProposalFromStore = deleteProposalFromStore;
+Object.defineProperty(router, 'inMemoryProposals', {
+  get: () => inMemoryProposals,
+  set: (v) => { inMemoryProposals = v; },
+  configurable: true
+});
 
 module.exports = router;
 module.exports.getProposalsStore = getProposalsStore;
 module.exports.persistProposal = persistProposal;
 module.exports.deleteProposalFromStore = deleteProposalFromStore;
-module.exports.inMemoryProposals = inMemoryProposals;
+Object.defineProperty(module.exports, 'inMemoryProposals', {
+  get: () => inMemoryProposals,
+  set: (v) => { inMemoryProposals = v; },
+  configurable: true
+});

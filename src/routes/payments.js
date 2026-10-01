@@ -9,7 +9,8 @@ const upload = multer({
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const sse = require('../services/sse');
+const broadcast = (...args) => sse.broadcast(...args);
 const { sendTelegramNotification } = require('../services/bot');
 const { parseMfsSms } = require('../utils/mfs-parser');
 
@@ -73,6 +74,92 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
   if (error) return fail(res, 500, error.message, 'DB_ERROR');
 
   return ok(res, data || []);
+}));
+
+// GET /api/payments/status/:invoiceId — Check payment and verification status for an invoice
+router.get('/status/:invoiceId', requireAuth, asyncHandler(async (req, res) => {
+  const { invoiceId } = req.params;
+  const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+  const userClientId = req.user.linkedId || req.user.clientId || req.user.id;
+  const userClientName = (req.user.name || '').toLowerCase();
+
+  let invoice = null;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data } = await supabase.from('invoices').select('*').eq('id', invoiceId).maybeSingle();
+      if (data) invoice = data;
+    } catch (_) {}
+  }
+
+  if (!invoice) {
+    try {
+      const { inMemoryInvoices } = require('./invoices');
+      invoice = (inMemoryInvoices || []).find(i => i.id === invoiceId);
+    } catch (_) {}
+  }
+
+  if (!invoice) {
+    try {
+      const { readDB } = require('../services/db');
+      const db = await readDB();
+      invoice = (db.invoices || []).find(i => i.id === invoiceId);
+    } catch (_) {}
+  }
+
+  if (!invoice) {
+    return fail(res, 404, 'Invoice not found', 'NOT_FOUND');
+  }
+
+  // Tenant / ownership validation for client users
+  if (isClientUser) {
+    const invClientId = invoice.client_id || invoice.clientId;
+    const invClientName = (invoice.client_name || invoice.clientName || '').toLowerCase();
+    const hasMatch = (invClientId && userClientId && String(invClientId).toLowerCase() === String(userClientId).toLowerCase()) ||
+                     (invClientName && userClientName && (invClientName.includes(userClientName) || userClientName.includes(invClientName)));
+    if (!hasMatch) {
+      return fail(res, 403, 'Forbidden: You do not have permission to view this invoice status', 'FORBIDDEN');
+    }
+  }
+
+  // Look for latest payment log for this invoice
+  let paymentLog = null;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data } = await supabase
+        .from('payment_logs')
+        .select('*')
+        .eq('invoice_id', invoiceId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) paymentLog = data;
+    } catch (_) {}
+  }
+
+  if (!paymentLog) {
+    try {
+      const { readDB } = require('../services/db');
+      const db = await readDB();
+      const logs = (db.payment_logs || []).filter(p => p.invoice_id === invoiceId);
+      if (logs.length > 0) {
+        paymentLog = logs[logs.length - 1];
+      }
+    } catch (_) {}
+  }
+
+  const receiptId = invoice.status === 'Paid' ? `REC-${invoiceId.replace('INV-', '')}` : null;
+
+  return ok(res, {
+    invoiceId,
+    status: invoice.status || 'Pending',
+    verified: invoice.status === 'Paid' || (paymentLog?.verified === true),
+    amount: invoice.amount || paymentLog?.amount || 0,
+    receiptId: receiptId,
+    paymentMethod: paymentLog?.payment_method || invoice.settlement_rail || 'Corporate Bank Wire',
+    trxId: paymentLog?.trx_id || null,
+    notes: invoice.notes || paymentLog?.notes || '',
+    updatedAt: invoice.updated_at || paymentLog?.created_at || new Date().toISOString()
+  });
 }));
 
 // POST /api/payments — Submit new payment proof (Client / Admin)
@@ -164,10 +251,23 @@ router.post('/:id/verify', requireAuth, requireManager, async (req, res) => {
     const { id } = req.params;
     const verifiedBy = req.user.name || req.user.id || 'Admin';
 
-    if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+    let log = null;
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error: fetchErr } = await supabase.from('payment_logs').select('*').eq('id', id).single();
+        if (!fetchErr && data) log = data;
+      } catch (_) {}
+    }
 
-    const { data: log, error: fetchErr } = await supabase.from('payment_logs').select('*').eq('id', id).single();
-    if (fetchErr || !log) return res.status(404).json({ error: 'Payment record not found' });
+    if (!log) {
+      try {
+        const { readDB } = require('../services/db');
+        const db = await readDB();
+        log = (db.payment_logs || []).find(p => p.id === id);
+      } catch (_) {}
+    }
+
+    if (!log) return res.status(404).json({ error: 'Payment record not found' });
 
     // Update payment log safely
     const updatePayload = {
@@ -290,8 +390,21 @@ router.post('/:id/verify', requireAuth, requireManager, async (req, res) => {
       const { sendPaymentReceiptEmail } = require('../services/resend');
       let clientEmail = null;
       if (log.client_id && supabase) {
-        const { data: cData } = await supabase.from('clients').select('email, contact_email').eq('id', log.client_id).maybeSingle();
-        if (cData) clientEmail = cData.email || cData.contact_email;
+        try {
+          const { data: cData } = await supabase.from('clients').select('email, contact_email').eq('id', log.client_id).maybeSingle();
+          if (cData) clientEmail = cData.email || cData.contact_email;
+        } catch (_) {}
+      }
+      if (!clientEmail && log.client_id) {
+        try {
+          const { readDB } = require('../services/db');
+          const db = await readDB();
+          const localClient = (db.clients || []).find(c => c.id === log.client_id);
+          if (localClient) clientEmail = localClient.email || localClient.contact_email;
+        } catch (_) {}
+      }
+      if (!clientEmail) {
+        clientEmail = log.client_email || 'client@gro10x.ai';
       }
       if (clientEmail) {
         sendPaymentReceiptEmail({

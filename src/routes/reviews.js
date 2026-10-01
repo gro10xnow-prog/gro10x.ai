@@ -24,24 +24,7 @@ const upload = multer({
 });
 
 
-const fallbackReviews = [
-  {
-    id: 'REV-SAMPLE01',
-    project_id: 'PRJ-CHILLOX01',
-    project_name: 'Chillox TVC Master Cut v2',
-    client: 'Chillox Bangladesh',
-    client_id: null,
-    task_id: null,
-    active_version: 'v2',
-    versions: ['v1', 'v2'],
-    media_type: 'video',
-    media_url: 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-sky-in-a-sunset-26070-large.mp4',
-    poster_url: null,
-    resolved_count: 2,
-    total_count: 5,
-    created_at: new Date().toISOString()
-  }
-];
+const fallbackReviews = [];
 
 function mapReview(r) {
   if (!r) return null;
@@ -141,6 +124,13 @@ async function requireReviewOwnership(req, res, next) {
     }
     if (!review) {
       try {
+        const { readDB } = require('../services/db');
+        const db = await readDB();
+        review = (db.reviews || []).find(r => r.id === req.params.id);
+      } catch (_) {}
+    }
+    if (!review) {
+      try {
         const { getMemoryDeliverable } = require('../services/delivery-review');
         review = getMemoryDeliverable(req.params.id);
       } catch (_) {}
@@ -197,17 +187,42 @@ router.get('/', requireAuth, async (req, res) => {
     }
     if (error) {
       console.warn('[Reviews] Supabase query notice, serving local memory store:', error.message);
+      if (isClientUser) {
+        const filtered = fallbackReviews.filter(r => 
+          (clientId && (r.client_id === clientId || r.clientId === clientId)) ||
+          (clientName && r.client && r.client.toLowerCase() === clientName.toLowerCase())
+        );
+        return res.json(filtered.map(mapReview));
+      }
       return res.json(fallbackReviews.map(mapReview));
     }
 
-    const enrichedData = (data || []).map(r => {
-      const local = fallbackReviews.find(fb => fb.id === r.id);
-      return local ? { ...local, ...r } : r;
+    const remoteIds = new Set((data || []).map(r => r.id));
+    const matchingFallback = fallbackReviews.filter(fb => {
+      if (remoteIds.has(fb.id)) return false;
+      if (!isClientUser) return true;
+      return (clientId && (fb.client_id === clientId || fb.clientId === clientId)) ||
+             (clientName && fb.client && fb.client.toLowerCase() === clientName.toLowerCase());
     });
+
+    const enrichedData = [
+      ...(data || []).map(r => {
+        const local = fallbackReviews.find(fb => fb.id === r.id);
+        return local ? { ...local, ...r } : r;
+      }),
+      ...matchingFallback
+    ];
 
     res.json(enrichedData.map(mapReview));
   } catch (err) {
     console.warn('[Reviews] GET error fallback:', err.message);
+    if (isClientUser) {
+      const filtered = fallbackReviews.filter(r => 
+        (clientId && (r.client_id === clientId || r.clientId === clientId)) ||
+        (clientName && r.client && r.client.toLowerCase() === clientName.toLowerCase())
+      );
+      return res.json(filtered.map(mapReview));
+    }
     res.json(fallbackReviews.map(mapReview));
   }
 });
@@ -596,6 +611,13 @@ async function handleReviewApproveInternal(req, res) {
     }
     if (!reviewData) {
       try {
+        const { readDB } = require('../services/db');
+        const db = await readDB();
+        reviewData = (db.reviews || []).find(r => r.id === id);
+      } catch (_) {}
+    }
+    if (!reviewData) {
+      try {
         const { getMemoryDeliverable } = require('../services/delivery-review');
         reviewData = getMemoryDeliverable(id);
       } catch (_) {}
@@ -724,6 +746,19 @@ async function handleReviewApproveInternal(req, res) {
       broadcastToClient('review_update', [mapped], [reviewData.client_id]);
     }
 
+    try {
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('review.approved', {
+        review: reviewData,
+        projectId,
+        approvedBy: approverName,
+        approvedAt
+      }, {
+        stakeholderId: reviewData.client_id,
+        stakeholderType: 'client'
+      }).catch(() => {});
+    } catch (_) {}
+
     let linkedProject = null;
     try {
       const { sendWarrantyActivatedNotification, sendTeamWarrantyAlert } = require('../services/bot/notifications');
@@ -803,6 +838,39 @@ async function handleReviewApproveInternal(req, res) {
       if (reviewData.client_id) {
         broadcastToClient('warranty_update', warrantyPayload, [reviewData.client_id]);
         broadcastToClient('handover_update', { projectId, manifestId: handoverManifest?.manifestId }, [reviewData.client_id]);
+      }
+    } catch (_) {}
+
+    // Dispatch Accounting Alert to Finance / Admin
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      const accountingTgId = process.env.FINANCE_TELEGRAM_ID || process.env.OWNER_TELEGRAM_ID;
+      if (accountingTgId) {
+        const invoiceProjName = reviewData.project_name || linkedProject?.name || 'Sprint Deliverable';
+        const invoiceAmount = Number(linkedProject?.budget) > 0 ? Math.round(Number(linkedProject.budget) / 2) : 25000;
+        const accMsg = `💰 *Milestone Sign-Off — Invoice Released to Accounting*\n\n` +
+          `• Deliverable: *${invoiceProjName}*\n` +
+          `• Client: *${reviewData.client || linkedProject?.client_name || 'Partner'}*\n` +
+          `• Approved By: *${approverName}*\n` +
+          `• Milestone 2 Amount: *৳${invoiceAmount.toLocaleString()} BDT*\n` +
+          `• Invoice ID: \`${finalInvoiceId}\`\n` +
+          `• Warranty Status: *30-Day Defect-Free Active*`;
+        sendTelegramNotification(accountingTgId, accMsg, null, false);
+      }
+    } catch (_) {}
+
+    // Send Milestone Sign-Off & Warranty Certificate Email
+    try {
+      const { sendSprintSignOffCertificateEmail } = require('../services/resend');
+      const clientEmail = reviewData.client_email || linkedProject?.client_email;
+      if (clientEmail) {
+        sendSprintSignOffCertificateEmail({
+          clientEmail,
+          clientName: reviewData.client || linkedProject?.client_name || 'Client Partner',
+          projectName: reviewData.project_name || linkedProject?.name || 'Sprint Deliverable',
+          warrantyUntil,
+          invoiceId: finalInvoiceId
+        }).catch(() => {});
       }
     } catch (_) {}
 

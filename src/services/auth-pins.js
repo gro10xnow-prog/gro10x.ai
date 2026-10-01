@@ -131,15 +131,17 @@ async function upsertPinRecordSupabase(record) {
 // createTempPin — Generate or retrieve PIN for a phone number
 // ─────────────────────────────────────────────────────────────
 
-async function createTempPin(phone, linkedId = null, linkedType = 'team', email = '') {
+async function createTempPin(phone, linkedId = null, linkedType = 'team', email = '', forceNew = false) {
   const rawPhone = (phone || '').trim();
   const norm = normalizePhone(rawPhone);
   if (!norm) return null;
 
-  // Preserve existing PIN if user already has one configured
-  const existing = await findPinRecordSupabase(norm);
-  if (existing && existing.pin) {
-    return existing;
+  // Preserve existing PIN if user already has one configured unless forceNew is requested
+  if (!forceNew) {
+    const existing = await findPinRecordSupabase(norm);
+    if (existing && existing.pin) {
+      return existing;
+    }
   }
 
   const pinCode = generate4DigitPin();
@@ -392,7 +394,14 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
       record.locked_at = lockedAt;
       await upsertPinRecordSupabase(record);
     }
-    return { success: false, error: 'Invalid 4-Digit PIN. Check Telegram DM for your PIN.' };
+    return {
+      success: false,
+      locked: newAttempts >= MAX_ATTEMPTS,
+      attempts: newAttempts,
+      error: newAttempts >= MAX_ATTEMPTS
+        ? 'Account temporarily locked due to multiple failed attempts. Please try again in 15 minute(s).'
+        : 'Invalid 4-Digit PIN. Check Telegram DM for your PIN.'
+    };
   }
 
   if (record) {

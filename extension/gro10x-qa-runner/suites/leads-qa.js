@@ -160,6 +160,13 @@ const LEADS_QA_SUITE = {
       assertion: { type: 'element_exists', selector: '#leadProfileDrawer button[onclick*="convertLead"], #leadDrawerContent button[onclick*="convertLead"]' }
     },
     {
+      id: 'step-21b',
+      title: '21b. Verify Generate Client SOW Proposal Button Present in Drawer',
+      action: 'wait_ms',
+      duration: 200,
+      assertion: { type: 'element_exists', selector: '#btnCreateProposalFromLead, #leadProfileDrawer button[onclick*="createProposal"]' }
+    },
+    {
       id: 'step-22',
       title: '22. Close Lead Profile Drawer',
       action: 'click',

@@ -16,26 +16,26 @@ const GRO10X_REGISTRY = {
     pages: [
       { id: 'dashboard', name: '📊 Executive Overview', hash: '#dashboard', auditSuiteId: 'dashboard', workflows: [] },
       { id: 'engines', name: '🚀 5-Engine Growth Operations', hash: '#engines', auditSuiteId: 'engines', workflows: [] },
-      { id: 'platforms', name: '🏗️ Platform Portfolio', hash: '#platforms', auditSuiteId: 'platforms', workflows: [] },
+      { id: 'platforms', name: '🏗️ Platform Portfolio', hash: '#platforms', auditSuiteId: 'platforms', workflows: ['workflow_platforms_registry_cycle'] },
       { id: 'gigs', name: '⚡ Marketplace Gig Studio', hash: '#gigs', auditSuiteId: 'gigs', workflows: [] },
       { id: 'analytics', name: '📈 Agency Analytics', hash: '#analytics', auditSuiteId: 'analytics', workflows: [] },
       { id: 'leads', name: '🎯 Leads Pipeline', hash: '#leads', auditSuiteId: 'leads', workflows: ['workflow_lead_crm', 'workflow_lead_inbound_audit_verification'] },
       { id: 'proposals', name: '💼 Client Proposals Studio', hash: '#proposals', auditSuiteId: 'proposals', workflows: ['workflow_proposal_acceptance_onboarding'] },
-      { id: 'crm', name: '👥 Clients & Retainers CRM', hash: '#crm', auditSuiteId: 'crm', workflows: [] },
+      { id: 'crm', name: '👥 Clients & Retainers CRM', hash: '#crm', auditSuiteId: 'crm', workflows: ['workflow_crm_client_lifecycle'] },
       { id: 'kanban', name: '📋 Project & Sprint Pipeline', hash: '#kanban', auditSuiteId: 'kanban', workflows: ['workflow_task_lifecycle'] },
-      { id: 'reviews', name: '🎬 Review Room & Proofing Hub', hash: '#reviews', auditSuiteId: 'reviews', workflows: [] },
+      { id: 'reviews', name: '🎬 Review Room & Proofing Hub', hash: '#reviews', auditSuiteId: 'reviews', workflows: ['workflow_review_room_cycle'] },
       { id: 'content-os', name: '🏛️ Content OS & Brand Engine', hash: '#content-os', auditSuiteId: 'content-os', workflows: ['workflow_creator_ai'] },
-      { id: 'social', name: '📱 Social Planner', hash: '#social', auditSuiteId: 'social', workflows: [] },
+      { id: 'social', name: '📱 Social Planner', hash: '#social', auditSuiteId: 'social', workflows: ['workflow_social_post_schedule'] },
       { id: 'cms', name: '📝 Services & CMS', hash: '#cms', auditSuiteId: 'cms', workflows: [] },
-      { id: 'brands', name: '🛍️ Brand Command Center', hash: '#brands', auditSuiteId: 'brands', workflows: [] },
-      { id: 'digistore', name: '🏪 DigiVault Subs & Commerce', hash: '#digistore', auditSuiteId: 'digistore', workflows: [] },
+      { id: 'brands', name: '🛍️ Brand Command Center', hash: '#brands', auditSuiteId: 'brands', workflows: ['workflow_brands_store_cycle'] },
+      { id: 'digistore', name: '🏪 DigiVault Subs & Commerce', hash: '#digistore', auditSuiteId: 'digistore', workflows: ['workflow_digistore_product_cycle'] },
       { id: 'dbm', name: '👤 DBM Operations', hash: '#dbm', auditSuiteId: 'dbm', workflows: [] },
       { id: 'finance', name: '💰 Financials & Expenses', hash: '#finance', auditSuiteId: 'finance', workflows: ['workflow_finance_billing', 'workflow_expense_approval'] },
-      { id: 'hr', name: '👨‍💼 HR & Roster Ops', hash: '#hr', auditSuiteId: 'hr', workflows: [] },
-      { id: 'assets', name: '📷 Hardware Assets', hash: '#assets', auditSuiteId: 'assets', workflows: [] },
+      { id: 'hr', name: '👨‍💼 HR & Roster Ops', hash: '#hr', auditSuiteId: 'hr', workflows: ['workflow_hr_onboarding_lifecycle'] },
+      { id: 'assets', name: '📷 Hardware Assets', hash: '#assets', auditSuiteId: 'assets', workflows: ['workflow_assets_inventory_cycle'] },
       { id: 'tickets', name: '🎟️ Support Desk', hash: '#tickets', auditSuiteId: 'tickets', workflows: ['workflow_ticket_triage'] },
       { id: 'automation', name: '⚡ Bot & Automation Logs', hash: '#automation', auditSuiteId: 'automation', workflows: [] },
-      { id: 'settings', name: '⚙️ Settings', hash: '#settings', auditSuiteId: 'settings', workflows: [] }
+      { id: 'settings', name: '⚙️ Settings', hash: '#settings', auditSuiteId: 'settings', workflows: ['workflow_settings_config_cycle'] }
     ]
   },
 
@@ -100,19 +100,35 @@ const GRO10X_REGISTRY = {
       { id: 'overview', name: '📊 Executive Overview', hash: '#overview', auditSuiteId: 'ws_overview', workflows: [] },
       { id: 'velocity', name: '📈 Velocity & Targets', hash: '#velocity', auditSuiteId: 'ws_velocity', workflows: [] },
       { id: 'pnl', name: '💰 Consolidated P&L', hash: '#pnl', auditSuiteId: 'ws_pnl', workflows: [] },
-      { id: 'leads', name: '🎯 Leads Pipeline', hash: '#leads', auditSuiteId: 'ws_leads', workflows: [] },
-      { id: 'proposals', name: '💼 Proposals Studio', hash: '#proposals', auditSuiteId: 'ws_proposals', workflows: [] },
-      { id: 'crm', name: '👥 Clients & Retainers', hash: '#crm', auditSuiteId: 'ws_crm', workflows: [] },
-      { id: 'invoices', name: '💳 Billing & Invoices', hash: '#invoices', auditSuiteId: 'ws_invoices', workflows: [] },
-      { id: 'tasks', name: '📋 Tasks Pipeline', hash: '#tasks', auditSuiteId: 'ws_tasks', workflows: [] },
-      { id: 'kanban', name: '🗂️ Kanban Studio', hash: '#kanban', auditSuiteId: 'ws_kanban', workflows: [] },
-      { id: 'deliverables', name: '📦 Deliverables Vault', hash: '#deliverables', auditSuiteId: 'ws_deliverables', workflows: [] },
-      { id: 'tickets', name: '🛡️ 24h Defect SLAs', hash: '#tickets', auditSuiteId: 'ws_tickets', workflows: [] },
-      { id: 'team', name: '👨‍💼 Team & Attendance', hash: '#team', auditSuiteId: 'ws_team', workflows: [] },
-      { id: 'leaves', name: '🌴 Leaves Desk', hash: '#leaves', auditSuiteId: 'ws_leaves', workflows: [] },
-      { id: 'claims', name: '💸 Expense Claims', hash: '#claims', auditSuiteId: 'ws_claims', workflows: [] },
+      { id: 'leads', name: '🎯 Leads Pipeline', hash: '#leads', auditSuiteId: 'ws_leads', workflows: ['workflow_lead_crm'] },
+      { id: 'proposals', name: '💼 Proposals Studio', hash: '#proposals', auditSuiteId: 'ws_proposals', workflows: ['workflow_proposal_acceptance_onboarding'] },
+      { id: 'crm', name: '👥 Clients & Retainers', hash: '#crm', auditSuiteId: 'ws_crm', workflows: ['workflow_crm_client_lifecycle'] },
+      { id: 'invoices', name: '💳 Billing & Invoices', hash: '#invoices', auditSuiteId: 'ws_invoices', workflows: ['workflow_finance_billing'] },
+      { id: 'tasks', name: '📋 Tasks Pipeline', hash: '#tasks', auditSuiteId: 'ws_tasks', workflows: ['workflow_task_lifecycle'] },
+      { id: 'kanban', name: '🗂️ Kanban Studio', hash: '#kanban', auditSuiteId: 'ws_kanban', workflows: ['workflow_task_lifecycle'] },
+      { id: 'deliverables', name: '📦 Deliverables Vault', hash: '#deliverables', auditSuiteId: 'ws_deliverables', workflows: ['workflow_review_room_cycle'] },
+      { id: 'tickets', name: '🛡️ 24h Defect SLAs', hash: '#tickets', auditSuiteId: 'ws_tickets', workflows: ['workflow_ticket_triage'] },
+      { id: 'team', name: '👨‍💼 Team & Attendance', hash: '#team', auditSuiteId: 'ws_team', workflows: ['workflow_hr_onboarding_lifecycle'] },
+      { id: 'leaves', name: '🌴 Leaves Desk', hash: '#leaves', auditSuiteId: 'ws_leaves', workflows: ['workflow_leave_request'] },
+      { id: 'claims', name: '💸 Expense Claims', hash: '#claims', auditSuiteId: 'ws_claims', workflows: ['workflow_expense_approval'] },
       { id: 'tech', name: '🩺 Tech Diagnostics', hash: '#tech', auditSuiteId: 'ws_tech', workflows: [] },
-      { id: 'settings', name: '⚙️ Workspace Settings', hash: '#settings', auditSuiteId: 'ws_settings', workflows: [] }
+      { id: 'settings', name: '⚙️ Workspace Settings', hash: '#settings', auditSuiteId: 'ws_settings', workflows: ['workflow_settings_config_cycle'] }
+    ]
+  },
+
+  crew: {
+    id: 'crew',
+    name: '⚡ Crew Specialist Portal',
+    baseUrl: '/crew',
+    containerSelector: '#crew-view',
+    description: 'Specialist operations portal for shifts, deliverables, daily EOD standups, and leaves.',
+    pages: [
+      { id: 'tasks', name: '⚡ Crew Tasks Hub', hash: '#tasks', auditSuiteId: 'crew_tasks', workflows: ['workflow_crew_clockin_deliverable'] },
+      { id: 'deliverables', name: '📦 Deliverables Submission', hash: '#deliverables', auditSuiteId: 'crew_deliverables', workflows: ['workflow_crew_clockin_deliverable'] },
+      { id: 'eod', name: '📋 Daily Standup EOD', hash: '#eod', auditSuiteId: 'crew_eod', workflows: ['workflow_eod_submission', 'workflow_crew_eod_standup'] },
+      { id: 'leaves', name: '🌴 Leaves Desk', hash: '#leaves', auditSuiteId: 'crew_leaves', workflows: ['workflow_leave_request'] },
+      { id: 'attendance', name: '⏱️ Shift Attendance', hash: '#attendance', auditSuiteId: 'crew_attendance', workflows: ['workflow_clock_in_out'] },
+      { id: 'expenses', name: '💸 Expense Reimbursements', hash: '#expenses', auditSuiteId: 'crew_expenses', workflows: ['workflow_crew_expense'] }
     ]
   }
 };

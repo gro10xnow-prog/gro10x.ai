@@ -426,6 +426,13 @@ async function getClientLockinSpecs(clientId) {
     } catch (_) {}
   }
 
+  try {
+    const { readDB } = require('./db');
+    const db = await readDB();
+    const diskSpecs = (db.lockin_specs || []).filter(s => s.client_id === clientId);
+    if (diskSpecs.length > 0) return diskSpecs;
+  } catch (_) {}
+
   return inMemoryLockinSpecs.filter(s => s.client_id === clientId);
 }
 
@@ -444,6 +451,13 @@ async function getLockinSpecById(specId) {
       if (!error && data) return data;
     } catch (_) {}
   }
+
+  try {
+    const { readDB } = require('./db');
+    const db = await readDB();
+    const diskSpec = (db.lockin_specs || []).find(s => s.id === specId);
+    if (diskSpec) return diskSpec;
+  } catch (_) {}
 
   return inMemoryLockinSpecs.find(s => s.id === specId) || null;
 }

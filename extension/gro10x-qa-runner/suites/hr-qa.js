@@ -1,6 +1,6 @@
 /**
  * HR Operations, Team Roster & Staff Profiles QA Test Suite (#hr)
- * 18-Step Comprehensive Automated Validation
+ * 19-Step Comprehensive Automated Validation
  */
 
 const HR_QA_SUITE = {
@@ -181,6 +181,51 @@ const HR_QA_SUITE = {
       assertion: {
         type: 'custom_check',
         check: 'assert_clean_audit'
+      }
+    },
+    {
+      id: 'step-19',
+      title: '19. Agreement Sign Callbacks (Stage 2 & Stage 3) Verification',
+      action: 'none',
+      assertion: {
+        type: 'custom_check',
+        check: 'assert_agreement_callbacks'
+      }
+    },
+    {
+      id: 'step-20',
+      title: '20. Leave Approval Callbacks (Manager & Owner) Verification',
+      action: 'none',
+      assertion: {
+        type: 'custom_check',
+        check: 'assert_leave_callbacks'
+      }
+    },
+    {
+      id: 'step-21',
+      title: '21. Payslip PDF Generation & Base Salary Verification',
+      action: 'none',
+      assertion: {
+        type: 'custom_check',
+        check: 'assert_payslip_generation'
+      }
+    },
+    {
+      id: 'step-22',
+      title: '22. Onboarding Survey & Agreement Progress Tracking',
+      action: 'none',
+      assertion: {
+        type: 'custom_check',
+        check: 'assert_onboarding_progress'
+      }
+    },
+    {
+      id: 'step-23',
+      title: '23. Salary Disbursement Expense Record Verification',
+      action: 'none',
+      assertion: {
+        type: 'custom_check',
+        check: 'assert_disbursement_expense_link'
       }
     }
   ]

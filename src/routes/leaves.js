@@ -178,11 +178,19 @@ router.post('/', requireAuth, async (req, res) => {
       const { automation } = require('../services/automation');
       if (automation && automation.trigger) {
         automation.trigger('leave_submitted', {
+          id: payload.id,
           employeeId: payload.employee_id,
+          employee_id: payload.employee_id,
           employeeName: payload.employee_name,
+          staffName: payload.employee_name,
           leaveType: payload.leave_type,
+          type: payload.leave_type,
           startDate: payload.start_date,
+          start_date: payload.start_date,
           endDate: payload.end_date,
+          end_date: payload.end_date,
+          totalDays: payload.total_days,
+          total_days: payload.total_days,
           reason: payload.reason
         }).catch(() => {});
       }
@@ -313,6 +321,33 @@ router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, requireManage
       } catch (e) {}
     }
 
+    // Send Leave Decision Email via Resend
+    try {
+      let applicantEmail = null;
+      let applicantName = leave.employeeName || leave.staffName;
+      if (supabase && leave.employeeId) {
+        const { data: prof } = await supabase.from('profiles').select('email, personal_email, name')
+          .or(`id.eq.${leave.employeeId},emp_code.eq.${leave.employeeId}`).maybeSingle();
+        if (prof) {
+          applicantEmail = prof.email || prof.personal_email;
+          applicantName = prof.name || applicantName;
+        }
+      }
+      if (applicantEmail && applicantEmail.includes('@')) {
+        const { sendLeaveDecisionEmail } = require('../services/resend');
+        sendLeaveDecisionEmail({
+          name: applicantName,
+          email: applicantEmail,
+          leaveType: leave.leaveType,
+          startDate: leave.startDate,
+          endDate: leave.endDate,
+          status: 'Approved',
+          reviewerName: updates.manager_reviewed_by,
+          reason: leave.reason
+        }).catch(() => {});
+      }
+    } catch (_) {}
+
     return res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave approve error:', err.message);
@@ -391,6 +426,33 @@ router.post('/:id/reject', requireAuth, requireManager, async (req, res) => {
         }).catch(err => console.warn('[Leaves API] Telegram rejection notification warning:', err.message));
       } catch (e) {}
     }
+
+    // Send Leave Decision Email via Resend
+    try {
+      let applicantEmail = null;
+      let applicantName = leave.employeeName || leave.staffName;
+      if (supabase && leave.employeeId) {
+        const { data: prof } = await supabase.from('profiles').select('email, personal_email, name')
+          .or(`id.eq.${leave.employeeId},emp_code.eq.${leave.employeeId}`).maybeSingle();
+        if (prof) {
+          applicantEmail = prof.email || prof.personal_email;
+          applicantName = prof.name || applicantName;
+        }
+      }
+      if (applicantEmail && applicantEmail.includes('@')) {
+        const { sendLeaveDecisionEmail } = require('../services/resend');
+        sendLeaveDecisionEmail({
+          name: applicantName,
+          email: applicantEmail,
+          leaveType: leave.leaveType,
+          startDate: leave.startDate,
+          endDate: leave.endDate,
+          status: 'Rejected',
+          reviewerName: updates.manager_reviewed_by,
+          reason: req.body.reason || 'Scheduling / capacity constraints'
+        }).catch(() => {});
+      }
+    } catch (_) {}
 
     return res.json({ success: true, leave });
   } catch (err) {

@@ -950,6 +950,19 @@ window.CLIENT_MODULES.review = async function(container) {
       if (signerEl) {
         signerEl.textContent = `${user.name || 'Client Authorized Approver'} (${user.pocRole || user.role || 'Partner POC'})`;
       }
+
+      // Dynamically resolve milestone amounts from deliverable or linked project
+      const amountUsd = Number(activeApproveItem.milestoneAmount || activeApproveItem.amountUsd || activeApproveItem.amount || (activeApproveItem.budget ? Math.round(activeApproveItem.budget / 2) : 0) || 1500);
+      const amountBdt = Number(activeApproveItem.milestoneAmountBdt || activeApproveItem.amountBdt || Math.round(amountUsd * 117.5));
+      const usdEl = document.getElementById('signOffUsd');
+      const bdtEl = document.getElementById('signOffBdt');
+      if (usdEl) {
+        usdEl.textContent = `$${amountUsd.toLocaleString()} USD`;
+      }
+      if (bdtEl) {
+        bdtEl.textContent = `৳${amountBdt.toLocaleString()} BDT`;
+      }
+
       document.getElementById('clSignOffModal').classList.add('active');
     },
 

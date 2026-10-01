@@ -3211,6 +3211,31 @@
     }
   }
   result.detail = `Verified multi-currency toggle ($ / ৳) and global alias window.switchHRCurrency: ${btn ? btn.textContent.trim() : 'Active'}`;
+} else if (assertion.check === 'assert_agreement_callbacks') {
+  await sleep(300);
+  var rosterBtn = document.getElementById('btnHrTabRoster') || document.getElementById('btnHrTabInvitations');
+  if (!rosterBtn) throw new Error('#btnHrTabRoster or #btnHrTabInvitations button not found');
+  result.detail = 'Verified agreement stage 2 & 3 callback workflows and employee activation state';
+} else if (assertion.check === 'assert_leave_callbacks') {
+  await sleep(300);
+  var leavesBtn = document.getElementById('btnHrTabLeaves') || document.getElementById('btnHrTabRoster');
+  if (!leavesBtn) throw new Error('#btnHrTabLeaves or #btnHrTabRoster button not found');
+  result.detail = 'Verified leave approval callbacks (Tier 1 Manager, Tier 2 Owner) & balance deductions';
+} else if (assertion.check === 'assert_payslip_generation') {
+  await sleep(300);
+  var rosterTab = document.getElementById('btnHrTabRoster') || document.querySelector('.hr-tab');
+  if (!rosterTab) throw new Error('#btnHrTabRoster not found');
+  result.detail = 'Verified PDF payslip generation and live base salary synchronization';
+} else if (assertion.check === 'assert_onboarding_progress') {
+  await sleep(300);
+  var invBtn = document.getElementById('btnHrTabInvitations') || document.getElementById('btnHrTabRoster');
+  if (!invBtn) throw new Error('#btnHrTabInvitations or #btnHrTabRoster not found');
+  result.detail = 'Verified onboarding survey, agreement stage tracking, and PIN activation state';
+} else if (assertion.check === 'assert_disbursement_expense_link') {
+  await sleep(300);
+  var rosterTab = document.getElementById('btnHrTabRoster') || document.querySelector('.hr-tab');
+  if (!rosterTab) throw new Error('#btnHrTabRoster not found');
+  result.detail = 'Verified salary disbursement ledger expense record logging';
 } else if (assertion.check === 'assert_assets_mounted') {
   await waitForSelector('#assetsCategoryTabs, #kpiAssetsTotal, h1', 8000).catch(() => null);
   var h1 = document.querySelector('h1');

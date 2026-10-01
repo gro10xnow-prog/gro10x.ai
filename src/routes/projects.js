@@ -10,7 +10,9 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast, broadcastToClient } = require('../services/sse');
+const sse = require('../services/sse');
+const broadcast = (...args) => sse.broadcast(...args);
+const broadcastToClient = (...args) => sse.broadcastToClient(...args);
 
 function mapProject(p) {
   if (!p) return null;
@@ -306,9 +308,26 @@ router.post('/intake', requireAuth, async (req, res) => {
       }
     } catch (_) {}
 
+    // Notify Pod Lead / Manager via Telegram
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      const podManagerTgId = process.env.POD_MANAGER_TELEGRAM_ID || process.env.OWNER_TELEGRAM_ID;
+      if (podManagerTgId) {
+        const briefAlert = `📋 *New Client Brief Submitted to Pod Lead*\n\n` +
+          `• Project: *${mapped.name}* (\`${mapped.id}\`)\n` +
+          `• Client: *${resolvedClientName}*\n` +
+          `• Pod: *${podRecord.podName}*\n` +
+          `• Target Due: *${calculatedDueDate}*\n` +
+          `• Objective:\n${primaryObjective}`;
+        sendTelegramNotification(podManagerTgId, briefAlert, null, false);
+      }
+    } catch (_) {}
+
+    broadcast('brief_update', { brief: mapped, project: mapped, pod: podRecord });
     broadcast('project_intake_created', { project: mapped, pod: podRecord });
     broadcast('project_update', mapped);
     if (resolvedClientId) {
+      broadcastToClient('brief_update', { brief: mapped, project: mapped, pod: podRecord }, [resolvedClientId]);
       broadcastToClient('project_intake_created', { project: mapped, pod: podRecord }, [resolvedClientId]);
       broadcastToClient('project_update', mapped, [resolvedClientId]);
     }

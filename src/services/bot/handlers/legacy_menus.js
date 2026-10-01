@@ -512,95 +512,17 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           );
         }
 
-      // ─── 2. LEAVE APPROVAL CHAIN ──────────────────────────────────────────────
-      } else if (data.startsWith('approve_leave:')) {
-        const leaveId = data.split(':')[1];
-        const { data: leave } = await supabase.from('leaves').select('*').eq('id', leaveId).maybeSingle();
-        
-        await supabase.from('leaves').update({
-          status: 'Manager Approved',
-          manager_reviewed_by: emp.name,
-          manager_approved_at: new Date().toISOString()
-        }).eq('id', leaveId);
-
-        broadcast('leave_update', [{ id: leaveId, status: 'Manager Approved' }]);
-
-        alertMsg = `✅ Leave ${leaveId} Manager Approved!`;
-        statusBadge = `✅ Approved by Manager (${emp.name})`;
-        teamBot.sendMessage(chatId, `✅ *Leave ${leaveId} Manager Approved!*\nForwarded to Owner for final sign-off.`, { parse_mode: 'Markdown' });
-
-        // Notify Employee
-        if (leave?.employee_id) {
-          const { data: empProf } = await supabase.from('profiles').select('telegram_id').eq('emp_code', leave.employee_id).maybeSingle();
-          if (empProf?.telegram_id) {
-            teamBot.sendMessage(empProf.telegram_id, `✅ *Leave Status:* Manager Approved! Pending final Owner sign-off.`, { parse_mode: 'Markdown' }).catch(() => {});
-          }
-        }
-
-        // Forward to Owner (Managing Director / Owner) for T2 sign-off
-        const { data: owner } = await supabase.from('profiles').select('telegram_id').ilike('access_level', '%owner%').maybeSingle();
-        if (owner?.telegram_id) {
-          sendTelegramNotification(owner.telegram_id,
-            `🌴 *LEAVE: Manager Approved → Owner Final Sign-Off*\n\n` +
-            `• Employee: *${leave?.employee_name || leave?.name || 'Staff'}*\n` +
-            `• Type: *${leave?.leave_type || 'Leave'}*\n` +
-            `• Dates: *${leave?.start_date || 'N/A'}* to *${leave?.end_date || 'N/A'}*\n\n` +
-            `_Tap below for final approval:_`,
-            [
-              [{ text: '👑 Final Approve (Owner)', callback_data: `approve_leave_owner:${leaveId}` }],
-              [{ text: '❌ Decline', callback_data: `reject_leave:${leaveId}` }]
-            ]
-          );
-        }
-
-      } else if (data.startsWith('reject_leave:')) {
-        const leaveId = data.split(':')[1];
-        const { data: leave } = await supabase.from('leaves').select('*').eq('id', leaveId).maybeSingle();
-        
-        await supabase.from('leaves').update({
-          status: 'Declined',
-          manager_reviewed_by: emp.name
-        }).eq('id', leaveId);
-
-        broadcast('leave_update', [{ id: leaveId, status: 'Declined' }]);
-
-        alertMsg = `❌ Leave ${leaveId} Rejected.`;
-        statusBadge = `❌ Rejected by ${emp.name}`;
-        teamBot.sendMessage(chatId, `❌ *Leave ${leaveId} Rejected by Manager.*`, { parse_mode: 'Markdown' });
-
-        // Notify Employee of Rejection
-        if (leave?.employee_id) {
-          const { data: empProf } = await supabase.from('profiles').select('telegram_id').eq('emp_code', leave.employee_id).maybeSingle();
-          if (empProf?.telegram_id) {
-            teamBot.sendMessage(empProf.telegram_id, `❌ *Leave Status:* Request for ${leave.leave_type || 'Leave'} was declined.`, { parse_mode: 'Markdown' }).catch(() => {});
-          }
-        }
-
-      } else if (data.startsWith('approve_leave_owner:')) {
-        const leaveId = data.split(':')[1];
-        const { data: leave } = await supabase.from('leaves').select('*').eq('id', leaveId).maybeSingle();
-
-        await supabase.from('leaves').update({
-          status: 'Approved',
-          owner_approved_at: new Date().toISOString()
-        }).eq('id', leaveId);
-
-        alertMsg = `👑 Leave ${leaveId} Owner Approved!`;
-        statusBadge = `👑 Owner Final Sign-off Granted`;
-        teamBot.sendMessage(chatId, `👑 *Leave ${leaveId} Owner Approved!* Calendar & Records updated.`, { parse_mode: 'Markdown' });
-
-        // Notify Employee of Final Approval
-        if (leave?.employee_id) {
-          const { data: empProf } = await supabase.from('profiles').select('telegram_id').eq('emp_code', leave.employee_id).maybeSingle();
-          if (empProf?.telegram_id) {
-            teamBot.sendMessage(empProf.telegram_id,
-              `🎉 *CONGRATULATIONS! Leave Fully Approved!*\n\n` +
-              `Your *${leave.leave_type || 'Leave'}* (${leave.start_date} to ${leave.end_date}) is confirmed by Owner! 💜`,
-              { parse_mode: 'Markdown' }
-            ).catch(() => {});
-          }
-        }
-        broadcast('leave_update', [{ id: leaveId, status: 'Approved' }]);
+      // ─── 2. LEAVE APPROVAL CHAIN (DELEGATED TO MODULAR HANDLER) ──────────────
+      } else if (
+        data.startsWith('approve_leave:') ||
+        data.startsWith('leave_approve:') ||
+        data.startsWith('reject_leave:') ||
+        data.startsWith('leave_reject:') ||
+        data.startsWith('approve_leave_owner:') ||
+        data.startsWith('leave_approve_owner:')
+      ) {
+        const { handleLeaveCallback } = require('./leave-callbacks');
+        return await handleLeaveCallback(teamBot, query);
 
       // ─── 3. EXPENSE 4-STAGE APPROVAL CHAIN ─────────────────────────────────────
       } else if (data.startsWith('approve_expense_t1:')) {
@@ -720,35 +642,10 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         }
         broadcast('expense_update', [{ id: expId, status: 'Disbursed' }]);
 
-      // ─── 4. AGREEMENT CHAIN ───────────────────────────────────────────────────
-      } else if (data.startsWith('agr_stage2:')) {
-        const empId = data.split(':')[1];
-        await supabase.from('profiles').update({
-          agreement_stage: 2,
-          updated_at: new Date().toISOString()
-        }).eq('emp_code', empId);
-
-        const targetEmp = await state.getEmployeeByTelegramId(empId) || await state.getEmployeeByPhone(empId);
-        if (targetEmp) {
-          sendAgreementNotification(2, targetEmp, {});
-        }
-        alertMsg = `✅ Agreement countersigned! Forwarded to Owner for final seal.`;
-        statusBadge = `✅ Finance Countersigned by ${emp.name}`;
-
-      } else if (data.startsWith('agr_stage3:')) {
-        const empId = data.split(':')[1];
-        await supabase.from('profiles').update({
-          agreement_stage: 3,
-          onboarding_complete: true,
-          updated_at: new Date().toISOString()
-        }).eq('emp_code', empId);
-
-        const targetEmp = await state.getEmployeeByTelegramId(empId) || await state.getEmployeeByPhone(empId);
-        if (targetEmp) {
-          sendAgreementNotification(3, targetEmp, {});
-        }
-        alertMsg = `👑 Employee is now fully activated as an official PBD employee!`;
-        statusBadge = `👑 Owner Seal Applied — Employee Activated`;
+      // ─── 4. AGREEMENT CHAIN (DELEGATED TO MODULAR HANDLER) ────────────────────
+      } else if (data.startsWith('agr_stage2:') || data.startsWith('agr_stage3:')) {
+        const { handleAgreementCallback } = require('./agreement-callbacks');
+        return await handleAgreementCallback(teamBot, query);
 
       // ─── 5. CLIENT PAYMENT VERIFICATION (DELEGATED TO MODULAR HANDLER) ───────
       } else if (data.startsWith('pay_approve:') || data.startsWith('pay_reject:')) {

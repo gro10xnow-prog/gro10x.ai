@@ -12,7 +12,8 @@
  */
 
 const { EventEmitter } = require('events');
-const { broadcast } = require('./sse');
+const sse = require('./sse');
+const broadcast = (...args) => sse.broadcast(...args);
 const { dispatchWebhookEvent } = require('./webhook-dispatcher');
 
 class StakeholderEventBus extends EventEmitter {
@@ -56,6 +57,9 @@ class StakeholderEventBus extends EventEmitter {
       const { readDB } = require('./db');
       const db = await readDB();
       processAutomationEvent(eventName, payload, db, () => {}, broadcast);
+      if (eventName.includes('.')) {
+        processAutomationEvent(eventName.replace(/\./g, '_'), payload, db, () => {}, broadcast);
+      }
     } catch (_) {}
 
     await Promise.allSettled([webhookPromise, telegramPromise]);
@@ -76,6 +80,107 @@ class StakeholderEventBus extends EventEmitter {
     const ownerChatId = process.env.TELEGRAM_OWNER_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID || '7754769807';
 
     switch (eventName) {
+      // ─── CRM & Lead Lifecycle ─────────────────────────────────────────────
+      case 'lead.created': {
+        const lead = payload.lead || payload;
+        const msg = `🔔 *NEW CRM LEAD CAPTURED*\n\n` +
+          `• Contact: *${lead.contact_person || lead.name || 'Prospective Client'}*\n` +
+          `• Company: *${lead.company || 'Brand Partner'}*\n` +
+          `• Service: *${lead.service || lead.service_interest || 'General'}*\n` +
+          `• Value: *${lead.value || lead.budget || 'Unspecified'}*\n` +
+          `• Source: *${lead.source || 'Website Form'}*`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, false);
+        break;
+      }
+
+      case 'lead.converted':
+      case 'lead.won': {
+        const lead = payload.lead || payload;
+        const client = payload.client || {};
+        const msg = `🏆 *DEAL WON — LEAD CONVERTED TO CLIENT!*\n\n` +
+          `• Client: *${client.name || lead.company || lead.name || 'New Client'}* (\`${client.id || lead.client_id || lead.id}\`)\n` +
+          `• Contact: *${lead.contact_person || lead.name || 'Client Lead'}*\n` +
+          `• Value: *${lead.value || lead.budget || 'Closed'}*\n\n` +
+          `Active Client CRM account created and ready for onboarding.`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, true);
+        break;
+      }
+
+      case 'lead.lost': {
+        const lead = payload.lead || payload;
+        const msg = `🗑️ *Lead Marked as Lost*\n\n` +
+          `• Contact: *${lead.contact_person || lead.company || lead.name || 'Lead'}*\n` +
+          `• Lead ID: \`${lead.id}\`\n` +
+          `• Stage: Lost / Closed`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, false);
+        break;
+      }
+
+      // ─── Proposal Pipeline Lifecycle ──────────────────────────────────────
+      case 'proposal.created': {
+        const prop = payload.proposal || payload;
+        const msg = `📄 *NEW CLIENT PROPOSAL GENERATED*\n\n` +
+          `• Proposal ID: *${prop.id}*\n` +
+          `• Client: *${prop.client_name || prop.clientName}* (${prop.client_company || prop.clientCompany || 'N/A'})\n` +
+          `• Project: *${prop.project_title || prop.projectTitle || 'AI Solution'}*\n` +
+          `• Total: *${prop.currency === 'USD' ? '$' : '৳'}${Number(prop.one_time_total || prop.oneTimeTotal || 0).toLocaleString()}*`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, false);
+        break;
+      }
+
+      case 'proposal.accepted': {
+        const prop = payload.proposal || payload;
+        const client = payload.client || {};
+        const msg = `🎉 *PROPOSAL FORMALLY ACCEPTED BY CLIENT!*\n\n` +
+          `• Proposal: *${prop.id}*\n` +
+          `• Client: *${client.name || prop.client_name || prop.clientName}*\n` +
+          `• Total: *${prop.currency === 'USD' ? '$' : '৳'}${Number(prop.one_time_total || prop.oneTimeTotal || 0).toLocaleString()}*\n\n` +
+          `⚡ Upfront invoice generated. Ready for project handover & sprint kickoff!`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, true);
+        break;
+      }
+
+      case 'proposal.converted': {
+        const prop = payload.proposal || payload;
+        const proj = payload.project || {};
+        const msg = `🚀 *PROPOSAL CONVERTED TO PRODUCTION PROJECT*\n\n` +
+          `• Project: *${proj.name || 'Client Project'}* (\`${proj.id}\`)\n` +
+          `• Client: *${proj.client_name || 'Client Partner'}*\n` +
+          `• Budget: *${proj.currency === 'USD' ? '$' : '৳'}${Number(proj.budget || 0).toLocaleString()}*\n` +
+          `• Converted from Proposal: *${prop.id || 'SOW Proposal'}*`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, true);
+        break;
+      }
+
+      // ─── Client Onboarding & Sprint Operations ────────────────────────────
+      case 'client.onboarded': {
+        const client = payload.client || payload;
+        const msg = `👥 *NEW CLIENT ONBOARDED*\n\n` +
+          `• Client: *${client.name}* (\`${client.id}\`)\n` +
+          `• Contact: *${client.contact_person || client.contactPerson || 'N/A'}*\n` +
+          `• Status: *${client.status || 'Active Retainer'}*`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, false);
+        break;
+      }
+
+      case 'sprint.kickoff': {
+        const msg = `⚡ *PRODUCTION SPRINT KICKOFF INITIATED*\n\n` +
+          `• Project: \`${payload.projectId}\`\n` +
+          `• Client: \`${payload.clientId}\`\n` +
+          `• Service: *${payload.productCode || 'Sprint'}*\n` +
+          `• Scheduled Handover: *${payload.targetHandover}*`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, true);
+        break;
+      }
+
+      case 'review.approved': {
+        const msg = `✅ *DELIVERABLE FORMALLY APPROVED BY CLIENT*\n\n` +
+          `• Project: \`${payload.projectId}\`\n` +
+          `• Approved By: *${payload.approvedBy || 'Client Signer'}*\n` +
+          `• 30-Day Bug Warranty activated.`;
+        notifications.sendTelegramNotification(ownerChatId, msg, null, true);
+        break;
+      }
       // ─── Scope Change Orders ───────────────────────────────────────────────
       case 'change_order.created': {
         const co = payload.changeOrder || payload;

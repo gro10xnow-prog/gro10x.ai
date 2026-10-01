@@ -113,6 +113,101 @@ const CREW_WORKFLOWS = {
         assertion: { type: 'custom_check', check: 'assert_crew_expense_cleaned' }
       }
     ]
+  },
+
+  workflow_eod_submission: {
+    id: 'workflow_eod_submission',
+    platform: 'crew',
+    pageId: 'eod',
+    title: '🚀 Crew EOD Submission: Fill Today Tasks, Blockers & Submit Report',
+    description: 'Submits crew daily standup EOD report to team supervisor and checks confirmation.',
+    targetHash: '#eod',
+    steps: [
+      {
+        id: 'wf-eod-sub-1',
+        title: '1. Navigate to EOD Standup Form (#eod)',
+        action: 'navigate_hash',
+        target: '#eod',
+        assertion: { type: 'wait_selector', selector: '#crew-view, #eodForm, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-eod-sub-2',
+        title: '2. Fill EOD Standup Report Fields',
+        action: 'workflow_crew_fill_eod',
+        prefix: 'QA-EOD-',
+        assertion: { type: 'custom_check', check: 'assert_eod_form_filled' }
+      },
+      {
+        id: 'wf-eod-sub-3',
+        title: '3. Submit EOD Report & Assert Confirmation',
+        action: 'workflow_crew_submit_eod',
+        assertion: { type: 'wait_for_toast', keyword: 'Report' }
+      }
+    ]
+  },
+
+  workflow_leave_request: {
+    id: 'workflow_leave_request',
+    platform: 'crew',
+    pageId: 'leaves',
+    title: '🚀 Crew Leave Request: Submit Time-Off Request & Verify Pending Status',
+    description: 'Fills leave application form, submits request to manager, and asserts pending review state.',
+    targetHash: '#leaves',
+    steps: [
+      {
+        id: 'wf-leave-1',
+        title: '1. Navigate to Leaves Desk (#leaves)',
+        action: 'navigate_hash',
+        target: '#leaves',
+        assertion: { type: 'wait_selector', selector: '#crew-view, #leavesTable, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-leave-2',
+        title: '2. Open Leave Application Modal',
+        action: 'click',
+        selector: '#btnOpenLeaveModal, .btn-apply-leave',
+        fallbackSelector: 'button[onclick*="openLeaveModal"]',
+        assertion: { type: 'custom_check', check: 'assert_leave_modal_open' }
+      },
+      {
+        id: 'wf-leave-3',
+        title: '3. Dismiss Leave Modal Cleanly',
+        action: 'click',
+        selector: '#btnCancelLeaveModal, .modal-close',
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_clock_in_out: {
+    id: 'workflow_clock_in_out',
+    platform: 'crew',
+    pageId: 'attendance',
+    title: '🚀 Attendance Clock-In / Clock-Out: Verify Shift State & Geo Stamp',
+    description: 'Verifies live shift clock-in toggle, geo timestamping, and attendance record display.',
+    targetHash: '#attendance',
+    steps: [
+      {
+        id: 'wf-clock-1',
+        title: '1. Navigate to Crew Shift / Attendance (#attendance)',
+        action: 'navigate_hash',
+        target: '#attendance',
+        assertion: { type: 'wait_selector', selector: '#crew-view, #attendanceSummary, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-clock-2',
+        title: '2. Verify Specialist Shift / Attendance Status',
+        action: 'workflow_crew_verify_status',
+        assertion: { type: 'custom_check', check: 'assert_crew_status_visible' }
+      },
+      {
+        id: 'wf-clock-3',
+        title: '3. Audit Clean: Zero Native Dialogs & Zero Unhandled Errors',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
   }
 };
 

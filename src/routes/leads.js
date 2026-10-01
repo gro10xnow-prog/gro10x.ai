@@ -267,7 +267,19 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
                 `📞 Phone: \`${fullUpdatedLead.phone || 'N/A'}\`\n` +
                 `📧 Email: \`${fullUpdatedLead.email || 'N/A'}\`\n` +
                 `📝 Notes: _${req.body.notes || 'Sprint application received.'}_`;
-              sendTelegramNotification(ownerChatId, alertMsg, null, false);
+
+              const cleanPhone = (fullUpdatedLead.phone || fullUpdatedLead.whatsapp || '').replace(/\D/g, '');
+              const buttons = [];
+              const row = [];
+              if (cleanPhone && cleanPhone.length >= 8) {
+                const waPhone = cleanPhone.startsWith('880') ? cleanPhone : (cleanPhone.startsWith('0') ? `88${cleanPhone}` : cleanPhone);
+                row.push({ text: '📞 WhatsApp Now', url: `https://wa.me/${waPhone}` });
+              }
+              const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+              row.push({ text: '👁 View in CRM', url: `${baseUrl}/app#leads` });
+              if (row.length > 0) buttons.push(row);
+
+              sendTelegramNotification(ownerChatId, alertMsg, buttons.length > 0 ? buttons : null, false);
             }
           } catch (_) {}
 
@@ -359,6 +371,10 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
 
   broadcastLeadEvent('lead_update', [newLead]);
   broadcastLeadEvent('lead_created', newLead);
+  try {
+    const { emitStakeholderEvent } = require('../services/stakeholder-events');
+    emitStakeholderEvent('lead.created', { lead: newLead }, { stakeholderId: newLead.id, stakeholderType: 'lead' }).catch(() => {});
+  } catch (_) {}
 
   // Send automated confirmation email asynchronously without blocking HTTP response
   if (email && email.includes('@')) {
@@ -482,6 +498,16 @@ router.put('/:id', requireAuth, async (req, res) => {
     } catch (_) {}
 
     broadcastLeadEvent('lead_update', [updatedLead]);
+    if (req.body.stage && req.body.stage !== existing.stage) {
+      try {
+        const { emitStakeholderEvent } = require('../services/stakeholder-events');
+        if (req.body.stage === 'Won / Closed') {
+          emitStakeholderEvent('lead.won', { lead: updatedLead }, { stakeholderId: id, stakeholderType: 'lead' }).catch(() => {});
+        } else if (req.body.stage === 'Lost') {
+          emitStakeholderEvent('lead.lost', { lead: updatedLead }, { stakeholderId: id, stakeholderType: 'lead' }).catch(() => {});
+        }
+      } catch (_) {}
+    }
     return res.json({ success: true, lead: updatedLead });
   } catch (err) {
     console.error('[Leads PUT Error]:', err.message);
@@ -699,6 +725,11 @@ router.post('/:id/convert', requireAuth, async (req, res) => {
     } catch (_) {}
 
     broadcastLeadEvent('lead_update', [{ id, stage: 'Won / Closed', client_id: clientRecord.id }]);
+    try {
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('lead.converted', { lead: updatedLeadData, client: clientRecord }, { stakeholderId: clientRecord.id, stakeholderType: 'client' }).catch(() => {});
+      emitStakeholderEvent('lead.won', { lead: updatedLeadData, client: clientRecord }, { stakeholderId: clientRecord.id, stakeholderType: 'client' }).catch(() => {});
+    } catch (_) {}
     res.json({ success: true, client: clientRecord, lead: updatedLeadData });
   } catch (err) {
     console.error('[Leads Convert Error]:', err.message);
@@ -737,6 +768,10 @@ router.post('/book', leadSubmitLimiter, async (req, res) => {
     } catch (_) {}
 
     broadcastLeadEvent('lead_update', [newLead]);
+    try {
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('lead.created', { lead: newLead }, { stakeholderId: newLead.id, stakeholderType: 'lead' }).catch(() => {});
+    } catch (_) {}
 
     // Telegram alert to agency owner
     try {
@@ -858,15 +893,22 @@ router.post('/:id/create-proposal', async (req, res) => {
     }
 
     if (!lead) {
+      try {
+        const db = await readDB();
+        lead = (db.leads || []).find(l => String(l.id) === String(id));
+      } catch (_) {}
+    }
+
+    if (!lead) {
       // Memory / request body fallback
       lead = {
         id,
-        name: req.body.clientName || 'Valued Client',
-        company: req.body.clientCompany || 'Client Partner',
-        email: req.body.clientEmail || 'client@example.com',
-        phone: req.body.clientPhone || '',
+        name: req.body.clientName || req.body.contactPerson || 'Valued Client',
+        company: req.body.clientCompany || req.body.company || 'Client Partner',
+        email: req.body.clientEmail || req.body.email || 'client@example.com',
+        phone: req.body.clientPhone || req.body.phone || '',
         service_interest: req.body.service || req.body.service_interest || 'SVC-001',
-        budget: req.body.budget || 2500
+        budget: req.body.budget || req.body.value || 2500
       };
     }
 
@@ -909,6 +951,7 @@ router.post('/:id/create-proposal', async (req, res) => {
       client_phone: lead.phone || '',
       project_title: `${product.name} — 14-Day Production Sprint`,
       project_summary: product.metadata?.description || `Turnkey engineering and production deployment of ${product.name}.`,
+      canonical_service_code: product.product_code || serviceCode,
       scope_items: deliverables,
       one_time_items: [
         {
@@ -937,6 +980,38 @@ router.post('/:id/create-proposal', async (req, res) => {
       } catch (sbErr) {
         console.warn('[Leads create-proposal] Supabase notice:', sbErr.message);
       }
+    }
+
+    // Dual-persist to data/db.json
+    try {
+      const db = await readDB();
+      db.proposals = db.proposals || [];
+      const existingPropIdx = db.proposals.findIndex(p => p.id === proposalId);
+      if (existingPropIdx !== -1) {
+        db.proposals[existingPropIdx] = newProposal;
+      } else {
+        db.proposals.unshift(newProposal);
+      }
+      if (Array.isArray(db.leads)) {
+        const leadIdx = db.leads.findIndex(l => String(l.id) === String(id));
+        if (leadIdx !== -1) {
+          db.leads[leadIdx].stage = 'Proposal Sent';
+          db.leads[leadIdx].updated_at = new Date().toISOString();
+        }
+      }
+      await writeDB(db);
+    } catch (dbErr) {
+      console.warn('[Leads create-proposal] Local DB write warning:', dbErr.message);
+    }
+
+    // Real-time SSE Telemetry Broadcasts
+    try {
+      broadcastLeadEvent('lead_update', [{ id, stage: 'Proposal Sent' }]);
+      broadcast('proposal_update', [newProposal]);
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('proposal.created', { proposal: newProposal, leadId: id }, { stakeholderId: id, stakeholderType: 'lead' }).catch(() => {});
+    } catch (sseErr) {
+      console.warn('[Leads create-proposal] SSE broadcast note:', sseErr.message);
     }
 
     const shareUrl = `${process.env.PUBLIC_APP_URL || 'https://gro10x-ai.vercel.app'}/p/${shareToken}`;
@@ -1134,6 +1209,10 @@ router.post('/ai-audit', leadSubmitLimiter, async (req, res) => {
 
     // Broadcast SSE
     broadcastLeadEvent('lead_created', leadRecord);
+    try {
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('lead.created', { lead: leadRecord }, { stakeholderId: leadRecord.id, stakeholderType: 'lead' }).catch(() => {});
+    } catch (_) {}
 
     // Send automated confirmation email and asset delivery asynchronously
     if (email && email.includes('@')) {

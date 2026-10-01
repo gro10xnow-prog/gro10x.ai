@@ -317,7 +317,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 **Orphans & Hooks to Wire:**
 - Stage 3 complete → `onboarding_complete: true` in `profiles` + SSE `team_update`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -335,7 +335,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 **Orphans & Hooks to Wire:**
 - Approval: SSE `leave_update` + Telegram DM to employee + update `leaves_balance` in `profiles`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -348,7 +348,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 **Files to Refactor:**
 - `src/routes/auth.js` — Add `broadcast('auth_event', {...})` on: login success, login failure, PIN generated, account locked (5 failed attempts), PIN set
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -361,7 +361,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 **Files to Refactor:**
 - `src/routes/team.js:1206, 1249` — Change `{ is_permanent: true }` to `{ is_temp: false }`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -383,7 +383,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 **Orphans & Hooks to Wire:**
 - After proposal creation: Telegram alert to Owner + SSE `proposal_update`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -401,7 +401,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 - `src/routes/proposals.js` — Add `stakeholderEvents.emitEvent('proposal.accepted', ...)` etc.
 - `src/routes/clients.js` — Add `stakeholderEvents.emitEvent('client.onboarded', ...)` etc.
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -415,7 +415,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 - `src/routes/reviews.js` — Replace `fallbackReviews` with empty array `[]` on error; log error instead
 - Remove hardcoded seed review data (`REV-SAMPLE01`, `PRJ-CHILLOX01`)
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -438,7 +438,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 - Payslip generated: Telegram + Resend email to employee
 - Salary disbursed: SSE `payroll_update` broadcast
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -456,7 +456,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 - EOD submit: Telegram to Manager + SSE `eod_update`
 - Clock-in/out: SSE `attendance_update`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -474,7 +474,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 - Survey complete → Telegram prompt to sign agreement
 - Agreement Stage 3 complete → `onboarding_complete: true` + SSE `team_update`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -501,7 +501,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 
 **QA Suite to Update:** `extension/gro10x-qa-runner/suites/workflows/client-workflows.js`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -519,7 +519,7 @@ Additionally, share URLs generated in `src/routes/leads.js:748` use `/p/${shareT
 
 **QA Suite to Update:** `finance-qa.js` — MFS payment submission E2E
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -541,7 +541,7 @@ Also: overdue invoice tracking needs a proper cron job.
 - `src/routes/cron.js` — Verify `/invoice-due-reminder` works correctly (after Pre-5 Math.abs fix)
 - `src/routes/auth.js` — Call new staff invitation email on `POST /pin/generate`
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -553,10 +553,10 @@ Also: overdue invoice tracking needs a proper cron job.
 
 **Files to Refactor:**
 - `public/app/modules/platforms.js` — Connect "Register Platform" form to real API
-- `src/routes/` — Create `platforms.js` route
-- `supabase/migrations/` — Add `platforms` table if missing
+- `src/routes/platforms.js` — Create `platforms.js` route
+- `supabase/migrations/20261002_platforms_registry.sql` — Add `platforms` table migration
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -576,7 +576,7 @@ Also: overdue invoice tracking needs a proper cron job.
 - `extension/gro10x-qa-runner/suites/hr-qa.js` — Add onboarding, agreement, payslip tests
 - `extension/gro10x-qa-runner/suites/registry.js` — Wire new workflow IDs
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -586,7 +586,7 @@ Also: overdue invoice tracking needs a proper cron job.
 
 **Problem:** `extension/gro10x-traffic-sentinel/` and `extension/gro10x-product-scout/` need completeness audit and verification of active monitoring hooks.
 
-**Status:** `[ ] Pending Approval`
+**Status:** `[x] Completed`
 
 ---
 
@@ -604,28 +604,28 @@ Also: overdue invoice tracking needs a proper cron job.
 | **PRE** | Pre-8: Fix CRM "Create Proposal" method call | P0 | 🔴 HIGH | Admin | `[x] Completed` |
 | **PRE** | Pre-9: Fix convert-to-project missing client_id | P0 | 🟠 HIGH | Client, Admin | `[x] Completed` |
 | **1** | 1.1: Proposals DB Persistence | P1 | 🔴 HIGH | Admin, Client | `[x] Completed` |
-| **1** | 1.2: DCE Orders DB Persistence | P1 | 🔴 HIGH | DBM, Affiliate | `[ ] Pending` |
-| **1** | 1.3: Weekly Exec Cron Live Metrics | P1 | 🟠 MED | Admin | `[ ] Pending` |
-| **1** | 1.4: Invoice Quotes DB Persistence | P2 | 🟠 MED | Admin, Client | `[ ] Pending` |
-| **1** | 1.5: Fix post-delivery writeDB() | P1 | 🟠 MED | Client | `[ ] Pending` |
-| **1** | 1.6: Lead ops Supabase fallback | P2 | 🟠 MED | Admin | `[ ] Pending` |
-| **2** | 2.1: Payment Tg approval callbacks | P1 | 🔴 HIGH | Admin, Finance | `[ ] Pending` |
-| **2** | 2.2: Agreement sign Tg callbacks | P2 | 🟠 MED | Crew, Finance | `[ ] Pending` |
-| **2** | 2.3: Leave approval Tg callbacks | P2 | 🟠 MED | Crew, Manager | `[ ] Pending` |
-| **2** | 2.4: Auth SSE telemetry events | P2 | 🟠 MED | Admin | `[ ] Pending` |
-| **2** | 2.5: Fix is_permanent→is_temp | P1 | 🟠 MED | HR Admin | `[ ] Pending` |
-| **3** | 3.1: Wire create-proposal button | P2 | 🟠 MED | Admin | `[ ] Pending` |
-| **3** | 3.2: Route events through stakeholderEvents | P2 | 🟠 MED | All | `[ ] Pending` |
-| **3** | 3.3: Fix reviews cross-client data leak | P1 | 🟠 MED | Client | `[ ] Pending` |
-| **4** | 4.1: Payslip generation & salary | P2 | 🟠 MED | Crew, Admin | `[ ] Pending` |
-| **4** | 4.2: EOD & attendance persistence | P2 | 🟠 MED | Crew, Manager | `[ ] Pending` |
-| **4** | 4.3: Onboarding flow completion | P1 | 🟠 MED | Crew (new joiners) | `[ ] Pending` |
-| **5** | 5.1: Client portal modules hardening | P2 | 🟠 MED | Client | `[ ] Pending` |
-| **5** | 5.2: Multi-rail payment UX | P2 | 🟠 MED | Client, Admin | `[ ] Pending` |
-| **5** | 5.3: Invoice email & missing templates | P2 | 🟠 MED | Client, Admin | `[ ] Pending` |
-| **5** | 5.4: Platforms module live DB | P3 | 🟡 LOW | Admin | `[ ] Pending` |
-| **6** | 6.1: Wire empty QA workflow arrays | P2 | 🟠 MED | QA | `[ ] Pending` |
-| **6** | 6.2: Traffic Sentinel & Scout audit | P3 | 🟡 LOW | QA, Admin | `[ ] Pending` |
+| **1** | 1.2: DCE Orders DB Persistence | P1 | 🔴 HIGH | DBM, Affiliate | `[x] Completed` |
+| **1** | 1.3: Weekly Exec Cron Live Metrics | P1 | 🟠 MED | Admin | `[x] Completed` |
+| **1** | 1.4: Invoice Quotes DB Persistence | P2 | 🟠 MED | Admin, Client | `[x] Completed` |
+| **1** | 1.5: Fix post-delivery writeDB() | P1 | 🟠 MED | Client | `[x] Completed` |
+| **1** | 1.6: Lead ops Supabase fallback | P2 | 🟠 MED | Admin | `[x] Completed` |
+| **2** | 2.1: Payment Tg approval callbacks | P1 | 🔴 HIGH | Admin, Finance | `[x] Completed` |
+| **2** | 2.2: Agreement sign Tg callbacks | P2 | 🟠 MED | Crew, Finance | `[x] Completed` |
+| **2** | 2.3: Leave approval Tg callbacks | P2 | 🟠 MED | Crew, Manager | `[x] Completed` |
+| **2** | 2.4: Auth SSE telemetry events | P2 | 🟠 MED | Admin | `[x] Completed` |
+| **2** | 2.5: Fix is_permanent→is_temp | P1 | 🟠 MED | HR Admin | `[x] Completed` |
+| **3** | 3.1: Wire create-proposal button | P2 | 🟠 MED | Admin | `[x] Completed` |
+| **3** | 3.2: Route events through stakeholderEvents | P2 | 🟠 MED | All | `[x] Completed` |
+| **3** | 3.3: Fix reviews cross-client data leak | P1 | 🟠 MED | Client | `[x] Completed` |
+| **4** | 4.1: Payslip generation & salary | P2 | 🟠 MED | Crew, Admin | `[x] Completed` |
+| **4** | 4.2: EOD & attendance persistence | P2 | 🟠 MED | Crew, Manager | `[x] Completed` |
+| **4** | 4.3: Onboarding flow completion | P1 | 🟠 MED | Crew (new joiners) | `[x] Completed` |
+| **5** | 5.1: Client portal modules hardening | P2 | 🟠 MED | Client | `[x] Completed` |
+| **5** | 5.2: Multi-rail payment UX | P2 | 🟠 MED | Client, Admin | `[x] Completed` |
+| **5** | 5.3: Invoice email & missing templates | P2 | 🟠 MED | Client, Admin | `[x] Completed` |
+| **5** | 5.4: Platforms module live DB | P3 | 🟡 LOW | Admin | `[x] Completed` |
+| **6** | 6.1: Wire empty QA workflow arrays | P2 | 🟠 MED | QA | `[x] Completed` |
+| **6** | 6.2: Traffic Sentinel & Scout audit | P3 | 🟡 LOW | QA, Admin | `[x] Completed` |
 
 ---
 

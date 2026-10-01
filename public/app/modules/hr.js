@@ -991,7 +991,7 @@ window.APP_MODULES.hr = async function(container) {
       doc.text(`BDT ${salary.toLocaleString()}`, 150, yPos);
       
       yPos += 10;
-      const commission = Number(member.earnedCommissions) || 0;
+      const commission = Number(member.earnedCommissions || member.earned_commissions || member.commissions) || 0;
       doc.text("Earned Performance Bonus / Commission", 18, yPos);
       doc.text(`BDT ${commission.toLocaleString()}`, 150, yPos);
 

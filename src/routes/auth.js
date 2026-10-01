@@ -9,6 +9,7 @@ const { normalizePhone } = require('../utils/phone');
 const rateLimit = require('express-rate-limit');
 const { sendTelegramNotification } = require('../services/bot');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
+const sse = require('../services/sse');
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -139,6 +140,16 @@ router.post('/telegram', async (req, res) => {
     // Reject unlinked users in production, strict auth mode, or when not explicitly debug
     if (!resolvedUser) {
       if (process.env.NODE_ENV === 'production' || process.env.FORCE_SUPABASE === 'true' || req.headers['x-disable-dev-auth'] === 'true' || (tgId !== 'debug' && !process.env.ALLOW_DEV_FALLBACK)) {
+        try {
+          sse.broadcast('auth_event', {
+            type: 'login_failure',
+            action: 'login_failure',
+            method: 'telegram_miniapp',
+            telegramId: tgId,
+            reason: 'No account linked to this Telegram account',
+            timestamp: new Date().toISOString()
+          });
+        } catch (_) {}
         return res.status(404).json({ error: 'No account linked to this Telegram account. Please link your phone number first.' });
       }
     }
@@ -166,6 +177,21 @@ router.post('/telegram', async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/'
     });
+
+    try {
+      sse.broadcast('auth_event', {
+        type: 'login_success',
+        action: 'login_success',
+        method: 'telegram_miniapp',
+        userId: userPayload.userId,
+        name: userPayload.name,
+        phone: userPayload.phone,
+        role: userPayload.role,
+        linkedType: userPayload.linkedType,
+        telegramId: tgId,
+        timestamp: new Date().toISOString()
+      });
+    } catch (_) {}
 
     res.json({
       success: true,
@@ -271,6 +297,35 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
     telegramPushed = true;
   }
 
+  // Send Staff Invitation / Access Card Email via Resend if email available
+  const recipientEmail = email || userObj?.email || userObj?.personal_email;
+  if (recipientEmail && recipientEmail.includes('@')) {
+    try {
+      const { sendStaffInvitationEmail } = require('../services/resend');
+      sendStaffInvitationEmail({
+        name,
+        email: recipientEmail,
+        phone: cleanPhone,
+        pin: pinRecord.pin,
+        portalUrl
+      }).catch(err => console.warn('[Auth PIN] Invitation email warning:', err.message));
+    } catch (_) {}
+  }
+
+  try {
+    sse.broadcast('auth_event', {
+      type: 'pin_generated',
+      action: 'pin_generated',
+      phone: cleanPhone,
+      name,
+      linkedId: userObj?.id || linkedId,
+      linkedType: targetType,
+      isTemp: Boolean(pinRecord.isTemp ?? pinRecord.is_temp ?? true),
+      generatedBy: req.user?.name || req.user?.profile?.name || 'Manager',
+      timestamp: new Date().toISOString()
+    });
+  } catch (_) {}
+
   res.json({
     success: true,
     phone: cleanPhone,
@@ -292,6 +347,30 @@ router.post('/pin/verify', pinVerifyLimiter, async (req, res) => {
   const result = await verifyPin(phone, pin, portal);
   if (!result.success) {
     const status = result.locked ? 429 : 401;
+
+    try {
+      if (result.locked) {
+        sse.broadcast('auth_event', {
+          type: 'account_locked',
+          action: 'account_locked',
+          phone,
+          attempts: result.attempts || 5,
+          reason: '5 failed PIN attempts',
+          portal: portal || 'crew',
+          timestamp: new Date().toISOString()
+        });
+      }
+      sse.broadcast('auth_event', {
+        type: 'login_failure',
+        action: 'login_failure',
+        phone,
+        reason: result.error || 'Invalid PIN',
+        attempts: result.attempts || 1,
+        portal: portal || 'crew',
+        timestamp: new Date().toISOString()
+      });
+    } catch (_) {}
+
     return res.status(status).json(result);
   }
 
@@ -320,6 +399,20 @@ router.post('/pin/verify', pinVerifyLimiter, async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/'
   });
+
+  try {
+    sse.broadcast('auth_event', {
+      type: 'login_success',
+      action: 'login_success',
+      userId: jwtPayload.userId,
+      name: jwtPayload.name,
+      phone,
+      role: jwtPayload.role,
+      linkedType: jwtPayload.linkedType,
+      portal: portal || 'crew',
+      timestamp: new Date().toISOString()
+    });
+  } catch (_) {}
 
   res.json({
     success: true,
@@ -381,6 +474,17 @@ router.post(['/pin/set', '/change-pin'], requireAuth, async (req, res) => {
     } catch (e) {
       console.error('Failed to send profile completion nudge:', e.message);
     }
+
+    try {
+      sse.broadcast('auth_event', {
+        type: 'pin_set',
+        action: 'pin_set',
+        phone: phone || targetPhone,
+        userId: req.user?.id || req.user?.userId,
+        name: req.user?.name || req.user?.profile?.name || 'User',
+        timestamp: new Date().toISOString()
+      });
+    } catch (_) {}
   }
   res.json(result);
 });
@@ -415,8 +519,14 @@ router.post('/logout', requireAuth, (req, res) => {
   res.clearCookie('gro10x_token', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
   res.clearCookie('purple_jwt', { path: '/' });
   try {
-    const { broadcast } = require('../services/sse');
-    broadcast('auth_event', { type: 'logout', userId: req.user?.id, name: req.user?.name, ts: new Date().toISOString() });
+    sse.broadcast('auth_event', {
+      type: 'logout',
+      action: 'logout',
+      userId: req.user?.id || req.user?.userId,
+      name: req.user?.name,
+      ts: new Date().toISOString(),
+      timestamp: new Date().toISOString()
+    });
   } catch (_) {}
   return res.json({ success: true, message: 'Logged out successfully' });
 });

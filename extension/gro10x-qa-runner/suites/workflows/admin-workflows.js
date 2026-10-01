@@ -364,6 +364,347 @@ const ADMIN_WORKFLOWS = {
         assertion: { type: 'custom_check', check: 'assert_clean_audit' }
       }
     ]
+  },
+
+  workflow_crm_client_lifecycle: {
+    id: 'workflow_crm_client_lifecycle',
+    platform: 'admin',
+    pageId: 'crm',
+    title: '🚀 CRM Operations: Inspect Clients ➔ Open Client Drawer ➔ Verify Retainer Health',
+    description: 'Validates client directory rendering, profile drawer inspection, retainer quota, and SLA compliance.',
+    targetHash: '#crm',
+    steps: [
+      {
+        id: 'wf-crm-1',
+        title: '1. Navigate to Clients & Retainers CRM (#crm)',
+        action: 'navigate_hash',
+        target: '#crm',
+        assertion: { type: 'wait_selector', selector: '#crmClientTable, #crmClientsGrid, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-crm-2',
+        title: '2. Verify Client Portfolio Rendered in DOM',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_crm_clients_rendered' }
+      },
+      {
+        id: 'wf-crm-3',
+        title: '3. Open Client Profile Drawer / Details Modal',
+        action: 'click',
+        selector: '.crm-view-client-btn, .client-card',
+        fallbackSelector: 'button[onclick*="viewClient"]',
+        assertion: { type: 'custom_check', check: 'assert_crm_drawer_open' }
+      },
+      {
+        id: 'wf-crm-4',
+        title: '4. Verify Retainer Quota & Active Tier SLA',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_crm_retainer_sla' }
+      },
+      {
+        id: 'wf-crm-5',
+        title: '5. Dismiss Drawer & Audit Clean State',
+        action: 'click',
+        selector: '#btnCloseClientDrawer, .drawer-close-btn, .modal-close',
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_review_room_cycle: {
+    id: 'workflow_review_room_cycle',
+    platform: 'admin',
+    pageId: 'reviews',
+    title: '🚀 Review Room: Filter Deliverables ➔ Inspect Frame Review ➔ Approval Audit',
+    description: 'Navigates to reviews hub, checks deliverable cards, opens player/viewer, and audits review approval status.',
+    targetHash: '#reviews',
+    steps: [
+      {
+        id: 'wf-rev-1',
+        title: '1. Navigate to Review Room Hub (#reviews)',
+        action: 'navigate_hash',
+        target: '#reviews',
+        assertion: { type: 'wait_selector', selector: '#reviewsContainer, #reviewGrid, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-rev-2',
+        title: '2. Verify Review Items & Deliverable Cards',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_reviews_rendered' }
+      },
+      {
+        id: 'wf-rev-3',
+        title: '3. Inspect Active Review Item',
+        action: 'click',
+        selector: '.review-item-card, .btn-open-review',
+        fallbackSelector: 'button[onclick*="openReview"]',
+        assertion: { type: 'custom_check', check: 'assert_review_inspect_active' }
+      },
+      {
+        id: 'wf-rev-4',
+        title: '4. Audit Clean: Zero Native Dialogs & Zero Unhandled Rejections',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_social_post_schedule: {
+    id: 'workflow_social_post_schedule',
+    platform: 'admin',
+    pageId: 'social',
+    title: '🚀 Social Planner: Calendar Grid ➔ Post Draft Composer ➔ Channel Filter',
+    description: 'Validates social planner multi-channel grid, scheduling modal, and post lifecycle.',
+    targetHash: '#social',
+    steps: [
+      {
+        id: 'wf-soc-1',
+        title: '1. Navigate to Social Planner (#social)',
+        action: 'navigate_hash',
+        target: '#social',
+        assertion: { type: 'wait_selector', selector: '#socialCalendarView, #socialPostsGrid, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-soc-2',
+        title: '2. Verify Social Scheduling Grid & Channels',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_social_calendar_rendered' }
+      },
+      {
+        id: 'wf-soc-3',
+        title: '3. Open Schedule New Post Modal',
+        action: 'click',
+        selector: '#btnOpenNewPostModal, .btn-schedule-post',
+        fallbackSelector: 'button[onclick*="openPostModal"]',
+        assertion: { type: 'custom_check', check: 'assert_social_modal_open' }
+      },
+      {
+        id: 'wf-soc-4',
+        title: '4. Dismiss Composer Modal Cleanly',
+        action: 'click',
+        selector: '#btnCancelPostModal, .modal-close',
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_platforms_registry_cycle: {
+    id: 'workflow_platforms_registry_cycle',
+    platform: 'admin',
+    pageId: 'platforms',
+    title: '🚀 Platform Registry: List Micro-SaaS ➔ View Ecosystem Health ➔ Real DB Sync',
+    description: 'Inspects micro-SaaS platform registry, verifies live DB persistence, and tests registration UI.',
+    targetHash: '#platforms',
+    steps: [
+      {
+        id: 'wf-plat-1',
+        title: '1. Navigate to Platform Portfolio Registry (#platforms)',
+        action: 'navigate_hash',
+        target: '#platforms',
+        assertion: { type: 'wait_selector', selector: '#platformsGrid, #platformsSummary, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-plat-2',
+        title: '2. Verify Micro-SaaS Platform Cards Rendered',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_platforms_rendered' }
+      },
+      {
+        id: 'wf-plat-3',
+        title: '3. Open Register Platform Modal',
+        action: 'click',
+        selector: '#btnRegisterPlatform, .btn-add-platform',
+        fallbackSelector: 'button[onclick*="openPlatformModal"]',
+        assertion: { type: 'custom_check', check: 'assert_platform_modal_open' }
+      },
+      {
+        id: 'wf-plat-4',
+        title: '4. Audit Clean: Dismiss Modal & Confirm Sync',
+        action: 'click',
+        selector: '#btnCancelPlatformModal, .modal-close',
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_brands_store_cycle: {
+    id: 'workflow_brands_store_cycle',
+    platform: 'admin',
+    pageId: 'brands',
+    title: '🚀 Brand Hub: Storefronts ➔ Brand Assets ➔ Multi-Brand Filter',
+    description: 'Navigates to brand command center, verifies active brand cards, and audits store inventory.',
+    targetHash: '#brands',
+    steps: [
+      {
+        id: 'wf-brd-1',
+        title: '1. Navigate to Brand Command Center (#brands)',
+        action: 'navigate_hash',
+        target: '#brands',
+        assertion: { type: 'wait_selector', selector: '#brandsGrid, #brandPortfolio, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-brd-2',
+        title: '2. Verify Brand Portfolio & Catalog Tiles',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_brands_rendered' }
+      },
+      {
+        id: 'wf-brd-3',
+        title: '3. Audit Clean: Zero Native Dialogs & Zero Unhandled Rejections',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_digistore_product_cycle: {
+    id: 'workflow_digistore_product_cycle',
+    platform: 'admin',
+    pageId: 'digistore',
+    title: '🚀 DigiVault: Digital Products ➔ Subscription Tiers ➔ License Vault',
+    description: 'Validates DigiStore product inventory, checkout links, and subscription tiers.',
+    targetHash: '#digistore',
+    steps: [
+      {
+        id: 'wf-digi-1',
+        title: '1. Navigate to DigiVault Subs & Commerce (#digistore)',
+        action: 'navigate_hash',
+        target: '#digistore',
+        assertion: { type: 'wait_selector', selector: '#digistoreGrid, #digiVaultCatalog, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-digi-2',
+        title: '2. Verify Digital Products & License Pricing',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_digistore_rendered' }
+      },
+      {
+        id: 'wf-digi-3',
+        title: '3. Audit Clean: Zero Native Dialogs & Zero Unhandled Rejections',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_hr_onboarding_lifecycle: {
+    id: 'workflow_hr_onboarding_lifecycle',
+    platform: 'admin',
+    pageId: 'hr',
+    title: '🚀 HR Operations: Roster Table ➔ PIN Invite Pipeline ➔ Payslip & Agreement Check',
+    description: 'Validates team roster, onboarding PIN workflow, survey & agreement status, and payslip generation.',
+    targetHash: '#hr',
+    steps: [
+      {
+        id: 'wf-hr-1',
+        title: '1. Navigate to HR & Roster Ops (#hr)',
+        action: 'navigate_hash',
+        target: '#hr',
+        assertion: { type: 'wait_selector', selector: '#hrRosterTable, #btnHrTabRoster, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-hr-2',
+        title: '2. Verify Staff Directory Table & Member Cards',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_hr_roster_table' }
+      },
+      {
+        id: 'wf-hr-3',
+        title: '3. Switch to Invitations Subtab & Verify PIN Pipeline',
+        action: 'click',
+        selector: '#btnHrTabInvitations',
+        assertion: { type: 'custom_check', check: 'assert_hr_invitations_pipeline' }
+      },
+      {
+        id: 'wf-hr-4',
+        title: '4. Verify Agreement Stage Callbacks & Onboarding State',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_agreement_callbacks' }
+      },
+      {
+        id: 'wf-hr-5',
+        title: '5. Audit Clean: Multi-Currency Toggle & Zero Errors',
+        action: 'click',
+        selector: '#btnHrTabRoster',
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_assets_inventory_cycle: {
+    id: 'workflow_assets_inventory_cycle',
+    platform: 'admin',
+    pageId: 'assets',
+    title: '🚀 Hardware Assets: Category Tabs ➔ Asset Assignment ➔ Valuation Audit',
+    description: 'Checks hardware inventory, assigned custodian, maintenance status, and total valuation.',
+    targetHash: '#assets',
+    steps: [
+      {
+        id: 'wf-ast-1',
+        title: '1. Navigate to Hardware Assets Hub (#assets)',
+        action: 'navigate_hash',
+        target: '#assets',
+        assertion: { type: 'wait_selector', selector: '#assetsCategoryTabs, #kpiAssetsTotal, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-ast-2',
+        title: '2. Verify 4 Master KPI Tiles & Inventory Items',
+        action: 'wait_ms',
+        duration: 300,
+        assertion: { type: 'custom_check', check: 'assert_assets_kpis' }
+      },
+      {
+        id: 'wf-ast-3',
+        title: '3. Audit Clean: Zero Native Dialogs & Zero Unhandled Rejections',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
+  },
+
+  workflow_settings_config_cycle: {
+    id: 'workflow_settings_config_cycle',
+    platform: 'admin',
+    pageId: 'settings',
+    title: '🚀 Settings: FX Rate Config ➔ Security PIN Drawer ➔ Audit Policy',
+    description: 'Verifies system settings navigation, currency exchange rate configuration, and PIN security policy.',
+    targetHash: '#settings',
+    steps: [
+      {
+        id: 'wf-set-1',
+        title: '1. Navigate to Workspace Settings (#settings)',
+        action: 'navigate_hash',
+        target: '#settings',
+        assertion: { type: 'wait_selector', selector: '#settingsNavTabs, h1', timeout: 5000 }
+      },
+      {
+        id: 'wf-set-2',
+        title: '2. Switch to Security & Credentials Tab',
+        action: 'click',
+        selector: 'button[data-tab="security"]',
+        assertion: { type: 'custom_check', check: 'assert_settings_security_active' }
+      },
+      {
+        id: 'wf-set-3',
+        title: '3. Audit Clean: Agency Config & Security Policy',
+        action: 'wait_ms',
+        duration: 200,
+        assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+      }
+    ]
   }
 };
 

@@ -4,7 +4,9 @@ const crypto = require('crypto');
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager, requireClientOwnership } = require('../middleware/rbac');
 const { readDB, writeDB } = require('../services/db');
-const { broadcast, broadcastToClient } = require('../services/sse');
+const sse = require('../services/sse');
+const broadcast = (...args) => sse.broadcast(...args);
+const broadcastToClient = (...args) => sse.broadcastToClient(...args);
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { ok, fail } = require('../utils/response');
 const {
@@ -532,6 +534,10 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       const dbSnapshot = await readDB();
       const { processAutomationEvent } = require('../services/automation');
       await processAutomationEvent('client_onboarded', { client: payload }, dbSnapshot, writeDB, broadcast);
+      try {
+        const { emitStakeholderEvent } = require('../services/stakeholder-events');
+        emitStakeholderEvent('client.onboarded', { client: payload }, { stakeholderId: newId, stakeholderType: 'client' }).catch(() => {});
+      } catch (_) {}
       return res.json({ success: true, client: mapClient(payload) });
     }
   }
@@ -542,6 +548,10 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
   db.clients.push(newClient);
   try { writeDB(db); } catch (e) { console.warn('Local writeDB skipped:', e.message); }
   broadcast('client_update', db.clients);
+  try {
+    const { emitStakeholderEvent } = require('../services/stakeholder-events');
+    emitStakeholderEvent('client.onboarded', { client: newClient }, { stakeholderId: newId, stakeholderType: 'client' }).catch(() => {});
+  } catch (_) {}
   res.json({ success: true, client: mapClient(newClient) });
 });
 
@@ -1075,6 +1085,34 @@ router.post('/:id/lockin-specs/:specId/kickoff', requireAuth, requireAdmin, asyn
       kickoffDate,
       targetHandover
     });
+
+    try {
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      emitStakeholderEvent('sprint.kickoff', {
+        clientId: id,
+        specId,
+        projectId,
+        productCode: spec.canonical_service_code,
+        kickoffDate,
+        targetHandover
+      }, {
+        stakeholderId: id,
+        stakeholderType: 'client'
+      }).catch(() => {});
+    } catch (_) {}
+
+    // Send Client Onboarding Email on Sprint Kickoff
+    try {
+      const { sendClientOnboardingEmail } = require('../services/resend');
+      const clientEmail = req.body.clientEmail || spec.client_email || spec.poc_roster?.primary_technical_lead?.email || spec.poc_roster?.authorized_signatory?.email;
+      if (clientEmail) {
+        sendClientOnboardingEmail({
+          clientName: newProject.client_name,
+          email: clientEmail,
+          magicLink: `${process.env.APP_URL || 'https://gro10x-ai.vercel.app'}/client#lockin?specId=${specId}`
+        }).catch(() => {});
+      }
+    } catch (_) {}
 
     return res.json({
       ok: true,

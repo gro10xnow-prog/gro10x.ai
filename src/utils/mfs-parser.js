@@ -18,14 +18,14 @@ function parseMfsSms(rawMessage, senderHint = '') {
   // "You have received Tk 500.00 from 01712345678. Fee Tk 0.00. Balance Tk 12,450.00. TrxID 9K2L4M6N at 16/09/2026 10:45. Ref G10X"
   // "Payment Tk 500.00 from 01712345678 successful. Fee Tk 0.00. Balance Tk 12,450.00. TrxID 9K2L4M6N at 16/09/2026 10:45"
   // ───────────────────────────────────────────────────────────────────────────
-  if (hint.includes('BKASH') || hint.includes('16247') || /TrxID\s+[A-Z0-9]+/i.test(msg)) {
+  if (hint.includes('BKASH') || hint.includes('16247') || /TrxID\s*[:\s]*[A-Z0-9]+/i.test(msg)) {
     const isBkash = /bKash/i.test(msg) || /TrxID/i.test(msg);
     if (isBkash) {
-      const amountMatch = msg.match(/(?:received Tk|Payment Tk|Cash In Tk|Tk)\s*([\d,.]+)/i);
-      const trxMatch = msg.match(/TrxID\s*([A-Z0-9]+)/i);
-      const senderMatch = msg.match(/from\s*(01\d{9})/i);
-      const refMatch = msg.match(/Ref\s*([A-Za-z0-9_-]+)/i);
-      const balanceMatch = msg.match(/Balance\s*Tk\s*([\d,.]+)/i);
+      const amountMatch = msg.match(/(?:received Tk|Payment Tk|Cash In Tk|Tk|BDT)\s*([\d,.]+)/i);
+      const trxMatch = msg.match(/TrxID\s*[:\s]*([A-Z0-9]+)/i);
+      const senderMatch = msg.match(/(?:from|Sender)\s*[:\s]*(01\d{9})/i);
+      const refMatch = msg.match(/Ref\s*[:\s]*([A-Za-z0-9_-]+)/i);
+      const balanceMatch = msg.match(/Balance\s*(?:Tk|BDT)?\s*([\d,.]+)/i);
 
       if (amountMatch && trxMatch) {
         return {
@@ -42,17 +42,45 @@ function parseMfsSms(rawMessage, senderHint = '') {
   }
 
   // ───────────────────────────────────────────────────────────────────────────
-  // 2. NAGAD
+  // ───────────────────────────────────────────────────────────────────────────
+  // 2. ROCKET & DBBL (Dutch-Bangla Bank / NexusPay)
+  // Check Rocket first or when hint/text matches ROCKET/DBBL
+  // Pattern: "Tk500.00 received from 01712345678 to A/C 017... TxnId: 1234567890"
+  // ───────────────────────────────────────────────────────────────────────────
+  if (hint.includes('ROCKET') || hint.includes('16216') || hint.includes('DBBL') || /ROCKET|DBBL|NexusPay/i.test(msg) || /received from (?:01\d{9}) to A\/C/i.test(msg)) {
+    const amountMatch = msg.match(/(?:Tk|BDT)\s*([\d,.]+)\s*(?:received|credited)?/i);
+    const txnMatch = msg.match(/(?:TxnId|TxnID|TrxID|Ref)\s*[:\s]*([A-Z0-9]+)/i);
+    const senderMatch = msg.match(/(?:from|Sender)\s*[:\s]*(01\d{9})/i);
+    const refMatch = msg.match(/Ref\s*[:\s]*([A-Za-z0-9_-]+)/i);
+    const balanceMatch = msg.match(/Balance\s*[:\s]*(?:Tk|BDT)?\s*([\d,.]+)/i);
+
+    if (amountMatch && txnMatch) {
+      const isNexus = /NexusPay|Nexus/i.test(msg) || hint.includes('NEXUS');
+      return {
+        platform: isNexus ? 'DBBL_NEXUS' : 'ROCKET',
+        amount: parseFloat(amountMatch[1].replace(/,/g, '')),
+        trx_id: txnMatch[1].toUpperCase(),
+        sender: senderMatch ? senderMatch[1] : null,
+        reference: refMatch ? refMatch[1].trim() : null,
+        balance: balanceMatch ? parseFloat(balanceMatch[1].replace(/,/g, '')) : null,
+        raw: msg
+      };
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // 3. NAGAD
   // Patterns:
   // "Customer: 01712345678 Amount: Tk 500.00 TxnID: 71P9K2L4 Date: 16/09/2026 10:45 Balance: Tk 1,250.00 Ref: G10X"
   // "Money Received\nAmount: Tk 500.00\nSender: 01712345678\nTxnID: 71P9K2L4"
+  // "Nagad: Tk 1,500.00 received from 01812345678. TxnID: 72KLMN98"
   // ───────────────────────────────────────────────────────────────────────────
-  if (hint.includes('NAGAD') || hint.includes('16167') || /TxnID\s*:\s*[A-Z0-9]+/i.test(msg)) {
-    const amountMatch = msg.match(/Amount\s*:\s*Tk\s*([\d,.]+)/i);
-    const txnMatch = msg.match(/TxnID\s*:\s*([A-Z0-9]+)/i);
-    const senderMatch = msg.match(/(?:Customer|Sender)\s*:\s*(01\d{9})/i);
-    const refMatch = msg.match(/Ref\s*:\s*([A-Za-z0-9_-]+)/i);
-    const balanceMatch = msg.match(/Balance\s*:\s*Tk\s*([\d,.]+)/i);
+  if (hint.includes('NAGAD') || hint.includes('16167') || /TxnID\s*[:\s]*[A-Z0-9]+/i.test(msg) || /Nagad/i.test(msg)) {
+    const amountMatch = msg.match(/(?:Amount\s*:\s*Tk|Tk|BDT|received\s*Tk)\s*([\d,.]+)/i);
+    const txnMatch = msg.match(/(?:TxnID|Txn Id|TrxID)\s*[:\s]*([A-Z0-9]+)/i);
+    const senderMatch = msg.match(/(?:Customer|Sender|from)\s*[:\s]*(01\d{9})/i);
+    const refMatch = msg.match(/Ref\s*[:\s]*([A-Za-z0-9_-]+)/i);
+    const balanceMatch = msg.match(/Balance\s*[:\s]*(?:Tk|BDT)?\s*([\d,.]+)/i);
 
     if (amountMatch && txnMatch) {
       return {
@@ -68,29 +96,7 @@ function parseMfsSms(rawMessage, senderHint = '') {
   }
 
   // ───────────────────────────────────────────────────────────────────────────
-  // 3. ROCKET (DBBL)
-  // Pattern: "Tk500.00 received from 01712345678 to A/C 017... TxnId: 1234567890"
-  // ───────────────────────────────────────────────────────────────────────────
-  if (hint.includes('ROCKET') || hint.includes('16216') || /DBBL/i.test(msg)) {
-    const amountMatch = msg.match(/Tk\s*([\d,.]+)\s*received/i);
-    const txnMatch = msg.match(/TxnId\s*:\s*([A-Z0-9]+)/i);
-    const senderMatch = msg.match(/from\s*(01\d{9})/i);
-
-    if (amountMatch && txnMatch) {
-      return {
-        platform: 'ROCKET',
-        amount: parseFloat(amountMatch[1].replace(/,/g, '')),
-        trx_id: txnMatch[1].toUpperCase(),
-        sender: senderMatch ? senderMatch[1] : null,
-        reference: null,
-        balance: null,
-        raw: msg
-      };
-    }
-  }
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // 4. BRAC BANK
+  // 4. BRAC BANK & Corporate Wire
   // Patterns:
   // "Your A/C ... is credited with BDT 5,000.00 on 16-Sep-2026 ... Ref: G10X ... Avail Bal BDT 150,000.00"
   // "A/C ending with 1234 is credited with BDT 5,000.00"

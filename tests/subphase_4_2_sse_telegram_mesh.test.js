@@ -29,7 +29,7 @@ const app = require('../server');
 const { signToken } = require('../src/services/jwt');
 const sseService = require('../src/services/sse');
 const botNotifications = require('../src/services/bot/notifications');
-const { inMemoryProposals } = require('../src/routes/proposals');
+const { inMemoryProposals, persistProposal } = require('../src/routes/proposals');
 const { inMemoryTickets } = require('../src/routes/tickets');
 const { fallbackReviews } = require('../src/routes/reviews');
 const { registerLegacyTeamMenus } = require('../src/services/bot/handlers/legacy_menus');
@@ -165,10 +165,9 @@ describe('🚀 Sub-Phase 4.2: Real-Time Multi-Stakeholder SSE & Telegram Notific
     expect(res.body.success || res.body.ok).toBe(true);
     expect(tgSpy).toHaveBeenCalled();
 
-    // Assert Telegram notification structure
     const tgCall = tgSpy.mock.calls.find(call => {
       const text = call[1] || '';
-      return text.includes('Omni Mesh Technologies Ltd');
+      return text.includes('Omni Mesh Technologies Ltd') && Array.isArray(call[2]);
     });
 
     expect(tgCall).toBeDefined();
@@ -204,7 +203,7 @@ describe('🚀 Sub-Phase 4.2: Real-Time Multi-Stakeholder SSE & Telegram Notific
       view_count: 0
     };
 
-    inMemoryProposals.push(testProposal);
+    await persistProposal(testProposal);
 
     // 1. View Proposal
     const viewRes = await request(app)

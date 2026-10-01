@@ -276,6 +276,32 @@ router.post('/:id/approve-tier2', requireAuth, requireSeniority(3), async (req, 
       }
     } catch (e) {}
 
+    // Send Expense Decision Email via Resend
+    try {
+      let claimantEmail = null;
+      let claimantName = expense.submittedBy || 'Team Member';
+      if (supabase && expense.submittedById) {
+        const { data: prof } = await supabase.from('profiles').select('email, personal_email, name')
+          .or(`id.eq.${expense.submittedById},emp_code.eq.${expense.submittedById}`).maybeSingle();
+        if (prof) {
+          claimantEmail = prof.email || prof.personal_email;
+          claimantName = prof.name || claimantName;
+        }
+      }
+      if (claimantEmail && claimantEmail.includes('@')) {
+        const { sendExpenseDecisionEmail } = require('../services/resend');
+        sendExpenseDecisionEmail({
+          name: claimantName,
+          email: claimantEmail,
+          title: expense.title,
+          amount: expense.amount,
+          status: 'Approved',
+          reviewerName: approver,
+          category: expense.category
+        }).catch(() => {});
+      }
+    } catch (_) {}
+
     return res.json({ success: true, expense });
   } catch (err) {
     console.error('Expense Tier 2 error:', err.message);

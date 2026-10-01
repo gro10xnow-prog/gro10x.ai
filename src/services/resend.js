@@ -539,6 +539,210 @@ async function sendProposalAcceptedClientEmail({ clientName, email, projectTitle
   return sendEmail({ to: email, subject, html });
 }
 
+/**
+ * Send Sprint Sign-off & 30-Day Warranty Certificate Email
+ */
+async function sendSprintSignOffCertificateEmail({ clientEmail, clientName, projectName, warrantyUntil, invoiceId, handoverUrl }) {
+  if (!clientEmail || !clientEmail.includes('@')) {
+    return { success: false, reason: 'No valid client email' };
+  }
+  const url = handoverUrl || 'https://gro10x-ai.vercel.app/client#review';
+  const subject = `🛡️ Sprint Sign-Off & 30-Day Warranty Certificate: ${projectName || 'AI Solution'} — GRO10X`;
+  const formattedExpiry = warrantyUntil ? new Date(warrantyUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '30 Days from today';
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: #10b981; margin-top:0;">🛡️ Milestone Sign-Off & Warranty Certificate</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Dear <strong>${clientName || 'Valued Partner'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">This certifies formal sign-off, commercial completion, and milestone acceptance for <strong>${projectName || 'Sprint Deliverable'}</strong>.</p>
+      
+      <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); padding: 18px; border-radius: 10px; margin: 20px 0;">
+        <div style="margin-bottom: 8px;"><strong>Project Deliverable:</strong> ${projectName || 'Sprint Solution'}</div>
+        <div style="margin-bottom: 8px;"><strong>Defect-Free Warranty Shield:</strong> Active (30 Days Zero-Cost Remediation)</div>
+        <div style="margin-bottom: 8px;"><strong>Warranty Valid Until:</strong> <span style="color:#34d399; font-weight:bold;">${formattedExpiry}</span></div>
+        ${invoiceId ? `<div><strong>Milestone Invoice Reference:</strong> ${invoiceId}</div>` : ''}
+      </div>
+
+      <p style="font-size: 14px; color: #94a3b8;">Full intellectual property (IP) transfer and verified production artifacts are accessible via your Client Portal Review Room.</p>
+
+      <div style="margin: 25px 0; text-align: center;">
+        <a href="${url}" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+          📜 Inspect Signed Handover Cockpit
+        </a>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">GRO10X AI Growth Agency • Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return module.exports.sendEmail({ to: clientEmail, subject, html });
+}
+
+/**
+ * 1. Send Staff / Crew Invitation & Temporary PIN Access Card Email
+ */
+async function sendStaffInvitationEmail({ name, email, phone, pin, portalUrl }) {
+  if (!email || !email.includes('@')) {
+    return { success: false, reason: 'Invalid email' };
+  }
+  const url = portalUrl || 'https://gro10x-ai.vercel.app/crew';
+  const subject = `🚀 Welcome to GRO10X: Your Workspace Access Credentials & Temporary PIN`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: #00df89; margin-top:0;">⚡ Welcome to GRO10X Team Workspace</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Hello <strong>${name || 'Team Member'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">You have been officially invited to join the GRO10X Production & Operations Engine. Here are your access credentials:</p>
+      
+      <div style="background: rgba(0,223,137,0.08); border: 1px solid rgba(0,223,137,0.3); padding: 18px; border-radius: 10px; margin: 20px 0;">
+        <div style="margin-bottom: 8px;"><strong>Authorized Mobile:</strong> <code>${phone || 'Registered Phone'}</code></div>
+        <div style="margin-bottom: 8px;"><strong>Temporary 4-Digit PIN:</strong> <span style="font-size: 20px; font-weight: bold; color: #00df89; letter-spacing: 2px;">${pin || '****'}</span></div>
+        <div style="font-size: 12px; color: #94a3b8;">* Please change your temporary PIN upon first login or complete the 3-stage onboarding wizard.</div>
+      </div>
+
+      <div style="margin: 25px 0; text-align: center;">
+        <a href="${url}" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+          🔑 Launch Staff Cockpit
+        </a>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">GRO10X Autonomous Agency OS • Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return module.exports.sendEmail({ to: email, subject, html });
+}
+
+/**
+ * 2. Send PIN Reset / Security Credential Alert Email
+ */
+async function sendPinResetAlertEmail({ name, email, phone, pin, portalUrl }) {
+  if (!email || !email.includes('@')) {
+    return { success: false, reason: 'Invalid email' };
+  }
+  const url = portalUrl || 'https://gro10x-ai.vercel.app/crew';
+  const subject = `🔒 Security Alert: Your GRO10X Login PIN Was Reset`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: #f59e0b; margin-top:0;">🔒 Security Alert: PIN Updated</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Hello <strong>${name || 'Team Member'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">Your account login PIN for <strong>${phone || 'your phone'}</strong> has been reset by HR / Executive Operations.</p>
+      
+      <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); padding: 18px; border-radius: 10px; margin: 20px 0;">
+        <div style="margin-bottom: 8px;"><strong>New Login PIN:</strong> <span style="font-size: 20px; font-weight: bold; color: #f59e0b; letter-spacing: 2px;">${pin || '****'}</span></div>
+        <div style="font-size: 12px; color: #94a3b8;">If you did not request this change, please immediately contact your Department Lead.</div>
+      </div>
+
+      <div style="margin: 25px 0; text-align: center;">
+        <a href="${url}" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #070b12; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+          🔐 Sign In with New PIN
+        </a>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">GRO10X Autonomous Agency OS • Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return module.exports.sendEmail({ to: email, subject, html });
+}
+
+/**
+ * 3. Send Leave Request Approval / Rejection Email
+ */
+async function sendLeaveDecisionEmail({ name, email, leaveType, startDate, endDate, status, reviewerName, reason }) {
+  if (!email || !email.includes('@')) {
+    return { success: false, reason: 'Invalid email' };
+  }
+  const isApproved = status === 'Approved' || status === 'Owner Approved';
+  const color = isApproved ? '#10b981' : '#ef4444';
+  const icon = isApproved ? '✅' : '❌';
+  const subject = `${icon} Leave Request ${status}: ${leaveType || 'Time Off'} (${startDate} to ${endDate})`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: ${color}; margin-top:0;">${icon} Leave Request ${status}</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Hello <strong>${name || 'Team Member'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">Your leave request has been reviewed by <strong>${reviewerName || 'Department Manager'}</strong>.</p>
+      
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid ${color}; padding: 18px; border-radius: 10px; margin: 20px 0;">
+        <div style="margin-bottom: 8px;"><strong>Leave Type:</strong> ${leaveType || 'General Leave'}</div>
+        <div style="margin-bottom: 8px;"><strong>Duration:</strong> ${startDate} to ${endDate}</div>
+        <div style="margin-bottom: 8px;"><strong>Decision Status:</strong> <span style="color: ${color}; font-weight: bold;">${status}</span></div>
+        ${reason ? `<div><strong>Notes / Reason:</strong> ${reason}</div>` : ''}
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">GRO10X Autonomous Agency OS • Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return module.exports.sendEmail({ to: email, subject, html });
+}
+
+/**
+ * 4. Send Expense Reimbursement Decision Email
+ */
+async function sendExpenseDecisionEmail({ name, email, title, amount, status, reviewerName, category }) {
+  if (!email || !email.includes('@')) {
+    return { success: false, reason: 'Invalid email' };
+  }
+  const isApproved = status === 'Approved' || status === 'Disbursed' || status.includes('Approved');
+  const color = isApproved ? '#10b981' : '#ef4444';
+  const icon = isApproved ? '💰' : '⚠️';
+  const subject = `${icon} Expense Claim ${status}: ${title || 'Reimbursement'} (BDT ${Number(amount || 0).toLocaleString()})`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: ${color}; margin-top:0;">${icon} Expense Claim ${status}</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Hello <strong>${name || 'Team Member'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">Your expense reimbursement claim has been reviewed by <strong>${reviewerName || 'Finance Controller'}</strong>.</p>
+      
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid ${color}; padding: 18px; border-radius: 10px; margin: 20px 0;">
+        <div style="margin-bottom: 8px;"><strong>Expense Title:</strong> ${title || 'Operational Outlay'}</div>
+        <div style="margin-bottom: 8px;"><strong>Category:</strong> ${category || 'General'}</div>
+        <div style="margin-bottom: 8px;"><strong>Claim Amount:</strong> ৳${Number(amount || 0).toLocaleString()} BDT</div>
+        <div><strong>Status:</strong> <span style="color: ${color}; font-weight: bold;">${status}</span></div>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">GRO10X Autonomous Agency OS • Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return module.exports.sendEmail({ to: email, subject, html });
+}
+
+/**
+ * 5. Send Monthly Payslip Delivery Email
+ */
+async function sendPayslipDeliveryEmail({ name, email, month, netSalary, payslipId, baseSalary, bonus, commissions }) {
+  if (!email || !email.includes('@')) {
+    return { success: false, reason: 'Invalid email' };
+  }
+  const subject = `💸 Official Monthly Earnings Statement (${month || 'Salary'}): BDT ${Number(netSalary || 0).toLocaleString()} — GRO10X`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: #00df89; margin-top:0;">💸 Monthly Salary Disbursed</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Dear <strong>${name || 'Specialist'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">Your official monthly remuneration statement for <strong>${month || 'this cycle'}</strong> has been finalized and disbursed.</p>
+      
+      <div style="background: rgba(0,223,137,0.08); border: 1px solid rgba(0,223,137,0.3); padding: 18px; border-radius: 10px; margin: 20px 0;">
+        <div style="margin-bottom: 8px;"><strong>Payslip Reference:</strong> <code>${payslipId || 'PAY-N/A'}</code></div>
+        <div style="margin-bottom: 8px;"><strong>Base Remuneration:</strong> ৳${Number(baseSalary || 0).toLocaleString()} BDT</div>
+        ${bonus ? `<div style="margin-bottom: 8px;"><strong>Performance Bonus:</strong> +৳${Number(bonus).toLocaleString()} BDT</div>` : ''}
+        ${commissions ? `<div style="margin-bottom: 8px;"><strong>Project Commissions:</strong> +৳${Number(commissions).toLocaleString()} BDT</div>` : ''}
+        <div style="margin-top: 12px; font-size: 18px; font-weight: bold; color: #00df89;">
+          Total Net Disbursed: ৳${Number(netSalary || 0).toLocaleString()} BDT
+        </div>
+      </div>
+
+      <div style="margin: 25px 0; text-align: center;">
+        <a href="https://gro10x-ai.vercel.app/crew#payslips" style="background: linear-gradient(135deg, #00df89, #059669); color: #070b12; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+          📄 Download Detailed PDF Statement
+        </a>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">GRO10X Autonomous Agency OS • Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return module.exports.sendEmail({ to: email, subject, html });
+}
+
 module.exports = {
   sendEmail,
   sendClientOnboardingEmail,
@@ -551,7 +755,13 @@ module.exports = {
   sendDigitalDeliveryEmail,
   sendRenewalReminderEmail,
   sendServiceAssetDeliveryEmail,
-  sendProposalAcceptedClientEmail
+  sendProposalAcceptedClientEmail,
+  sendSprintSignOffCertificateEmail,
+  sendStaffInvitationEmail,
+  sendPinResetAlertEmail,
+  sendLeaveDecisionEmail,
+  sendExpenseDecisionEmail,
+  sendPayslipDeliveryEmail
 };
 
 

@@ -48,8 +48,10 @@ window.CLIENT_MODULES.lockin = async function(container) {
   // 2. Fetch Lock-In Specs for Client
   async function loadSpecs() {
     if (!currentClientId) {
-      // Demo / fallback client ID if viewing in dev
-      currentClientId = 'CLI-ONBOARD-TEST-99';
+      allSpecs = [];
+      activeSpec = null;
+      renderCockpit();
+      return;
     }
 
     try {
@@ -68,55 +70,10 @@ window.CLIENT_MODULES.lockin = async function(container) {
       if (!activeSpec && allSpecs.length > 0) {
         activeSpec = allSpecs[0];
       }
-
-      // If still no spec found, fetch default demo/canonical spec for display
-      if (!activeSpec) {
-        activeSpec = {
-          id: 'SPEC-DEMO-SVC001',
-          canonical_service_code: 'SVC-001',
-          service_title: 'Full-Stack SaaS MVP Sprint (14-Day Delivery)',
-          status: 'LOCKED',
-          scope_boundaries: {
-            core_inclusions: [
-              'Complete UX/UI Wireframes in Figma with interactive clickable prototype',
-              'Production Full-Stack Application Codebase (Node.js + Supabase + Edge API)',
-              'PostgreSQL Database Architecture with Row-Level Security (RLS) policies',
-              'Automated CI/CD Edge Deployment with custom domain SSL handshake',
-              '100% Full Source Code Transfer to Client GitHub Organization'
-            ],
-            explicit_exclusions: [
-              'Legacy data migration or historical database backfilling (Phase 2 SOW)',
-              'Third-party external review delays (Apple App Store / DLT SMS registration)',
-              'Unspecified custom third-party proprietary API reverse-engineering'
-            ],
-            definition_of_done: 'Live staging deployment passing end-to-end integration tests, 100% full source code transfer to Client GitHub repository, and recorded 15-min founder walkthrough video.',
-            questionnaire_answers: {
-              Q1_INFRASTRUCTURE: 'Dedicated Supabase + Vercel stack provisioned for organization',
-              Q3_AUTH_SECURITY: 'Email & Password + Google OAuth with secure JWT session handling',
-              Q5_SUCCESS_BENCHMARK: 'Launch beta within 14 days to onboard initial cohort.'
-            }
-          },
-          delivery_and_governance: {
-            turnaround_days: 14,
-            review_window_hours: 48,
-            warranty_days: 30,
-            target_handover_date: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-            communication_protocol: {
-              primary_chat: 'Dedicated WhatsApp Group (Gro10x + Client Leadership)',
-              sprint_updates: 'Async Loom video every Tuesday and Friday'
-            }
-          },
-          prerequisites_checklist: [
-            { id: 'PRE-01', category: 'CLOUD_CREDENTIALS', name: 'GitHub Organization Access', instructions: 'Invite GRO10X engineering bot to your target GitHub repository with write permissions.', status: 'RECEIVED' },
-            { id: 'PRE-02', category: 'CLOUD_CREDENTIALS', name: 'Supabase / Cloud Hosting Credentials', instructions: 'Authorize GRO10X to provision or connect your Supabase production database.', status: 'PENDING' },
-            { id: 'PRE-03', category: 'API_KEYS', name: 'Third-Party Gateway API Credentials', instructions: 'Securely submit test or live API keys for payment gateways or AI model providers.', status: 'PENDING' },
-            { id: 'PRE-04', category: 'BRAND_ASSETS', name: 'Vector Brand Identity Assets', instructions: 'Upload SVG vector logos, corporate hex colors, and typography guidelines.', status: 'RECEIVED' },
-            { id: 'PRE-05', category: 'SAMPLE_DATA', name: 'Sample Seed Data & User Flow Notes', instructions: 'Provide sample test CSV records and reference competitor workflow links.', status: 'PENDING' }
-          ]
-        };
-      }
     } catch (e) {
-      console.error('[Lockin Module] Load specs error:', e);
+      console.warn('[Lockin Module] Load specs warning:', e.message);
+      allSpecs = [];
+      activeSpec = null;
     }
 
     renderCockpit();

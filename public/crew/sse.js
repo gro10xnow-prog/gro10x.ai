@@ -278,6 +278,13 @@
       triggerViewRefresh(['#social', '#home']);
     }
 
+    if (type === 'auth_event') {
+      const evt = data || {};
+      if (evt.action === 'account_locked') {
+        showNotificationToast(`Security Alert: Account ${evt.phone} locked after multiple failed attempts`, '🔒');
+      }
+    }
+
     if (type === 'studio_booking_update') {
       const booking = data || {};
       const slot = booking.title || booking.slot || booking.time || 'Schedule updated';
@@ -365,6 +372,10 @@
 
     evtSource.addEventListener('studio_booking_update', function(e) {
       try { handleCrewEvent('studio_booking_update', JSON.parse(e.data)); } catch(err) {}
+    });
+
+    evtSource.addEventListener('auth_event', function(e) {
+      try { handleCrewEvent('auth_event', JSON.parse(e.data)); } catch(err) {}
     });
 
 

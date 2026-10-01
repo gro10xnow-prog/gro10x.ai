@@ -5,7 +5,8 @@ const { requireManager, getSeniorityTier } = require('../middleware/rbac');
 const { verifyTelegramInitData, requireMiniAppAuth } = require('../middleware/telegramAuth');
 const rateLimit = require('express-rate-limit');
 const { supabase } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const sse = require('../services/sse');
+const broadcast = (...args) => sse.broadcast(...args);
 const cache = require('../services/cache');
 
 // Cached schema column detector for profiles table to prevent PGRST204 schema mismatch errors
@@ -41,8 +42,8 @@ function broadcastTeamEvent(eventType, data) {
   } catch (e) {}
 }
 const { sendTelegramNotification, getTeamBot } = require('../services/bot');
-const { readDB } = require('../services/db');
-const { createTempPin } = require('../services/auth-pins');
+const { readDB, writeDB } = require('../services/db');
+const { createTempPin, setPermanentPin } = require('../services/auth-pins');
 
 const { uploadFile } = require('../services/storage');
 const { normalizePhone } = require('../utils/phone');
@@ -253,6 +254,11 @@ async function findEmpByTelegramId(telegramId) {
   const state = require('../services/state');
   const emp = await state.getEmployeeByTelegramId(telegramId);
   if (emp) return { source: 'supabase', profile: emp };
+  try {
+    const db = await readDB();
+    const found = (db.team || []).find(m => String(m.telegramId || m.telegram_id) === String(telegramId));
+    if (found) return { source: 'local', profile: mapProfile(found) };
+  } catch (_) {}
   return null;
 }
 
@@ -635,13 +641,22 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
     const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
     let found = telegramId ? await findEmpByTelegramId(telegramId) : null;
 
-    // JWT web fallback: look up by req.user.linkedId (emp_code)
+    // JWT web fallback: look up by req.user.emp_code || req.user.linkedId || req.user.id
     if (!found && req.user) {
-      const uid = req.user.linkedId || req.user.id;
+      const uid = req.user.emp_code || req.user.linkedId || req.user.id;
       if (uid && supabase) {
-        const { data } = await supabase.from('profiles').select('*')
-          .or(`emp_code.eq.${uid},id.eq.${uid}`).maybeSingle();
-        if (data) found = { source: 'supabase', profile: mapProfile(data) };
+        try {
+          const { data } = await supabase.from('profiles').select('*')
+            .or(`emp_code.eq.${uid},id.eq.${uid}`).maybeSingle();
+          if (data) found = { source: 'supabase', profile: mapProfile(data) };
+        } catch (_) {}
+      }
+      if (!found && uid) {
+        try {
+          const db = await readDB();
+          const localEmp = (db.team || []).find(m => m.emp_code === uid || m.id === uid);
+          if (localEmp) found = { source: 'local', profile: mapProfile(localEmp) };
+        } catch (_) {}
       }
     }
 
@@ -653,9 +668,10 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
     if (!part) return res.status(400).json({ error: 'part required' });
 
     // Part order enforcement (ensure previous part was submitted)
-    const hasPart1 = !!(emp.blood_group || emp.emergency_contact || emp.personal_email || emp.address);
-    const hasPart2 = !!(emp.nid_no || emp.permanent_address || emp.education_degree || emp.tin_no || emp.driving_license);
-    const hasPart3 = !!(emp.bank_info && (emp.bank_info.accountNo || emp.bank_info.accNo || emp.bank_info.mfsNo || emp.bank_info.bkashNo));
+    const hasPart1 = !!(emp.blood_group || emp.bloodGroup || emp.emergency_contact || emp.emergencyContact || emp.personal_email || emp.personalEmail || emp.address || emp.custom_fields?.emergency_contact);
+    const hasPart2 = !!(emp.nid_no || emp.nidNo || emp.permanent_address || emp.permanentAddress || emp.education_degree || emp.educationDegree || emp.tin_no || emp.tinNo || emp.driving_license || emp.drivingLicense || emp.custom_fields?.nid_no);
+    const bankData = emp.bank_info || emp.bankInfo || emp.custom_fields?.bank_info;
+    const hasPart3 = !!(bankData && (bankData.accountNo || bankData.accNo || bankData.mfsNo || bankData.bkashNo || bankData.nagadNo));
 
     if (part === 2 && !hasPart1) {
       return res.status(400).json({ error: 'Please complete Part 1 (Personal Info) before Part 2.', code: 'PART_ORDER_VIOLATION' });
@@ -758,23 +774,54 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
       await supabase.from('profiles').update(sanitizedUpdate).eq('emp_code', empCode);
     }
 
-    broadcastTeamEvent('team_update', [{ emp_code: empCode, xp: currentXP, badge }]);
-
-    // Send bot notification for XP milestone
+    // Dual-persist to local data/db.json
     try {
-      const teamBot = getTeamBot();
-      if (teamBot && telegramId) {
+      const db = await readDB();
+      db.team = db.team || [];
+      const member = db.team.find(t => t.id === empCode || t.emp_code === empCode);
+      if (member) {
+        Object.assign(member, profileUpdate, extendedSurveyFields);
+        member.xp = currentXP;
+        member.badge = badge;
+        if (part === 4) {
+          member.survey_complete = true;
+          member.surveyComplete = true;
+        }
+        await writeDB(db);
+      }
+    } catch (err) {
+      console.warn('[Survey Local DB] Warning:', err.message);
+    }
+
+    broadcastTeamEvent('team_update', [{
+      emp_code: empCode,
+      xp: currentXP,
+      badge,
+      ...(part === 4 ? { survey_complete: true } : {})
+    }]);
+
+    // Send bot notification for XP milestone & Agreement signing prompt
+    try {
+      const tgId = telegramId || emp.telegram_id || emp.telegramId;
+      if (tgId) {
+        const { sendTelegramNotification } = require('../services/bot');
         const partNames = { 1: 'Personal Profile', 2: 'Verification Docs', 3: 'Financial Setup', 4: 'Skills & Equipment' };
-        await teamBot.sendMessage(telegramId,
-          `🏆 *Part ${part} Complete — ${partNames[part] || 'Survey'}!*\n\n` +
-          `+${xpEarned} XP earned! Total: *${currentXP} XP* (${badge})\n\n` +
-          (part === 4 ? `🎉 *Survey complete!* Now sign your employment agreement to fully unlock your account.` : `💪 Keep going — Part ${part + 1} next!`),
-          { parse_mode: 'Markdown' }
-        );
+        if (part === 4) {
+          const promptMsg = `🎉 *CONGRATULATIONS, ${emp.name || 'Specialist'}!*\n\n` +
+            `You have successfully completed all 4 parts of the Onboarding Survey!\n\n` +
+            `📝 *Final Action Required:*\n` +
+            `Please sign your official GRO10X Employment Agreement to fully activate your staff workspace.`;
+          sendTelegramNotification(tgId, promptMsg, null, true);
+        } else {
+          const stepMsg = `🏆 *Part ${part} Complete — ${partNames[part] || 'Survey'}!*\n\n` +
+            `+${xpEarned} XP earned! Total: *${currentXP} XP* (${badge})\n\n` +
+            `💪 Keep going — Part ${part + 1} next!`;
+          sendTelegramNotification(tgId, stepMsg, null, false);
+        }
       }
     } catch (e) { /* non-critical */ }
 
-    res.json({ success: true, xp: currentXP, badge, part });
+    res.json({ success: true, xp: currentXP, badge, part, surveyComplete: part === 4 });
   } catch (err) {
     console.error('POST /team/survey error:', err.message);
     res.status(500).json({ error: err.message });
@@ -791,13 +838,22 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
     const { stage, signature, timestamp } = req.body;
     let found = telegramId ? await findEmpByTelegramId(telegramId) : null;
 
-    // JWT web fallback: look up by req.user.linkedId (emp_code)
+    // JWT web fallback: look up by req.user.emp_code || req.user.linkedId || req.user.id
     if (!found && req.user) {
-      const uid = req.user.linkedId || req.user.id;
+      const uid = req.user.emp_code || req.user.linkedId || req.user.id;
       if (uid && supabase) {
-        const { data } = await supabase.from('profiles').select('*')
-          .or(`emp_code.eq.${uid},id.eq.${uid}`).maybeSingle();
-        if (data) found = { source: 'supabase', profile: mapProfile(data) };
+        try {
+          const { data } = await supabase.from('profiles').select('*')
+            .or(`emp_code.eq.${uid},id.eq.${uid}`).maybeSingle();
+          if (data) found = { source: 'supabase', profile: mapProfile(data) };
+        } catch (_) {}
+      }
+      if (!found && uid) {
+        try {
+          const db = await readDB();
+          const localEmp = (db.team || []).find(m => m.emp_code === uid || m.id === uid);
+          if (localEmp) found = { source: 'local', profile: mapProfile(localEmp) };
+        } catch (_) {}
       }
     }
 
@@ -807,7 +863,7 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
     const empCode = emp.emp_code || emp.id;
     const empName = emp.name;
 
-    if (!emp.survey_complete) {
+    if (!emp.survey_complete && !emp.surveyComplete) {
       return res.status(400).json({ error: 'Please complete the onboarding survey before signing the agreement.', code: 'SURVEY_INCOMPLETE' });
     }
 
@@ -817,7 +873,7 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
         agreement_stage: 1,
         agreement_signed_at: timestamp || new Date().toISOString(),
         employee_signature: signature,
-        onboarding_complete: true, // ← unlock full menu after signing!
+        onboarding_complete: true, // unlock full menu after signing
         updated_at: new Date().toISOString()
       };
 
@@ -825,13 +881,23 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
         await supabase.from('profiles').update(profileUpdate).eq('emp_code', empCode);
       }
 
+      // Dual-persist to local data/db.json
+      try {
+        const db = await readDB();
+        db.team = db.team || [];
+        const m = db.team.find(t => t.id === empCode || t.emp_code === empCode);
+        if (m) {
+          Object.assign(m, profileUpdate);
+          await writeDB(db);
+        }
+      } catch (_) {}
+
       broadcastTeamEvent('team_update', [{ emp_code: empCode, onboarding_complete: true, agreement_stage: 1 }]);
 
       // Send bot congrats + unlock notification
       try {
         const teamBot = getTeamBot();
         if (teamBot && telegramId) {
-          const keyboard = { keyboard: [], resize_keyboard: true }; // will be repopulated on next /start
           await teamBot.sendMessage(telegramId,
             `🎉 *Agreement Signed — You're Officially Activated!*\n\n` +
             `Welcome to the GRO10X team, *${empName}*!\n\n` +
@@ -859,7 +925,7 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
             || (db2.team || []).find(t => t.id === 'GRO-000' || t.emp_code === 'GRO-000')?.telegramId;
         }
         if (approverTgId) {
-          await sendTelegramNotification(
+          sendTelegramNotification(
             approverTgId,
             `📝 *Employment Agreement — Final Seal & Activation Required*\n\n` +
             `• Employee: *${empName}* (${empCode})\n` +
@@ -873,6 +939,85 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
       } catch (e) { /* non-critical */ }
 
       return res.json({ success: true, stage: 1, onboardingComplete: true, message: 'Agreement signed. Account fully unlocked!' });
+    }
+
+    // Stage 2: Finance Countersignature
+    if (stage === 2) {
+      const profileUpdate = {
+        agreement_stage: 2,
+        finance_countersigned_at: timestamp || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      if (supabase) {
+        await supabase.from('profiles').update(profileUpdate).eq('emp_code', empCode);
+      }
+
+      try {
+        const db = await readDB();
+        db.team = db.team || [];
+        const m = db.team.find(t => t.id === empCode || t.emp_code === empCode);
+        if (m) {
+          Object.assign(m, profileUpdate);
+          await writeDB(db);
+        }
+      } catch (_) {}
+
+      broadcastTeamEvent('team_update', [{ emp_code: empCode, agreement_stage: 2 }]);
+      return res.json({ success: true, stage: 2, message: 'Stage 2 countersignature complete' });
+    }
+
+    // Stage 3: Owner Seal & Final Activation
+    if (stage === 3) {
+      const profileUpdate = {
+        agreement_stage: 3,
+        agreement_complete: true,
+        onboarding_complete: true,
+        final_sealed_at: timestamp || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      if (supabase) {
+        await supabase.from('profiles').update(profileUpdate).eq('emp_code', empCode);
+      }
+
+      try {
+        const db = await readDB();
+        db.team = db.team || [];
+        const m = db.team.find(t => t.id === empCode || t.emp_code === empCode);
+        if (m) {
+          Object.assign(m, profileUpdate);
+          m.onboardingComplete = true;
+          await writeDB(db);
+        }
+      } catch (_) {}
+
+      broadcastTeamEvent('team_update', [{
+        emp_code: empCode,
+        agreement_stage: 3,
+        agreement_complete: true,
+        onboarding_complete: true
+      }]);
+
+      try {
+        const tgId = telegramId || emp.telegram_id || emp.telegramId;
+        if (tgId) {
+          const { sendTelegramNotification } = require('../services/bot');
+          const sealMsg = `👑 *EMPLOYMENT AGREEMENT FINAL SEAL APPLIED*\n\n` +
+            `Congratulations *${empName}*! Your employment agreement has been formally sealed and approved by the Executive Council.\n\n` +
+            `✅ *Onboarding Status:* 100% COMPLETE\n` +
+            `🚀 All workspace permissions are fully activated!`;
+          sendTelegramNotification(tgId, sealMsg, null, true);
+        }
+      } catch (_) {}
+
+      return res.json({
+        success: true,
+        stage: 3,
+        agreementComplete: true,
+        onboardingComplete: true,
+        message: 'Employment agreement sealed and employee fully activated!'
+      });
     }
 
     res.json({ success: true, stage, message: `Stage ${stage} processed` });
@@ -967,28 +1112,46 @@ router.get('/tg/:telegramId', requireMiniAppAuth, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/attendance', requireAuth, async (req, res) => {
   try {
-    const empId = req.user.linkedId || req.user.id || 'GRO-001';
+    const empId = req.user.emp_code || req.user.empCode || req.user.linkedId || req.user.id || 'GRO-001';
     const name = req.user.profile?.name || req.user.name || 'Specialist';
     const today = new Date().toISOString().split('T')[0];
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
     const payload = {
+      id: `ATT-${Date.now()}`,
       employee_id: empId,
       name: name,
       status: req.body.status || 'In Studio',
       clock_in_time: req.body.clockInTime || nowTime,
+      clock_out_time: req.body.clockOutTime || null,
       location: req.body.location || 'Niketon Studio',
-      date: today
+      date: today,
+      created_at: new Date().toISOString()
     };
 
-    const { data: record, error } = await supabase.from('attendance').insert([payload]).select().single();
-    if (error) throw error;
+    let record = null;
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from('attendance').insert([payload]).select().maybeSingle();
+        if (!error && data) record = data;
+        await supabase.from('profiles').update({ status: payload.status }).eq('emp_code', empId);
+      } catch (sbErr) {
+        console.warn('[Attendance] Supabase notice:', sbErr.message);
+      }
+    }
 
-    await supabase.from('profiles').update({ status: payload.status }).eq('emp_code', empId);
+    if (!record) {
+      record = payload;
+    }
 
-    const { data: allAtt } = await supabase.from('attendance').select('*').order('created_at', { ascending: false });
-    broadcastTeamEvent('attendance_update', (allAtt || []).map(mapAttendance));
+    try {
+      const db = await readDB();
+      db.attendance = db.attendance || [];
+      db.attendance.unshift(record);
+      await writeDB(db);
+    } catch (_) {}
 
+    broadcastTeamEvent('attendance_update', [mapAttendance(record)]);
     res.json({ success: true, attendance: mapAttendance(record) });
   } catch (err) {
     console.error('Attendance POST error:', err.message);
@@ -999,15 +1162,27 @@ router.post('/attendance', requireAuth, async (req, res) => {
 // GET /api/team/attendance
 router.get('/attendance', requireAuth, async (req, res) => {
   try {
-    if (!supabase) return res.json([]);
-    const { data, error } = await supabase.from('attendance').select('*').order('created_at', { ascending: false });
-    if (error) {
-      return res.json([]);
+    let rows = [];
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from('attendance').select('*').order('created_at', { ascending: false });
+        if (!error && Array.isArray(data) && data.length > 0) {
+          rows = data;
+        }
+      } catch (_) {}
     }
-    let mapped = (data || []).map(mapAttendance);
-    const empId = req.query.employeeId || req.query.empId;
+
+    if (rows.length === 0) {
+      try {
+        const db = await readDB();
+        rows = db.attendance || [];
+      } catch (_) {}
+    }
+
+    let mapped = rows.map(mapAttendance);
+    const empId = req.query.employeeId || req.query.empId || req.query.emp_code;
     if (empId) {
-      mapped = mapped.filter(a => a.employeeId === empId || a.employee_id === empId);
+      mapped = mapped.filter(a => a.employeeId === empId || a.employee_id === empId || a.name === empId);
     }
     res.json(mapped);
   } catch (err) {
@@ -1038,17 +1213,30 @@ router.get('/eod', requireAuth, async (req, res) => {
     const empId = req.query.employeeId || req.query.empId || req.query.emp_code;
     let rows = [];
     if (supabase) {
-      let query = supabase.from('eod_reports').select('*').order('created_at', { ascending: false });
-      if (empId) {
-        query = query.or(`employee_id.eq.${empId},employee_id.ilike.%${empId}%`);
-      }
-      const { data, error } = await query;
-      if (!error && data) rows = data;
+      try {
+        let query = supabase.from('eod_reports').select('*').order('created_at', { ascending: false });
+        if (empId) {
+          query = query.or(`employee_id.eq.${empId},employee_id.ilike.%${empId}%`);
+        }
+        const { data, error } = await query;
+        if (!error && Array.isArray(data) && data.length > 0) rows = data;
+      } catch (_) {}
     }
+
+    if (rows.length === 0) {
+      try {
+        const db = await readDB();
+        rows = db.eod_reports || [];
+        if (empId) {
+          rows = rows.filter(r => r.employee_id === empId || (r.employee_name && r.employee_name.toLowerCase().includes(empId.toLowerCase())));
+        }
+      } catch (_) {}
+    }
+
     res.json(rows);
   } catch (err) {
     console.error('EOD GET error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.json([]);
   }
 });
 
@@ -1199,13 +1387,12 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
     // Register login credentials immediately (phone + PIN) for /crew portal access
     let pinRecord = null;
     try {
-      const providedPin = pin && pin.length === 4 ? pin : null;
-      pinRecord = await createTempPin(normalizedPhone, newEmpCode, 'team', '');
-      // If a specific PIN was provided, update it immediately
-      if (providedPin && pinRecord) {
-        await supabase.from('auth_pins').update({ pin: providedPin, is_temp: false })
-          .eq('phone', normalizedPhone);
-        pinRecord.pin = providedPin;
+      const providedPin = pin && String(pin).trim().length >= 4 ? String(pin).trim() : null;
+      if (providedPin) {
+        await setPermanentPin(normalizedPhone, providedPin, payload.email || '');
+        pinRecord = { phone: normalizedPhone, pin: providedPin, isTemp: false, is_temp: false };
+      } else {
+        pinRecord = await createTempPin(normalizedPhone, newEmpCode, 'team', payload.email || '');
       }
     } catch (pinErr) {
       console.warn('PIN registration warning (non-critical):', pinErr.message);
@@ -1242,21 +1429,84 @@ router.post('/:empCode/reset-pin', requireAuth, async (req, res) => {
       if (data && data.phone) targetPhone = data.phone;
     }
 
+    if (!targetPhone) {
+      try {
+        const db = await readDB();
+        const m = (db.team || []).find(t => t.emp_code === empCode || t.id === empCode);
+        if (m && m.phone) targetPhone = m.phone;
+      } catch (_) {}
+    }
+
     let pinRecord = null;
+    const phoneToUse = targetPhone || '01700000000';
     try {
-      pinRecord = await createTempPin(targetPhone || '01700000000', empCode, 'team', '');
-      if (customPin && pinRecord && supabase) {
-        await supabase.from('auth_pins').update({ pin: customPin, is_temp: false }).eq('phone', targetPhone).catch(() => {});
-        pinRecord.pin = customPin;
+      if (customPin && String(customPin).trim().length >= 4) {
+        const cleanPin = String(customPin).trim();
+        await setPermanentPin(phoneToUse, cleanPin);
+        pinRecord = { pin: cleanPin, isTemp: false, is_temp: false, phone: phoneToUse };
+        try {
+          broadcast('auth_event', {
+            type: 'pin_set',
+            action: 'pin_set',
+            phone: phoneToUse,
+            linkedId: empCode,
+            isTemp: false,
+            timestamp: new Date().toISOString()
+          });
+        } catch (_) {}
+      } else {
+        pinRecord = await createTempPin(phoneToUse, empCode, 'team', '', true);
+        try {
+          broadcast('auth_event', {
+            type: 'pin_generated',
+            action: 'pin_generated',
+            phone: phoneToUse,
+            linkedId: empCode,
+            isTemp: true,
+            timestamp: new Date().toISOString()
+          });
+        } catch (_) {}
       }
     } catch (e) {
-      console.warn('createTempPin error:', e.message);
+      console.warn('createTempPin / setPermanentPin error:', e.message);
     }
+
+    // Dispatch Security Alert Email via Resend if email is available
+    try {
+      let staffEmail = null;
+      let staffName = empCode;
+      if (supabase) {
+        const { data: p } = await supabase.from('profiles').select('email, personal_email, name').eq('emp_code', empCode).maybeSingle();
+        if (p) {
+          staffEmail = p.email || p.personal_email;
+          staffName = p.name || empCode;
+        }
+      }
+      if (!staffEmail) {
+        const db = await readDB();
+        const m = (db.team || []).find(t => t.emp_code === empCode || t.id === empCode);
+        if (m) {
+          staffEmail = m.email || m.personal_email;
+          staffName = m.name || empCode;
+        }
+      }
+      if (staffEmail && staffEmail.includes('@')) {
+        const { sendPinResetAlertEmail } = require('../services/resend');
+        sendPinResetAlertEmail({
+          name: staffName,
+          email: staffEmail,
+          phone: phoneToUse,
+          pin: pinRecord ? pinRecord.pin : (customPin || '****'),
+          portalUrl: 'https://gro10x-ai.vercel.app/crew'
+        }).catch(() => {});
+      }
+    } catch (_) {}
 
     return res.json({
       success: true,
       empCode,
       tempPin: pinRecord ? pinRecord.pin : (customPin || '123456'),
+      isTemp: pinRecord ? Boolean(pinRecord.isTemp ?? pinRecord.is_temp ?? false) : false,
       message: 'PIN successfully reset'
     });
   } catch (err) {
@@ -1494,6 +1744,21 @@ router.put('/:id', requireAuth, async (req, res) => {
 
       updatedProfile = updatedData;
     }
+
+    // Dual-persist to local data/db.json
+    try {
+      const db = await readDB();
+      db.team = db.team || [];
+      const m = db.team.find(t => t.id === id || t.emp_code === id || (existingProfile && (t.id === existingProfile.id || t.emp_code === existingProfile.emp_code)));
+      if (m) {
+        Object.assign(m, sanitizedUpdates);
+        if (sanitizedUpdates.custom_fields) {
+          m.custom_fields = { ...(m.custom_fields || {}), ...sanitizedUpdates.custom_fields };
+        }
+        await writeDB(db);
+        if (!updatedProfile) updatedProfile = { ...m };
+      }
+    } catch (_) {}
 
     if (updatedProfile) {
       const mapped = mapProfile(updatedProfile);
@@ -1830,6 +2095,204 @@ router.get('/payslip', requireMiniAppAuth, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// GET /api/team/:id/payslips — Retrieve past payslips for an employee
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/:id/payslips', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const isOwnerOrAdmin = (req.user.accessLevel || req.user.role || '').toLowerCase().match(/admin|owner|manager|technology/);
+    const isSelf = req.user.id === id || req.user.emp_code === id || req.user.linkedId === id;
+
+    if (!isOwnerOrAdmin && !isSelf) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to access these payslips' });
+    }
+
+    let payslips = [];
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('payslips')
+          .select('*')
+          .or(`employee_id.eq.${id},emp_code.eq.${id}`)
+          .order('created_at', { ascending: false });
+        if (!error && Array.isArray(data) && data.length > 0) {
+          payslips = data;
+        }
+      } catch (_) {}
+    }
+
+    if (payslips.length === 0) {
+      try {
+        const db = await readDB();
+        payslips = (db.payslips || []).filter(p => p.employee_id === id || p.emp_code === id || p.employeeId === id);
+      } catch (_) {}
+    }
+
+    return res.json({ success: true, payslips });
+  } catch (err) {
+    console.error('GET /team/:id/payslips error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/team/:id/disburse-salary — Disburse salary & log expense record
+// ─────────────────────────────────────────────────────────────────────────────
+router.post(['/:id/disburse-salary', '/:id/payslips'], requireAuth, requireManager, async (req, res) => {
+  try {
+    const { id } = req.params;
+    let emp = null;
+
+    if (supabase) {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .or(`id.eq.${id},emp_code.eq.${id}`)
+          .maybeSingle();
+        if (data) emp = data;
+      } catch (_) {}
+    }
+
+    if (!emp) {
+      const db = await readDB();
+      emp = (db.team || []).find(t => t.id === id || t.emp_code === id || t.empCode === id);
+    }
+
+    if (!emp) {
+      return res.status(404).json({ error: `Employee '${id}' not found` });
+    }
+
+    const month = req.body.month || new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    const baseSalary = Number(req.body.baseSalary !== undefined ? req.body.baseSalary : (emp.base_salary || emp.baseSalary || 35000));
+    const bonus = Number(req.body.bonus || 0);
+    const commissions = Number(req.body.commissions || emp.earned_commissions || emp.earnedCommissions || 0);
+    const deductions = Number(req.body.deductions || 0);
+    const netSalary = Math.max(0, baseSalary + bonus + commissions - deductions);
+
+    const payslipId = `PAY-${Date.now().toString().slice(-6)}`;
+    const expenseId = `EXP-SAL-${Date.now().toString().slice(-6)}`;
+    const now = new Date().toISOString();
+
+    const payslipRecord = {
+      id: payslipId,
+      employee_id: emp.id || id,
+      emp_code: emp.emp_code || emp.id || id,
+      employee_name: emp.name || 'Team Member',
+      department: emp.department || 'Production',
+      role: emp.role || 'Specialist',
+      month,
+      base_salary: baseSalary,
+      bonus,
+      commissions,
+      deductions,
+      net_salary: netSalary,
+      status: 'Disbursed',
+      disbursed_at: now,
+      disbursed_by: req.user.name || 'HR Operations',
+      created_at: now
+    };
+
+    const expenseRecord = {
+      id: expenseId,
+      title: `Monthly Salary — ${emp.name} (${month})`,
+      category: 'Payroll & Compensation',
+      amount: netSalary,
+      date: now.split('T')[0],
+      logged_by: req.user.name || 'HR Operations',
+      submitted_by: req.user.name || 'HR Operations',
+      submitted_by_id: req.user.id || 'HR-001',
+      status: 'Disbursed',
+      tier1_approved: true,
+      tier1_approved_by: req.user.name || 'HR Operations',
+      tier1_approved_at: now,
+      tier2_approved: true,
+      tier2_approved_by: req.user.name || 'Executive Admin',
+      tier2_approved_at: now,
+      finance_verified: true,
+      finance_verified_by: req.user.name || 'Finance Lead',
+      finance_verified_at: now,
+      disbursed: true,
+      disbursed_by: req.user.name || 'Finance Lead',
+      disbursed_at: now,
+      currency: 'BDT',
+      created_at: now
+    };
+
+    // Dual-persist to Supabase
+    if (supabase) {
+      try {
+        await supabase.from('payslips').insert([payslipRecord]);
+      } catch (_) {}
+      try {
+        await supabase.from('expenses').insert([expenseRecord]);
+      } catch (_) {}
+    }
+
+    // Dual-persist to data/db.json
+    try {
+      const db = await readDB();
+      db.payslips = db.payslips || [];
+      db.payslips.unshift(payslipRecord);
+      db.expenses = db.expenses || [];
+      db.expenses.unshift(expenseRecord);
+      await writeDB(db);
+    } catch (err) {
+      console.warn('[Disburse Salary] Local db write warning:', err.message);
+    }
+
+    // SSE payroll_update broadcast
+    broadcast('payroll_update', {
+      employeeId: emp.emp_code || emp.id || id,
+      payslip: payslipRecord,
+      expense: expenseRecord
+    });
+
+    // Notify employee via Telegram if linked
+    try {
+      if (emp.telegram_id || emp.telegramId) {
+        const tgId = emp.telegram_id || emp.telegramId;
+        const msg = `🎉 *Monthly Salary Disbursed!*\n\n` +
+          `• Month: *${month}*\n` +
+          `• Net Disbursed: *৳${netSalary.toLocaleString()} BDT*\n` +
+          `• Payslip ID: \`${payslipId}\`\n\n` +
+          `Your official digital payslip is available in the Staff Portal.`;
+        sendTelegramNotification(tgId, msg, null, false);
+      }
+    } catch (_) {}
+
+    // Send Payslip Delivery Email via Resend if email available
+    const empEmail = emp.email || emp.personal_email || emp.personalEmail;
+    if (empEmail && empEmail.includes('@')) {
+      try {
+        const { sendPayslipDeliveryEmail } = require('../services/resend');
+        sendPayslipDeliveryEmail({
+          name: emp.name,
+          email: empEmail,
+          month,
+          netSalary,
+          payslipId,
+          baseSalary,
+          bonus,
+          commissions
+        }).catch(() => {});
+      } catch (_) {}
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: `Salary disbursed successfully for ${emp.name}`,
+      payslip: payslipRecord,
+      expense: expenseRecord
+    });
+  } catch (err) {
+    console.error('POST /team/:id/disburse-salary error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // DELETE /api/team/:id — Remove Team Member
 // ─────────────────────────────────────────────────────────────────────────────
 router.delete('/:id', requireAuth, async (req, res) => {
@@ -1968,7 +2431,11 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
     };
 
     if (supabase) {
-      await supabase.from('eod_reports').insert([payload]);
+      try {
+        await supabase.from('eod_reports').insert([payload]);
+      } catch (sbErr) {
+        console.warn('[EOD Supabase] Warning:', sbErr.message);
+      }
       // Award +10 XP for daily EOD submission
       if (empCode) {
         try {
@@ -2031,6 +2498,35 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
           console.warn('EOD XP update warning:', xpErr.message);
         }
       }
+    }
+
+    // Persist to local data/db.json for dual-persistence fallback
+    try {
+      const db = await readDB();
+      if (!Array.isArray(db.eod_reports)) db.eod_reports = [];
+      db.eod_reports.unshift(payload);
+      if (db.eod_reports.length > 500) db.eod_reports = db.eod_reports.slice(0, 500);
+      await writeDB(db);
+    } catch (dbErr) {
+      console.warn('[EOD Local DB] Warning writing to db.json:', dbErr.message);
+    }
+
+    // Notify Manager / Owner via Telegram if configured
+    try {
+      const ownerTgId = process.env.OWNER_TELEGRAM_ID || process.env.MANAGER_TELEGRAM_ID;
+      if (ownerTgId) {
+        const { sendTelegramNotification } = require('../services/bot');
+        const reportMsg = `📋 *DAILY EOD SUBMISSION*\n\n` +
+          `👤 *Specialist:* ${payload.employee_name} (${payload.employee_id})\n` +
+          `🕒 *Hours Worked:* ${payload.hours_worked} hrs\n` +
+          `😊 *Mood:* ${payload.mood}\n\n` +
+          `✅ *Completed Today:*\n${payload.tasks_done}\n\n` +
+          `🎯 *Plan Tomorrow:*\n${payload.tasks_tomorrow}\n\n` +
+          `🚧 *Blockers:* ${payload.blockers}`;
+        sendTelegramNotification(ownerTgId, reportMsg, null, false);
+      }
+    } catch (notifErr) {
+      console.warn('[EOD Manager Alert] Warning:', notifErr.message);
     }
 
     broadcastTeamEvent('eod_update', [payload]);

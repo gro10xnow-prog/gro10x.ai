@@ -49,7 +49,7 @@ window.CLIENT_MODULES.retainer = async function(container) {
         remainingHours: clientRetainerHours,
         burnRatePercent: 0,
         status: clientRetainerHours > 0 ? 'healthy' : 'unallocated',
-        hourlyRateUsd: 50,
+        hourlyRateUsd: Number(clientInfo.hourlyRate || clientInfo.hourly_rate || clientInfo.hourlyRateUsd || bankProject?.hourlyRate || bankProject?.hourly_rate || 50),
         billingCycleStart: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
         billingCycleEnd: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59).toISOString(),
         logs: []

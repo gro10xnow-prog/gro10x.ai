@@ -98,6 +98,26 @@
       "unlockedSkus": [
         "PLA-14"
       ]
+    },
+    "CUST-YA9TYZU": {
+      "id": "CUST-YA9TYZU",
+      "email": "elena.test.1790890946736@plannerqueengro.com",
+      "name": "Elena Rostova",
+      "createdAt": "2026-10-01T21:42:26.892Z",
+      "unlockedSkus": [
+        "PLA-14",
+        "PLA-15"
+      ]
+    },
+    "CUST-BV1YE4Q": {
+      "id": "CUST-BV1YE4Q",
+      "email": "nhf.lead.1790891450484@nationalhousingbd.com",
+      "name": "Sayeed Ahmed",
+      "createdAt": "2026-10-01T21:50:54.809Z",
+      "unlockedSkus": [
+        "PLA-14",
+        "PLA-15"
+      ]
     }
   },
   "wallets": {
@@ -153,6 +173,16 @@
     },
     "CUST-9P0QSB2": {
       "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-YA9TYZU": {
+      "balance": 40,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-BV1YE4Q": {
+      "balance": 50,
       "tier": "VIP Creator",
       "lifetimeEarned": 200
     }
@@ -367,6 +397,45 @@
         "type": "credit",
         "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
         "timestamp": "2026-09-27T16:25:27.192Z"
+      }
+    ],
+    "CUST-YA9TYZU": [
+      {
+        "id": "TXN-1790890947050",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-10-01T21:42:27.050Z"
+      },
+      {
+        "id": "TXN-RED-1790890946946",
+        "amount": -150,
+        "type": "debit",
+        "reason": "Unlocked Companion: ADHD Low-Dopamine Daily Planner (PLA-15)",
+        "timestamp": "2026-10-01T21:42:26.946Z"
+      },
+      {
+        "id": "TXN-1790890946892",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-10-01T21:42:26.892Z"
+      }
+    ],
+    "CUST-BV1YE4Q": [
+      {
+        "id": "TXN-RED-1790891454854",
+        "amount": -150,
+        "type": "debit",
+        "reason": "Unlocked Companion: ADHD Low-Dopamine Daily Planner (PLA-15)",
+        "timestamp": "2026-10-01T21:50:54.854Z"
+      },
+      {
+        "id": "TXN-1790891454809",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-10-01T21:50:54.809Z"
       }
     ]
   },

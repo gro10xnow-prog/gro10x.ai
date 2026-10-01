@@ -680,6 +680,10 @@ window.APP_MODULES.leads = async function(container) {
       <div style="background:linear-gradient(135deg, rgba(168,85,247,0.1), rgba(16,185,129,0.08)); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:1rem; margin-bottom:1rem;">
         <div style="font-size:0.72rem; font-weight:800; color:#c084fc; text-transform:uppercase; margin-bottom:0.75rem;">🚀 Client Conversion Actions</div>
         <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          <button id="btnCreateProposalFromLead" class="btn-secondary" style="text-align:left; padding:0.65rem 1rem; border-color:rgba(192,132,252,0.4);"
+            onclick="window.LEADS_MODULE.createProposal('${lead.id}', this)">
+            📄 Generate Client SOW Proposal
+          </button>
           <button class="btn-primary" style="text-align:left; padding:0.65rem 1rem; background:linear-gradient(135deg,#10b981,#059669);"
             onclick="window.LEADS_MODULE.convertLead('${lead.id}', '${escapeHTML(lead.company || '')}', '${escapeHTML(lead.email || '')}', this)">
             🏆 Convert Lead → Create Client CRM Account
@@ -940,6 +944,65 @@ window.APP_MODULES.leads = async function(container) {
         showToast(`Stage updated → ${stage}`, 2500, 'success');
       } catch (err) {
         showToast('Failed to update stage: ' + err.message, 4000, 'error');
+      }
+    },
+
+    async createProposal(id, btn) {
+      const origHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Generating Proposal...';
+      }
+      const resultEl = document.getElementById('conversionResult');
+      if (resultEl) {
+        resultEl.innerHTML = '<div style="color:var(--text-muted); padding:0.5rem;">⏳ Drafting SOW proposal from lead record...</div>';
+      }
+
+      try {
+        const result = await APP_API.post(`/leads/${id}/create-proposal`, {});
+        const lead = leadsData.find(l => l.id === id);
+        if (lead) {
+          lead.stage = 'Proposal Sent';
+        }
+        if (selectedLead && selectedLead.id === id) {
+          selectedLead.stage = 'Proposal Sent';
+        }
+
+        if (resultEl && result.proposal) {
+          const shareUrl = result.shareUrl || `/p/${result.shareToken}`;
+          resultEl.innerHTML = `
+            <div style="background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.35); border-radius:8px; padding:0.85rem; font-size:0.82rem;">
+              <div style="display:flex; align-items:center; gap:0.4rem; font-weight:800; color:#c084fc; margin-bottom:0.35rem;">
+                <span>📄</span> SOW Proposal Created! (${escapeHTML(result.proposalId || result.proposal.id)})
+              </div>
+              <div style="color:var(--text-muted); margin-bottom:0.5rem; font-size:0.78rem;">
+                <strong>${escapeHTML(result.proposal.project_title || result.proposal.projectTitle || 'AI Solution')}</strong> · Total: $${result.proposal.one_time_total || result.proposal.oneTimeTotal || 0}
+              </div>
+              <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+                <a href="${escapeHTML(shareUrl)}" target="_blank" rel="noopener"
+                   style="color:#38bdf8; font-weight:700; text-decoration:none; font-size:0.78rem; display:inline-flex; align-items:center; gap:0.25rem; background:rgba(56,189,248,0.12); padding:0.25rem 0.6rem; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">
+                  🔗 View Public Link ↗
+                </a>
+                <a href="#proposals" onclick="window.LEADS_MODULE.closeDrawer()"
+                   style="color:#10b981; font-weight:700; text-decoration:none; font-size:0.78rem; display:inline-flex; align-items:center; gap:0.25rem; background:rgba(16,185,129,0.12); padding:0.25rem 0.6rem; border-radius:6px; border:1px solid rgba(16,185,129,0.3);">
+                  📑 Proposals Hub →
+                </a>
+              </div>
+            </div>
+          `;
+        }
+        render();
+        showToast(`📄 Proposal ${result.proposalId || ''} created & stage updated to Proposal Sent!`, 3500, 'success');
+      } catch (err) {
+        if (resultEl) {
+          resultEl.innerHTML = `<div style="color:#ef4444; padding:0.5rem;">Proposal creation failed: ${escapeHTML(err.message)}</div>`;
+        }
+        showToast('Proposal creation failed: ' + err.message, 4000, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+        }
       }
     },
 

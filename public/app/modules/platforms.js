@@ -196,7 +196,7 @@ var PLATFORMS_REGISTRY_DATA = window.PLATFORMS_REGISTRY_DATA || [
     revenueModel: 'Employer Hiring Fees + Technical Verification Badges',
     liveUrl: 'https://orjon-app.vercel.app',
     repo: 'Orjon Workspace Repo',
-    nextAction: 'Parked — Replace supabaseMock.ts with live DB tables when ready',
+    nextAction: 'Production Database Connected — Ready for Blue-Collar Verification Pipeline',
     icon: '🛠️',
     isOwned: true,
     keyModules: [
@@ -460,7 +460,23 @@ var PLATFORMS_REGISTRY_DATA = window.PLATFORMS_REGISTRY_DATA || [
   }
 ];
 
-// Custom Platform Registry Persistence
+// Custom Platform Registry Persistence & Live DB Sync
+let _remotePlatforms = [];
+
+async function syncRemotePlatforms() {
+  try {
+    const res = await fetch('/api/platforms');
+    if (res.ok) {
+      const json = await res.json();
+      if (json && (json.data || Array.isArray(json))) {
+        _remotePlatforms = json.data || json;
+        return _remotePlatforms;
+      }
+    }
+  } catch (_) {}
+  return [];
+}
+
 function getCustomPlatforms() {
   try {
     const raw = localStorage.getItem('gro10x_custom_platforms');
@@ -471,18 +487,43 @@ function getCustomPlatforms() {
   }
 }
 
-function saveCustomPlatform(platform) {
+async function saveCustomPlatform(platform) {
   const list = getCustomPlatforms();
   list.unshift(platform);
   localStorage.setItem('gro10x_custom_platforms', JSON.stringify(list));
+
+  try {
+    const token = localStorage.getItem('token') || localStorage.getItem('gro10x_auth_token');
+    await fetch('/api/platforms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(platform)
+    });
+  } catch (err) {
+    console.warn('[Platforms API] Remote sync deferred:', err.message);
+  }
 }
 
-function deleteCustomPlatform(id) {
+async function deleteCustomPlatform(id) {
   const list = getCustomPlatforms().filter(p => p.id !== id);
   localStorage.setItem('gro10x_custom_platforms', JSON.stringify(list));
+
+  try {
+    const token = localStorage.getItem('token') || localStorage.getItem('gro10x_auth_token');
+    await fetch(`/api/platforms/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+  } catch (_) {}
 }
 
 function getAllPlatforms() {
+  if (_remotePlatforms.length > 0) return _remotePlatforms;
   return [...getCustomPlatforms(), ...PLATFORMS_REGISTRY_DATA];
 }
 
@@ -1241,9 +1282,22 @@ ${(p.keyModules || []).map(m => `  - ${m}`).join('\n')}
     };
     window.APP_SSE.subscribe('engine_update', _refreshOnSSE);
     window.APP_SSE.subscribe('client_update', _refreshOnSSE);
+    window.APP_SSE.subscribe('platform_update', () => {
+      syncRemotePlatforms().then(() => _refreshOnSSE());
+    });
   }
 
-  // Initial Data Bind
+  // Initial Data Bind & Remote Live Sync
+  syncRemotePlatforms().then(() => {
+    updateStatsStrip();
+    updateTabButtons();
+    renderCardsGrid();
+    const headerBadge = document.getElementById('platformsHeaderBadge');
+    if (headerBadge) {
+      headerBadge.textContent = `${getAllPlatforms().length} Registered Platforms & OS Engines`;
+    }
+  });
+
   updateStatsStrip();
   updateTabButtons();
   renderCardsGrid();

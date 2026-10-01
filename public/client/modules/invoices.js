@@ -221,6 +221,10 @@ window.CLIENT_MODULES.invoices = async function(container) {
             <label class="form-label">Payment Channel</label>
             <select id="payMethod" class="form-select">
               <option value="Corporate Bank Wire">Corporate Bank Wire (BRAC Bank Limited)</option>
+              <option value="bKash Merchant">bKash Merchant / Personal (16247)</option>
+              <option value="Nagad">Nagad MFS (16167)</option>
+              <option value="Rocket">DBBL Rocket MFS (16216)</option>
+              <option value="DBBL NexusPay">DBBL NexusPay / Card</option>
               <option value="Card / Stripe">Online Card Checkout / Stripe</option>
               <option value="Wise / SWIFT">Wise / International Wire</option>
               <option value="Cash / Cheque">Corporate Cheque</option>
@@ -314,6 +318,22 @@ window.CLIENT_MODULES.invoices = async function(container) {
       }
     }
   };
+
+  // Real-time SSE listener for payment clearance and status updates
+  if (window.CLIENT_SSE && typeof window.CLIENT_SSE.addEventListener === 'function') {
+    window.CLIENT_SSE.addEventListener('payment_update', function(e) {
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload) {
+          if (window.showClientToast) window.showClientToast('⚡ Payment update received!');
+          loadInvoicesData();
+        }
+      } catch (_) {}
+    });
+    window.CLIENT_SSE.addEventListener('invoice_update', function() {
+      loadInvoicesData();
+    });
+  }
 
   await loadInvoicesData();
 };
