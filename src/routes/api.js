@@ -82,6 +82,7 @@ const portalRoutes = require('./portal');
 const trafficRoutes = require('./traffic');
 const catalogRoutes = require('./catalog');
 const webhooksRoutes = require('./webhooks');
+const meetCopilotRoutes = require('./meet-copilot');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -198,6 +199,7 @@ router.use('/gigs', gigsRoutes);
 router.use('/proposals', proposalsRoutes);
 router.use('/digistore', digistoreRoutes);
 router.use('/digivault-webhook', digivaultWebhookRoutes);
+router.use('/meet-copilot', meetCopilotRoutes);
 router.use('/social-brands', socialBrandsRoutes);
 router.use('/dce/orders', dceOrdersRoutes);
 router.use('/dce/webhooks', dceWebhooksRoutes);

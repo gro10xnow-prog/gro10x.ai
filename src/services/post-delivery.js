@@ -13,7 +13,7 @@
 
 const crypto = require('crypto');
 const { supabase, isSupabaseConfigured } = require('./supabase');
-const { readDB } = require('./db');
+const { readDB, writeDB } = require('./db');
 const { broadcast } = require('./sse');
 const { sendTelegramNotification } = require('./bot');
 
@@ -173,6 +173,15 @@ async function getOrCreateHandoverManifest(projectId) {
     } catch (_) {}
   }
 
+  try {
+    const db = await readDB();
+    const localM = (db.handover_manifests || []).find(m => m.projectId === projectId || m.project_id === projectId);
+    if (localM) {
+      memoryHandoverManifests.set(projectId, localM);
+      return localM;
+    }
+  } catch (_) {}
+
   const project = await findProject(projectId);
   if (!project) {
     throw new Error(`Project '${projectId}' not found.`);
@@ -290,6 +299,10 @@ async function signHandoverManifest(projectId, signPayload = {}) {
   // Update in memory & DB
   saveMemoryProject({ ...project, ...updates });
 
+  // Refresh manifest cache
+  memoryHandoverManifests.delete(projectId);
+  const updatedManifest = await getOrCreateHandoverManifest(projectId);
+
   try {
     const db = await readDB();
     db.projects = db.projects || [];
@@ -297,11 +310,15 @@ async function signHandoverManifest(projectId, signPayload = {}) {
     if (pIdx !== -1) {
       db.projects[pIdx] = { ...db.projects[pIdx], ...updates };
     }
+    db.handover_manifests = db.handover_manifests || [];
+    const mIdx = db.handover_manifests.findIndex(m => m.projectId === projectId || m.project_id === projectId);
+    if (mIdx !== -1) {
+      db.handover_manifests[mIdx] = updatedManifest;
+    } else {
+      db.handover_manifests.unshift(updatedManifest);
+    }
+    await writeDB(db);
   } catch (_) {}
-
-  // Refresh manifest cache
-  memoryHandoverManifests.delete(projectId);
-  const updatedManifest = await getOrCreateHandoverManifest(projectId);
 
   if (isSupabaseConfigured()) {
     try {
@@ -424,6 +441,14 @@ async function raiseProjectDispute(projectId, disputePayload = {}) {
     if (pIdx !== -1) {
       db.projects[pIdx] = { ...db.projects[pIdx], ...projectUpdates };
     }
+    db.disputes = db.disputes || [];
+    const dIdx = db.disputes.findIndex(d => d.projectId === projectId || d.disputeId === disputeId || d.id === disputeId);
+    if (dIdx !== -1) {
+      db.disputes[dIdx] = { ...db.disputes[dIdx], ...disputeRecord };
+    } else {
+      db.disputes.unshift(disputeRecord);
+    }
+    await writeDB(db);
   } catch (_) {}
 
   // Clear handover manifest cache
@@ -508,17 +533,18 @@ async function resolveProjectDispute(projectId, resolutionPayload = {}) {
 
   saveMemoryProject({ ...project, ...projectUpdates });
 
+  // Update memory dispute
+  let existingDispute = memoryDisputes.get(projectId);
+  let localDb = null;
   try {
-    const db = await readDB();
-    db.projects = db.projects || [];
-    const pIdx = db.projects.findIndex(p => p.id === projectId);
-    if (pIdx !== -1) {
-      db.projects[pIdx] = { ...db.projects[pIdx], ...projectUpdates };
-    }
+    localDb = await readDB();
   } catch (_) {}
 
-  // Update memory dispute
-  const existingDispute = memoryDisputes.get(projectId) || {};
+  if (!existingDispute && localDb) {
+    existingDispute = (localDb.disputes || []).find(d => d.projectId === projectId || d.project_id === projectId);
+  }
+  existingDispute = existingDispute || {};
+
   const updatedDispute = {
     ...existingDispute,
     status: 'RESOLVED',
@@ -529,6 +555,23 @@ async function resolveProjectDispute(projectId, resolutionPayload = {}) {
     resolvedAt
   };
   memoryDisputes.set(projectId, updatedDispute);
+
+  try {
+    const db = localDb || await readDB();
+    db.projects = db.projects || [];
+    const pIdx = db.projects.findIndex(p => p.id === projectId);
+    if (pIdx !== -1) {
+      db.projects[pIdx] = { ...db.projects[pIdx], ...projectUpdates };
+    }
+    db.disputes = db.disputes || [];
+    const dIdx = db.disputes.findIndex(d => d.projectId === projectId || d.project_id === projectId);
+    if (dIdx !== -1) {
+      db.disputes[dIdx] = { ...db.disputes[dIdx], ...updatedDispute };
+    } else {
+      db.disputes.unshift(updatedDispute);
+    }
+    await writeDB(db);
+  } catch (_) {}
 
   if (isSupabaseConfigured()) {
     try {
@@ -633,6 +676,7 @@ async function submitProjectTestimonial(projectId, testimonialPayload = {}) {
     const db = await readDB();
     db.testimonials = db.testimonials || [];
     db.testimonials.unshift(record);
+    await writeDB(db);
   } catch (_) {}
 
   // Broadcast celebratory event

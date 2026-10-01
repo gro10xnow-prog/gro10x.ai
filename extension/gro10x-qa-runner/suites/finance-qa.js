@@ -1,5 +1,5 @@
 /**
- * Financial Intelligence, Invoices & Expense Command QA Automation Suite (18 Steps)
+ * Financial Intelligence, Invoices & Expense Command QA Automation Suite (25 Steps)
  * Invoicing, multi-currency scopes, expenses, verifications, and quote conversion (#finance)
  */
 
@@ -164,6 +164,19 @@ const FINANCE_QA_SUITE = {
       action: 'wait_ms',
       duration: 200,
       assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+    },
+    {
+      id: 'step-24',
+      title: '24. Commercial Quotes Persistence & Conversion Verification',
+      action: 'none',
+      assertion: { type: 'custom_check', check: 'assert_quotes_persistence' }
+    },
+    {
+      id: 'step-25',
+      title: '25. Telegram Bot Payment Verification & Callback Workflow',
+      action: 'wait_ms',
+      duration: 300,
+      assertion: { type: 'custom_check', check: 'assert_payment_telegram_callbacks' }
     }
   ]
 };

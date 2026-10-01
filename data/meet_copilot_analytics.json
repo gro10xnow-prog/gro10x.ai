@@ -1,0 +1,161 @@
+{
+  "events": [
+    {
+      "id": "evt_1790708853347_54t0y",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_start",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": "GRO10X Product Alignment Sync",
+      "duration_seconds": 0,
+      "turn_count": 0,
+      "target_language": "English",
+      "export_format": null,
+      "created_at": "2026-09-29T19:07:33.347Z"
+    },
+    {
+      "id": "evt_1790708878122_ha5la",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_start",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": "GRO10X Product Alignment Sync",
+      "duration_seconds": 0,
+      "turn_count": 0,
+      "target_language": "English",
+      "export_format": null,
+      "created_at": "2026-09-29T19:07:58.122Z"
+    },
+    {
+      "id": "evt_1790708879270_i9qnf",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_compile",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": "GRO10X Product Alignment Sync",
+      "duration_seconds": 1540,
+      "turn_count": 48,
+      "target_language": "English",
+      "export_format": null,
+      "created_at": "2026-09-29T19:07:59.270Z"
+    },
+    {
+      "id": "evt_1790708879663_h33qt",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_export",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": null,
+      "duration_seconds": 0,
+      "turn_count": 0,
+      "target_language": "English",
+      "export_format": "pdf",
+      "created_at": "2026-09-29T19:07:59.663Z"
+    },
+    {
+      "id": "evt_1790708899467_klzcg",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_start",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": "GRO10X Product Alignment Sync",
+      "duration_seconds": 0,
+      "turn_count": 0,
+      "target_language": "English",
+      "export_format": null,
+      "created_at": "2026-09-29T19:08:19.467Z"
+    },
+    {
+      "id": "evt_1790708899928_2mj1z",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_compile",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": "GRO10X Product Alignment Sync",
+      "duration_seconds": 1540,
+      "turn_count": 48,
+      "target_language": "English",
+      "export_format": null,
+      "created_at": "2026-09-29T19:08:19.928Z"
+    },
+    {
+      "id": "evt_1790708900464_qk74q",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_export",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": null,
+      "duration_seconds": 0,
+      "turn_count": 0,
+      "target_language": "English",
+      "export_format": "pdf",
+      "created_at": "2026-09-29T19:08:20.464Z"
+    },
+    {
+      "id": "evt_1790720653903_tkze9",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_start",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": "GRO10X Product Alignment Sync",
+      "duration_seconds": 0,
+      "turn_count": 0,
+      "target_language": "English",
+      "export_format": null,
+      "created_at": "2026-09-29T22:24:13.903Z"
+    },
+    {
+      "id": "evt_1790720654928_l2rjd",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_compile",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": "GRO10X Product Alignment Sync",
+      "duration_seconds": 1540,
+      "turn_count": 48,
+      "target_language": "English",
+      "export_format": null,
+      "created_at": "2026-09-29T22:24:14.928Z"
+    },
+    {
+      "id": "evt_1790720655262_h6csw",
+      "client_id": "usr_test_raksan_001",
+      "session_id": "sess_meet_v1_001",
+      "event_type": "session_export",
+      "meeting_code": "abc-defg-hij",
+      "meeting_title": null,
+      "duration_seconds": 0,
+      "turn_count": 0,
+      "target_language": "English",
+      "export_format": "pdf",
+      "created_at": "2026-09-29T22:24:15.262Z"
+    }
+  ],
+  "users": {
+    "usr_test_raksan_001": {
+      "firstSeen": "2026-09-29T19:07:33.347Z",
+      "sessionCount": 1,
+      "lastSeen": "2026-09-29T22:24:15.262Z"
+    }
+  },
+  "sessions": {
+    "sess_meet_v1_001": {
+      "sessionId": "sess_meet_v1_001",
+      "clientId": "usr_test_raksan_001",
+      "meetingCode": "abc-defg-hij",
+      "meetingTitle": "GRO10X Product Alignment Sync",
+      "startedAt": "2026-09-29T19:07:33.347Z",
+      "durationSeconds": 1540,
+      "turnCount": 48,
+      "compiled": true,
+      "exported": true
+    }
+  },
+  "totals": {
+    "totalUsers": 1,
+    "totalSessions": 1,
+    "totalCompilations": 3,
+    "totalExports": 3,
+    "totalMinutesRecorded": 26
+  }
+}

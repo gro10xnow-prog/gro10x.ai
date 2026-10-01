@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 // Use memory storage — files uploaded directly to Supabase Storage, avoiding ephemeral disk
 const upload = multer({
@@ -23,6 +24,7 @@ const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast, broadcastToClient } = require('../services/sse');
 const { sendInvoiceEmail } = require('../services/resend');
+const { sendTelegramNotification } = require('../services/bot');
 
 function mapInvoice(i) {
   if (!i) return null;
@@ -90,11 +92,117 @@ function mapQuote(q) {
   };
 }
 
+const DB_JSON_PATH = path.join(__dirname, '../../data/db.json');
+
+function readLocalQuotes() {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed.quotes)) {
+        return parsed.quotes;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+function writeLocalQuotes(quotes) {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      parsed.quotes = quotes;
+      fs.writeFileSync(DB_JSON_PATH, JSON.stringify(parsed, null, 2), 'utf8');
+    }
+  } catch (_) {}
+}
+
+function readLocalInvoices() {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed.invoices)) {
+        return parsed.invoices;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+function writeLocalInvoices(invoices) {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const content = fs.readFileSync(DB_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      parsed.invoices = invoices;
+      fs.writeFileSync(DB_JSON_PATH, JSON.stringify(parsed, null, 2), 'utf8');
+    }
+  } catch (_) {}
+}
+
 const DEFAULT_INVOICES = [];
 const DEFAULT_QUOTES = [];
 
-let inMemoryInvoices = [...DEFAULT_INVOICES];
-let inMemoryQuotes = [...DEFAULT_QUOTES];
+let inMemoryInvoices = readLocalInvoices() || [...DEFAULT_INVOICES];
+let inMemoryQuotes = readLocalQuotes() || [...DEFAULT_QUOTES];
+
+async function getQuotesStore() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('quotes').select('*').order('created_at', { ascending: false });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        inMemoryQuotes = data;
+        writeLocalQuotes(inMemoryQuotes);
+        return inMemoryQuotes;
+      }
+    } catch (_) {}
+  }
+  const local = readLocalQuotes();
+  if (local && Array.isArray(local) && local.length > 0) {
+    inMemoryQuotes = local;
+    return inMemoryQuotes;
+  }
+  return inMemoryQuotes;
+}
+
+async function persistQuote(quote, isUpdate = false) {
+  if (!quote || !quote.id) return quote;
+
+  const idx = inMemoryQuotes.findIndex(q => q.id === quote.id);
+  if (idx !== -1) {
+    inMemoryQuotes[idx] = { ...inMemoryQuotes[idx], ...quote };
+  } else {
+    inMemoryQuotes.unshift(quote);
+  }
+
+  writeLocalQuotes(inMemoryQuotes);
+
+  if (supabase) {
+    try {
+      if (isUpdate) {
+        await supabase.from('quotes').update(quote).eq('id', quote.id);
+      } else {
+        await supabase.from('quotes').upsert([quote]);
+      }
+    } catch (e) {
+      console.warn('[Quotes Store] Supabase sync note:', e.message);
+    }
+  }
+
+  return inMemoryQuotes.find(q => q.id === quote.id) || quote;
+}
+
+async function deleteQuoteFromStore(id) {
+  inMemoryQuotes = inMemoryQuotes.filter(q => q.id !== id);
+  writeLocalQuotes(inMemoryQuotes);
+  if (supabase) {
+    try {
+      await supabase.from('quotes').delete().eq('id', id);
+    } catch (_) {}
+  }
+}
 
 // GET Invoices
 router.get('/', requireAuth, async (req, res) => {
@@ -157,26 +265,8 @@ router.get('/', requireAuth, async (req, res) => {
 // ==========================================
 router.get('/quotes', requireAuth, requireManager, async (req, res) => {
   try {
-    let quotes = [];
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from('quotes').select('*').order('created_at', { ascending: false });
-        if (!error && Array.isArray(data)) {
-          quotes = data.map(mapQuote);
-          if (data.length > 0) inMemoryQuotes = data;
-        } else if (error) {
-          console.warn('[Quotes GET] Supabase query note:', error.message);
-        }
-      } catch (e) {
-        console.warn('[Quotes GET] Supabase query exception:', e.message);
-      }
-    }
-
-    if (quotes.length === 0) {
-      quotes = inMemoryQuotes.map(mapQuote);
-    }
-
-    return res.json(quotes);
+    await getQuotesStore();
+    return res.json(inMemoryQuotes.map(mapQuote));
   } catch (err) {
     console.error('Quotes GET error:', err.message);
     return res.json(inMemoryQuotes.map(mapQuote));
@@ -185,14 +275,14 @@ router.get('/quotes', requireAuth, requireManager, async (req, res) => {
 
 router.post('/quotes', requireAuth, requireManager, async (req, res) => {
   try {
-    let nextNum = 1;
+    await getQuotesStore();
+    let nextNum = inMemoryQuotes.length + 1;
     if (supabase) {
       try {
         const { count } = await supabase.from('quotes').select('*', { count: 'exact', head: true });
-        if (typeof count === 'number') nextNum = count + 1;
+        if (typeof count === 'number') nextNum = Math.max(nextNum, count + 1);
       } catch (e) {}
     }
-    if (inMemoryQuotes.length >= nextNum) nextNum = inMemoryQuotes.length + 1;
     const newId = `QTE-2026-${String(nextNum).padStart(3, '0')}`;
 
     const validDays = Number(req.body.validDays) || 14;
@@ -215,17 +305,8 @@ router.post('/quotes', requireAuth, requireManager, async (req, res) => {
       updated_at: new Date().toISOString()
     };
 
-    if (supabase) {
-      const { data: qData, error: qInsErr } = await supabase.from('quotes').insert([payload]).select();
-      if (qInsErr) {
-        console.error('[Quotes API] Supabase insert error:', qInsErr.message);
-        return res.status(500).json({ error: `Database insert failed: ${qInsErr.message}` });
-      }
-      if (qData && qData[0]) Object.assign(payload, qData[0]);
-    }
-
-    inMemoryQuotes.unshift(payload);
-    const quote = mapQuote(payload);
+    const saved = await persistQuote(payload, false);
+    const quote = mapQuote(saved);
 
     try { broadcast('quote_update', inMemoryQuotes.map(mapQuote)); } catch (e) {}
     return res.status(201).json({ success: true, quote });
@@ -245,23 +326,15 @@ router.put('/quotes/:id', requireAuth, requireManager, async (req, res) => {
     if (req.body.validUntil || req.body.valid_until) updates.valid_until = req.body.validUntil || req.body.valid_until;
     if (req.body.notes || req.body.terms) updates.notes = req.body.notes || req.body.terms;
 
-    const memIdx = inMemoryQuotes.findIndex(q => q.id === id);
-    if (memIdx !== -1) {
-      inMemoryQuotes[memIdx] = { ...inMemoryQuotes[memIdx], ...updates };
+    let quoteData = inMemoryQuotes.find(q => q.id === id);
+    if (!quoteData) {
+      await getQuotesStore();
+      quoteData = inMemoryQuotes.find(q => q.id === id);
     }
-    let updatedQuote = inMemoryQuotes[memIdx] || { id, ...updates };
+    if (!quoteData) return res.status(404).json({ error: 'Quotation not found' });
 
-    if (supabase) {
-      const { data: qUpdData, error: qUpdErr } = await supabase.from('quotes').update(updates).eq('id', id).select();
-      if (qUpdErr) {
-        console.warn('[Quotes API] Supabase update note:', qUpdErr.message);
-      } else if (qUpdData && qUpdData[0]) {
-        updatedQuote = qUpdData[0];
-        if (memIdx !== -1) inMemoryQuotes[memIdx] = updatedQuote;
-      }
-    }
-
-    const quote = mapQuote(updatedQuote);
+    const updated = await persistQuote({ ...quoteData, ...updates }, true);
+    const quote = mapQuote(updated);
     try { broadcast('quote_update', inMemoryQuotes.map(mapQuote)); } catch (e) {}
     return res.json({ success: true, quote });
   } catch (err) {
@@ -275,9 +348,9 @@ router.post('/quotes/:id/convert', requireAuth, requireManager, async (req, res)
     const { id } = req.params;
     let quoteData = inMemoryQuotes.find(q => q.id === id);
 
-    if (!quoteData && supabase) {
-      const { data } = await supabase.from('quotes').select('*').eq('id', id).maybeSingle();
-      if (data) quoteData = data;
+    if (!quoteData) {
+      await getQuotesStore();
+      quoteData = inMemoryQuotes.find(q => q.id === id);
     }
 
     if (!quoteData) return res.status(404).json({ error: 'Quotation not found' });
@@ -311,27 +384,54 @@ router.post('/quotes/:id/convert', requireAuth, requireManager, async (req, res)
       updated_at: new Date().toISOString()
     };
 
+    // 1. Update quote status to Converted in memory + data/db.json + Supabase
+    const convertedQuote = await persistQuote({ ...quoteData, status: 'Converted', updated_at: new Date().toISOString() }, true);
+
+    // 2. Insert new invoice into memory + data/db.json
+    inMemoryInvoices.unshift(newInvoice);
+    writeLocalInvoices(inMemoryInvoices);
+
+    // 3. Insert into Supabase if configured
     if (supabase) {
-      await supabase.from('quotes').update({ status: 'Converted', updated_at: new Date().toISOString() }).eq('id', id);
-      const { error: insErr } = await supabase.from('invoices').insert([newInvoice]);
-      if (insErr) {
-        console.error('[Quotes Convert] Supabase insert error:', insErr.message);
-        return res.status(500).json({ error: `Invoice creation failed: ${insErr.message}` });
+      try {
+        const isValidUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+        const sbRecord = {
+          ...newInvoice,
+          client_id: isValidUUID(newInvoice.client_id) ? newInvoice.client_id : null
+        };
+        const { error: insErr } = await supabase.from('invoices').insert([sbRecord]);
+        if (insErr) {
+          console.warn('[Quotes Convert] Supabase invoice insert note:', insErr.message);
+        }
+      } catch (e) {
+        console.warn('[Quotes Convert] Supabase exception:', e.message);
       }
     }
 
-    const quoteIdx = inMemoryQuotes.findIndex(q => q.id === id);
-    if (quoteIdx !== -1) inMemoryQuotes[quoteIdx].status = 'Converted';
-    inMemoryInvoices.unshift(newInvoice);
-
     const invoice = mapInvoice(newInvoice);
-    const quote = mapQuote({ ...quoteData, status: 'Converted' });
+    const quote = mapQuote(convertedQuote);
 
+    // 4. Real-time SSE Broadcasts
     try {
       broadcast('quote_update', inMemoryQuotes.map(mapQuote));
       broadcast('invoice_update', inMemoryInvoices.map(mapInvoice));
       if (invoice.clientId) broadcastToClient('invoice_update', [invoice], [invoice.clientId]);
     } catch (e) {}
+
+    // 5. Telegram Leadership Notification
+    const telegramTarget = process.env.OWNER_TELEGRAM_ID || process.env.TELEGRAM_ADMIN_CHAT_ID;
+    if (telegramTarget && typeof sendTelegramNotification === 'function') {
+      const text = `💼 *Commercial Quote Converted to Invoice!*\n\n` +
+        `• *Invoice:* \`${newInvoice.id}\`\n` +
+        `• *Quote:* \`${id}\`\n` +
+        `• *Client:* ${quoteData.client_name}\n` +
+        `• *Amount:* ৳${Number(newInvoice.amount).toLocaleString('en-BD')} BDT ($${Math.round(newInvoice.amount / 120).toLocaleString()} USD)\n` +
+        `• *Status:* Draft (Pending Issue)\n` +
+        `• *Project:* ${newInvoice.project_name}`;
+      try {
+        sendTelegramNotification(telegramTarget, text, null, true);
+      } catch (_) {}
+    }
 
     return res.json({ success: true, invoice, quote });
   } catch (err) {
@@ -871,3 +971,10 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
 module.exports = router;
 module.exports.createInvoiceRecord = createInvoiceRecord;
 module.exports.inMemoryInvoices = inMemoryInvoices;
+module.exports.inMemoryQuotes = inMemoryQuotes;
+module.exports.getQuotesStore = getQuotesStore;
+module.exports.persistQuote = persistQuote;
+module.exports.deleteQuoteFromStore = deleteQuoteFromStore;
+router.getQuotesStore = getQuotesStore;
+router.persistQuote = persistQuote;
+router.deleteQuoteFromStore = deleteQuoteFromStore;

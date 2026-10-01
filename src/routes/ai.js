@@ -2096,6 +2096,232 @@ Return JSON ONLY with keys:
   }
 });
 
+// GRO10X Meet Copilot: Meeting Summary Compilation Engine
+router.post('/meeting-summary', aiRateLimiter, async (req, res) => {
+  try {
+    const { transcript, notes, title, participants, apiKey, targetLanguage } = req.body || {};
+    
+    // Normalize transcript input (either array or string)
+    let transcriptText = '';
+    if (Array.isArray(transcript)) {
+      transcriptText = transcript.map(t => {
+        const speaker = t.speaker || 'Unknown';
+        const time = t.time ? `[${t.time}] ` : '';
+        const text = t.text || '';
+        return `${time}${speaker}: ${text}`;
+      }).join('\n');
+    } else if (typeof transcript === 'string') {
+      transcriptText = transcript;
+    }
+
+    const targetLang = targetLanguage && String(targetLanguage).trim() ? String(targetLanguage).trim() : 'English';
+    const meetingTitle = (title && String(title).trim()) || 'Google Meet Sync';
+    const notesText = (notes && String(notes).trim()) || '';
+    const attendeeList = Array.isArray(participants) ? participants.join(', ') : (participants || 'Meeting Participants');
+    const meetingDate = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+
+    if (!transcriptText && !notesText) {
+      return res.status(400).json({
+        success: false,
+        error: 'No meeting transcript or notes were provided to compile.'
+      });
+    }
+
+    // Determine API Key
+    const effectiveKey = apiKey || process.env.GEMINI_API_KEY;
+
+    let compiledSummary = null;
+
+    if (effectiveKey) {
+      const prompt = `You are the executive AI chief of staff for GRO10X.
+Compile the following Google Meet meeting information into a polished, high-impact Executive Meeting Pack.
+
+MEETING TITLE: ${meetingTitle}
+DATE: ${meetingDate}
+PARTICIPANTS: ${attendeeList}
+TARGET OUTPUT LANGUAGE: ${targetLang}
+
+USER SCRATCHPAD NOTES:
+${notesText || '(No manual notes recorded)'}
+
+LIVE MEETING TRANSCRIPT:
+${transcriptText ? transcriptText.slice(0, 100000) : '(No transcript captured)'}
+
+MULTILINGUAL SYNTHESIS INSTRUCTIONS:
+- Analyze all dialogue and notes across whatever languages were spoken (e.g., Bengali, English, Hindi, Spanish, mixed conversational phrasing).
+- Unify, translate, and write the entire Executive Pack (Overview, Discussion Points, Decisions, Action Items, Email Subject, Email Text) fluently and completely in ${targetLang}.
+- Keep participant names in their original Latin/common form.
+
+Synthesize this into a structured JSON object with the following fields:
+{
+  "title": "${meetingTitle}",
+  "date": "${meetingDate}",
+  "overview": "2-4 concise, high-impact executive sentences summarizing the meeting purpose, key insights, and outcomes, written in ${targetLang}.",
+  "discussionPoints": ["Key discussion point 1 with context in ${targetLang}", "Point 2 in ${targetLang}", "Point 3 in ${targetLang}"],
+  "decisions": ["Explicit decision or agreement 1 in ${targetLang}", "Decision 2 in ${targetLang}"],
+  "actionItems": [
+    {
+      "task": "Concrete, actionable task written in ${targetLang}",
+      "owner": "Specific participant name or 'Team'",
+      "priority": "High",
+      "deadline": "Target timeframe, deadline, or 'Next Sync'"
+    }
+  ],
+  "emailSubject": "Meeting Summary & Next Steps: ${meetingTitle} (${meetingDate})",
+  "emailText": "Clean, formatted plain-text recap written in ${targetLang} ready to paste into Slack or email."
+}
+
+Return ONLY raw valid JSON. Do not include markdown code block formatting or backticks.`;
+
+      for (const model of MODELS) {
+        try {
+          const raw = await callSingle(model, prompt, effectiveKey, { json: true, maxTokens: 4000, temperature: 0.2 });
+          const parsed = cleanJSONText(raw);
+          if (parsed && parsed.overview) {
+            compiledSummary = parsed;
+            break;
+          }
+        } catch (e) {
+          console.warn(`[MeetingSummary] Model ${model} failed:`, e.message);
+        }
+      }
+    }
+
+    // Fallback: rule-based compilation if AI key is unavailable or models failed
+    if (!compiledSummary) {
+      const extractedActionItems = [];
+      const lines = (notesText + '\n' + transcriptText).split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (/^(todo|action|action item|task|follow up|ai:)/i.test(trimmed) || /\[action item\]/i.test(trimmed)) {
+          extractedActionItems.push({
+            task: trimmed.replace(/^(\*|-|\d+\.|\[action item\]|todo:|action:|task:)\s*/i, ''),
+            owner: 'Team',
+            priority: 'Medium',
+            deadline: 'Next Sync'
+          });
+        }
+      }
+
+      compiledSummary = {
+        title: meetingTitle,
+        date: meetingDate,
+        overview: `Meeting session for ${meetingTitle} conducted on ${meetingDate}. Captured notes and ${transcriptText ? 'real-time transcript' : 'manual notes'} compiled.`,
+        discussionPoints: notesText ? notesText.split('\n').filter(l => l.trim().length > 5).slice(0, 5) : ['Session conducted on Google Meet.'],
+        decisions: ['Refer to scratchpad notes and meeting transcript.'],
+        actionItems: extractedActionItems.length > 0 ? extractedActionItems : [
+          { task: 'Review meeting notes and follow up with participants', owner: 'Team', priority: 'Medium', deadline: 'Next Sync' }
+        ],
+        emailSubject: `Meeting Summary: ${meetingTitle} (${meetingDate})`,
+        emailText: `Meeting: ${meetingTitle}\nDate: ${meetingDate}\n\nNotes:\n${notesText || 'None'}\n\nAction Items:\n${extractedActionItems.map(a => '- ' + a.task).join('\n') || '- Follow up on discussion'}`
+      };
+    }
+
+    // Generate rich HTML for 1-click email paste
+    const emailHtml = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #1e293b; line-height: 1.6; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; background: #ffffff;">
+  <div style="border-bottom: 2px solid #6366f1; padding-bottom: 12px; margin-bottom: 16px;">
+    <h2 style="color: #0f172a; margin: 0 0 4px 0; font-size: 20px;">📋 ${compiledSummary.title || meetingTitle}</h2>
+    <p style="margin: 0; font-size: 13px; color: #64748b;"><strong>Date:</strong> ${compiledSummary.date || meetingDate} &nbsp;|&nbsp; <strong>Attendees:</strong> ${attendeeList}</p>
+  </div>
+  
+  <div style="margin-bottom: 20px;">
+    <h3 style="color: #334155; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px 0; border-left: 3px solid #6366f1; padding-left: 8px;">Executive Summary</h3>
+    <p style="background: #f8fafc; padding: 12px; border-radius: 6px; font-size: 14px; margin: 0; color: #334155;">${compiledSummary.overview}</p>
+  </div>
+
+  ${(compiledSummary.decisions && compiledSummary.decisions.length > 0) ? `
+  <div style="margin-bottom: 20px;">
+    <h3 style="color: #334155; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px 0; border-left: 3px solid #10b981; padding-left: 8px;">Key Decisions</h3>
+    <ul style="margin: 0; padding-left: 20px; font-size: 14px;">
+      ${compiledSummary.decisions.map(d => `<li style="margin-bottom: 4px;">${d}</li>`).join('')}
+    </ul>
+  </div>` : ''}
+
+  ${(compiledSummary.actionItems && compiledSummary.actionItems.length > 0) ? `
+  <div style="margin-bottom: 20px;">
+    <h3 style="color: #334155; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px 0; border-left: 3px solid #f59e0b; padding-left: 8px;">Action Items</h3>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+      <thead>
+        <tr style="background: #f1f5f9; color: #475569;">
+          <th style="padding: 8px; border: 1px solid #e2e8f0;">Task</th>
+          <th style="padding: 8px; border: 1px solid #e2e8f0; width: 110px;">Owner</th>
+          <th style="padding: 8px; border: 1px solid #e2e8f0; width: 80px;">Priority</th>
+          <th style="padding: 8px; border: 1px solid #e2e8f0; width: 100px;">Timeline</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${compiledSummary.actionItems.map(a => `
+        <tr>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">${a.task}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;"><strong>${a.owner || 'Team'}</strong></td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;"><span style="color: ${a.priority === 'High' ? '#ef4444' : a.priority === 'Medium' ? '#f59e0b' : '#10b981'}; font-weight: 600;">${a.priority || 'Medium'}</span></td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #64748b;">${a.deadline || 'Next Sync'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>` : ''}
+
+  ${(compiledSummary.discussionPoints && compiledSummary.discussionPoints.length > 0) ? `
+  <div style="margin-bottom: 20px;">
+    <h3 style="color: #334155; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px 0; border-left: 3px solid #64748b; padding-left: 8px;">Discussion Points</h3>
+    <ul style="margin: 0; padding-left: 20px; font-size: 14px;">
+      ${compiledSummary.discussionPoints.map(p => `<li style="margin-bottom: 4px;">${p}</li>`).join('')}
+    </ul>
+  </div>` : ''}
+
+  <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 8px; margin-top: 24px; text-align: right;">
+    Generated by GRO10X Meet Copilot
+  </div>
+</div>`.trim();
+
+    compiledSummary.emailHtml = emailHtml;
+
+    return res.json({
+      success: true,
+      summary: compiledSummary
+    });
+  } catch (err) {
+    console.error('[Meeting Summary Error]:', err);
+    return res.status(500).json({ success: false, error: 'Failed to compile meeting summary: ' + err.message });
+  }
+});
+
+// GRO10X Meet Copilot: Real-Time Fast Speech Line Translator
+router.post('/translate-line', aiRateLimiter, async (req, res) => {
+  try {
+    const { text, speaker, targetLanguage, apiKey } = req.body || {};
+    if (!text || !text.trim()) {
+      return res.status(400).json({ success: false, error: 'Text required' });
+    }
+    const targetLang = targetLanguage || 'English';
+    const effectiveKey = apiKey || process.env.GEMINI_API_KEY;
+    if (!effectiveKey) {
+      return res.status(503).json({ success: false, error: 'No Gemini key available' });
+    }
+
+    const prompt = `You are a real-time meeting translator for GRO10X.
+Translate the following speech turn by "${speaker || 'Speaker'}" into ${targetLang}.
+Preserve business terms, speaker intent, and nuance. Output ONLY the translated text without commentary or quotes.
+
+SPEECH: ${text.trim()}`;
+
+    for (const model of MODELS) {
+      try {
+        const translated = await callSingle(model, prompt, effectiveKey, { maxTokens: 250, temperature: 0.1 });
+        if (translated) {
+          return res.json({ success: true, translation: translated.trim() });
+        }
+      } catch (e) {
+        console.warn(`[TranslateLine] Model ${model} failed:`, e.message);
+      }
+    }
+    return res.status(500).json({ success: false, error: 'Translation failed' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
 // Phase 7.2: AI Model Health & Quota Dashboard Endpoint
 router.get('/health', requireAuth, (req, res) => res.json({

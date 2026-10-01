@@ -172,6 +172,13 @@ const LEADS_QA_SUITE = {
       action: 'wait_ms',
       duration: 200,
       assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+    },
+    {
+      id: 'step-24',
+      title: '24. Assert Lead Operations Persistence & Dual-Store Fallback',
+      action: 'wait_ms',
+      duration: 300,
+      assertion: { type: 'custom_check', check: 'assert_leads_persistence' }
     }
   ]
 };

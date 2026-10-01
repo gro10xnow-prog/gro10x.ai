@@ -28,3 +28,5 @@ scratch/
 __pycache__/
 *.pyc
 scripts/e2e/reports/run-*/
+*.mp4
+*.wmv

@@ -890,6 +890,10 @@ function initBot() {
 
       // Refactored monolithic handlers
       require('./bot/handlers/legacy_menus').registerLegacyTeamMenus(teamBot, readDB);
+
+      // Modular Team Bot Callbacks (Payment Approvals & Rejections)
+      const { registerTeamBotCallbacks } = require('./bot/team-bot');
+      registerTeamBotCallbacks(teamBot);
     } catch (err) {
       console.warn('⚠️ Team Bot Init Warning:', err.message);
     }

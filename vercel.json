@@ -173,6 +173,10 @@
       "dest": "/public/proposal.html"
     },
     {
+      "src": "/nhf(/.*)?",
+      "dest": "/public/nhf/index.html"
+    },
+    {
       "src": "/pages/(.*)",
       "dest": "/public/pages/$1"
     },

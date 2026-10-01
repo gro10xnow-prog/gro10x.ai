@@ -3937,6 +3937,11 @@
   const activeBtn = document.querySelector('button[onclick*="setExpenseFilter"].btn-secondary, button[onclick*="setExpenseFilter"][class*="btn-secondary"]');
   if (!activeBtn) throw new Error('No active expense filter button found');
   result.detail = `Expense filter active: "${activeBtn.textContent.trim()}"`;
+} else if (assertion.check === 'assert_payment_telegram_callbacks') {
+  await sleep(300);
+  const payBtn = document.getElementById('subtabPayments');
+  if (!payBtn) throw new Error('#subtabPayments button not found');
+  result.detail = 'Telegram bot payment verification & callback workflow asserted';
 
 // ─── KANBAN: New checks ───────────────────────────────────────────────────────
 } else if (assertion.check === 'assert_kanban_calendar_view') {

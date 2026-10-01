@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Production Client Review Room & Proofing Hub QA Automation Suite (18 Steps)
  * KPI tiles, filter pills, review grid, new review modal, backdrop close (#reviews)
  */
@@ -144,6 +144,13 @@ const REVIEWS_QA_SUITE = {
       action: 'wait_ms',
       duration: 200,
       assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+    },
+    {
+      id: 'step-19',
+      title: '19. Assert Post-Delivery Governance Persistence & Warranty Dual-Store',
+      action: 'wait_ms',
+      duration: 300,
+      assertion: { type: 'custom_check', check: 'assert_post_delivery_persistence' }
     }
   ]
 };

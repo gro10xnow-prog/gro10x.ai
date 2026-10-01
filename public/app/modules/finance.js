@@ -1835,6 +1835,7 @@ window.APP_MODULES.finance = async function(container) {
     window.APP_SSE.subscribe('invoice_update', debouncedFinanceSync);
     window.APP_SSE.subscribe('expense_update', debouncedFinanceSync);
     window.APP_SSE.subscribe('payment_update', debouncedFinanceSync);
+    window.APP_SSE.subscribe('quote_update', debouncedFinanceSync);
   }
 
   // --- Deduplicated gro10x_currency_changed handler with #finance route guard ---

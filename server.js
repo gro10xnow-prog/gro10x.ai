@@ -182,6 +182,7 @@ app.use(cors({
       ALLOWED_ORIGINS.includes(origin) ||
       isAllowedVercel ||
       isAllowedCustomDomain ||
+      origin.startsWith('chrome-extension://') ||
       (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
     ) {
       return callback(null, true);
@@ -670,6 +671,11 @@ app.get(['/onboarding', '/team-onboarding'], (req, res) => {
 
 app.get(['/sprint', '/sprint.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/sprint.html'));
+});
+
+// National Housing Finance Interactive Prototype
+app.get(['/nhf', '/nhf/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/nhf/index.html'));
 });
 
 // Engine 2 Inbound AI Readiness Diagnostic Scorecard

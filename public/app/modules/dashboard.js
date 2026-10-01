@@ -747,10 +747,15 @@ window.APP_MODULES.dashboard = async function(container) {
     window._dashboardSSESubscribed = true;
     const realtimeEvents = [
       'invoice_update', 'payment_update', 'task_update', 'leave_update',
-      'lead_update', 'expense_update', 'client_update'
+      'lead_update', 'expense_update', 'client_update', 'weekly_executive_briefing', 'dce_order_update'
     ];
     realtimeEvents.forEach(evt => {
-      window.addEventListener(evt, () => { if (isDashboardActive()) debouncedDashboardSync(400); });
+      window.addEventListener(evt, (e) => {
+        if (evt === 'weekly_executive_briefing' && window.showToast) {
+          window.showToast('🏛️ Live Weekly Executive Briefing Synced', 'info');
+        }
+        if (isDashboardActive()) debouncedDashboardSync(400);
+      });
       if (window.APP_SSE && typeof window.APP_SSE.subscribe === 'function') {
         window.APP_SSE.subscribe(evt, () => { if (isDashboardActive()) debouncedDashboardSync(400); });
       }

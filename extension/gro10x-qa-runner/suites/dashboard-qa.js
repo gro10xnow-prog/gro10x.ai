@@ -1,5 +1,5 @@
 /**
- * Executive Overview Tab QA Automation Suite (26 Steps)
+ * Executive Overview Tab QA Automation Suite (27 Steps)
  * Added: DCE Launch Card, Engine2 Studio Card, Net Profit KPI tile, View Leads CTA,
  *        Leads table, Invoices table, Growth Engines hero link, Sprint Board link
  */
@@ -194,6 +194,12 @@ const DASHBOARD_QA_SUITE = {
       action: 'navigate_hash',
       target: '#dashboard',
       assertion: { type: 'custom_check', check: 'assert_clean_audit' }
+    },
+    {
+      id: 'step-27',
+      title: '27. Weekly Executive P&L Snapshot & Pacing Metric Verification',
+      action: 'none',
+      assertion: { type: 'custom_check', check: 'assert_weekly_executive_telemetry' }
     }
   ]
 };

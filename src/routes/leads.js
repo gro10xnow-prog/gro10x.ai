@@ -13,7 +13,7 @@ const sendTelegramNotification = (...args) => botNotifications.sendTelegramNotif
 const { sendClientOnboardingEmail, sendLeadConfirmationEmail, sendServiceAssetDeliveryEmail } = require('../services/resend');
 const cache = require('../services/cache');
 const { verifyToken, signToken } = require('../services/jwt');
-const { readDB } = require('../services/db');
+const { readDB, writeDB } = require('../services/db');
 
 // Rate limiter for public lead submissions (10 submissions per 15 min per IP)
 const leadSubmitLimiter = rateLimit({
@@ -42,13 +42,34 @@ function broadcastLeadEvent(eventType, data) {
 // Helper: generate next lead ID from Supabase count
 // ─────────────────────────────────────────────────────────────────────────────
 async function nextLeadId() {
+  let highestNum = 0;
   if (isSupabaseConfigured()) {
     try {
-      const { count } = await supabase.from('leads').select('id', { count: 'exact', head: true });
-      if (count !== null && count !== undefined) {
-        return `LED-${String(count + 1).padStart(3, '0')}`;
+      const { data } = await supabase.from('leads').select('id').order('created_at', { ascending: false }).limit(200);
+      if (Array.isArray(data)) {
+        for (const row of data) {
+          const match = String(row.id).match(/^LED-(\d+)$/i);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > highestNum) highestNum = num;
+          }
+        }
       }
     } catch (_) {}
+  }
+  try {
+    const db = await readDB();
+    for (const row of (db.leads || [])) {
+      const match = String(row.id).match(/^LED-(\d+)$/i);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > highestNum) highestNum = num;
+      }
+    }
+  } catch (_) {}
+
+  if (highestNum > 0) {
+    return `LED-${String(highestNum + 1).padStart(3, '0')}`;
   }
   return `LED-${Date.now()}`;
 }
@@ -141,6 +162,20 @@ router.get('/', requireAuth, async (req, res) => {
         return res.json(leads);
       }
     }
+
+    try {
+      const db = await readDB();
+      let localLeads = (db.leads || []).map(l => ({
+        ...l,
+        engineTag: l.engine_tag || (l.utm_campaign?.includes('CMP-E2') ? 'engine2' : 'engine2'),
+        stage: normalizeStage(l.stage || l.status),
+        company: l.company || l.name || 'Inquiring Brand',
+        contact_person: l.contact_person || l.name || 'Direct Contact',
+        score: calculateLeadScore(l)
+      }));
+      return res.json(localLeads.slice(offset, offset + limit));
+    } catch (_) {}
+
     res.json([]);
   } catch (err) {
     console.error('[Leads GET Error]:', err.message);
@@ -315,6 +350,13 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
     }
   }
 
+  try {
+    const db = await readDB();
+    db.leads = db.leads || [];
+    db.leads.unshift(newLead);
+    await writeDB(db);
+  } catch (_) {}
+
   broadcastLeadEvent('lead_update', [newLead]);
   broadcastLeadEvent('lead_created', newLead);
 
@@ -400,20 +442,47 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
 router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    let existing = null;
 
     if (isSupabaseConfigured()) {
-      const { data: existing } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
-      if (!existing) return res.status(404).json({ error: 'Lead not found' });
-
-      const updatedLead = { ...existing, ...req.body, updated_at: new Date().toISOString() };
-      await supabase.from('leads').update(updatedLead).eq('id', id);
-      
-      updatedLead.score = calculateLeadScore(updatedLead);
-      broadcastLeadEvent('lead_update', [updatedLead]);
-      return res.json({ success: true, lead: updatedLead });
+      try {
+        const { data } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+        if (data) existing = data;
+      } catch (_) {}
     }
 
-    res.status(503).json({ error: 'Database unavailable' });
+    if (!existing) {
+      try {
+        const db = await readDB();
+        existing = (db.leads || []).find(l => l.id === id);
+      } catch (_) {}
+    }
+
+    if (!existing) return res.status(404).json({ error: 'Lead not found' });
+
+    const updatedLead = { ...existing, ...req.body, updated_at: new Date().toISOString() };
+    updatedLead.score = calculateLeadScore(updatedLead);
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('leads').update(updatedLead).eq('id', id);
+      } catch (_) {}
+    }
+
+    try {
+      const db = await readDB();
+      db.leads = db.leads || [];
+      const idx = db.leads.findIndex(l => l.id === id);
+      if (idx !== -1) {
+        db.leads[idx] = { ...db.leads[idx], ...updatedLead };
+      } else {
+        db.leads.unshift(updatedLead);
+      }
+      await writeDB(db);
+    } catch (_) {}
+
+    broadcastLeadEvent('lead_update', [updatedLead]);
+    return res.json({ success: true, lead: updatedLead });
   } catch (err) {
     console.error('[Leads PUT Error]:', err.message);
     res.status(500).json({ error: err.message });
@@ -426,17 +495,19 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
 
     if (isSupabaseConfigured()) {
-      await supabase.from('leads').delete().eq('id', id);
-      broadcastLeadEvent('lead_update', [{ id, deleted: true }]);
-      return res.json({ success: true });
+      try {
+        await supabase.from('leads').delete().eq('id', id);
+      } catch (_) {}
     }
 
-    if (process.env.NODE_ENV === 'test' || id.startsWith('QA-') || id.startsWith('LED-QA')) {
-      broadcastLeadEvent('lead_update', [{ id, deleted: true }]);
-      return res.json({ success: true, simulated: true });
-    }
+    try {
+      const db = await readDB();
+      db.leads = (db.leads || []).filter(l => l.id !== id);
+      await writeDB(db);
+    } catch (_) {}
 
-    res.status(503).json({ error: 'Database unavailable' });
+    broadcastLeadEvent('lead_update', [{ id, deleted: true }]);
+    return res.json({ success: true });
   } catch (err) {
     console.error('[Leads DELETE Error]:', err.message);
     res.status(500).json({ error: err.message });
@@ -516,20 +587,57 @@ router.post('/:id/onboard', requireAuth, async (req, res) => {
 router.post('/:id/convert', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    let lead = null;
 
-    if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+    if (isSupabaseConfigured()) {
+      try {
+        const { data } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+        if (data) lead = data;
+      } catch (_) {}
+    }
 
-    const { data: lead } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+    if (!lead) {
+      try {
+        const db = await readDB();
+        lead = (db.leads || []).find(l => l.id === id);
+      } catch (_) {}
+    }
+
     if (!lead) return res.status(404).json({ error: 'Lead not found' });
 
     const clientName = lead.company || lead.contact_person || 'New Client';
-    const { data: existingClient } = await supabase.from('clients').select('id').ilike('name', clientName).maybeSingle();
+    let clientRecord = null;
 
-    let clientRecord = existingClient;
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: existingClient } = await supabase.from('clients').select('*').ilike('name', clientName).maybeSingle();
+        clientRecord = existingClient;
+      } catch (_) {}
+    }
 
-    if (!existingClient) {
-      const { count } = await supabase.from('clients').select('id', { count: 'exact', head: true });
-      const newClientId = `CLI-${String((count || 0) + 1).padStart(4, '0')}`;
+    if (!clientRecord) {
+      try {
+        const db = await readDB();
+        clientRecord = (db.clients || []).find(c => c.name && c.name.toLowerCase() === clientName.toLowerCase());
+      } catch (_) {}
+    }
+
+    if (!clientRecord) {
+      let clientCount = 0;
+      if (isSupabaseConfigured()) {
+        try {
+          const { count } = await supabase.from('clients').select('id', { count: 'exact', head: true });
+          clientCount = count || 0;
+        } catch (_) {}
+      }
+      if (!clientCount) {
+        try {
+          const db = await readDB();
+          clientCount = (db.clients || []).length;
+        } catch (_) {}
+      }
+
+      const newClientId = `CLI-${String(clientCount + 1).padStart(4, '0')}`;
       const clientPayload = {
         id: newClientId,
         name: clientName,
@@ -542,20 +650,56 @@ router.post('/:id/convert', requireAuth, async (req, res) => {
         total_spent: '$0',
         active_campaigns: [lead.service || 'New Campaign']
       };
-      await supabase.from('clients').insert([clientPayload]);
+
+      if (isSupabaseConfigured()) {
+        try {
+          await supabase.from('clients').insert([clientPayload]);
+        } catch (_) {}
+      }
+
       clientRecord = clientPayload;
       broadcastLeadEvent('client_update', [clientPayload]);
     }
 
-    // Update lead with won status and client_id back-reference
-    await supabase.from('leads').update({
+    const updatedLeadData = {
+      ...lead,
       stage: 'Won / Closed',
       client_id: clientRecord.id,
       updated_at: new Date().toISOString()
-    }).eq('id', id);
+    };
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('leads').update({
+          stage: 'Won / Closed',
+          client_id: clientRecord.id,
+          updated_at: updatedLeadData.updated_at
+        }).eq('id', id);
+      } catch (_) {}
+    }
+
+    try {
+      const db = await readDB();
+      db.clients = db.clients || [];
+      const cIdx = db.clients.findIndex(c => c.id === clientRecord.id);
+      if (cIdx !== -1) {
+        db.clients[cIdx] = { ...db.clients[cIdx], ...clientRecord };
+      } else {
+        db.clients.push(clientRecord);
+      }
+
+      db.leads = db.leads || [];
+      const lIdx = db.leads.findIndex(l => l.id === id);
+      if (lIdx !== -1) {
+        db.leads[lIdx] = { ...db.leads[lIdx], ...updatedLeadData };
+      } else {
+        db.leads.unshift(updatedLeadData);
+      }
+      await writeDB(db);
+    } catch (_) {}
 
     broadcastLeadEvent('lead_update', [{ id, stage: 'Won / Closed', client_id: clientRecord.id }]);
-    res.json({ success: true, client: clientRecord, lead });
+    res.json({ success: true, client: clientRecord, lead: updatedLeadData });
   } catch (err) {
     console.error('[Leads Convert Error]:', err.message);
     res.status(500).json({ error: err.message });
@@ -584,6 +728,13 @@ router.post('/book', leadSubmitLimiter, async (req, res) => {
     if (isSupabaseConfigured()) {
       await supabase.from('leads').insert([newLead]);
     }
+
+    try {
+      const db = await readDB();
+      db.leads = db.leads || [];
+      db.leads.unshift(newLead);
+      await writeDB(db);
+    } catch (_) {}
 
     broadcastLeadEvent('lead_update', [newLead]);
 
@@ -647,9 +798,38 @@ router.post('/bulk', requireAuth, async (req, res) => {
     }
 
     if (isSupabaseConfigured()) {
-      const { error } = await supabase.from('leads').insert(leadsToInsert);
-      if (error) return res.status(500).json({ error: 'Database insert failed: ' + error.message });
+      try {
+        const sbRows = leadsToInsert.map(l => ({
+          id: l.id,
+          name: l.contact_person || l.company || 'Prospective Client',
+          company: l.company || 'Prospective Client',
+          contact_person: l.contact_person,
+          email: l.email || `${l.id.toLowerCase()}@bulk.gro10x.ai`,
+          phone: l.phone,
+          service_interest: l.service || 'General',
+          source: l.source,
+          stage: l.stage,
+          status: 'new',
+          currency: 'BDT',
+          value: parseFloat(String(l.value || '0').replace(/[^0-9.]/g, '')) || 0,
+          score: l.score || 50,
+          notes: l.notes || null,
+          created_at: l.created_at,
+          updated_at: l.created_at
+        }));
+        const { error } = await supabase.from('leads').insert(sbRows);
+        if (error) console.warn('[Leads Bulk] Supabase insert warning:', error.message);
+      } catch (sbErr) {
+        console.warn('[Leads Bulk] Supabase exception:', sbErr.message);
+      }
     }
+
+    try {
+      const db = await readDB();
+      db.leads = db.leads || [];
+      db.leads.unshift(...leadsToInsert);
+      await writeDB(db);
+    } catch (_) {}
 
     broadcastLeadEvent('lead_update', leadsToInsert);
     res.json({ success: true, count: leadsToInsert.length });
@@ -944,6 +1124,13 @@ router.post('/ai-audit', leadSubmitLimiter, async (req, res) => {
         console.warn('[Leads AI-Audit] Supabase insert warning:', sbErr.message);
       }
     }
+
+    try {
+      const db = await readDB();
+      db.leads = db.leads || [];
+      db.leads.unshift(leadRecord);
+      await writeDB(db);
+    } catch (_) {}
 
     // Broadcast SSE
     broadcastLeadEvent('lead_created', leadRecord);

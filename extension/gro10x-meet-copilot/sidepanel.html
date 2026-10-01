@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X Meet Copilot</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+
+  <!-- Top Navigation & Branding Bar -->
+  <header class="top-nav">
+    <div class="brand-group">
+      <div class="brand-logo-icon">🚀</div>
+      <div class="brand-text">
+        <span class="brand-name">GRO10X</span>
+        <span class="brand-sub">Meet Copilot</span>
+      </div>
+    </div>
+    <div class="header-controls">
+      <div id="statusBadge" class="status-badge badge-idle">
+        <span class="status-dot"></span>
+        <span id="statusText">READY</span>
+      </div>
+      <div id="timerBadge" class="timer-badge">00:00</div>
+      <button id="btnSettingsToggle" class="icon-btn" title="Extension Settings">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Active Meeting Header Card -->
+  <div class="meeting-info-bar">
+    <div class="meeting-meta-left">
+      <span class="meet-icon">📹</span>
+      <span id="meetingTitle" class="meeting-title" title="Google Meet Title">Waiting for Google Meet...</span>
+    </div>
+    <div class="meeting-meta-right">
+      <span id="participantCount" class="attendee-counter">0 attendees</span>
+    </div>
+  </div>
+
+  <!-- Captions Alert Banner (shows if closed captions are off) -->
+  <div id="ccWarningBanner" class="cc-warning-banner hidden">
+    <span>⚠️ Turn on Google Meet Captions to transcribe</span>
+    <button id="btnEnableCC" class="btn-sm btn-accent">Turn On CC</button>
+  </div>
+
+  <!-- View Navigation Tabs -->
+  <div class="tab-bar">
+    <button id="tabLiveStudio" class="tab-btn active">
+      <span class="tab-icon">🎙️</span> Live Studio
+    </button>
+    <button id="tabExecutivePack" class="tab-btn">
+      <span class="tab-icon">📑</span> Executive Pack
+      <span id="packDot" class="unread-dot hidden"></span>
+    </button>
+    <button id="tabSettings" class="tab-btn">
+      <span class="tab-icon">⚙️</span> Settings
+    </button>
+  </div>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- TAB 1: LIVE STUDIO (Split View) -->
+    <section id="viewLiveStudio" class="view-panel active-panel">
+      
+      <!-- Top Half: Live Transcript Feed -->
+      <div class="panel-section transcript-section">
+        <div class="section-subbar">
+          <div class="subbar-left">
+            <span class="section-title">Live Transcript</span>
+            <span id="transcriptCountBadge" class="count-pill">0</span>
+          </div>
+          <div class="subbar-right">
+            <input type="text" id="transcriptSearch" placeholder="Search..." class="search-input">
+            <div class="translate-bar-inline">
+              <label class="toggle-label" title="Live translate non-target speech">
+                <input type="checkbox" id="chkLiveTranslate">
+                <span>🌐 Translate</span>
+              </label>
+              <select id="selLiveTranslateLang" class="mini-lang-select" title="Target translation language">
+                <option value="English" selected>to EN</option>
+                <option value="Bengali">to BN</option>
+                <option value="Spanish">to ES</option>
+                <option value="Hindi">to HI</option>
+                <option value="German">to DE</option>
+                <option value="French">to FR</option>
+                <option value="Arabic">to AR</option>
+                <option value="Japanese">to JA</option>
+              </select>
+            </div>
+            <label class="toggle-label" title="Auto-scroll with live speech">
+              <input type="checkbox" id="chkAutoScroll" checked>
+              <span>Scroll</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="transcriptFeed" class="transcript-feed">
+          <div class="empty-state" id="emptyTranscriptState">
+            <div class="empty-icon">💬</div>
+            <div class="empty-title">No dialogue captured yet</div>
+            <div class="empty-desc">Make sure Closed Captions (CC) are enabled in Google Meet. As participants speak, real-time speaker dialogue will stream here.</div>
+          </div>
+        </div>
+
+        <!-- Live Streaming Preview Bar (active speaking sentence) -->
+        <div id="liveStreamPreview" class="live-stream-preview hidden">
+          <span class="live-speaker-tag" id="livePreviewSpeaker">Speaker</span>
+          <span class="live-text-stream" id="livePreviewText">...</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="pane-resizer"></div>
+
+      <!-- Bottom Half: Notes Scratchpad -->
+      <div class="panel-section notes-section">
+        <div class="section-subbar">
+          <div class="subbar-left">
+            <span class="section-title">Notes Scratchpad</span>
+          </div>
+          <div class="quick-tags-bar">
+            <button class="tag-btn" id="btnTagTime" title="Insert Current Timestamp">⏱️ Time</button>
+            <button class="tag-btn" id="btnTagDecision" title="Insert Decision Tag">💡 Decision</button>
+            <button class="tag-btn" id="btnTagAction" title="Insert Action Item">✅ Action</button>
+            <button class="tag-btn" id="btnTagBullet" title="Insert Bullet">• Bullet</button>
+          </div>
+        </div>
+
+        <div class="notes-editor-wrapper">
+          <textarea id="meetingNotes" class="notes-textarea" placeholder="Type your personal thoughts, key meeting takeaways, client requests, or decisions here... Click the buttons above to quickly tag timestamps and action items."></textarea>
+        </div>
+      </div>
+
+      <!-- Studio Floating Control Dock -->
+      <div class="studio-footer-dock">
+        <div class="dock-left">
+          <button id="btnRecordToggle" class="btn btn-record">
+            <span class="btn-icon">🔴</span>
+            <span id="btnRecordText">Start Recording</span>
+          </button>
+          <button id="btnClearSession" class="btn btn-ghost" title="Reset current session">
+            🗑️ Clear
+          </button>
+        </div>
+        <div class="dock-right">
+          <button id="btnCompilePack" class="btn btn-compile">
+            <span class="btn-icon">✨</span> Compile Executive Pack
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- TAB 2: EXECUTIVE PACK (Compilation & Exports) -->
+    <section id="viewExecutivePack" class="view-panel hidden-panel">
+
+      <!-- Compilation Loading Indicator -->
+      <div id="compileLoader" class="compile-loader hidden">
+        <div class="spinner"></div>
+        <div class="loader-title">Synthesizing Meeting Minutes...</div>
+        <div class="loader-subtitle">Generating executive overview, key decisions, and action items table via GRO10X AI.</div>
+      </div>
+
+      <!-- Empty Executive Pack State -->
+      <div id="emptyPackState" class="empty-state">
+        <div class="empty-icon">📑</div>
+        <div class="empty-title">Executive Pack Not Compiled</div>
+        <div class="empty-desc">Take notes or capture captions in Live Studio, then click <strong>"✨ Compile Executive Pack"</strong> to automatically generate structured minutes, PDF downloads, and email bodies.</div>
+        <button id="btnQuickCompile" class="btn btn-compile mt-12">✨ Compile Now</button>
+      </div>
+
+      <!-- Compiled Content Display Area -->
+      <div id="compiledContent" class="compiled-content hidden">
+
+        <!-- Export Action Bar -->
+        <div class="export-actions-bar">
+          <button id="btnDownloadPdf" class="btn btn-export btn-pdf" title="Generate clean 1-2 page Executive PDF">
+            <span>📄</span> Download PDF (1-2 pages)
+          </button>
+          <button id="btnCopyEmail" class="btn btn-export btn-email">
+            <span>📋</span> Copy Email Body
+          </button>
+          <button id="btnOpenMailto" class="btn btn-export btn-mailto" title="Open formatted email in your default mail app">
+            <span>✉️</span> Mailto
+          </button>
+          <button id="btnCopyMarkdown" class="btn btn-export btn-markdown" title="Copy raw Markdown for Slack / Notion">
+            <span>📝</span> Markdown
+          </button>
+        </div>
+
+        <div class="export-options-row">
+          <label class="toggle-option">
+            <input type="checkbox" id="chkIncludeTranscriptPdf">
+            <span>Include compact captions appendix in PDF</span>
+          </label>
+        </div>
+
+        <!-- Executive Summary Section -->
+        <div class="pack-card">
+          <div class="card-header">
+            <span class="card-title">Executive Summary</span>
+          </div>
+          <div class="card-body">
+            <p id="packOverview" class="pack-text" contenteditable="true"></p>
+          </div>
+        </div>
+
+        <!-- Key Decisions Section -->
+        <div class="pack-card">
+          <div class="card-header">
+            <span class="card-title">Key Decisions</span>
+          </div>
+          <div class="card-body">
+            <ul id="packDecisionsList" class="pack-list"></ul>
+          </div>
+        </div>
+
+        <!-- Action Items Table Section -->
+        <div class="pack-card">
+          <div class="card-header">
+            <span class="card-title">Action Items & Deliverables</span>
+          </div>
+          <div class="card-body table-responsive">
+            <table class="pack-table" id="packActionTable">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Owner</th>
+                  <th>Priority</th>
+                  <th>Timeline</th>
+                </tr>
+              </thead>
+              <tbody id="packActionTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Discussion Points Section -->
+        <div class="pack-card">
+          <div class="card-header">
+            <span class="card-title">Discussion Highlights</span>
+          </div>
+          <div class="card-body">
+            <ul id="packDiscussionList" class="pack-list"></ul>
+          </div>
+        </div>
+
+        <!-- User Notes Section -->
+        <div class="pack-card" id="cardUserNotesWrap">
+          <div class="card-header">
+            <span class="card-title">Scratchpad Notes</span>
+          </div>
+          <div class="card-body">
+            <pre id="packUserNotes" class="pack-notes-preview"></pre>
+          </div>
+        </div>
+
+        <!-- Re-compile Floating Trigger -->
+        <div class="recompile-dock">
+          <button id="btnRecompile" class="btn btn-secondary">
+            🔄 Re-compile with Latest Changes
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- TAB 3: SETTINGS -->
+    <section id="viewSettings" class="view-panel hidden-panel">
+      <div class="settings-wrap">
+
+        <div class="settings-group">
+          <h3 class="settings-title">GRO10X AI Connection</h3>
+          <p class="settings-desc">Choose how your meeting summaries are compiled.</p>
+
+          <label class="field-label" for="settingBackendUrl">Platform Backend Endpoint</label>
+          <input type="text" id="settingBackendUrl" class="text-input" placeholder="http://localhost:3000 or https://gro10x.ai">
+          <span class="field-help">Defaults to local dev server or production GRO10X server.</span>
+
+          <label class="field-label mt-12" for="settingGeminiKey">Direct Gemini API Key (Optional Fallback)</label>
+          <input type="password" id="settingGeminiKey" class="text-input" placeholder="AIzaSy...">
+          <span class="field-help">If provided, the extension can compile meetings directly through Google's Gemini API without needing the local server running.</span>
+        </div>
+
+        <div class="settings-group">
+          <h3 class="settings-title">Preferences</h3>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="settingAutoStartRec" checked>
+            <span>Auto-start recording when Google Meet opens</span>
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="settingAutoCaptionsPrompt" checked>
+            <span>Remind to enable Closed Captions if turned off</span>
+          </label>
+
+          <label class="field-label mt-12" for="settingSummaryLang">Executive Pack Synthesis Language</label>
+          <select id="settingSummaryLang" class="text-input">
+            <option value="English" selected>English (Default)</option>
+            <option value="Bengali">Bengali (বাংলা)</option>
+            <option value="Spanish">Spanish (Español)</option>
+            <option value="Hindi">Hindi (हिन्दी)</option>
+            <option value="German">German (Deutsch)</option>
+            <option value="French">French (Français)</option>
+            <option value="Arabic">Arabic (العربية)</option>
+            <option value="Japanese">Japanese (日本語)</option>
+          </select>
+          <span class="field-help">Gemini unifies all multilingual discussions and compiles the PDF, Email, and Action Items entirely into this language.</span>
+        </div>
+
+        <div class="settings-group">
+          <h3 class="settings-title">📊 Usage & Session Impact</h3>
+          <p class="settings-desc">Anonymous telemetry tracking your meeting efficiency.</p>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-num" id="statUserSessions">0</div>
+              <div class="stat-label">Your Sessions</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" id="statUserMinutes">0m</div>
+              <div class="stat-label">Time Saved</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" id="statGlobalSessions">-</div>
+              <div class="stat-label">Team Sessions</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3 class="settings-title">About GRO10X Meet Copilot</h3>
+          <p class="settings-desc">
+            Version 1.0.0 · Production Release · Designed for high-performance meetings, agency client briefings, and executive alignment.<br>
+            Captures real-time DOM speaker captions with zero audio upload overhead.
+          </p>
+        </div>
+
+        <div class="settings-actions">
+          <button id="btnSaveSettings" class="btn btn-primary">💾 Save Settings</button>
+          <span id="saveConfirmation" class="save-status hidden">Settings saved!</span>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notification Toast Container -->
+  <div id="toastNotification" class="toast hidden">
+    <span id="toastIcon">📋</span>
+    <span id="toastMessage">Copied to clipboard!</span>
+  </div>
+
+  <script src="pdf-generator.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

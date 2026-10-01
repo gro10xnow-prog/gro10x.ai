@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National Housing Finance PLC — Modern Public Portal Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --nhf-blue: #0072CE;
+      --nhf-navy: #0B192C;
+      --nhf-red: #E31837;
+      --nhf-gold: #C5A880;
+      --gro-emerald: #00DF89;
+      --gro-cyan: #00F0FF;
+      --bg-slate: #F8FAFC;
+      --border-color: #E2E8F0;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #F8FAFC;
+      color: var(--text-main);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .bangla { font-family: 'Hind Siliguri', sans-serif; }
+
+    /* Executive Board Presentation Banner */
+    .board-banner {
+      background: linear-gradient(135deg, #070B12 0%, #0B192C 100%);
+      color: #FFFFFF;
+      padding: 10px 16px;
+      font-size: 12px;
+      border-bottom: 2px solid var(--gro-emerald);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .board-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 223, 137, 0.15);
+      border: 1px solid var(--gro-emerald);
+      color: var(--gro-emerald);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .board-meta {
+      font-size: 11px;
+      color: #94A3B8;
+    }
+    .board-meta strong {
+      color: #FFFFFF;
+    }
+
+    /* Main Navigation */
+    header {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .nhf-logo-img {
+      height: 48px;
+      object-fit: contain;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lang-switcher {
+      display: flex;
+      background: #F1F5F9;
+      border-radius: 6px;
+      padding: 2px;
+      border: 1px solid #CBD5E1;
+    }
+    .lang-btn {
+      padding: 4px 10px;
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .lang-btn.active {
+      background: var(--nhf-navy);
+      color: #FFFFFF;
+    }
+    .hotline-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--nhf-blue);
+      font-weight: 700;
+      font-size: 13px;
+      text-decoration: none;
+      padding: 6px 12px;
+      background: #EFF6FF;
+      border-radius: 6px;
+    }
+    .btn-apply-top {
+      background: var(--nhf-blue);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-apply-top:hover {
+      background: #005FA3;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #0B192C 0%, #162C4A 100%);
+      color: #FFFFFF;
+      padding: 48px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(0, 114, 206, 0.2) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 36px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(227, 24, 55, 0.2);
+      border: 1px solid var(--nhf-red);
+      color: #FF6B81;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 3.5vw, 42px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+    .hero h1 span {
+      color: #38BDF8;
+    }
+    .hero p {
+      font-size: 15px;
+      color: #CBD5E1;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      max-width: 580px;
+    }
+    .hero-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .hero-feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #F8FAFC;
+    }
+    .hero-feature-item svg {
+      color: var(--gro-emerald);
+      flex-shrink: 0;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      background: var(--nhf-blue);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 114, 206, 0.4);
+    }
+    .btn-hero-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+    }
+
+    /* Trust Stats Strip */
+    .trust-strip {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
+      padding: 18px 20px;
+    }
+    .trust-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      text-align: center;
+    }
+    .trust-stat .num {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--nhf-navy);
+    }
+    .trust-stat .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Calculator Section */
+    .section-calc {
+      max-width: 1200px;
+      margin: 48px auto;
+      padding: 0 20px;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .section-header h2 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--nhf-navy);
+      margin-bottom: 8px;
+    }
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .calc-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      overflow: hidden;
+    }
+    .calc-inputs {
+      padding: 32px;
+    }
+    .calc-control {
+      margin-bottom: 24px;
+    }
+    .calc-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .calc-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--nhf-navy);
+    }
+    .calc-val-badge {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--nhf-blue);
+      background: #EFF6FF;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    input[type=range] {
+      width: 100%;
+      height: 6px;
+      background: #E2E8F0;
+      border-radius: 4px;
+      outline: none;
+      accent-color: var(--nhf-blue);
+    }
+    .calc-result {
+      background: linear-gradient(135deg, #0B192C 0%, #162C4A 100%);
+      color: #FFFFFF;
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .result-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94A3B8;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .result-emi {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--gro-emerald);
+      margin-bottom: 20px;
+    }
+    .result-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 24px;
+    }
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #CBD5E1;
+    }
+    .breakdown-row strong {
+      color: #FFFFFF;
+    }
+    .btn-apply-calc {
+      background: linear-gradient(135deg, var(--gro-emerald) 0%, #00B36B 100%);
+      color: #070B12;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .btn-apply-calc:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-content {
+      background: #FFFFFF;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 480px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--nhf-navy);
+    }
+    .btn-close {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .btn-submit-app {
+      width: 100%;
+      padding: 12px;
+      background: var(--nhf-blue);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    /* Agency Footer */
+    footer {
+      background: #070B12;
+      color: #94A3B8;
+      padding: 36px 20px;
+      border-top: 1px solid #1E293B;
+      font-size: 12px;
+    }
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-logos {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .gro-logo-foot {
+      height: 28px;
+    }
+
+    @media (max-width: 768px) {
+      .hero-container { grid-template-columns: 1fr; }
+      .calc-card { grid-template-columns: 1fr; }
+      .nav-container { flex-direction: column; gap: 12px; }
+      .footer-container { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- EXECUTIVE BOARD PRESENTATION BANNER -->
+  <div class="board-banner">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="board-badge">Board Prototype Preview</span>
+      <span class="board-meta">Prepared for the <strong>Board of Directors</strong> of National Housing Finance Limited</span>
+    </div>
+    <div class="board-meta">
+      Built by <strong>GRO10X AI Growth Agency</strong> | Hotline: <strong>+880 1711-019550</strong>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <header>
+    <div class="nav-container">
+      <div class="logo-container">
+        <img src="/nhf_official_logo.png" alt="National Housing Finance PLC" class="nhf-logo-img">
+      </div>
+      <div class="nav-actions">
+        <div class="lang-switcher">
+          <button id="btnEn" class="lang-btn active" onclick="switchLang('en')">EN</button>
+          <button id="btnBn" class="lang-btn" onclick="switchLang('bn')">বাং</button>
+        </div>
+        <a href="tel:16534" class="hotline-btn">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1V20a1 1 0 01-1 1C10.61 21 3 13.39 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+          16534
+        </a>
+        <button class="btn-apply-top" onclick="openApplyModal()">
+          <span id="txtApplyTop">Apply Online</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-container">
+      <div>
+        <div class="hero-tag" id="txtHeroTag">20-Year Flexible Tenure</div>
+        <h1 id="txtHeroTitle">Home Loans Up to <span>70%</span> With Fast Approval</h1>
+        <p id="txtHeroDesc">
+          Turn your dream home into reality with competitive interest rates, simplified paperwork, and customized EMI options tailored to your family's financial security.
+        </p>
+        <div class="hero-features">
+          <div class="hero-feature-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span id="txtFeat1">Up to 70% Property Financing</span>
+          </div>
+          <div class="hero-feature-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span id="txtFeat2">Up to 20-Year Long Tenure</span>
+          </div>
+          <div class="hero-feature-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span id="txtFeat3">Hassle-Free Approval</span>
+          </div>
+          <div class="hero-feature-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span id="txtFeat4">Al-Ameen Islamic Option</span>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn-hero-primary" onclick="scrollToCalc()">
+            <span id="txtHeroBtn1">Calculate Monthly EMI</span>
+          </button>
+          <button class="btn-hero-secondary" onclick="openApplyModal()">
+            <span id="txtHeroBtn2">Quick Pre-Qualification</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Trust Pillar Card -->
+      <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 24px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <span style="color: var(--gro-emerald);">★</span> 25-Year Institutional Legacy
+        </h3>
+        <p style="font-size: 12px; color: #94A3B8; line-height: 1.5; margin-bottom: 16px;">
+          National Housing Finance PLC is licensed by Bangladesh Bank (FI-08), listed on the Dhaka Stock Exchange (NHFIL), and backed by leading institutional shareholders:
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #E2E8F0;">
+          <div style="padding: 6px 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">✓ Sadharan Bima Corporation</div>
+          <div style="padding: 6px 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">✓ National Life Insurance Company Limited</div>
+          <div style="padding: 6px 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">✓ Reliance Insurance Limited</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST STRIP -->
+  <div class="trust-strip">
+    <div class="trust-container">
+      <div class="trust-stat">
+        <div class="num">25+ Years</div>
+        <div class="label">Financial Excellence</div>
+      </div>
+      <div class="trust-stat">
+        <div class="num">FI-08</div>
+        <div class="label">Bangladesh Bank License</div>
+      </div>
+      <div class="trust-stat">
+        <div class="num">DSE: NHFIL</div>
+        <div class="label">Publicly Listed</div>
+      </div>
+      <div class="trust-stat">
+        <div class="num">A+ Rated</div>
+        <div class="label">Credit Standing</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE EMI CALCULATOR -->
+  <section id="calculatorSection" class="section-calc">
+    <div class="section-header">
+      <h2 id="txtCalcHeading">Interactive Home Loan EMI Calculator</h2>
+      <p id="txtCalcSub">Adjust the sliders to view your estimated monthly installment and interest distribution.</p>
+    </div>
+
+    <div class="calc-card">
+      <div class="calc-inputs">
+        <!-- Loan Amount -->
+        <div class="calc-control">
+          <div class="calc-label-row">
+            <span class="calc-label" id="lblLoanAmt">Loan Amount (BDT)</span>
+            <span class="calc-val-badge" id="valLoanAmt">BDT 45,00,000</span>
+          </div>
+          <input type="range" id="rangeLoanAmt" min="500000" max="20000000" step="100000" value="4500000" oninput="calculateEMI()">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+            <span>5 Lakh</span>
+            <span>1 Crore</span>
+            <span>2 Crore</span>
+          </div>
+        </div>
+
+        <!-- Tenure -->
+        <div class="calc-control">
+          <div class="calc-label-row">
+            <span class="calc-label" id="lblTenure">Loan Tenure (Years)</span>
+            <span class="calc-val-badge" id="valTenure">15 Years</span>
+          </div>
+          <input type="range" id="rangeTenure" min="1" max="20" step="1" value="15" oninput="calculateEMI()">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+            <span>1 Year</span>
+            <span>10 Years</span>
+            <span>20 Years</span>
+          </div>
+        </div>
+
+        <!-- Interest Rate -->
+        <div class="calc-control">
+          <div class="calc-label-row">
+            <span class="calc-label" id="lblRate">Annual Interest Rate (%)</span>
+            <span class="calc-val-badge" id="valRate">10.5%</span>
+          </div>
+          <input type="range" id="rangeRate" min="8" max="14" step="0.25" value="10.5" oninput="calculateEMI()">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+            <span>8.0%</span>
+            <span>11.0%</span>
+            <span>14.0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div class="calc-result">
+        <div>
+          <div class="result-title" id="txtEmiTitle">Estimated Monthly Payment</div>
+          <div class="result-emi" id="outEMI">BDT 49,832</div>
+
+          <div class="result-breakdown">
+            <div class="breakdown-row">
+              <span id="txtPrinAmt">Principal Amount:</span>
+              <strong id="outPrincipal">BDT 45,00,000</strong>
+            </div>
+            <div class="breakdown-row">
+              <span id="txtTotInt">Total Interest:</span>
+              <strong id="outInterest">BDT 44,69,760</strong>
+            </div>
+            <div class="breakdown-row">
+              <span id="txtTotPay">Total Amount Payable:</span>
+              <strong id="outTotal">BDT 89,69,760</strong>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-apply-calc" onclick="openApplyModal()">
+          <span id="txtApplyWithEmi">Apply Online With This Plan</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPLY MODAL -->
+  <div id="applyModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Digital Pre-Application</h3>
+        <button class="btn-close" onclick="closeApplyModal()">&times;</button>
+      </div>
+      <form id="appForm" onsubmit="handleFormSubmit(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" required placeholder="e.g. Mohammad Rahman">
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" required placeholder="e.g. 017XXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Product of Interest</label>
+          <select id="prodSelect">
+            <option>Retail Home Loan (Up to 70%)</option>
+            <option>Al-Ameen Islamic HPSM Co-Ownership</option>
+            <option>1-Crore Millionaire Wealth Scheme</option>
+            <option>Corporate Term Deposit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Preferred Branch</label>
+          <select>
+            <option>Motijheel Principal Branch</option>
+            <option>Gulshan Branch</option>
+            <option>Uttara Branch</option>
+            <option>Chattogram Agrabad Branch</option>
+            <option>Sylhet Branch</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-submit-app">Submit Application Intent</button>
+      </form>
+      <div id="successMsg" style="display:none; text-align:center; padding:20px 0;">
+        <div style="font-size:36px; color:#10B981; margin-bottom:8px;">✓</div>
+        <h4 style="font-size:16px; color:var(--nhf-navy); margin-bottom:4px;">Application Received</h4>
+        <p style="font-size:12px; color:var(--text-muted); line-height:1.4;">
+          Your reference code is <strong>NHF-2026-8941</strong>. A loan officer from National Housing will contact you within 2 banking hours.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-logos">
+        <img src="/nhf_official_logo.png" alt="National Housing" style="height:32px; filter: brightness(0) invert(1);">
+        <span style="color:#475569;">|</span>
+        <img src="/images/gro10x-official-logo.png" alt="GRO10X Agency" class="gro-logo-foot">
+      </div>
+      <div>
+        National Housing Finance PLC & GRO10X AI Growth Agency &copy; 2026.<br>
+        Confidential Board Presentation Dossier Reference: <strong>GRO-NHF-2026-BD01</strong>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function formatBDT(num) {
+      return 'BDT ' + Math.round(num).toLocaleString('en-IN');
+    }
+
+    function calculateEMI() {
+      const P = parseFloat(document.getElementById('rangeLoanAmt').value);
+      const tenureYears = parseFloat(document.getElementById('rangeTenure').value);
+      const annualRate = parseFloat(document.getElementById('rangeRate').value);
+
+      document.getElementById('valLoanAmt').textContent = formatBDT(P);
+      document.getElementById('valTenure').textContent = tenureYears + (isBangla ? ' বছর' : ' Years');
+      document.getElementById('valRate').textContent = annualRate + '%';
+
+      const N = tenureYears * 12;
+      const R = annualRate / (12 * 100);
+
+      // EMI = P * R * (1+R)^N / ((1+R)^N - 1)
+      const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+      const totalPayment = emi * N;
+      const totalInterest = totalPayment - P;
+
+      document.getElementById('outEMI').textContent = formatBDT(emi);
+      document.getElementById('outPrincipal').textContent = formatBDT(P);
+      document.getElementById('outInterest').textContent = formatBDT(totalInterest);
+      document.getElementById('outTotal').textContent = formatBDT(totalPayment);
+    }
+
+    let isBangla = false;
+    function switchLang(lang) {
+      isBangla = (lang === 'bn');
+      document.getElementById('btnEn').classList.toggle('active', !isBangla);
+      document.getElementById('btnBn').classList.toggle('active', isBangla);
+
+      if (isBangla) {
+        document.body.classList.add('bangla');
+        document.getElementById('txtApplyTop').textContent = 'অনলাইনে আবেদন';
+        document.getElementById('txtHeroTag').textContent = '২০ বছর পর্যন্ত দীর্ঘ মেয়াদ';
+        document.getElementById('txtHeroTitle').innerHTML = 'সহজ শর্তে <span>৭০%</span> পর্যন্ত হোম লোন';
+        document.getElementById('txtHeroDesc').textContent = 'আপনার পরিবারের স্থায়ী ঠিকানার স্বপ্ন পূরণ হোক আকর্ষণীয় সুদের হার ও দ্রুত অনুমোদনের মাধ্যমে।';
+        document.getElementById('txtFeat1').textContent = '৭০% পর্যন্ত প্রপার্টি ঋণ';
+        document.getElementById('txtFeat2').textContent = '২০ বছর পর্যন্ত দীর্ঘ মেয়াদ';
+        document.getElementById('txtFeat3').textContent = 'সহজ ও দ্রুত অনুমোদন';
+        document.getElementById('txtFeat4').textContent = 'আল-আমীন ইসলামিক সুবিধা';
+        document.getElementById('txtHeroBtn1').textContent = 'মাসিক কিস্তি হিসেব করুন';
+        document.getElementById('txtHeroBtn2').textContent = 'দ্রুত আবেদন করুন';
+        document.getElementById('txtCalcHeading').textContent = 'হোম লোন মাসিক কিস্তি (ইএমআই) ক্যালকুলেটর';
+        document.getElementById('txtCalcSub').textContent = 'স্লাইডার পরিবর্তন করে আপনার মাসিক কিস্তি ও মোট সুদ তাৎক্ষণিক দেখুন।';
+        document.getElementById('lblLoanAmt').textContent = 'ঋণের পরিমাণ (টাকা)';
+        document.getElementById('lblTenure').textContent = 'ঋণের মেয়াদ (বছর)';
+        document.getElementById('lblRate').textContent = 'বার্ষিক সুদের হার (%)';
+        document.getElementById('txtEmiTitle').textContent = 'আনুমানিক মাসিক কিস্তি';
+        document.getElementById('txtPrinAmt').textContent = 'মূল ঋণ:';
+        document.getElementById('txtTotInt').textContent = 'মোট সুদ:';
+        document.getElementById('txtTotPay').textContent = 'মোট প্রদেয় অর্থ:';
+        document.getElementById('txtApplyWithEmi').textContent = 'এই কিস্তিতে অনলাইনে আবেদন করুন';
+      } else {
+        document.body.classList.remove('bangla');
+        document.getElementById('txtApplyTop').textContent = 'Apply Online';
+        document.getElementById('txtHeroTag').textContent = '20-Year Flexible Tenure';
+        document.getElementById('txtHeroTitle').innerHTML = 'Home Loans Up to <span>70%</span> With Fast Approval';
+        document.getElementById('txtHeroDesc').textContent = 'Turn your dream home into reality with competitive interest rates, simplified paperwork, and customized EMI options tailored to your family\'s financial security.';
+        document.getElementById('txtFeat1').textContent = 'Up to 70% Property Financing';
+        document.getElementById('txtFeat2').textContent = 'Up to 20-Year Long Tenure';
+        document.getElementById('txtFeat3').textContent = 'Hassle-Free Approval';
+        document.getElementById('txtFeat4').textContent = 'Al-Ameen Islamic Option';
+        document.getElementById('txtHeroBtn1').textContent = 'Calculate Monthly EMI';
+        document.getElementById('txtHeroBtn2').textContent = 'Quick Pre-Qualification';
+        document.getElementById('txtCalcHeading').textContent = 'Interactive Home Loan EMI Calculator';
+        document.getElementById('txtCalcSub').textContent = 'Adjust the sliders to view your estimated monthly installment and interest distribution.';
+        document.getElementById('lblLoanAmt').textContent = 'Loan Amount (BDT)';
+        document.getElementById('lblTenure').textContent = 'Loan Tenure (Years)';
+        document.getElementById('lblRate').textContent = 'Annual Interest Rate (%)';
+        document.getElementById('txtEmiTitle').textContent = 'Estimated Monthly Payment';
+        document.getElementById('txtPrinAmt').textContent = 'Principal Amount:';
+        document.getElementById('txtTotInt').textContent = 'Total Interest:';
+        document.getElementById('txtTotPay').textContent = 'Total Amount Payable:';
+        document.getElementById('txtApplyWithEmi').textContent = 'Apply Online With This Plan';
+      }
+      calculateEMI();
+    }
+
+    function scrollToCalc() {
+      document.getElementById('calculatorSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function openApplyModal() {
+      document.getElementById('applyModal').style.display = 'flex';
+    }
+
+    function closeApplyModal() {
+      document.getElementById('applyModal').style.display = 'none';
+      document.getElementById('appForm').style.display = 'block';
+      document.getElementById('successMsg').style.display = 'none';
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      document.getElementById('appForm').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+    }
+
+    calculateEMI();
+  </script>
+</body>
+</html>

@@ -7,7 +7,37 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+const fs = require('fs');
+const path = require('path');
 const { supabase, isSupabaseConfigured } = require('./supabase');
+
+const DB_JSON_PATH = path.join(__dirname, '../../data/db.json');
+
+function getEmptyFallbackDB() {
+  return {
+    team: [],
+    clients: [],
+    tasks: [],
+    invoices: [],
+    services: [],
+    reviews: [],
+    expenses: [],
+    assets: [],
+    attendance: [],
+    eod_reports: [],
+    projects: [],
+    subtasks: [],
+    workflows: [],
+    tickets: [],
+    posts: [],
+    quotes: [],
+    leaves: [],
+    authPins: [],
+    disputes: [],
+    testimonials: [],
+    handover_manifests: []
+  };
+}
 
 function mapProfileToTeam(p) {
   if (!p) return null;
@@ -41,7 +71,15 @@ const CACHE_TTL_MS = 15000; // 15-second TTL cache to prevent query stampedes on
 async function readDB(forceFresh = false) {
   if (!isSupabaseConfigured()) {
     console.warn('⚠️ Supabase not configured — returning fallback data structure.');
-    return cachedDBState || { team: [], clients: [], tasks: [], invoices: [], services: [], reviews: [], expenses: [], assets: [], attendance: [], eod_reports: [], projects: [], subtasks: [], workflows: [], tickets: [], posts: [], quotes: [], leaves: [], authPins: [] };
+    if (cachedDBState) return cachedDBState;
+    try {
+      if (fs.existsSync(DB_JSON_PATH)) {
+        const raw = fs.readFileSync(DB_JSON_PATH, 'utf8');
+        cachedDBState = { ...getEmptyFallbackDB(), ...JSON.parse(raw) };
+        return cachedDBState;
+      }
+    } catch (_) {}
+    return getEmptyFallbackDB();
   }
 
   const now = Date.now();
@@ -68,7 +106,8 @@ async function readDB(forceFresh = false) {
       { data: tickets },
       { data: posts },
       { data: quotes },
-      { data: leaves }
+      { data: leaves },
+      { data: leads }
     ] = await Promise.all([
       supabase.from('profiles').select('*').limit(1000),
       supabase.from('clients').select('*').limit(2000),
@@ -87,7 +126,8 @@ async function readDB(forceFresh = false) {
       supabase.from('tickets').select('*').limit(5000),
       supabase.from('social_posts').select('*').limit(2000),
       supabase.from('quotes').select('*').limit(2000),
-      supabase.from('leaves').select('*').limit(5000)
+      supabase.from('leaves').select('*').limit(5000),
+      supabase.from('leads').select('*').limit(2000)
     ]);
 
     cachedDBState = {
@@ -108,6 +148,10 @@ async function readDB(forceFresh = false) {
       posts: posts || [],
       quotes: quotes || [],
       leaves: leaves || [],
+      leads: leads || cachedDBState?.leads || [],
+      disputes: cachedDBState?.disputes || [],
+      testimonials: cachedDBState?.testimonials || [],
+      handover_manifests: cachedDBState?.handover_manifests || [],
       authPins: (authPins || []).map(ap => ({
         phone: ap.phone,
         normPhone: ap.norm_phone,
@@ -126,13 +170,29 @@ async function readDB(forceFresh = false) {
       console.warn('⚠️ Returning last-known-good cached DB state.');
       return cachedDBState;
     }
-    return { team: [], clients: [], tasks: [], invoices: [], services: [], reviews: [], expenses: [], assets: [], attendance: [], eod_reports: [], projects: [], subtasks: [], workflows: [], tickets: [], posts: [], quotes: [], leaves: [], authPins: [] };
+    try {
+      if (fs.existsSync(DB_JSON_PATH)) {
+        const raw = fs.readFileSync(DB_JSON_PATH, 'utf8');
+        cachedDBState = { ...getEmptyFallbackDB(), ...JSON.parse(raw) };
+        return cachedDBState;
+      }
+    } catch (_) {}
+    return getEmptyFallbackDB();
   }
 }
 
 async function writeDB(data) {
-  // Local db.json writes are disabled. Any writes should be done directly via Supabase methods.
-  console.log('ℹ️ writeDB called — local db.json is decommissioned. Operations persist directly to Supabase.');
+  if (data && typeof data === 'object') {
+    cachedDBState = { ...(cachedDBState || getEmptyFallbackDB()), ...data };
+    try {
+      if (fs.existsSync(DB_JSON_PATH)) {
+        const raw = fs.readFileSync(DB_JSON_PATH, 'utf8');
+        const parsed = JSON.parse(raw);
+        const merged = { ...parsed, ...data };
+        fs.writeFileSync(DB_JSON_PATH, JSON.stringify(merged, null, 2), 'utf8');
+      }
+    } catch (_) {}
+  }
   return true;
 }
 

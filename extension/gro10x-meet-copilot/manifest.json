@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "GRO10X Meet Copilot - Meeting Minutes & Executive Scribe",
+  "version": "1.0.0",
+  "description": "Live Google Meet transcription, interactive notes scratchpad, and AI-compiled executive packs (PDF & Email minutes) for GRO10X.",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "https://meet.google.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
+    "https://gro10x.ai/*",
+    "https://gro10x-ai.vercel.app/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open GRO10X Meet Copilot"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://meet.google.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
