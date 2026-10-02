@@ -523,13 +523,15 @@ window.CLIENT_MODULES.review = async function(container) {
               <span style="font-size:0.72rem; color:var(--text-muted);">${comments.filter(c => c.resolved).length} Resolved</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:220px; overflow-y:auto;">
-              ${comments.map(c => `
-                <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:0.6rem 0.75rem; border-left: 3px solid ${c.scopeFlag === 'OUT_OF_SCOPE' ? '#f59e0b' : c.commentType === 'BUG_FIX' ? '#ef4444' : '#10b981'};">
+              ${comments.map(c => {
+                const isOutOfScope = c.scopeFlag === 'OUT_OF_SCOPE' || c.scopeFlag === 'OUT_OF_SCOPE_POTENTIAL' || c.commentType === 'OUT_OF_SCOPE';
+                return `
+                <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:0.6rem 0.75rem; border-left: 3px solid ${isOutOfScope ? '#f59e0b' : c.commentType === 'BUG_FIX' ? '#ef4444' : '#10b981'};">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
                     <div style="display:flex; align-items:center; gap:0.4rem;">
                       <span style="font-size:0.75rem; font-weight:700; color:#fff;">${escapeHTML(c.author || 'Reviewer')}</span>
-                      <span class="badge ${c.commentType === 'BUG_FIX' ? 'badge-pink' : c.commentType === 'OUT_OF_SCOPE' ? 'badge-amber' : 'badge-purple'}" style="font-size:0.65rem;">
-                        ${c.commentType === 'BUG_FIX' ? '🐞 Bug Fix' : c.commentType === 'OUT_OF_SCOPE' ? '⚠️ Scope Advisory' : '✨ Polish'}
+                      <span class="badge ${c.commentType === 'BUG_FIX' ? 'badge-pink' : isOutOfScope ? 'badge-amber' : 'badge-purple'}" style="font-size:0.65rem;">
+                        ${c.commentType === 'BUG_FIX' ? '🐞 Bug Fix' : isOutOfScope ? '⚠️ Out of Scope Notice' : '✨ Polish'}
                       </span>
                     </div>
                     <span style="font-size:0.7rem; color:${c.resolved ? '#10b981' : '#f59e0b'}; font-weight:600;">
@@ -545,7 +547,7 @@ window.CLIENT_MODULES.review = async function(container) {
                     </div>
                   ` : ''}
                 </div>
-              `).join('')}
+              `}).join('')}
             </div>
           </div>
         ` : ''}

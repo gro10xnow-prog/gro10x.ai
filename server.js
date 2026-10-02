@@ -57,9 +57,15 @@ app.use((req, res, next) => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
 
+  // Content Security Policy
+  // - 'unsafe-eval' REMOVED: no eval() or new Function() calls exist in public/js/*.js (verified by audit).
+  // - 'unsafe-inline' retained: Tier-3 item — requires nonce/hash refactor across 34 HTML files.
+  // - Explicit script-src / style-src override the broad default-src 'self' https: for tighter control.
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; " +
+    "default-src 'self' https: data: blob: 'unsafe-inline'; " +
+    "script-src 'self' https: 'unsafe-inline'; " +
+    "style-src 'self' https: 'unsafe-inline'; " +
     "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org; " +
     "connect-src 'self' https: wss: ws:;"
   );
@@ -467,10 +473,10 @@ app.get(['/delivery', '/delivery/'], (req, res) => {
 app.use('/delivery', express.static(path.join(__dirname, 'public/delivery')));
 
 // Interactive 3D Multi-Angle Spatial Engine & Product Lab
-app.use('/3d-viewer', express.static(path.join(__dirname, 'public/3d-viewer')));
 app.get(['/3d-viewer', '/3d-viewer/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/3d-viewer/index.html'));
 });
+app.use('/3d-viewer', express.static(path.join(__dirname, 'public/3d-viewer')));
 app.get(['/real3d', '/real3d/', '/kids-3d', '/kids-3d/', '/3d-viewer/kids'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/3d-viewer/real3d.html'));
 });
@@ -520,8 +526,25 @@ app.get(['/affiliate/portal', '/dce/affiliate', '/affiliate'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/dce/affiliate.html'));
 });
 
-app.get(['/dce', '/dce/', '/dce/orders', '/dce-orders', '/dce/operations', '/dce-operations', '/dce/growth', '/dce-growth', '/dce/digivault', '/dce-digivault', '/dce-portal'], (req, res) => {
-  res.redirect(302, '/workspace?engineId=engine3#pnl');
+// Canonical DCE Portal Suite Endpoints
+app.get(['/dce', '/dce/', '/dce-portal'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dce/index.html'));
+});
+
+app.get(['/dce/orders', '/dce-orders'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dce/orders.html'));
+});
+
+app.get(['/dce/operations', '/dce-operations'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dce/operations.html'));
+});
+
+app.get(['/dce/growth', '/dce-growth'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dce/growth.html'));
+});
+
+app.get(['/dce/digivault', '/dce-digivault'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dce/digivault.html'));
 });
 
 app.use(express.static(path.join(__dirname, 'public'), {

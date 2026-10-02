@@ -26,6 +26,9 @@
       <button class="btn-action" id="btnResetData" title="Reset current inputs">
         <span>🔄 Reset</span>
       </button>
+      <button class="btn-action" id="btnUpgradeHardcover" title="Upgrade to Luxury Physical Hardcover Edition" style="background: linear-gradient(135deg, #FFF5F0 0%, #FFE6D5 100%); border-color: #E2725B; color: #9E3821; font-weight: 700;">
+        <span>📖 Hardcover</span>
+      </button>
       <button class="btn-action" id="btnAiCoachTopbar" title="Open AI Focus Coach Morning Briefing" style="background: linear-gradient(135deg, #FAF3E8 0%, #FFFFFF 100%); border-color: var(--primary-plum); color: var(--primary-plum); font-weight: 700;">
         <span>✨ AI Coach</span>
       </button>
@@ -55,6 +58,23 @@
            ==================================================================== -->
       <section class="tab-content" id="tab-index">
         
+        <!-- Luxury Hardcover Upsell Ribbon -->
+        <div class="planner-upsell-ribbon no-print" id="plannerUpsellRibbon" style="background: linear-gradient(135deg, #FFF9F3 0%, #FEE8D6 100%); border: 1px solid #F5C6A5; border-radius: 8px; padding: 0.75rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(226, 114, 91, 0.08); flex-wrap: wrap; gap: 0.75rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.5rem;">👑</span>
+            <div>
+              <div style="font-weight: 700; color: #8F341D; font-size: 0.9rem;">Upgrade to Luxury Physical Hardcover Edition (Gold Wire-O + Linen Hardcover)</div>
+              <div style="font-size: 0.78rem; color: #A0523C;">Includes 16 full-color printed spreads, archival paper &amp; instant verified digital certificate hash</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <span style="font-weight: 800; color: #8F341D; font-size: 1rem;">$39.99 <span style="font-size: 0.75rem; font-weight: 500; color: #733420;">/ ৳4,800</span></span>
+            <button class="btn-action" id="btnRibbonUpgrade" style="background: #E2725B; color: #FFFFFF; font-weight: 700; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer;">
+              Order Hardcover ↗
+            </button>
+          </div>
+        </div>
+
         <!-- SPREAD 1: Cover & Owner Registration -->
         <article class="spread-page cover-spread" id="spread-1">
           <div class="cover-brand-seal">✨</div>
@@ -78,9 +98,12 @@
                 <label style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Planning Year / Period</label>
                 <input type="text" id="owner_period" class="clean-input-line" placeholder="2026 – 2027">
               </div>
-              <div style="margin-top: 0.4rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem;">
-                <span style="color: var(--primary-plum); font-weight: 700;">👑 Verified License: PLA-14</span>
-                <a href="/my-portal" target="_blank" style="color: var(--primary-plum); text-decoration: underline; font-weight: 600;">Customer Vault &amp; GroCredits ↗</a>
+              <div style="margin-top: 0.4rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; flex-wrap: wrap; gap: 0.4rem;">
+                <span id="ownerLicenseKeyDisplay" style="color: var(--primary-plum); font-weight: 700;">👑 Verified License: <span id="ownerLicenseCode">PLA-14</span></span>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <button type="button" id="btnClaimCertificate" style="background: none; border: none; color: #E2725B; text-decoration: underline; font-weight: 600; cursor: pointer; padding: 0;">Claim Certificate ↗</button>
+                  <a href="/my-portal" target="_blank" style="color: var(--primary-plum); text-decoration: underline; font-weight: 600;">Customer Vault &amp; GroCredits ↗</a>
+                </div>
               </div>
             </div>
           </div>
@@ -863,6 +886,21 @@
           <div class="dot-grid-canvas">
             <textarea id="dot_notes_body" class="dot-grid-textarea" placeholder="Start typing your unstructured thoughts, sketches, ideas, and brainstorms here..."></textarea>
           </div>
+
+          <!-- Physical Hardcover Edition Upgrade Card -->
+          <div class="planner-card no-print" style="margin-top: 1.5rem; background: linear-gradient(135deg, #FAF4EF 0%, #FFFFFF 100%); border: 1px solid #EAC8B5; border-left: 4px solid #E2725B;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h4 style="margin: 0 0 0.3rem 0; color: #8F341D; font-family: var(--font-heading); font-size: 1.05rem;">Finished Planning Your System? Bring It To Physical Reality</h4>
+                <p style="margin: 0; font-size: 0.84rem; color: var(--text-muted);">Get the custom foil-stamped PlannerQueen hardcover delivered right to your doorstep, or export your verified PDF certificate.</p>
+              </div>
+              <div style="display: flex; gap: 0.6rem;">
+                <button class="btn-action" id="btnSpread16Upgrade" style="background: #E2725B; color: #FFFFFF; font-weight: 700; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+                  Order Hardcover ($39.99 / ৳4,800)
+                </button>
+              </div>
+            </div>
+          </div>
         </article>
 
       </section>
@@ -942,6 +980,67 @@
       <div class="coach-modal-footer">
         <span style="font-size: 0.82rem; color: var(--text-muted);">Deducted 10 GroCredits · Powered by Gemini · <a href="/my-portal" target="_blank" style="color: var(--primary-plum); text-decoration: underline; font-weight: 600;">Top Up in My Vault ↗</a></span>
         <button class="btn-action btn-primary" id="btnDismissAiModal">Apply to My Day</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANNER LUXURY UPSELL & CERTIFICATE MODAL -->
+  <div id="plannerUpsellModal" class="coach-modal-overlay" style="display: none;">
+    <div class="coach-modal-card" style="max-width: 580px;">
+      <div class="coach-modal-header" style="background: linear-gradient(135deg, #FAF4EF 0%, #FFFDFB 100%);">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.5rem;">👑</span>
+          <div>
+            <h3 style="font-family: var(--font-heading); color: #8F341D; margin: 0; font-size: 1.2rem;">PlannerQueen Luxury Physical Edition</h3>
+            <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">SKU: sku-pq-phys-01 · Premium Linen Hardcover &amp; Digital Certificate</p>
+          </div>
+        </div>
+        <button class="coach-modal-close" id="btnCloseUpsellModal">&times;</button>
+      </div>
+      <div class="coach-modal-body" style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 130px 1fr; gap: 1.2rem; align-items: center; margin-bottom: 1.25rem;">
+          <div style="background: #FAF3E8; border: 1px solid #E6D5C3; border-radius: 8px; padding: 1rem; text-align: center;">
+            <div style="font-size: 2.8rem;">📖</div>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #8F341D; text-transform: uppercase;">16 Spreads · 120 GSM</span>
+          </div>
+          <div>
+            <div style="display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.4rem;">
+              <span style="font-size: 1.6rem; font-weight: 800; color: #8F341D;">$39.99</span>
+              <span style="font-size: 1.05rem; font-weight: 700; color: #A0523C;">৳4,800 BDT</span>
+              <span style="font-size: 0.72rem; background: #E8F5E9; color: #2E7D32; font-weight: 700; padding: 2px 6px; border-radius: 4px;">Free Shipping</span>
+            </div>
+            <ul style="margin: 0; padding-left: 1.1rem; font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+              <li>Custom Gold Foil Stamped Linen Hardcover</li>
+              <li>120 GSM Bleed-Proof Archival Fountain-Pen Paper</li>
+              <li>Includes Verified Cryptographic Certificate of Authenticity</li>
+              <li>Instant 500 GroCredits bonus for AI Coaching</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="background: #FDF9F5; border: 1px dashed #E5C3B0; border-radius: 6px; padding: 0.85rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #8F341D; text-transform: uppercase;">Your Digital License Key</span>
+            <span style="font-size: 0.7rem; color: #2E7D32; font-weight: 600;">✓ Active Personal License</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="upsellLicenseKeyInput" class="clean-input-line" style="background: #FFFFFF; font-family: monospace; font-size: 0.82rem; font-weight: 700; padding: 0.4rem 0.6rem; border: 1px solid #D5C2B5; border-radius: 4px;" readonly value="PLA-14-VIP-2026">
+            <button type="button" id="btnCopyUpsellLicense" class="btn-action" style="padding: 0.4rem 0.75rem; font-size: 0.75rem;">📋 Copy</button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button id="btn1ClickCheckout" class="btn-action btn-primary" style="flex: 1; min-width: 220px; padding: 0.75rem; font-size: 0.95rem; background: #E2725B; border-color: #E2725B; font-weight: 700;">
+            🛍️ 1-Click Buy Physical Hardcover ($39.99)
+          </button>
+          <a href="/delivery" target="_blank" class="btn-action" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem; font-size: 0.85rem;">
+            📜 View Certificate ↗
+          </a>
+        </div>
+      </div>
+      <div class="coach-modal-footer" style="background: #FAF9F8;">
+        <span style="font-size: 0.78rem; color: var(--text-muted);">Backed by GRO10X DCE · 100% Satisfaction Guarantee</span>
+        <button class="btn-action" id="btnDismissUpsellModal">Close</button>
       </div>
     </div>
   </div>

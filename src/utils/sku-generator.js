@@ -9,7 +9,7 @@
  */
 
 const VALID_CHANNELS = ['ETSY', 'AMAZON', 'GUMROAD', 'DARAZ', 'DIRECT', 'OTHER'];
-const VALID_FORMATS = ['PDF', 'PRINT', 'BUNDLE', 'SPREADSHEET', 'VIDEO', 'SAAS', 'PHYSICAL'];
+const VALID_FORMATS = ['PDF', 'PRINT', 'BUNDLE', 'SPREADSHEET', 'VIDEO', 'SAAS', 'PHYSICAL', 'GLB_USDZ'];
 
 /**
  * Generate a canonical DCE SKU string

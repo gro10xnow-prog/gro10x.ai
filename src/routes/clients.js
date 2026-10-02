@@ -13,10 +13,12 @@ const {
   standardizePOC,
   standardizeClientProfile,
   createProjectLockinSpec,
+  getLockinProgress,
   updatePrerequisiteStatus,
   getClientLockinSpecs,
   getLockinSpecById
 } = require('../services/onboarding-spec');
+const { stakeholderEvents } = require('../services/stakeholder-events');
 
 function mapClient(c) {
   if (!c) return null;
@@ -970,7 +972,7 @@ router.get('/:id/lockin-specs/:specId', requireAuth, requireClientOwnership, asy
 router.put('/:id/lockin-specs/:specId/prerequisites/:itemId', requireAuth, requireClientOwnership, async (req, res) => {
   try {
     const { id, specId, itemId } = req.params;
-    const { status } = req.body || {};
+    const { status, note } = req.body || {};
 
     const spec = await getLockinSpecById(specId);
     if (!spec) {
@@ -980,8 +982,38 @@ router.put('/:id/lockin-specs/:specId/prerequisites/:itemId', requireAuth, requi
       return res.status(403).json({ ok: false, error: 'Forbidden: Spec does not belong to this client.' });
     }
 
-    const result = await updatePrerequisiteStatus(specId, itemId, status);
-    broadcast('prerequisite_updated', { clientId: id, specId, itemId, status });
+    const result = await updatePrerequisiteStatus(specId, itemId, status, note);
+
+    // Broadcast realtime SSE updates
+    const ssePayload = {
+      clientId: id,
+      specId,
+      itemId,
+      status: result.newStatus,
+      item: result.item,
+      progress: result.progress,
+      allPrerequisitesReady: result.allPrerequisitesReady
+    };
+    broadcast('prerequisite_updated', ssePayload);
+    broadcast('lockin_prerequisite_updated', ssePayload);
+
+    // Emit stakeholder event if submitted by client
+    if (result.newStatus === 'RECEIVED') {
+      try {
+        await stakeholderEvents.emitEvent('lockin.prerequisite_submitted', {
+          clientId: id,
+          specId,
+          itemId,
+          item: result.item,
+          submissionNote: note || result.item?.submission_note || null,
+          progress: result.progress,
+          allPrerequisitesReady: result.allPrerequisitesReady,
+          clientName: req.user?.name || id
+        });
+      } catch (evtErr) {
+        console.warn('[Clients API] Prerequisite stakeholder event notice:', evtErr.message);
+      }
+    }
 
     return res.json({ ok: true, data: result });
   } catch (err) {

@@ -64,7 +64,7 @@ serve(async (req) => {
             resolved_at: now.toISOString(),
           })
           .eq("project_id", proj.id)
-          .eq("status", "HELD");
+          .in("status", ["HELD_IN_ESCROW", "HELD"]);
 
         releasedCount++;
       }

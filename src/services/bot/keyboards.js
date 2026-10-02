@@ -35,7 +35,7 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
   }
 
   // Authoritative Seniority Tier: 1 (Specialist/Execution), 2 (Manager/Supervisor), 3 (Command/CXO/Lead)
-  const tier = getSeniorityTier(emp || { accessLevel });
+  const tier = getSeniorityTier({ accessLevel, ...emp });
 
   // Standard Transit Header Row (All Verified Users)
   const transitRow = [
@@ -55,6 +55,7 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
       keyboard: [
         transitRow,
         [{ text: '⚡ Executive Flash' }, { text: '✍️ Pending Approvals' }],
+        [{ text: '🚀 Engine 2 Flash' }, { text: '⚡ Pod Status' }],
         attendanceRow
       ],
       resize_keyboard: true

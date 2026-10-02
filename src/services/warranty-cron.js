@@ -53,13 +53,18 @@ async function runWarrantyCheck() {
     } catch (_) {}
   }
 
-  // Include in-memory projects
+  // Merge in-memory projects from post-delivery service (for resilience & tests)
   try {
     const { memoryProjects } = require('./post-delivery');
     if (memoryProjects && memoryProjects.size > 0) {
-      for (const [id, p] of memoryProjects.entries()) {
-        if (!projects.some(ex => ex.id === id) && (p.warranty_until || p.warrantyUntil)) {
-          projects.push(p);
+      for (const [id, mp] of memoryProjects.entries()) {
+        if (mp.warranty_until || mp.warrantyUntil) {
+          const exIdx = projects.findIndex(p => p.id === id);
+          if (exIdx !== -1) {
+            projects[exIdx] = { ...projects[exIdx], ...mp };
+          } else {
+            projects.push(mp);
+          }
         }
       }
     }
@@ -122,8 +127,12 @@ async function runWarrantyCheck() {
       notifiedState.closed = true;
 
       try {
-        const { saveMemoryProject } = require('./post-delivery');
-        saveMemoryProject(project);
+        const { memoryProjects } = require('./post-delivery');
+        if (memoryProjects && memoryProjects.has(project.id)) {
+          const mem = memoryProjects.get(project.id);
+          mem.delivery_status = 'WARRANTY_CLOSED';
+          mem.deliveryStatus = 'WARRANTY_CLOSED';
+        }
       } catch (_) {}
 
       if (isSupabaseConfigured()) {
@@ -138,10 +147,19 @@ async function runWarrantyCheck() {
       broadcast('project_update', { id: project.id, delivery_status: 'WARRANTY_CLOSED' });
       console.log(`🛡️ [Warranty Cron] Project ${project.id} warranty period completed and closed.`);
 
-      // Release contractor escrow if all warranty defects resolved
+      // Release contractor escrow if all warranty defects are resolved.
+      // Query Supabase directly — tickets are fully persisted, no in-process array.
       try {
-        const { inMemoryTickets } = require('../routes/tickets');
-        const openDefects = (inMemoryTickets || []).filter(t => (t.projectId === project.id || t.project_id === project.id) && !['resolved', 'closed'].includes((t.status || '').toLowerCase()));
+        let openDefects = [];
+        if (isSupabaseConfigured()) {
+          const { data: defectRows } = await supabase
+            .from('tickets')
+            .select('id')
+            .or(`project_id.eq.${project.id}`)
+            .not('status', 'in', '("resolved","closed","Resolved","Closed")');
+          openDefects = defectRows || [];
+        }
+
         if (openDefects.length === 0) {
           const { emitStakeholderEvent } = require('./stakeholder-events');
           emitStakeholderEvent('ticket.sla_holdback_released', {
@@ -157,7 +175,7 @@ async function runWarrantyCheck() {
             supabase.from('sla_holdbacks')
               .update({ status: 'RELEASED', resolved_at: new Date().toISOString() })
               .eq('project_id', project.id)
-              .eq('status', 'HELD_IN_ESCROW')
+              .in('status', ['HELD_IN_ESCROW', 'HELD'])
               .then?.(() => {}).catch?.(() => {});
           }
         }

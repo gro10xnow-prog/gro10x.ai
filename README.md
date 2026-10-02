@@ -22,6 +22,7 @@
 11. [Runbook — Database Maintenance](#11-runbook--database-maintenance)
 12. [Admin & Manager Portals Guide](#12-admin--manager-portals-guide)
 13. [Testing Reference](#13-testing-reference)
+14. [Engine 3: Digital Commerce Engine & Interactive Labs](#14-engine-3-digital-commerce-engine--interactive-labs)
 
 ---
 
@@ -482,3 +483,22 @@ Report: scripts/e2e/reports/latest-report.html
 | 7 | Support Desk, Automation logs, Settings telemetry |
 | 8 | Cross-module integration, sidebar badge sync |
 | 9 | Console error audit, network health check |
+
+---
+
+## 14. Engine 3: Digital Commerce Engine & Interactive Labs
+
+Engine 3 powers omnichannel digital asset monetization, multi-currency commerce, automated dual-fulfillment, and creator settlements across GRO10X OS.
+
+- **Production Runbook**: [`docs/ENGINE_3_PRODUCTION_RUNBOOK.md`](file:///d:/gro10x.ai/docs/ENGINE_3_PRODUCTION_RUNBOOK.md)
+- **Master Plan & Delivery Matrix**: [`docs/MASTER_PLAN_PM_3.md`](file:///d:/gro10x.ai/docs/MASTER_PLAN_PM_3.md)
+- **Test Matrix Status**: 160 / 160 Tests Passing (100% Coverage across Phases 1 - 4)
+- **Key Storefronts & Labs**:
+  - DCE Multi-Currency Storefront: `/dce/store.html`
+  - DigiVault BD Product Hub: `/digivault/product.html`
+  - Order Tracking & Key Verification: `/dce/track.html`
+  - Interactive Digital Planner & PDF Export: `/planner/index.html`
+  - 3D Spatial Viewer & Commercial Licensing: `/3d-viewer/real3d.html`
+- **Omnichannel Connectors**: Etsy, Gumroad, Amazon, Daraz, GRO10X Direct
+- **Telegram Bot Ops**: `@Digivault20bot` (`/dce_stats`, `/dce_orders`, `/dce_tickets`, `/dce_menu`, `/track`)
+

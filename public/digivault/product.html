@@ -240,6 +240,18 @@
         }
       }
 
+      // Dynamic Receiver Number Controller (bKash & Nagad)
+      function updateReceiverNumber() {
+        const method = document.getElementById('custPayMethod')?.value || 'bkash';
+        const inp = document.getElementById('inpSendNo');
+        const num = method === 'nagad' ? (DIGIVAULT_CONFIG.nagadNumber || '01711019550') : (DIGIVAULT_CONFIG.bkashNumber || '01711019550');
+        if (inp) inp.value = num;
+      }
+
+      document.getElementById('custPayMethod')?.addEventListener('change', updateReceiverNumber);
+      window.addEventListener('digivault_config_loaded', updateReceiverNumber);
+      setTimeout(updateReceiverNumber, 100);
+
       // 1-Click Copy Send Money Number with Tooltip
       const btnCopySendNo = document.getElementById('btnCopySendNo');
       if (btnCopySendNo) {
@@ -414,42 +426,46 @@
         const price = order.salePrice || order.sale_price || product?.salePrice || 0;
         const ref = order.orderNumber || order.order_number;
 
-        modal.innerHTML = `
-          <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-            <div class="card" style="max-width: 500px; width: 100%; text-align: center; padding: 32px; border: 2px solid var(--primary); max-height: 90vh; overflow-y: auto;">
-              <div style="font-size: 48px; margin-bottom: 8px;">🎉</div>
-              <h3 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px;">অর্ডার সফলভাবে গ্রহণ করা হয়েছে!</h3>
-              <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
-                পেমেন্ট ভেরিফাই হওয়ার ১৫-৩০ মিনিটের মধ্যে ডেলিভারি সম্পন্ন হবে।
-              </p>
+                const payNumber = (order.paymentMethod === 'nagad' || order.payment_method === 'nagad')
+                  ? (DIGIVAULT_CONFIG.nagadNumber || '01711019550')
+                  : (DIGIVAULT_CONFIG.bkashNumber || '01711019550');
 
-              <!-- Order Ref & Amount Due Box -->
-              <div style="background: rgba(0,0,0,0.4); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-subtle);">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 10px;">
-                  <span style="font-size: 12px; color: var(--text-muted);">অর্ডার রেফারেন্স:</span>
-                  <strong style="font-family: monospace; font-size: 18px; color: #38bdf8;">${ref}</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="font-size: 12px; color: var(--text-muted);">প্রদেয় পরিমাণ:</span>
-                  <strong style="font-size: 22px; font-weight: 900; color: #00df89;">৳${Number(price).toLocaleString()}</strong>
-                </div>
-              </div>
+                modal.innerHTML = `
+                  <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                    <div class="card" style="max-width: 500px; width: 100%; text-align: center; padding: 32px; border: 2px solid var(--primary); max-height: 90vh; overflow-y: auto;">
+                      <div style="font-size: 48px; margin-bottom: 8px;">🎉</div>
+                      <h3 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px;">অর্ডার সফলভাবে গ্রহণ করা হয়েছে!</h3>
+                      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
+                        পেমেন্ট ভেরিফাই হওয়ার ১৫-৩০ মিনিটের মধ্যে ডেলিভারি সম্পন্ন হবে।
+                      </p>
 
-              <!-- Send Money Instruction & 1-Click Copy -->
-              <div style="background: rgba(0, 223, 137, 0.08); border: 1px solid rgba(0, 223, 137, 0.3); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px; text-align: left;">
-                <div style="font-size: 12px; font-weight: 700; color: #00df89; margin-bottom: 4px;">
-                  💳 Send Money নম্বর (বিকাশ ও নগদ পার্সোনাল):
-                </div>
-                <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
-                  <input type="text" value="01711019550" readonly id="inpModalSendNo" style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
-                  <button type="button" class="btn btn-primary" id="btnCopyPayNo" style="padding: 8px 14px; font-size: 12px; white-space: nowrap;">
-                    📋 কপি নম্বর
-                  </button>
-                </div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
-                  টাকা পাঠিয়ে TrxID বা স্ক্রিনশট ট্র্যাকিং পেজে বা WhatsApp-এ পাঠান।
-                </div>
-              </div>
+                      <!-- Order Ref & Amount Due Box -->
+                      <div style="background: rgba(0,0,0,0.4); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-subtle);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 10px;">
+                          <span style="font-size: 12px; color: var(--text-muted);">অর্ডার রেফারেন্স:</span>
+                          <strong style="font-family: monospace; font-size: 18px; color: #38bdf8;">${ref}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                          <span style="font-size: 12px; color: var(--text-muted);">প্রদেয় পরিমাণ:</span>
+                          <strong style="font-size: 22px; font-weight: 900; color: #00df89;">৳${Number(price).toLocaleString()}</strong>
+                        </div>
+                      </div>
+
+                      <!-- Send Money Instruction & 1-Click Copy -->
+                      <div style="background: rgba(0, 223, 137, 0.08); border: 1px solid rgba(0, 223, 137, 0.3); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px; text-align: left;">
+                        <div style="font-size: 12px; font-weight: 700; color: #00df89; margin-bottom: 4px;">
+                          💳 Send Money নম্বর (${(order.paymentMethod === 'nagad' || order.payment_method === 'nagad') ? 'নগদ পার্সোনাল' : 'বিকাশ পার্সোনাল'}):
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                          <input type="text" value="${payNumber}" readonly id="inpModalSendNo" style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
+                          <button type="button" class="btn btn-primary" id="btnCopyPayNo" style="padding: 8px 14px; font-size: 12px; white-space: nowrap;">
+                            📋 কপি নম্বর
+                          </button>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                          টাকা পাঠিয়ে TrxID বা স্ক্রিনশট ট্র্যাকিং পেজে বা WhatsApp-এ পাঠান।
+                        </div>
+                      </div>
 
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <a href="track.html?ref=${ref}" class="btn btn-primary" style="width: 100%;">

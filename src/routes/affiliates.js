@@ -375,7 +375,10 @@ router.post(['/payout', '/payouts'], async (req, res) => {
       settlementAccount: affiliate.settlementAccount,
       status: 'Processing',
       notes: notes || '',
-      requestedAt: new Date().toISOString()
+      requestedAt: new Date().toISOString(),
+      // Idempotency key: client should send this on retry to prevent double-disbursement.
+      // Stored as disbursement_ref with a PARTIAL UNIQUE index (WHERE disbursement_ref IS NOT NULL).
+      disbursementRef: req.body.disbursement_ref || req.body.disbursementRef || `${affiliate.id}-${Date.now()}`
     };
 
     affiliate.payoutHistory = affiliate.payoutHistory || [];
@@ -385,7 +388,10 @@ router.post(['/payout', '/payouts'], async (req, res) => {
 
     if (isSupabaseConfigured() && affiliate.id) {
       try {
-        await supabase.from('affiliate_payouts').insert([{
+        // ON CONFLICT DO NOTHING on disbursement_ref ensures exactly-once insertion
+        // even on network-retry or double-click. If the row already exists (same ref),
+        // we skip silently and return success — the payout was already registered.
+        const { error: insertError } = await supabase.from('affiliate_payouts').insert([{
           id: payoutRecord.id,
           affiliate_id: affiliate.id,
           amount_bdt: requestedAmount,
@@ -393,8 +399,21 @@ router.post(['/payout', '/payouts'], async (req, res) => {
           settlement_rail: payoutRecord.paymentMethod,
           notes: notes || '',
           requested_at: payoutRecord.requestedAt,
-          disbursed_at: null
+          disbursed_at: null,
+          disbursement_ref: payoutRecord.disbursementRef
         }]);
+        // If duplicate ref — row already inserted, balance already deducted. Restore balance on this attempt.
+        if (insertError && insertError.code === '23505') {
+          affiliate.pendingBalanceBDT += requestedAmount;
+          affiliate.paidOutBDT -= requestedAmount;
+          return res.status(200).json({
+            ok: true,
+            success: true,
+            duplicate: true,
+            message: 'Payout request already registered (idempotent replay).',
+            disbursementRef: payoutRecord.disbursementRef
+          });
+        }
         await supabase.from('affiliates').update({
           pending_balance_bdt: affiliate.pendingBalanceBDT,
           paid_out_bdt: affiliate.paidOutBDT,

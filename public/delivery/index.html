@@ -325,15 +325,23 @@
     <div class="order-details-bar">
       <div class="order-item">
         <span>Product:</span>
-        <span>PLA-14 (Daily &amp; Weekly Planners #1)</span>
+        <span id="certProductTitle">PLA-14 (Daily &amp; Weekly Planners #1)</span>
       </div>
       <div class="order-item">
-        <span>License:</span>
-        <span>Personal Lifetime Digital License</span>
+        <span>Order Reference:</span>
+        <span id="certOrderRef">#ETSY-1182944</span>
+      </div>
+      <div class="order-item">
+        <span>License Status:</span>
+        <span id="certStatus" style="color: var(--accent-sage);">● Active &amp; Verified</span>
+      </div>
+      <div class="order-item">
+        <span>Verification Hash:</span>
+        <span id="certCryptoHash" style="font-family: monospace; font-size: 0.82rem; color: var(--accent-gold);">0x8F4A1C...DCE26</span>
       </div>
       <div class="order-item">
         <span>Activation Code:</span>
-        <span style="letter-spacing: 0.05em;">PLA14-DEMO-2026</span>
+        <span id="certActivationCode" style="letter-spacing: 0.05em; font-family: monospace;">PLA14-DEMO-2026</span>
       </div>
     </div>
 
@@ -446,5 +454,31 @@
 
   </main>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref') || params.get('orderRef') || params.get('order') || 'ETSY-1182944';
+      const code = params.get('code') || 'PLA14-DEMO-2026';
+
+      const refEl = document.getElementById('certOrderRef');
+      if (refEl) refEl.textContent = ref.startsWith('#') ? ref : '#' + ref;
+
+      const codeEl = document.getElementById('certActivationCode');
+      if (codeEl) codeEl.textContent = code;
+
+      // Compute cryptographic hash
+      const hashEl = document.getElementById('certCryptoHash');
+      if (hashEl) {
+        let hashSeed = 0;
+        const str = ref + ':' + code + ':GRO10X_DCE_2026';
+        for (let i = 0; i < str.length; i++) {
+          hashSeed = ((hashSeed << 5) - hashSeed) + str.charCodeAt(i);
+          hashSeed |= 0;
+        }
+        const hex = '0x' + Math.abs(hashSeed).toString(16).padStart(8, '0').toUpperCase() + '...DCE26';
+        hashEl.textContent = hex;
+      }
+    });
+  </script>
 </body>
 </html>

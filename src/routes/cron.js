@@ -23,7 +23,7 @@ function authorizeCron(req, res, next) {
 
   // In production, CRON_SECRET is strictly mandatory
   if (isProd && !cronSecret) {
-    console.error('⚠️ [Cron] CRON_SECRET not configured in production environment — blocking execution');
+    console.error('âš ï¸ [Cron] CRON_SECRET not configured in production environment â€” blocking execution');
     return res.status(403).json({ error: 'Cron blocked: CRON_SECRET must be configured in production' });
   }
 
@@ -32,7 +32,7 @@ function authorizeCron(req, res, next) {
     const isBearerValid = authHeader === `Bearer ${cronSecret}`;
     const isHeaderValid = cronHeader === cronSecret;
     if (!isBearerValid && !isHeaderValid) {
-      console.warn('⚠️ Unauthorized cron attempt blocked: invalid secret token');
+      console.warn('âš ï¸ Unauthorized cron attempt blocked: invalid secret token');
       return res.status(401).json({ error: 'Unauthorized cron request: invalid or missing secret token' });
     }
     return next();
@@ -166,11 +166,11 @@ async function fetchSupabaseSnapshot() {
   };
 }
 
-// 🛡️ Global Cron Authorization Guard for all /api/cron/* routes
+// ðŸ›¡ï¸ Global Cron Authorization Guard for all /api/cron/* routes
 router.use(authorizeCron);
 
 // GET /api/cron/morning-briefing
-router.get('/morning-briefing', async (req, res) => {
+router.get('/morning-briefing', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const owners = db.team.filter(t => t.accessLevel === 'Owner / Admin' && t.telegramId);
@@ -196,7 +196,7 @@ router.get('/morning-briefing', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Error in morning briefing cron:', error);
+    console.error('âŒ Error in morning briefing cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -225,7 +225,7 @@ router.get('/eod-summary', authorizeCron, async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Error in EOD summary cron:', error);
+    console.error('âŒ Error in EOD summary cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -250,12 +250,12 @@ router.get('/payment-reminders', authorizeCron, async (req, res) => {
     }
 
     // Build message
-    let msg = `⚠️ *Payment Reminder Summary*\n\n`;
+    let msg = `âš ï¸ *Payment Reminder Summary*\n\n`;
     msg += `There are *${overdueInvoices.length}* invoice(s) overdue by 7+ days:\n\n`;
     let totalOverdue = 0;
     
     overdueInvoices.forEach(inv => {
-      msg += `• *${inv.id}* - ${inv.clientName}\n`;
+      msg += `â€¢ *${inv.id}* - ${inv.clientName}\n`;
       msg += `   Amount: BDT ${Number(inv.amount).toLocaleString()}\n`;
       msg += `   Status: ${inv.status}\n\n`;
       totalOverdue += Number(inv.amount);
@@ -278,7 +278,7 @@ router.get('/payment-reminders', authorizeCron, async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Error in payment reminders cron:', error);
+    console.error('âŒ Error in payment reminders cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -300,11 +300,11 @@ router.get('/lead-followups', authorizeCron, async (req, res) => {
 
     let manualSentCount = 0;
     if (followUpLeads.length > 0) {
-      let msg = `🔥 *Lead Follow-up Reminders*\n\n`;
+      let msg = `ðŸ”¥ *Lead Follow-up Reminders*\n\n`;
       msg += `You have *${followUpLeads.length}* lead(s) with scheduled follow-ups due today:\n\n`;
       
       followUpLeads.forEach(lead => {
-        msg += `• *${lead.company || lead.contact_person}*\n`;
+        msg += `â€¢ *${lead.company || lead.contact_person}*\n`;
         msg += `   Service: ${lead.service}\n`;
         msg += `   Stage: ${lead.stage}\n`;
         msg += `   Phone: \`${lead.phone || 'N/A'}\`\n\n`;
@@ -353,12 +353,12 @@ router.get('/lead-followups', authorizeCron, async (req, res) => {
 
     let staleAlertsSent = 0;
     if (staleLeads.length > 0) {
-      let staleMsg = `⚠️ *STALE LEAD ALERT — ACTION REQUIRED*\n\n`;
+      let staleMsg = `âš ï¸ *STALE LEAD ALERT â€” ACTION REQUIRED*\n\n`;
       staleMsg += `There are *${staleLeads.length}* lead(s) in "New Inquiry" uncontacted for 48+ hours:\n\n`;
       staleLeads.slice(0, 8).forEach(lead => {
         const dateStr = (lead.created_at || lead.createdAt || '').split('T')[0];
-        staleMsg += `• *${lead.company || lead.contact_person || 'Lead'}* — ${lead.service || 'General'}\n`;
-        staleMsg += `  📞 \`${lead.phone || lead.whatsapp || 'No Phone'}\` | Created: ${dateStr}\n\n`;
+        staleMsg += `â€¢ *${lead.company || lead.contact_person || 'Lead'}* â€” ${lead.service || 'General'}\n`;
+        staleMsg += `  ðŸ“ž \`${lead.phone || lead.whatsapp || 'No Phone'}\` | Created: ${dateStr}\n\n`;
       });
       if (staleLeads.length > 8) {
         staleMsg += `_...and ${staleLeads.length - 8} more in CRM_\n\n`;
@@ -368,7 +368,7 @@ router.get('/lead-followups', authorizeCron, async (req, res) => {
       const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
       for (const owner of owners) {
         await sendTelegramNotification(owner.telegramId, staleMsg, [
-          [{ text: '📊 Open CRM Leads', url: 'https://gro10x-ai.vercel.app/admin?tab=leads' }]
+          [{ text: 'ðŸ“Š Open CRM Leads', url: 'https://gro10x-ai.vercel.app/admin?tab=leads' }]
         ], true);
         staleAlertsSent++;
       }
@@ -383,7 +383,7 @@ router.get('/lead-followups', authorizeCron, async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Error in lead followups cron:', error);
+    console.error('âŒ Error in lead followups cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -473,15 +473,15 @@ router.get('/weekly-digest', authorizeCron, async (req, res) => {
 
     const attendanceThisWeek = db.attendance.filter(a => new Date(a.date) >= oneWeekAgo).length;
 
-    let msg = `📊 *PURPLEOS WEEKLY DIGEST*\n\n`;
-    msg += `🗓️ *Last 7 Days Performance*\n`;
-    msg += `💰 Revenue Collected: *BDT ${newRevenue.toLocaleString()}*\n`;
-    msg += `💸 Expenses Logged: *BDT ${newExpenses.toLocaleString()}*\n`;
-    msg += `✅ Tasks Completed: *${tasksCompleted}*\n`;
-    msg += `🎯 New Leads: *${newLeads}*\n`;
-    msg += `⏰ Active Overdue Tasks: *${tasksOverdue}*\n`;
-    msg += `👨‍💼 Total Attendance Logs: *${attendanceThisWeek}*\n\n`;
-    msg += `_Have a productive week ahead!_ 🚀`;
+    let msg = `ðŸ“Š *PURPLEOS WEEKLY DIGEST*\n\n`;
+    msg += `ðŸ—“ï¸ *Last 7 Days Performance*\n`;
+    msg += `ðŸ’° Revenue Collected: *BDT ${newRevenue.toLocaleString()}*\n`;
+    msg += `ðŸ’¸ Expenses Logged: *BDT ${newExpenses.toLocaleString()}*\n`;
+    msg += `âœ… Tasks Completed: *${tasksCompleted}*\n`;
+    msg += `ðŸŽ¯ New Leads: *${newLeads}*\n`;
+    msg += `â° Active Overdue Tasks: *${tasksOverdue}*\n`;
+    msg += `ðŸ‘¨â€ðŸ’¼ Total Attendance Logs: *${attendanceThisWeek}*\n\n`;
+    msg += `_Have a productive week ahead!_ ðŸš€`;
 
     const owners = db.team.filter(t => t.accessLevel === 'Owner / Admin' && t.telegramId);
     let sentCount = 0;
@@ -497,7 +497,7 @@ router.get('/weekly-digest', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/eod-reminder — 6:30 PM BD reminder to team members missing EOD
+// GET /api/cron/eod-reminder â€” 6:30 PM BD reminder to team members missing EOD
 router.get('/eod-reminder', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -529,8 +529,8 @@ router.get('/eod-reminder', authorizeCron, async (req, res) => {
     for (const emp of missingEmployees) {
       const firstName = getFirstName(emp.name);
       await sendTelegramNotification(emp.telegramId,
-        `📝 *EOD REPORT REMINDER*\n\nHey ${firstName}! It's past 6 PM and your End-of-Day report for today hasn't been submitted yet.\n\nPlease submit your summary via bot or web workspace:`,
-        [[{ text: '📱 Open EOD Form', url: 'https://gro10x-ai.vercel.app/crew#eod' }]],
+        `ðŸ“ *EOD REPORT REMINDER*\n\nHey ${firstName}! It's past 6 PM and your End-of-Day report for today hasn't been submitted yet.\n\nPlease submit your summary via bot or web workspace:`,
+        [[{ text: 'ðŸ“± Open EOD Form', url: 'https://gro10x-ai.vercel.app/crew#eod' }]],
         true
       );
       sentCount++;
@@ -543,7 +543,7 @@ router.get('/eod-reminder', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/daily-briefing — 9:00 AM BD personal daily task briefing
+// GET /api/cron/daily-briefing â€” 9:00 AM BD personal daily task briefing
 router.get('/daily-briefing', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -556,7 +556,7 @@ router.get('/daily-briefing', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/late-clockin-alert — 10:00 AM BD late clock-in alert
+// GET /api/cron/late-clockin-alert â€” 10:00 AM BD late clock-in alert
 router.get('/late-clockin-alert', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -577,8 +577,8 @@ router.get('/late-clockin-alert', authorizeCron, async (req, res) => {
     for (const emp of lateEmployees) {
       const firstName = getFirstName(emp.name);
       await sendTelegramNotification(emp.telegramId,
-        `⏰ *ATTENDANCE REMINDER (10:00 AM)*\n\nHey ${firstName}! You haven't clocked in for studio work today yet.\n\nPlease clock in using the Mini App below:`,
-        [[{ text: '📍 Clock In Studio', url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=attendance' }]],
+        `â° *ATTENDANCE REMINDER (10:00 AM)*\n\nHey ${firstName}! You haven't clocked in for studio work today yet.\n\nPlease clock in using the Mini App below:`,
+        [[{ text: 'ðŸ“ Clock In Studio', url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=attendance' }]],
         true
       );
       sentCount++;
@@ -591,7 +591,7 @@ router.get('/late-clockin-alert', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/approval-expiry — Remind managers of stale approval items (>48h / >72h)
+// GET /api/cron/approval-expiry â€” Remind managers of stale approval items (>48h / >72h)
 router.get('/approval-expiry', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -615,15 +615,15 @@ router.get('/approval-expiry', authorizeCron, async (req, res) => {
       return res.json({ success: true, message: 'No stale approval requests found', timestamp: new Date().toISOString() });
     }
 
-    let msg = `⚠️ *PENDING APPROVALS EXPIRY ALERT*\n\n`;
-    if (staleLeaves.length) msg += `🌴 *${staleLeaves.length}* leave request(s) pending >48h without manager action\n`;
-    if (staleExpenses.length) msg += `🧾 *${staleExpenses.length}* expense claim(s) pending >72h without approval\n`;
+    let msg = `âš ï¸ *PENDING APPROVALS EXPIRY ALERT*\n\n`;
+    if (staleLeaves.length) msg += `ðŸŒ´ *${staleLeaves.length}* leave request(s) pending >48h without manager action\n`;
+    if (staleExpenses.length) msg += `ðŸ§¾ *${staleExpenses.length}* expense claim(s) pending >72h without approval\n`;
     msg += `\nPlease review and approve/reject pending items in the Manager/Admin Portal.`;
 
     let sentCount = 0;
     for (const mgr of managers) {
       if (mgr.telegramId) {
-        await sendTelegramNotification(mgr.telegramId, msg, [[{ text: '🌐 Open Manager Portal', url: 'https://gro10x-ai.vercel.app/manager' }]], true);
+        await sendTelegramNotification(mgr.telegramId, msg, [[{ text: 'ðŸŒ Open Manager Portal', url: 'https://gro10x-ai.vercel.app/manager' }]], true);
         sentCount++;
       }
     }
@@ -635,7 +635,7 @@ router.get('/approval-expiry', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/invoice-due-reminder — 3-day upcoming invoice due alert
+// GET /api/cron/invoice-due-reminder â€” 3-day upcoming invoice due alert
 router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -652,9 +652,9 @@ router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
 
     if (!upcomingInvoices.length) return res.json({ success: true, message: 'No upcoming invoice dues', sentCount: 0 });
 
-    let msg = `💳 *INVOICE DUE REMINDER (Next 3 Days)*\n\n`;
+    let msg = `ðŸ’³ *INVOICE DUE REMINDER (Next 3 Days)*\n\n`;
     upcomingInvoices.forEach(inv => {
-      msg += `• *${inv.id}* — ${inv.client_name || inv.clientName || 'Client'} — BDT ${Number(inv.amount || 0).toLocaleString()}\n`;
+      msg += `â€¢ *${inv.id}* â€” ${inv.client_name || inv.clientName || 'Client'} â€” BDT ${Number(inv.amount || 0).toLocaleString()}\n`;
       msg += `  Due: *${inv.due_date || inv.dueDate}*\n\n`;
     });
 
@@ -674,11 +674,11 @@ router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
       const clientTg = client?.telegram_id || client?.telegramId;
       if (clientTg) {
         const clientMsg =
-          `💳 *INVOICE DUE REMINDER*\n\n` +
+          `ðŸ’³ *INVOICE DUE REMINDER*\n\n` +
           `Dear *${client.name || 'Brand Partner'}*,\n` +
           `Your invoice *${inv.id}* for *BDT ${Number(inv.amount || 0).toLocaleString()}* is due on *${inv.due_date || inv.dueDate || 'Soon'}*.\n\n` +
           `You can view details or submit payment confirmation directly in your Client Portal below.`;
-        const keyboard = [[{ text: '💳 Open Client Portal', web_app: { url: 'https://gro10x-ai.vercel.app/client#invoices' } }]];
+        const keyboard = [[{ text: 'ðŸ’³ Open Client Portal', web_app: { url: 'https://gro10x-ai.vercel.app/client#invoices' } }]];
         await sendTelegramNotification(clientTg, clientMsg, keyboard, false);
       }
     }
@@ -690,7 +690,7 @@ router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/social-dispatch — Daily check for approved posts due for 1-click dispatch
+// GET /api/cron/social-dispatch â€” Daily check for approved posts due for 1-click dispatch
 router.get('/social-dispatch', authorizeCron, async (req, res) => {
   try {
     const { checkScheduledSocialDispatches } = require('../services/automation');
@@ -704,7 +704,7 @@ router.get('/social-dispatch', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/eod-evening-digest — 7:30 PM BD Department Manager EOD summary
+// GET /api/cron/eod-evening-digest â€” 7:30 PM BD Department Manager EOD summary
 router.get('/eod-evening-digest', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -717,7 +717,7 @@ router.get('/eod-evening-digest', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/eod-daily-prompt — 7:00 PM BD EOD reminder prompt
+// GET /api/cron/eod-daily-prompt â€” 7:00 PM BD EOD reminder prompt
 router.get('/eod-daily-prompt', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -730,7 +730,7 @@ router.get('/eod-daily-prompt', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/morning-executive-briefing — 9:00 AM Morning Executive Briefing
+// GET /api/cron/morning-executive-briefing â€” 9:00 AM Morning Executive Briefing
 router.get('/morning-executive-briefing', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -743,7 +743,7 @@ router.get('/morning-executive-briefing', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/evening-digest — 8:30 PM Evening Executive Digest
+// GET /api/cron/evening-digest â€” 8:30 PM Evening Executive Digest
 router.get('/evening-digest', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -756,7 +756,7 @@ router.get('/evening-digest', authorizeCron, async (req, res) => {
   }
 });
 
-// GET /api/cron/weekly-kpi-summary — Weekly Executive KPI Summary
+// GET /api/cron/weekly-kpi-summary â€” Weekly Executive KPI Summary
 router.get('/weekly-kpi-summary', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -770,7 +770,7 @@ router.get('/weekly-kpi-summary', authorizeCron, async (req, res) => {
 });
 
 
-// GET /api/cron/lead-pipeline-summary — Sunday 9:00 AM BD Weekly Lead Pipeline Report
+// GET /api/cron/lead-pipeline-summary â€” Sunday 9:00 AM BD Weekly Lead Pipeline Report
 router.get('/lead-pipeline-summary', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
@@ -799,37 +799,37 @@ router.get('/lead-pipeline-summary', authorizeCron, async (req, res) => {
     });
     const sortedServices = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
 
-    const dateRangeStr = `${oneWeekAgo.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    const dateRangeStr = `${oneWeekAgo.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} â€“ ${now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-    let msg = `📊 *PURPLEOS WEEKLY LEAD PIPELINE REPORT*\n`;
-    msg += `🗓️ *Period:* ${dateRangeStr}\n\n`;
-    msg += `📥 *New Inquiries This Week:* *${weeklyNewLeads.length}*\n`;
-    msg += `📞 *Active Uncontacted:* *${newInquiryCount}*\n`;
-    msg += `🤝 *In Conversation / Discovery:* *${contactedCount}*\n`;
-    msg += `📋 *Proposals In Review:* *${proposalSentCount}*\n`;
-    msg += `🏆 *Deals Closed / Won (7d):* *${wonThisWeek}*\n`;
-    if (lostCount > 0) msg += `❌ *Lost / Disqualified:* ${lostCount}\n`;
+    let msg = `ðŸ“Š *PURPLEOS WEEKLY LEAD PIPELINE REPORT*\n`;
+    msg += `ðŸ—“ï¸ *Period:* ${dateRangeStr}\n\n`;
+    msg += `ðŸ“¥ *New Inquiries This Week:* *${weeklyNewLeads.length}*\n`;
+    msg += `ðŸ“ž *Active Uncontacted:* *${newInquiryCount}*\n`;
+    msg += `ðŸ¤ *In Conversation / Discovery:* *${contactedCount}*\n`;
+    msg += `ðŸ“‹ *Proposals In Review:* *${proposalSentCount}*\n`;
+    msg += `ðŸ† *Deals Closed / Won (7d):* *${wonThisWeek}*\n`;
+    if (lostCount > 0) msg += `âŒ *Lost / Disqualified:* ${lostCount}\n`;
     msg += `\n`;
 
     if (sortedServices.length > 0) {
-      msg += `🔥 *Top Requested Services:*\n`;
+      msg += `ðŸ”¥ *Top Requested Services:*\n`;
       sortedServices.forEach(([svc, count]) => {
-        msg += `  • ${svc}: *${count} inquiries*\n`;
+        msg += `  â€¢ ${svc}: *${count} inquiries*\n`;
       });
       msg += `\n`;
     }
 
     if (staleCount > 0) {
-      msg += `⚠️ *Attention:* *${staleCount}* lead(s) uncontacted for >48h\n\n`;
+      msg += `âš ï¸ *Attention:* *${staleCount}* lead(s) uncontacted for >48h\n\n`;
     }
 
-    msg += `🌐 Open CRM Leads: https://gro10x-ai.vercel.app/admin?tab=leads`;
+    msg += `ðŸŒ Open CRM Leads: https://gro10x-ai.vercel.app/admin?tab=leads`;
 
     const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
     let sentCount = 0;
     for (const owner of owners) {
       await sendTelegramNotification(owner.telegramId, msg, [
-        [{ text: '📊 Open CRM Leads Pipeline', url: 'https://gro10x-ai.vercel.app/admin?tab=leads' }]
+        [{ text: 'ðŸ“Š Open CRM Leads Pipeline', url: 'https://gro10x-ai.vercel.app/admin?tab=leads' }]
       ], true);
       sentCount++;
     }
@@ -881,23 +881,23 @@ router.get('/digivault-renewals', authorizeCron, async (req, res) => {
     const unalerted = expiring.filter(o => !o.renewal_reminder_sent);
     let totalPotentialRev = expiring.reduce((sum, o) => sum + Number(o.sale_price || 0), 0);
 
-    let msg = `🔔 *DigiVault Daily Renewal Intelligence*\n\n`;
-    msg += `📅 *Date:* ${todayStr}\n`;
-    msg += `📋 *Expiring within 3 days:* ${expiring.length} active subscription(s)\n`;
-    msg += `💰 *Renewal Revenue Potential:* ৳${totalPotentialRev.toLocaleString()}\n\n`;
+    let msg = `ðŸ”” *DigiVault Daily Renewal Intelligence*\n\n`;
+    msg += `ðŸ“… *Date:* ${todayStr}\n`;
+    msg += `ðŸ“‹ *Expiring within 3 days:* ${expiring.length} active subscription(s)\n`;
+    msg += `ðŸ’° *Renewal Revenue Potential:* à§³${totalPotentialRev.toLocaleString()}\n\n`;
 
     expiring.slice(0, 10).forEach(o => {
       const isPast = o.expiry_date < todayStr;
-      const statusIcon = isPast ? '⚠️ EXPIRED' : '⏳ Due';
-      msg += `  • *${o.customer_name}* — ${o.product_name} (${o.duration})\n`;
-      msg += `    ${statusIcon}: \`${o.expiry_date}\` · Price: ৳${Number(o.sale_price || 0).toLocaleString()}\n`;
+      const statusIcon = isPast ? 'âš ï¸ EXPIRED' : 'â³ Due';
+      msg += `  â€¢ *${o.customer_name}* â€” ${o.product_name} (${o.duration})\n`;
+      msg += `    ${statusIcon}: \`${o.expiry_date}\` Â· Price: à§³${Number(o.sale_price || 0).toLocaleString()}\n`;
     });
 
     if (expiring.length > 10) {
       msg += `\n_...and ${expiring.length - 10} more subscriptions._\n`;
     }
 
-    msg += `\n🌐 Manage DigiVault: https://gro10x-ai.vercel.app/app/index.html`;
+    msg += `\nðŸŒ Manage DigiVault: https://gro10x-ai.vercel.app/app/index.html`;
 
     // Mark alerted
     const idsToMark = unalerted.map(o => o.id);
@@ -928,7 +928,7 @@ router.get('/digivault-renewals', authorizeCron, async (req, res) => {
 });
 
 // GET /api/cron/dbm-morning-nudge
-router.get('/dbm-morning-nudge', async (req, res) => {
+router.get('/dbm-morning-nudge', authorizeCron, async (req, res) => {
   try {
     const { loadBrandsState } = require('./brands');
     const brandsState = await loadBrandsState();
@@ -969,17 +969,17 @@ router.get('/dbm-morning-nudge', async (req, res) => {
       const firstName = (dbm.name || 'Brand Manager').split(' ')[0];
 
       const nudgeMsg =
-        `☀️ *Good Morning, ${firstName}! Ready to build?*\n\n` +
-        `📋 *TODAY'S PRODUCTION MISSION:*\n` +
-        `🏪 *Active Brand:* ${activeBrand.name}\n` +
-        `🎯 *Target Batch:* ${batchLabel} (*${dailyTarget} Products Quota*)\n` +
-        `📦 *Catalog Progress:* ${100 - drafts.length}/100 Completed\n` +
-        `⏰ *EOD Standup Deadline:* 5:00 PM BST\n\n` +
-        `🚀 *Recommended Flow (3 Blocks):*\n` +
-        `• 🌅 *9AM–1PM:* 4 Product Blueprints & Vaults\n` +
-        `• ⚡ *1PM–5PM:* 4 Mockups, Videos & AI SEO\n` +
-        `• 📝 *5PM–6PM:* Submit QC Review & Daily Standup\n\n` +
-        `🌐 [Open DBM Workspace](https://gro10x-ai.vercel.app/dbm#workspace) · [Studio](https://gro10x-ai.vercel.app/dbm#studio)`;
+        `â˜€ï¸ *Good Morning, ${firstName}! Ready to build?*\n\n` +
+        `ðŸ“‹ *TODAY'S PRODUCTION MISSION:*\n` +
+        `ðŸª *Active Brand:* ${activeBrand.name}\n` +
+        `ðŸŽ¯ *Target Batch:* ${batchLabel} (*${dailyTarget} Products Quota*)\n` +
+        `ðŸ“¦ *Catalog Progress:* ${100 - drafts.length}/100 Completed\n` +
+        `â° *EOD Standup Deadline:* 5:00 PM BST\n\n` +
+        `ðŸš€ *Recommended Flow (3 Blocks):*\n` +
+        `â€¢ ðŸŒ… *9AMâ€“1PM:* 4 Product Blueprints & Vaults\n` +
+        `â€¢ âš¡ *1PMâ€“5PM:* 4 Mockups, Videos & AI SEO\n` +
+        `â€¢ ðŸ“ *5PMâ€“6PM:* Submit QC Review & Daily Standup\n\n` +
+        `ðŸŒ [Open DBM Workspace](https://gro10x-ai.vercel.app/dbm#workspace) Â· [Studio](https://gro10x-ai.vercel.app/dbm#studio)`;
 
       try {
         await sendTelegramNotification(dbm.telegram_id, nudgeMsg, null, true);
@@ -996,13 +996,13 @@ router.get('/dbm-morning-nudge', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Error in DBM morning nudge cron:', error);
+    console.error('âŒ Error in DBM morning nudge cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
 
 // GET /api/cron/dbm-standup-reminder
-router.get('/dbm-standup-reminder', async (req, res) => {
+router.get('/dbm-standup-reminder', authorizeCron, async (req, res) => {
   try {
     const { data: dbmProfiles } = await supabase
       .from('profiles')
@@ -1072,10 +1072,10 @@ router.get('/dbm-standup-reminder', async (req, res) => {
 
       const firstName = (dbm.name || 'Brand Manager').split(' ')[0];
       const reminderMsg =
-        `🕔 *5:00 PM Standup Reminder — ${firstName}!*\n\n` +
+        `ðŸ•” *5:00 PM Standup Reminder â€” ${firstName}!*\n\n` +
         `It's time to log your daily output report. It takes less than 30 seconds!\n\n` +
         `Tap the button below or reply with /dbmstandup:\n\n` +
-        `🌐 [Submit EOD Standup Online](https://gro10x-ai.vercel.app/dbm#standup)`;
+        `ðŸŒ [Submit EOD Standup Online](https://gro10x-ai.vercel.app/dbm#standup)`;
 
       try {
         await sendTelegramNotification(dbm.telegram_id, reminderMsg, null, true);
@@ -1092,37 +1092,37 @@ router.get('/dbm-standup-reminder', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Error in DBM standup reminder cron:', error);
+    console.error('âŒ Error in DBM standup reminder cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
 
 // GET /api/cron/dce-renewals
-router.get('/dce-renewals', async (req, res) => {
+router.get('/dce-renewals', authorizeCron, async (req, res) => {
   try {
     const { runDCERenewalCheck } = require('../services/dce-renewal-cron');
     const result = await runDCERenewalCheck();
     return res.json(result);
   } catch (error) {
-    console.error('❌ Error in DCE renewals cron:', error);
+    console.error('âŒ Error in DCE renewals cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
 
 // GET /api/cron/warranty-check
-router.get('/warranty-check', async (req, res) => {
+router.get('/warranty-check', authorizeCron, async (req, res) => {
   try {
     const { runWarrantyCheck } = require('../services/warranty-cron');
     const result = await runWarrantyCheck();
     return res.json(result);
   } catch (error) {
-    console.error('❌ Error in warranty check cron:', error);
+    console.error('âŒ Error in warranty check cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
 
 // GET /api/cron/defect-escalation
-router.get('/defect-escalation', async (req, res) => {
+router.get('/defect-escalation', authorizeCron, async (req, res) => {
   try {
     const { runDefectEscalationCheck } = require('../services/defect-escalation-cron');
     const result = await runDefectEscalationCheck();
@@ -1133,19 +1133,19 @@ router.get('/defect-escalation', async (req, res) => {
       escalations: result.escalations || []
     });
   } catch (error) {
-    console.error('❌ Error in defect escalation cron:', error);
+    console.error('âŒ Error in defect escalation cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });
 
 // GET /api/cron/weekly-executive
-router.get('/weekly-executive', async (req, res) => {
+router.get('/weekly-executive', authorizeCron, async (req, res) => {
   try {
     const { runWeeklyExecutiveCheck } = require('../services/weekly-executive-cron');
     const result = await runWeeklyExecutiveCheck();
     return res.json(result);
   } catch (error) {
-    console.error('❌ Error in weekly executive cron:', error);
+    console.error('âŒ Error in weekly executive cron:', error);
     return res.status(500).json({ error: error.message });
   }
 });

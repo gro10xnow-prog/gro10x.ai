@@ -19,6 +19,7 @@ const {
   getAffiliates,
   createAffiliate,
   createReferralLink,
+  recordClickAndResolve,
   getConversions
 } = require('../services/dce-affiliates');
 const { requireDCEAdmin, requireAffiliateJWT } = require('../middleware/dce-auth');
@@ -62,6 +63,48 @@ router.get('/conversions', requireDCEAdmin, asyncHandler(async (req, res) => {
   const total = conversions.length;
   const paginatedConversions = conversions.slice(offset, offset + limit);
   return paginated(res, paginatedConversions, { limit, offset, page, total });
+}));
+
+/**
+ * 4. Record Click and Resolve Destination URL (Public / Redirect Handler)
+ */
+router.all(['/click/:shortCode', '/r/:shortCode'], asyncHandler(async (req, res) => {
+  const shortCode = req.params.shortCode || req.body?.shortCode || req.query?.shortCode;
+  if (!shortCode) return fail(res, 'shortCode is required', 400);
+
+  const resolved = await recordClickAndResolve(shortCode);
+  if (!resolved) return fail(res, 'Referral link not found', 404);
+
+  // Set 30-day attribution cookie
+  res.cookie('dce_ref', resolved.shortCode, {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    httpOnly: false,
+    sameSite: 'lax',
+    path: '/'
+  });
+
+  if (req.query.redirect === 'true' && resolved.destinationUrl) {
+    return res.redirect(resolved.destinationUrl);
+  }
+
+  return ok(res, resolved);
+}));
+
+router.post('/click', asyncHandler(async (req, res) => {
+  const shortCode = req.body?.shortCode || req.query?.shortCode;
+  if (!shortCode) return fail(res, 'shortCode is required', 400);
+
+  const resolved = await recordClickAndResolve(shortCode);
+  if (!resolved) return fail(res, 'Referral link not found', 404);
+
+  res.cookie('dce_ref', resolved.shortCode, {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    httpOnly: false,
+    sameSite: 'lax',
+    path: '/'
+  });
+
+  return ok(res, resolved);
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────

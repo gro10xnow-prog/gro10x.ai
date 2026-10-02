@@ -1220,14 +1220,27 @@
       listEl.innerHTML = (card.keyBottlenecks || ['Data pipeline standardization required', 'API rate limit governance setup']).map(b => `<li>${b}</li>`).join('');
     }
 
+    let agencyWhatsApp = '8801711019550';
+    async function loadAgencyConfig() {
+      try {
+        const res = await fetch('/api/catalog/config');
+        if (res.ok) {
+          const cfg = await res.json();
+          if (cfg.agencyWhatsApp) agencyWhatsApp = String(cfg.agencyWhatsApp).replace(/\D/g, '');
+        }
+      } catch (_) {}
+    }
+    loadAgencyConfig();
+
     function openConsultationBooking() {
       const company = encodeURIComponent(document.getElementById('auditCompanyName').value.trim() || 'Enterprise Client');
       const email = encodeURIComponent(document.getElementById('auditEmail').value.trim() || '');
       const phone = encodeURIComponent(document.getElementById('auditPhone').value.trim() || '');
-      const msg = `Hello GRO10X team, we just completed the AI Readiness Diagnostic for ${decodeURIComponent(company)} and would like to schedule our 14-day sprint consultation.`;
+      const score = document.getElementById('resScoreNum')?.textContent || '75';
+      const msg = `Hello GRO10X team, we just completed the AI Readiness Diagnostic for ${decodeURIComponent(company)} (Score: ${score}/100) and would like to schedule our rapid sprint consultation.`;
       
       // Open WhatsApp or email trigger
-      window.open(`https://wa.me/8801711019550?text=${encodeURIComponent(msg)}`, '_blank');
+      window.open(`https://wa.me/${agencyWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function resetDiagnostic() {

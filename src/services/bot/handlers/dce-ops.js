@@ -16,6 +16,8 @@
 const { supabase, isSupabaseConfigured } = require('../../supabase');
 const state = require('../../state');
 
+const BASE_URL = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+
 /**
  * 1. Handle /dce_stats
  */
@@ -69,7 +71,8 @@ async function handleDCEStats(teamBot, msg) {
         { text: '🎫 Support Tickets', callback_data: 'dce_cmd:tickets' }
       ],
       [
-        { text: '🌐 Open Desktop Portal', url: 'https://gro10x-ai.vercel.app/workspace?engineId=engine3#pnl' }
+        { text: '⚡ Open DCE Portal', url: `${BASE_URL}/dce` },
+        { text: '📊 Workspace P&L', url: `${BASE_URL}/workspace?engineId=engine3#pnl` }
       ]
     ]
   };
@@ -165,7 +168,7 @@ async function handleDCETickets(teamBot, msg) {
 
   const keyboard = {
     inline_keyboard: [
-      [{ text: '🌐 Open Helpdesk Portal', url: 'https://gro10x-ai.vercel.app/workspace?engineId=engine3#tickets' }]
+      [{ text: '🌐 Open Helpdesk Portal', url: `${BASE_URL}/dce/operations` }]
     ]
   };
 
@@ -193,7 +196,8 @@ async function handleDCEMenu(teamBot, msg) {
         { text: '💰 Settlement Batches', callback_data: 'dce_cmd:settlements' }
       ],
       [
-        { text: '🌐 Desktop Hub (Full Ops)', url: 'https://gro10x-ai.vercel.app/workspace?engineId=engine3#pnl' }
+        { text: '⚡ Open DCE Portal', url: `${BASE_URL}/dce` },
+        { text: '📊 Workspace P&L', url: `${BASE_URL}/workspace?engineId=engine3#pnl` }
       ]
     ]
   };
@@ -228,7 +232,7 @@ async function sendSaleAlertNotification(teamBot, orderData) {
 
   const inlineKeyboard = isPhysical
     ? [[{ text: '📦 Attach Tracking Info', callback_data: `dce_track:${orderData.orderId}` }]]
-    : [[{ text: '🔍 View Order in Inbox', url: `https://gro10x-ai.vercel.app/workspace?engineId=engine3#invoices` }]];
+    : [[{ text: '🛒 View Order in DCE Inbox', url: `${BASE_URL}/dce/orders` }]];
 
   try {
     await teamBot.sendMessage(groupId, text, {
@@ -261,7 +265,7 @@ async function sendSettlementApprovalAlert(teamBot, batchData) {
         { text: `✅ Approve Payout ($${Number(batchData.total_payable || 0).toFixed(2)})`, callback_data: `dce_approve_batch:${batchData.id}` }
       ],
       [
-        { text: '🔍 Inspect on Web', url: 'https://gro10x-ai.vercel.app/workspace?engineId=engine3#invoices' }
+        { text: '🔍 Inspect on Web', url: `${BASE_URL}/dce/operations` }
       ]
     ]
   };
@@ -290,6 +294,17 @@ async function handleDCECallbackQuery(teamBot, query) {
   }
   if (data === 'dce_cmd:tickets') {
     return handleDCETickets(teamBot, query.message);
+  }
+  if (data === 'dce_cmd:settlements') {
+    const text = `💰 *CREATOR & VENDOR SETTLEMENTS*\n━━━━━━━━━━━━━━━━━━━━\n` +
+      `Access the monthly settlement clearinghouse to calculate and approve creator royalties.\n\n` +
+      `_Actions:_ Use the web operations portal below to manage settlement batches.`;
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '🌐 Open Settlement Ledger', url: `${BASE_URL}/dce/operations` }]
+      ]
+    };
+    return teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: keyboard });
   }
 
   // 1-Tap Courier Dispatch Prompt
@@ -480,7 +495,7 @@ async function handleCustomerTrack(teamBot, msg, orderRef) {
   const keyboard = {
     inline_keyboard: [
       [
-        { text: '🌐 Open Web Delivery Portal', url: `https://gro10x-ai.vercel.app/dce/track?ref=${encodeURIComponent(cleanRef)}` }
+        { text: '🌐 Open Web Delivery Portal', url: `${BASE_URL}/dce/track?ref=${encodeURIComponent(cleanRef)}` }
       ],
       [
         { text: '🎫 Report Issue / Request Support', callback_data: `dce_tkt_order:${cleanRef}` }
@@ -540,6 +555,7 @@ module.exports = {
   sendSaleAlertNotification,
   sendSettlementApprovalAlert,
   handleDCECallbackQuery,
+  handleDCEOpsCallback: handleDCECallbackQuery,
   handleDCETrackingWizard,
   handleCustomerTrack,
   handleDCETicketWizard

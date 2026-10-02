@@ -226,35 +226,66 @@ async function logRetainerHours(projectId, entry = {}) {
     loggedAt: new Date().toISOString()
   };
 
-  bank.logs.push(newLog);
-  bank.lastUpdatedAt = new Date().toISOString();
-
-  const summary = computeBankSummary(bank);
+  let summary;
 
   if (isSupabaseConfigured()) {
     try {
-      await supabase.from('retainer_hours_logs').insert([{
-        id: logId,
-        project_id: projectId,
-        hours,
-        task_description: taskDesc,
-        category: entry.category || 'ai_development',
-        deliverable_id: entry.deliverableId || null,
-        logged_by: engineerName,
-        notes: notesText,
-        logged_at: newLog.loggedAt
-      }]);
-      await supabase.from('retainer_banks').upsert({
-        project_id: projectId,
-        total_purchased_hours: bank.totalPurchasedHours,
-        rollover_hours: bank.rolloverHours,
-        hourly_rate_usd: bank.hourlyRateUsd,
-        billing_cycle_start: bank.billingCycleStart,
-        billing_cycle_end: bank.billingCycleEnd,
-        status: summary.status,
-        updated_at: bank.lastUpdatedAt
+      // 1. Attempt atomic stored procedure with row-level pessimistic lock
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc('burn_retainer_hours', {
+        p_project_id: projectId,
+        p_hours: hours,
+        p_task_description: taskDesc,
+        p_category: entry.category || 'ai_development',
+        p_deliverable_id: entry.deliverableId || null,
+        p_logged_by: engineerName,
+        p_notes: notesText
       });
-    } catch (_) {}
+
+      if (!rpcErr && rpcRes && rpcRes.success) {
+        newLog.id = rpcRes.logId || logId;
+        newLog.loggedAt = rpcRes.loggedAt || newLog.loggedAt;
+        bank.logs.push(newLog);
+        bank.lastUpdatedAt = new Date().toISOString();
+        bank.status = rpcRes.status || bank.status;
+        summary = computeBankSummary(bank);
+      } else {
+        // Fallback if RPC is pending migration in DB
+        bank.logs.push(newLog);
+        bank.lastUpdatedAt = new Date().toISOString();
+        summary = computeBankSummary(bank);
+
+        await supabase.from('retainer_hours_logs').insert([{
+          id: logId,
+          project_id: projectId,
+          hours,
+          task_description: taskDesc,
+          category: entry.category || 'ai_development',
+          deliverable_id: entry.deliverableId || null,
+          logged_by: engineerName,
+          notes: notesText,
+          logged_at: newLog.loggedAt
+        }]);
+
+        await supabase.from('retainer_banks').upsert({
+          project_id: projectId,
+          total_purchased_hours: bank.totalPurchasedHours,
+          rollover_hours: bank.rolloverHours,
+          hourly_rate_usd: bank.hourlyRateUsd,
+          billing_cycle_start: bank.billingCycleStart,
+          billing_cycle_end: bank.billingCycleEnd,
+          status: summary.status,
+          updated_at: bank.lastUpdatedAt
+        });
+      }
+    } catch (_) {
+      bank.logs.push(newLog);
+      bank.lastUpdatedAt = new Date().toISOString();
+      summary = computeBankSummary(bank);
+    }
+  } else {
+    bank.logs.push(newLog);
+    bank.lastUpdatedAt = new Date().toISOString();
+    summary = computeBankSummary(bank);
   }
 
   // Dispatch Retainer Burndown Telegram Alert if nearing capacity (>=75%), critical capacity (<15%), or overage

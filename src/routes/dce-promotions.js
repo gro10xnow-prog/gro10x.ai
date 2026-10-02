@@ -22,14 +22,19 @@ const { promoLimiter, validateSchema, whitelist, isValidUUID } = require('../mid
 /**
  * 1. Validate & Compute Discount for Checkout / Simulator (PUBLIC)
  */
-router.post('/validate', promoLimiter, validateSchema({
+router.post('/validate', promoLimiter, (req, res, next) => {
+  if (req.body && req.body.orderTotal === undefined && req.body.orderAmount !== undefined) {
+    req.body.orderTotal = Number(req.body.orderAmount);
+  }
+  next();
+}, validateSchema({
   code: { type: 'string', required: true, minLength: 1 },
   orderTotal: { type: 'number', required: true, min: 0 }
 }), asyncHandler(async (req, res) => {
-  const { code, orderTotal, brandId, skuIds } = req.body;
+  const { code, orderTotal, brandId, skuIds, currency } = req.body;
 
   try {
-    const result = await evaluateCoupon({ code, orderTotal: Number(orderTotal), brandId, skuIds });
+    const result = await evaluateCoupon({ code, orderTotal: Number(orderTotal), brandId, skuIds, currency });
     return ok(res, result);
   } catch (err) {
     return fail(res, err.message, 400);

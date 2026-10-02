@@ -98,16 +98,21 @@ async function evaluateCoupon(arg1, arg2) {
     orderTotal = opts.orderTotal || opts.orderAmount || 0;
     brandId = opts.brandId;
     skuIds = opts.skuIds || (opts.skuId ? [opts.skuId] : []);
+    currency = opts.currency || 'USD';
   } else if (arg1 && typeof arg1 === 'object') {
     code = arg1.code;
     orderTotal = arg1.orderTotal || arg1.orderAmount || 0;
     brandId = arg1.brandId;
     skuIds = arg1.skuIds || (arg1.skuId ? [arg1.skuId] : []);
+    currency = arg1.currency || 'USD';
   }
 
   if (!code) throw new Error('Coupon code is required');
   const normalizedCode = code.trim().toUpperCase();
   const total = Number(orderTotal) || 0;
+  const isBdt = String(currency).toUpperCase() === 'BDT';
+  const fxRate = isBdt ? 120 : 1;
+  const currSymbol = isBdt ? '৳' : '$';
 
   let coupon = null;
 
@@ -174,12 +179,13 @@ async function evaluateCoupon(arg1, arg2) {
     };
   }
 
-  if (coupon.min_order_usd && total < Number(coupon.min_order_usd)) {
+  const effectiveMinSpend = coupon.min_order_usd ? Number(coupon.min_order_usd) * fxRate : 0;
+  if (effectiveMinSpend > 0 && total < effectiveMinSpend) {
     return {
       valid: false,
       reason: 'MIN_SPEND_NOT_MET',
-      message: `Minimum order amount of $${Number(coupon.min_order_usd).toFixed(2)} required to use this code.`,
-      minOrderRequired: Number(coupon.min_order_usd)
+      message: `Minimum order amount of ${currSymbol}${effectiveMinSpend.toFixed(isBdt ? 0 : 2)} required to use this code.`,
+      minOrderRequired: effectiveMinSpend
     };
   }
 
@@ -187,12 +193,14 @@ async function evaluateCoupon(arg1, arg2) {
   let discountAmount = 0;
   if (coupon.discount_type === 'PERCENTAGE') {
     discountAmount = (total * (Number(coupon.discount_value) / 100));
-    if (coupon.max_discount_usd && discountAmount > Number(coupon.max_discount_usd)) {
-      discountAmount = Number(coupon.max_discount_usd);
+    const effectiveMaxDiscount = coupon.max_discount_usd ? Number(coupon.max_discount_usd) * fxRate : null;
+    if (effectiveMaxDiscount && discountAmount > effectiveMaxDiscount) {
+      discountAmount = effectiveMaxDiscount;
     }
   } else {
-    // Fixed amount discount
-    discountAmount = Math.min(total, Number(coupon.discount_value));
+    // Fixed amount discount (scaled to currency)
+    const effectiveFixed = Number(coupon.discount_value) * fxRate;
+    discountAmount = Math.min(total, effectiveFixed);
   }
 
   discountAmount = Math.round(discountAmount * 100) / 100;
@@ -210,6 +218,7 @@ async function evaluateCoupon(arg1, arg2) {
     discountAmount,
     discount_amount: discountAmount,
     finalAmount,
+    currency: isBdt ? 'BDT' : 'USD',
     coupon
   };
 }

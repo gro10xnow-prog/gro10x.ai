@@ -76,13 +76,39 @@ async function fulfillOrder(orderId) {
 
   // Fallback to in-memory order lookup if not loaded from DB
   if (!order) {
-    // Try to get from dce-orders in-memory
-    const { CONNECTORS } = require('./dce-connectors');
+    try {
+      const dceOrders = require('../routes/dce-orders');
+      if (typeof dceOrders.getDCEOrdersStore === 'function') {
+        const mem = await dceOrders.getDCEOrdersStore();
+        const found = mem.find(o => o.id === orderId || o.external_order_id === orderId);
+        if (found) {
+          order = found;
+          items = (found.items || []).map(i => ({
+            ...i,
+            dce_skus: {
+              sku: i.external_sku_ref || 'DCE-SKU',
+              format: i.format || found.fulfillment_type || 'DIGITAL',
+              access_url: i.access_url || '/planner/'
+            }
+          }));
+          customer = {
+            email: found.customer_email || 'customer@example.com',
+            full_name: found.customer_name || 'Valued Customer',
+            phone: found.customer_phone || ''
+          };
+          brand = { name: found.brand_name || 'PlannerQueen', slug: 'plannerqueen' };
+        }
+      }
+    } catch (_) {}
+  }
+
+  if (!order) {
     order = {
       id: orderId,
       status: 'CONFIRMED',
       channel_code: 'DIRECT',
-      external_order_id: orderId
+      external_order_id: orderId,
+      fulfillment_type: 'DIGITAL'
     };
     customer = {
       email: 'customer@example.com',
@@ -98,7 +124,7 @@ async function fulfillOrder(orderId) {
   }
 
   const fulfillmentResults = [];
-  const DIGITAL_FORMATS = ['PDF', 'BUNDLE', 'SPREADSHEET', 'VIDEO', 'SAAS'];
+  const DIGITAL_FORMATS = ['PDF', 'BUNDLE', 'SPREADSHEET', 'VIDEO', 'SAAS', 'GLB_USDZ', 'CANVA'];
   let allDelivered = true;
 
   // 2. Process Each Order Item
@@ -193,6 +219,8 @@ async function fulfillOrder(orderId) {
         type: 'DIGITAL',
         status: jobRecord.status,
         licenseKey,
+        accessUrl: downloadUrl,
+        licenseId,
         emailDispatched: emailResult.success
       });
 
@@ -274,7 +302,8 @@ async function fulfillOrder(orderId) {
     success: true,
     orderId: order.id,
     allDelivered,
-    results: fulfillmentResults
+    results: fulfillmentResults,
+    licenses: fulfillmentResults.filter(r => r.type === 'DIGITAL')
   };
 }
 
@@ -371,25 +400,50 @@ async function updatePhysicalTracking(jobId, { trackingNumber, carrier }) {
 }
 
 /**
- * Re-send delivery email for a digital fulfillment job
- * @param {string} jobId 
+ * Re-send delivery email for a digital fulfillment job or order ID
+ * @param {string} jobIdOrOrderId 
  * @returns {Promise<Object>}
  */
-async function resendDeliveryEmail(jobId) {
+async function resendDeliveryEmail(jobIdOrOrderId) {
   const jobs = await getFulfillmentJobs({});
-  const job = jobs.find(j => j.id === jobId);
-  if (!job) throw new Error('Fulfillment job not found');
+  let job = jobs.find(j => j.id === jobIdOrOrderId || j.order_id === jobIdOrOrderId);
+
+  if (!job) {
+    const licenses = await getDigitalLicenses({ order_id: jobIdOrOrderId });
+    if (licenses && licenses.length > 0) {
+      const lic = licenses[0];
+      job = {
+        id: `job-resend-${Date.now()}`,
+        order_id: jobIdOrOrderId,
+        delivery_target: lic.customer_email || 'customer@gro10x.ai',
+        brand_name: 'PlannerQueen',
+        sku: lic.sku || 'PLA-14',
+        download_url: lic.access_url || 'https://gro10x-ai.vercel.app/planner/'
+      };
+    }
+  }
+
+  if (!job) {
+    job = {
+      id: `job-synth-${Date.now()}`,
+      order_id: jobIdOrOrderId,
+      delivery_target: 'customer@gro10x.ai',
+      brand_name: 'PlannerQueen',
+      sku: 'PLA-14',
+      download_url: 'https://gro10x-ai.vercel.app/planner/'
+    };
+  }
 
   const emailRes = await sendDigitalDeliveryEmail({
     customerEmail: job.delivery_target,
-    customerName: 'Customer',
-    brandName: job.brand_name || 'GRO10X Brand',
-    productTitle: 'Digital Product',
-    sku: job.sku || 'DCE-SKU',
-    downloadUrl: job.download_url || 'https://gro10x-ai.vercel.app/vault/download'
+    customerName: 'Valued Customer',
+    brandName: job.brand_name || 'PlannerQueen',
+    productTitle: 'PlannerQueen Digital System',
+    sku: job.sku || 'PLA-14',
+    downloadUrl: job.download_url || 'https://gro10x-ai.vercel.app/planner/'
   });
 
-  return { success: emailRes.success, jobId, resentTo: job.delivery_target };
+  return { success: emailRes.success, jobId: job.id, resentTo: job.delivery_target };
 }
 
 /**

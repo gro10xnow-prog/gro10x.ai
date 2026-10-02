@@ -192,8 +192,27 @@ async function ingestCanonicalOrder(normalizedOrder, rawPayload = {}) {
     synced_at: new Date().toISOString()
   };
 
-  let savedOrderId = `ord-${Date.now()}`;
-  let wasAlreadyIngested = false;
+  // Dual-store / Memory Idempotency Guard
+  try {
+    const dceOrders = require('../../routes/dce-orders');
+    if (typeof dceOrders.getDCEOrdersStore === 'function') {
+      const memOrders = await dceOrders.getDCEOrdersStore();
+      const existingMem = memOrders.find(o =>
+        String(o.channel_code).toUpperCase() === orderRecord.channel_code &&
+        String(o.external_order_id) === orderRecord.external_order_id
+      );
+      if (existingMem) {
+        return {
+          success: true,
+          idempotent: true,
+          message: 'Order already ingested',
+          orderId: existingMem.id
+        };
+      }
+    }
+  } catch (_) {}
+
+  let savedOrderId = `ord-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
   if (isSupabaseConfigured() && brandId) {
     try {
@@ -227,6 +246,31 @@ async function ingestCanonicalOrder(normalizedOrder, rawPayload = {}) {
       console.warn('[DCE Ingest Order DB Note]:', err.message);
     }
   }
+
+  // Persist to dual-store / memory
+  try {
+    const dceOrders = require('../../routes/dce-orders');
+    if (typeof dceOrders.persistDCEOrder === 'function') {
+      await dceOrders.persistDCEOrder({
+        id: savedOrderId,
+        channel_code: orderRecord.channel_code,
+        external_order_id: orderRecord.external_order_id,
+        customer_id: customerId,
+        customer_name: customer?.name || customer?.full_name || 'Customer',
+        customer_email: customer?.email || '',
+        brand_id: brandId,
+        brand_name: rawPayload?.brand_name || 'PlannerQueen',
+        total_amount: Number(total_amount),
+        currency: currency.toUpperCase(),
+        channel_fee: Number(channel_fee),
+        net_amount: Number(net_amount !== undefined ? net_amount : (total_amount - channel_fee)),
+        status,
+        fulfillment_type,
+        placed_at,
+        items
+      });
+    }
+  } catch (_) {}
 
   // 4. Ingest line items & SKU matching
   for (const item of items) {
@@ -307,6 +351,26 @@ async function ingestCanonicalOrder(normalizedOrder, rawPayload = {}) {
       }).catch(() => {});
     }
   } catch (e) {}
+
+  // 9. Real-time Multi-Instance SSE Broadcast
+  try {
+    const { broadcast } = require('../sse');
+    broadcast('dce_order_received', {
+      orderId: savedOrderId,
+      channelCode: channel_code,
+      externalOrderId: external_order_id,
+      totalAmount: total_amount,
+      currency
+    });
+    broadcast({
+      type: 'DCE_ORDER_RECEIVED',
+      orderId: savedOrderId,
+      channelCode: channel_code,
+      externalOrderId: external_order_id,
+      totalAmount: total_amount,
+      currency
+    });
+  } catch (_) {}
 
   return {
     success: true,

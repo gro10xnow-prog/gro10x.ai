@@ -240,10 +240,26 @@ class DigiVaultStore {
     this.utmData = this.captureUTM();
   }
 
-  init() {
+  async init() {
     this.applyLanguage();
     this.bindGlobalEvents();
     this.trackLinkClick();
+    await this.hydrateConfig();
+  }
+
+  async hydrateConfig() {
+    try {
+      const res = await fetch(`${DIGIVAULT_CONFIG.apiBase}/config`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          Object.assign(DIGIVAULT_CONFIG, json.data);
+          window.dispatchEvent(new CustomEvent('digivault_config_loaded', { detail: DIGIVAULT_CONFIG }));
+        }
+      }
+    } catch (e) {
+      console.warn('[DigiVault Store] Config hydration note:', e.message);
+    }
   }
 
   // ── Language Controller ──

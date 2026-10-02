@@ -13,6 +13,7 @@ const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const sse = require('../services/sse');
 const broadcast = (...args) => sse.broadcast(...args);
 const broadcastToClient = (...args) => sse.broadcastToClient(...args);
+const { stakeholderEvents } = require('../services/stakeholder-events');
 
 function mapProject(p) {
   if (!p) return null;
@@ -828,17 +829,17 @@ router.post('/:id/pod', requireAuth, requireManager, async (req, res) => {
     const { id } = req.params;
     const pod = await assignPodToProject(id, req.body || {});
 
-    // Send Telegram Pod Assignment notification to Lead Engineer / Team
+    // Send Telegram Pod Assignment notification & Domain Event
     try {
-      const { sendTelegramNotification } = require('../services/bot/notifications');
-      const ownerChatId = process.env.TELEGRAM_OWNER_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID || '7754769807';
-      const msg = `⚡ *DELIVERY POD ASSIGNED — Engine 2*\n\n` +
-        `Project: *${id}*\n` +
-        `Pod: *${pod.podName}* (${pod.targetVelocityDays}-day sprint target)\n` +
-        `Lead Engineer: *${pod.leadEngineer}*\n` +
-        `Members: ${(pod.assignedMembers || []).join(', ') || 'Pod Crew'}\n\n` +
-        `Assigned sprint delivery is officially active.`;
-      sendTelegramNotification(ownerChatId, msg, [[{ text: '📊 View Pod in Admin', url: 'https://gro10x-ai.vercel.app/app#engines' }]], true);
+      await stakeholderEvents.emitEvent('pod.assigned', {
+        projectId: id,
+        podType: pod.podType || pod.type,
+        podName: pod.podName,
+        targetVelocityDays: pod.targetVelocityDays,
+        leadEngineer: pod.leadEngineer,
+        assignedMembers: pod.assignedMembers || [],
+        assignedAt: pod.assignedAt
+      });
     } catch (_) {}
 
     return res.json({ ok: true, projectId: id, pod });
@@ -1027,13 +1028,24 @@ router.get('/:id/margin', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Engine 2: Master Service Agreement (MSA) & NDA Generator
 // ─────────────────────────────────────────────────────────────────────────────
-const { getProjectMSA } = require('../services/msa-generator');
+const { getProjectMSA, generateProjectMSA } = require('../services/msa-generator');
 
 // GET /api/projects/:id/msa — Formal Master Service Agreement with IP Assignment & NDA
 router.get('/:id/msa', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const msa = await getProjectMSA(id);
+    const options = {
+      clientName: req.query.clientName,
+      companyName: req.query.companyName,
+      signatoryName: req.query.signatoryName || req.query.clientSignatory,
+      signatoryRole: req.query.signatoryRole,
+      serviceScope: req.query.serviceScope,
+      effectiveDate: req.query.effectiveDate
+    };
+    const hasCustomOptions = Object.values(options).some(Boolean);
+    const msa = hasCustomOptions
+      ? await generateProjectMSA(id, options)
+      : await getProjectMSA(id);
     return res.json({ ok: true, success: true, msa });
   } catch (err) {
     console.error('Projects MSA GET error:', err.message);

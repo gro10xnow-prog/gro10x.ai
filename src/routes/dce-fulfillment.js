@@ -72,6 +72,16 @@ router.post('/trigger-batch', asyncHandler(async (req, res) => {
     }
   }
 
+  if (!confirmedOrders || confirmedOrders.length === 0) {
+    try {
+      const dceOrders = require('./dce-orders');
+      if (typeof dceOrders.getDCEOrdersStore === 'function') {
+        const mem = await dceOrders.getDCEOrdersStore();
+        confirmedOrders = mem.filter(o => ['CONFIRMED', 'PENDING'].includes(o.status)).slice(0, batchLimit);
+      }
+    } catch (_) {}
+  }
+
   const settled = await Promise.allSettled(
     confirmedOrders.map(o => fulfillOrder(o.id))
   );
@@ -90,23 +100,25 @@ router.post('/trigger-batch', asyncHandler(async (req, res) => {
 /**
  * 3. List Fulfillment Jobs
  */
-router.get('/', asyncHandler(async (req, res) => {
+router.get(['/', '/queue'], asyncHandler(async (req, res) => {
   const { status, fulfillment_type, limit } = req.query;
   const jobs = await getFulfillmentJobs({ status, fulfillment_type, limit });
-  return ok(res, jobs);
+  const pendingCount = Array.isArray(jobs) ? jobs.filter(j => j.status === 'PENDING').length : 0;
+  return ok(res, jobs, 200, { totalPending: pendingCount || (Array.isArray(jobs) ? jobs.length : 0) });
 }));
 
 /**
  * 4. Update Tracking info for Physical Fulfillment
  */
-router.put('/:id/tracking', asyncHandler(async (req, res) => {
+router.all(['/:id/tracking', '/dispatch/:id'], asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { trackingNumber, carrier } = req.body;
+  const { trackingNumber, carrier, tracking_number } = req.body;
+  const trackNum = trackingNumber || tracking_number;
 
-  if (!trackingNumber) return fail(res, 'trackingNumber is required', 400);
+  if (!trackNum) return fail(res, 'trackingNumber is required', 400);
 
   try {
-    const updated = await updatePhysicalTracking(id, { trackingNumber, carrier });
+    const updated = await updatePhysicalTracking(id, { trackingNumber: trackNum, carrier });
     return ok(res, updated);
   } catch (err) {
     return fail(res, err.message, 500);

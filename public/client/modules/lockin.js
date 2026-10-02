@@ -16,6 +16,16 @@ var escapeHTML = window.escapeHTML || function(s) {
 };
 
 window.CLIENT_MODULES.lockin = async function(container) {
+  function notify(msg, type = 'info') {
+    if (typeof window.showClientToast === 'function') {
+      window.showClientToast(msg, type);
+    } else if (typeof window.showToast === 'function') {
+      window.showToast(msg, type);
+    } else {
+      console.log(`[Lockin Notification] [${type}] ${msg}`);
+    }
+  }
+
   let activeTab = 'prerequisites';
   let clientRecord = null;
   let activeSpec = null;
@@ -484,13 +494,13 @@ window.CLIENT_MODULES.lockin = async function(container) {
           });
 
           if (res.ok) {
-            if (window.showClientToast) window.showClientToast('✅ Item marked as RECEIVED! Engineering team notified.', 'success');
+            notify('✅ Item marked as RECEIVED! Engineering team notified.', 'success');
             await loadSpecs();
           } else {
-            if (window.showClientToast) window.showClientToast(`Error: ${res.error || 'Failed to update prerequisite'}`, 'error');
+            notify(`Error: ${res.error || 'Failed to update prerequisite'}`, 'error');
           }
         } catch (err) {
-          if (window.showClientToast) window.showClientToast(`Failed to submit: ${err.message}`, 'error');
+          notify(`Failed to submit: ${err.message}`, 'error');
         }
       };
     },
@@ -547,7 +557,12 @@ window.CLIENT_MODULES.lockin = async function(container) {
         const roleChoice = modal.querySelector('#pocRoleSelect').value;
 
         if (!name) {
-          if (window.showClientToast) window.showClientToast('Contact name is required', 'error');
+          notify('Contact name is required', 'error');
+          return;
+        }
+
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          notify('Please enter a valid email address', 'error');
           return;
         }
 
@@ -567,20 +582,35 @@ window.CLIENT_MODULES.lockin = async function(container) {
           });
 
           if (res.ok) {
-            if (window.showClientToast) window.showClientToast('✅ Contact person successfully registered to your account.', 'success');
+            notify('✅ Contact person successfully registered to your account.', 'success');
             if (clientRecord) {
               clientRecord.pocs = res.client?.pocs || clientRecord.pocs;
             }
             renderCockpit();
           } else {
-            if (window.showClientToast) window.showClientToast(`Failed to add contact: ${res.error || 'Server error'}`, 'error');
+            notify(`Failed to add contact: ${res.error || 'Server error'}`, 'error');
           }
         } catch (err) {
-          if (window.showClientToast) window.showClientToast(`Failed to add contact: ${err.message}`, 'error');
+          notify(`Failed to add contact: ${err.message}`, 'error');
         }
       };
     }
   };
+
+  // Real-Time SSE Listener for Prerequisite Updates
+  function handleSsePrerequisite(e) {
+    try {
+      const data = e.detail || (typeof e.data === 'string' ? JSON.parse(e.data) : e.data);
+      if (data && (data.clientId === currentClientId || (activeSpec && data.specId === activeSpec.id))) {
+        loadSpecs();
+      }
+    } catch (_) {}
+  }
+
+  window.removeEventListener('sse:prerequisite_updated', handleSsePrerequisite);
+  window.removeEventListener('sse:lockin_prerequisite_updated', handleSsePrerequisite);
+  window.addEventListener('sse:prerequisite_updated', handleSsePrerequisite);
+  window.addEventListener('sse:lockin_prerequisite_updated', handleSsePrerequisite);
 
   // Initial Load
   await loadSpecs();

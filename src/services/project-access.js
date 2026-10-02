@@ -423,6 +423,9 @@ async function logContractorTicket(projectId, ticketData = {}, user = {}) {
   const stagingUrl = ticketData.stagingUrl || null;
   const createdBy = user.name || user.contactName || 'Subcontractor';
 
+  const slaResolutionDue = new Date(Date.now() + 24 * 3600000).toISOString();
+  const slaResponseDue = new Date(Date.now() + 4 * 3600000).toISOString();
+
   const ticketRecord = {
     id: ticketId,
     projectId: project.id,
@@ -436,6 +439,11 @@ async function logContractorTicket(projectId, ticketData = {}, user = {}) {
     category: 'contractor_defect',
     is_contractor_ticket: true,
     stagingUrl,
+    slaResponseDue,
+    slaResolutionDue,
+    sla_response_due: slaResponseDue,
+    sla_resolution_due: slaResolutionDue,
+    slaHoldback: severity === 'p0_blocker' ? { required: true, windowHours: 24 } : null,
     createdBy,
     created_by: createdBy,
     createdAt: new Date().toISOString(),
@@ -455,6 +463,11 @@ async function logContractorTicket(projectId, ticketData = {}, user = {}) {
       await writeDB(db);
     } catch (_) {}
   }
+
+  try {
+    const { broadcast } = require('./sse');
+    broadcast('ticket_created', ticketRecord);
+  } catch (_) {}
 
   try {
     const { sendTelegramNotification } = require('./bot');
@@ -602,6 +615,16 @@ async function toggleContractorDoD(projectId, { deliverableId, index, passed, ti
       }
     } catch (_) {}
   }
+
+  try {
+    const { broadcast } = require('./sse');
+    broadcast('dod_item_toggled', {
+      projectId,
+      deliverableId: deliverable ? deliverable.id : deliverableId,
+      checklist,
+      updatedBy
+    });
+  } catch (_) {}
 
   return {
     ok: true,

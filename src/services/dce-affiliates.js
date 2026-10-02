@@ -7,6 +7,7 @@
  */
 
 const { supabase, isSupabaseConfigured } = require('./supabase');
+const { broadcast } = require('./sse');
 
 // In-Memory Fallback
 let memAffiliates = [
@@ -285,6 +286,17 @@ async function attributeOrderToAffiliate({ orderId, orderAmount, refCode, utmDat
     created_at: new Date().toISOString()
   };
   memConversions.unshift(newConv);
+
+  if (typeof broadcast === 'function') {
+    broadcast({
+      type: 'DCE_AFFILIATE_CONVERSION',
+      conversionId: newConv.id,
+      affiliateId: affiliate.id,
+      affiliateName: affiliate.name,
+      orderId,
+      commissionEarned
+    });
+  }
 
   return newConv;
 }

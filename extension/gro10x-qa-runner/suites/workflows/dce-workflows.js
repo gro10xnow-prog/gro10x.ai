@@ -160,6 +160,148 @@ const DCE_WORKFLOWS = {
         assertion: { type: 'custom_check', check: 'assert_contractor_sla_active' }
       }
     ]
+  },
+
+  workflow_dce_direct_checkout: {
+    id: 'workflow_dce_direct_checkout',
+    platform: 'dce',
+    pageId: 'store',
+    title: '🛒 DCE Storefront: Select Product ➔ Apply Coupon ➔ Place Direct Order',
+    description: 'Browses DCE storefront, selects active SKU, validates promo code discount, and completes direct simulated checkout.',
+    targetPath: '/dce/store',
+    steps: [
+      {
+        id: 'wf-ddc-1',
+        title: '1. Verify DCE Storefront Loaded (/dce/store)',
+        action: 'wait_selector',
+        selector: '#productGrid, .product-card, h1',
+        timeout: 5000
+      },
+      {
+        id: 'wf-ddc-2',
+        title: '2. Select Product SKU and Open Checkout Modal',
+        action: 'workflow_dce_select_product',
+        assertion: { type: 'wait_selector', selector: '#checkoutModal, #btnPlaceOrder', timeout: 4000 }
+      },
+      {
+        id: 'wf-ddc-3',
+        title: '3. Apply Coupon & Complete Order Checkout',
+        action: 'workflow_dce_submit_checkout',
+        coupon: 'LAUNCH20',
+        assertion: { type: 'custom_check', check: 'assert_order_confirmation' }
+      }
+    ]
+  },
+
+  workflow_dce_order_lifecycle: {
+    id: 'workflow_dce_order_lifecycle',
+    platform: 'dce',
+    pageId: 'orders',
+    title: '📦 Order Lifecycle: Search Order ➔ Advance Status (CONFIRMED ➔ PROCESSING ➔ COMPLETED) ➔ Export CSV',
+    description: 'Audits unified order inbox, filters orders by channel, transitions order lifecycle status, and triggers CSV export.',
+    targetPath: '/dce/orders',
+    steps: [
+      {
+        id: 'wf-dol-1',
+        title: '1. Verify Order Inbox Cockpit Loaded (/dce/orders)',
+        action: 'wait_selector',
+        selector: '#ordersTable, .order-row, #orderFilterChannel',
+        timeout: 5000
+      },
+      {
+        id: 'wf-dol-2',
+        title: '2. Filter Orders by Multi-Channel Source',
+        action: 'select_option',
+        selector: '#orderFilterChannel',
+        value: 'ETSY',
+        assertion: { type: 'custom_check', check: 'assert_orders_filtered' }
+      },
+      {
+        id: 'wf-dol-3',
+        title: '3. Advance Order Status Lifecycle',
+        action: 'workflow_dce_advance_status',
+        nextStatus: 'PROCESSING',
+        assertion: { type: 'custom_check', check: 'assert_status_updated' }
+      },
+      {
+        id: 'wf-dol-4',
+        title: '4. Export Order Manifest CSV',
+        action: 'click',
+        selector: '#btnExportOrders, a[href*="/export"]',
+        assertion: { type: 'custom_check', check: 'assert_csv_export_triggered' }
+      }
+    ]
+  },
+
+  workflow_dce_fulfillment_batch: {
+    id: 'workflow_dce_fulfillment_batch',
+    platform: 'dce',
+    pageId: 'operations',
+    title: '⚡ Fulfillment Operations: Inspect Batch Queue ➔ Trigger Dual Fulfillment ➔ Enter Courier Tracking',
+    description: 'Opens Operations fulfillment cockpit, queues pending orders, issues digital cryptographic keys, and attaches physical courier tracking.',
+    targetPath: '/dce/operations',
+    steps: [
+      {
+        id: 'wf-dfb-1',
+        title: '1. Verify Operations Cockpit Loaded (/dce/operations)',
+        action: 'wait_selector',
+        selector: '#tabBtnFulfillment, #fulfillmentQueue, h1',
+        timeout: 5000
+      },
+      {
+        id: 'wf-dfb-2',
+        title: '2. Switch to Fulfillment Queue Tab',
+        action: 'click',
+        selector: '#tabBtnFulfillment',
+        assertion: { type: 'wait_selector', selector: '#fulfillmentQueueView, .fulfillment-card', timeout: 4000 }
+      },
+      {
+        id: 'wf-dfb-3',
+        title: '3. Execute Batch Fulfillment Run',
+        action: 'click',
+        selector: '#btnTriggerBatchFulfill',
+        assertion: { type: 'custom_check', check: 'assert_batch_fulfillment_done' }
+      },
+      {
+        id: 'wf-dfb-4',
+        title: '4. Attach Physical Tracking Number to Hardcover Order',
+        action: 'workflow_dce_attach_tracking',
+        courier: 'STEADFAST',
+        trackingNumber: 'ST-998822',
+        assertion: { type: 'custom_check', check: 'assert_tracking_updated' }
+      }
+    ]
+  },
+
+  workflow_dce_support_triage: {
+    id: 'workflow_dce_support_triage',
+    platform: 'dce',
+    pageId: 'operations',
+    title: '🎧 Post-Sale Support: Open Ticket ➔ Enforce SLA Timer ➔ Agent Reply ➔ Resolution Closure',
+    description: 'Simulates customer support escalation, audits 4h/24h SLA deadlines, sends agent response thread, and marks ticket resolved.',
+    targetPath: '/dce/operations',
+    steps: [
+      {
+        id: 'wf-dst-1',
+        title: '1. Switch to Post-Sale Helpdesk Tab',
+        action: 'click',
+        selector: '#tabBtnHelpdesk',
+        assertion: { type: 'wait_selector', selector: '#helpdeskView, #ticketsTable', timeout: 5000 }
+      },
+      {
+        id: 'wf-dst-2',
+        title: '2. Assert Live SLA Horizons & Filter Urgent Tickets',
+        action: 'workflow_dce_filter_urgent_tickets',
+        assertion: { type: 'custom_check', check: 'assert_urgent_tickets_visible' }
+      },
+      {
+        id: 'wf-dst-3',
+        title: '3. Post Staff Reply into Thread and Resolve Ticket',
+        action: 'workflow_dce_resolve_ticket',
+        reply: 'Verified license generated and emailed to customer.',
+        assertion: { type: 'custom_check', check: 'assert_ticket_resolved' }
+      }
+    ]
   }
 };
 

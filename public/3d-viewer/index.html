@@ -449,7 +449,8 @@
       <span class="status-pill">Interactive Demo</span>
     </div>
     <div class="nav-links">
-      <a href="/3d-viewer/real3d.html" class="btn-nav" style="background: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%); color: #FFF; border: none; font-weight: 700;"><span>🦊 Launch True 3D + AR (Winner)</span></a>
+      <button id="btnOpenLicenseModal" class="btn-nav" style="background: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%); color: #FFF; border: none; font-weight: 700; cursor: pointer;"><span>💎 License 3D Pack ($14.99)</span></button>
+      <a href="/3d-viewer/real3d.html" class="btn-nav"><span>🦊 Launch True 3D + AR (Winner)</span></a>
       <a href="/my-portal" class="btn-nav"><span>👑 Customer Vault</span></a>
       <a href="/planner" class="btn-nav"><span>✨ Planner Companion</span></a>
     </div>
@@ -525,13 +526,24 @@
         </button>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
-        <span>Orbit Speed:</span>
-        <select id="selectSpeed" style="background: rgba(255,255,255,0.08); color: #FFF; border: 1px solid var(--border-card); padding: 0.4rem 0.8rem; border-radius: 6px;">
-          <option value="1200">Slow (Deliberate)</option>
-          <option value="700" selected>Normal (Cinematic)</option>
-          <option value="350">Fast (Bullet-Time)</option>
-        </select>
+      <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+          <span>Lighting:</span>
+          <select id="selectLighting" style="background: rgba(255,255,255,0.08); color: #FFF; border: 1px solid var(--border-card); padding: 0.4rem 0.8rem; border-radius: 6px;">
+            <option value="cyberpunk" selected>Cyberpunk Hologram</option>
+            <option value="studio">Studio Neutral</option>
+            <option value="sunset">Sunset Warm</option>
+          </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+          <span>Orbit Speed:</span>
+          <select id="selectSpeed" style="background: rgba(255,255,255,0.08); color: #FFF; border: 1px solid var(--border-card); padding: 0.4rem 0.8rem; border-radius: 6px;">
+            <option value="1200">Slow (Deliberate)</option>
+            <option value="700" selected>Normal (Cinematic)</option>
+            <option value="350">Fast (Bullet-Time)</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -862,6 +874,101 @@
 
     // Initialize at center front
     setAngle(1, 1);
+
+    // ── COMMERCIAL LICENSING DRAWER & LIGHTING TOGGLES ──
+    const licenseDrawer = document.getElementById('commercialLicenseDrawer');
+    const btnOpenLicense = document.getElementById('btnOpenLicenseModal');
+    const btnCloseLicense = document.getElementById('btnCloseLicenseDrawer');
+    const btnDismissLicense = document.getElementById('btnDismissLicenseDrawer');
+    const btnLicenseCheckout = document.getElementById('btnLicenseCheckout');
+    const selectLighting = document.getElementById('selectLighting');
+
+    function openLicenseDrawer() {
+      if (licenseDrawer) licenseDrawer.style.display = 'flex';
+    }
+    function closeLicenseDrawer() {
+      if (licenseDrawer) licenseDrawer.style.display = 'none';
+    }
+
+    if (btnOpenLicense) btnOpenLicense.addEventListener('click', openLicenseDrawer);
+    if (btnCloseLicense) btnCloseLicense.addEventListener('click', closeLicenseDrawer);
+    if (btnDismissLicense) btnDismissLicense.addEventListener('click', closeLicenseDrawer);
+    if (licenseDrawer) {
+      licenseDrawer.addEventListener('click', (e) => {
+        if (e.target === licenseDrawer) closeLicenseDrawer();
+      });
+    }
+
+    if (btnLicenseCheckout) {
+      btnLicenseCheckout.addEventListener('click', () => {
+        window.location.href = '/dce/store?sku=SKU-3D-STEM-01';
+      });
+    }
+
+    if (selectLighting) {
+      selectLighting.addEventListener('change', (e) => {
+        const mode = e.target.value;
+        const root = document.documentElement;
+        if (mode === 'studio') {
+          root.style.setProperty('--accent-cyan', '#FFFFFF');
+          root.style.setProperty('--border-glow', 'rgba(255, 255, 255, 0.35)');
+          if (specularLight) specularLight.style.background = 'radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%)';
+        } else if (mode === 'sunset') {
+          root.style.setProperty('--accent-cyan', '#FF7A00');
+          root.style.setProperty('--border-glow', 'rgba(255, 122, 0, 0.35)');
+          if (specularLight) specularLight.style.background = 'radial-gradient(circle, rgba(255, 122, 0, 0.22) 0%, transparent 70%)';
+        } else {
+          // Cyberpunk default
+          root.style.setProperty('--accent-cyan', '#00F0FF');
+          root.style.setProperty('--border-glow', 'rgba(0, 240, 255, 0.25)');
+          if (specularLight) specularLight.style.background = 'radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, transparent 70%)';
+        }
+      });
+    }
   </script>
+
+  <!-- 3D ASSET PACK COMMERCIAL LICENSING DRAWER -->
+  <div id="commercialLicenseDrawer" class="coach-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #0D111A; border: 1px solid var(--border-glow); border-radius: 16px; max-width: 580px; width: 100%; box-shadow: 0 20px 50px rgba(0, 240, 255, 0.2); overflow: hidden;">
+      <div style="padding: 1.25rem 1.5rem; background: linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(112, 0, 255, 0.12)); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.5rem;">💎</span>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; color: #FFF; margin: 0;">Kids STEM 3D Spatial Asset Pack</h3>
+            <div style="font-size: 0.75rem; color: var(--accent-cyan);">SKU: SKU-3D-STEM-01 · Royalty-Free Commercial License</div>
+          </div>
+        </div>
+        <button id="btnCloseLicenseDrawer" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+      <div style="padding: 1.5rem;">
+        <div style="display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 1rem;">
+          <span style="font-size: 1.8rem; font-weight: 800; color: var(--accent-cyan);">$14.99 USD</span>
+          <span style="font-size: 1.1rem; font-weight: 700; color: #FFF;">৳1,800 BDT</span>
+          <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(16, 185, 129, 0.4);">Instant Download</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+          Get the complete 4-model spatial library (Arctic Fox, Wild Stallion, Exotic Flamingo, Apollo Astronaut) optimized for web, iOS AR Quick Look (USDZ), Android Scene Viewer (GLB), and 9-angle capacitive touch arrays.
+        </p>
+        <ul style="font-size: 0.82rem; color: var(--text-main); margin-bottom: 1.5rem; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem;">
+          <li>4 Rigged 3D GLB Models + Apple USDZ AR files</li>
+          <li>Pre-rendered 9-angle high-resolution transparency sequences</li>
+          <li>Web Audio procedural sound synthesizer code (Fox, Horse, Flamingo, Apollo)</li>
+          <li>Commercial royalty-free distribution rights for web &amp; mobile apps</li>
+        </ul>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="btnLicenseCheckout" style="flex: 1; padding: 0.8rem; background: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%); color: #FFF; border: none; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);">
+            🛍️ 1-Click Buy &amp; Download ($14.99)
+          </button>
+          <a href="/3d-viewer/real3d.html" style="padding: 0.8rem 1rem; background: rgba(255, 255, 255, 0.08); color: #FFF; border: 1px solid var(--border-card); border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center;">
+            Explore in AR ↗
+          </a>
+        </div>
+      </div>
+      <div style="padding: 0.75rem 1.5rem; background: rgba(0, 0, 0, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+        <span>Fulfilled instantly by GRO10X DCE Engine</span>
+        <button id="btnDismissLicenseDrawer" style="background: none; border: none; color: var(--text-muted); cursor: pointer; text-decoration: underline;">Dismiss</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

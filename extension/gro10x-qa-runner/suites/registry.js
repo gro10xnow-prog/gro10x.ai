@@ -86,7 +86,19 @@ const GRO10X_REGISTRY = {
       { id: 'planner', name: '📅 Digital Planner Micro-App', path: '/planner', auditSuiteId: 'public_planner', workflows: [] },
       { id: 'viewer3d', name: '🔮 3D Spatial Product Lab', path: '/3d-viewer', auditSuiteId: 'public_viewer3d', workflows: [] },
       { id: 'proposal', name: '💼 Public Proposal & SOW Rail', path: '/proposal.html?token=nhf-enterprise-ai-2026', auditSuiteId: 'public_proposal', workflows: ['workflow_public_proposal_lifecycle'] },
-      { id: 'myPortal', name: '👑 Members Vault & GroCredits', path: '/my-portal', auditSuiteId: 'public_my_portal', suiteFile: 'my-portal-qa.js', workflows: [] }
+      { id: 'msa', name: '📜 Master Service Agreement & NDA', path: '/msa-view.html?projectId=PRJ-2026-ENG2', auditSuiteId: 'public_msa', workflows: [] },
+      { id: 'myPortal', name: '👑 Members Vault & GroCredits', path: '/my-portal', auditSuiteId: 'public_my_portal', suiteFile: 'my-portal-qa.js', workflows: [] },
+      { id: 'dceDashboard', name: '⚡ DCE Command Dashboard', path: '/dce', auditSuiteId: 'dce_dashboard', workflows: [] },
+      { id: 'dceOrders', name: '🛒 DCE Omnichannel Orders', path: '/dce/orders', auditSuiteId: 'dce_orders', workflows: ['workflow_dce_order_tracking'] },
+      { id: 'dceOperations', name: '🛠️ DCE Operations & Helpdesk', path: '/dce/operations', auditSuiteId: 'dce_operations', workflows: [] },
+      { id: 'dceGrowth', name: '📈 DCE Growth & Promotions', path: '/dce/growth', auditSuiteId: 'dce_growth', workflows: [] },
+      { id: 'dceDigivault', name: '🏪 DCE DigiVault Ops', path: '/dce/digivault', auditSuiteId: 'dce_digivault', workflows: [] },
+      { id: 'dceStore', name: '🛍️ PlannerQueen Storefront', path: '/dce/store', auditSuiteId: 'dce_store', workflows: [] },
+      { id: 'dceTrack', name: '🔍 Customer Order Tracking', path: '/dce/track', auditSuiteId: 'dce_track', workflows: ['workflow_dce_order_tracking'] },
+      { id: 'dceAffiliate', name: '🤝 Affiliate & Creator Portal', path: '/dce/affiliate', auditSuiteId: 'dce_affiliate', workflows: ['workflow_dce_affiliate_attribution'] },
+      { id: 'digivaultStore', name: '📦 DigiVault BD Public Store', path: '/digivault', auditSuiteId: 'public_digivault', workflows: [] },
+      { id: 'real3d', name: '🧪 3D Real STEM Lab', path: '/3d-viewer/real3d.html', auditSuiteId: 'public_real3d', workflows: [] },
+      { id: 'delivery', name: '📜 Cryptographic Delivery & Certificate', path: '/delivery', auditSuiteId: 'public_delivery', workflows: [] }
     ]
   },
 

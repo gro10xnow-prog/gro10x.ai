@@ -268,6 +268,16 @@ async function logProjectCOGS(projectId, cogsPayload = {}) {
   } catch (_) {}
 
   broadcast('cogs_logged', { projectId, cogs: record });
+
+  // Evaluate gross margin and dispatch warning if below benchmark (70%)
+  try {
+    const marginReport = await getProjectCOGS(projectId);
+    if (marginReport.projectRevenue > 0 && marginReport.grossMarginPercent < 70) {
+      const { stakeholderEvents } = require('./stakeholder-events');
+      await stakeholderEvents.emitEvent('cogs.margin_warning', marginReport);
+    }
+  } catch (_) {}
+
   return record;
 }
 

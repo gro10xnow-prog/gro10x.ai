@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initEventListeners();
   recalculateAll();
   initAiCoachEngine();
+  initCommerceUpsellBridge();
 });
 
 function buildSpreadElements() {
@@ -795,4 +796,84 @@ function closeAiModal() {
   const modal = document.getElementById('aiCoachModal');
   if (modal) modal.style.display = 'none';
 }
+
+// ── 7. COMMERCE UPSELL BRIDGE & LICENSE HYDRATION ──
+
+const UPSELL_SKU = 'sku-pq-phys-01';
+
+function initCommerceUpsellBridge() {
+  hydrateCustomerLicenseKey();
+
+  // Modal triggers
+  const triggers = ['btnUpgradeHardcover', 'btnRibbonUpgrade', 'btnSpread16Upgrade', 'btnClaimCertificate'];
+  triggers.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        openUpsellModal();
+      });
+    }
+  });
+
+  // Modal dismiss buttons
+  document.getElementById('btnCloseUpsellModal')?.addEventListener('click', closeUpsellModal);
+  document.getElementById('btnDismissUpsellModal')?.addEventListener('click', closeUpsellModal);
+
+  const upsellOverlay = document.getElementById('plannerUpsellModal');
+  if (upsellOverlay) {
+    upsellOverlay.addEventListener('click', (e) => {
+      if (e.target === upsellOverlay) closeUpsellModal();
+    });
+  }
+
+  // 1-Click Buy Checkout trigger
+  document.getElementById('btn1ClickCheckout')?.addEventListener('click', () => {
+    window.location.href = `/dce/store?sku=${encodeURIComponent(UPSELL_SKU)}`;
+  });
+
+  // Copy License Button
+  document.getElementById('btnCopyUpsellLicense')?.addEventListener('click', () => {
+    const licenseInput = document.getElementById('upsellLicenseKeyInput');
+    if (!licenseInput) return;
+    navigator.clipboard?.writeText(licenseInput.value).then(() => {
+      const copyBtn = document.getElementById('btnCopyUpsellLicense');
+      if (copyBtn) {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✓ Copied!';
+        copyBtn.style.color = '#2E7D32';
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+          copyBtn.style.color = '';
+        }, 2000);
+      }
+    }).catch(() => {
+      licenseInput.select();
+      document.execCommand('copy');
+    });
+  });
+}
+
+function hydrateCustomerLicenseKey() {
+  const activeKey = localStorage.getItem('pq_license_key') ||
+                    localStorage.getItem('gro10x_license_key') ||
+                    'PLA-14-VIP-2026';
+
+  const codeEl = document.getElementById('ownerLicenseCode');
+  if (codeEl) codeEl.textContent = activeKey;
+
+  const upsellInput = document.getElementById('upsellLicenseKeyInput');
+  if (upsellInput) upsellInput.value = activeKey;
+}
+
+function openUpsellModal() {
+  const modal = document.getElementById('plannerUpsellModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeUpsellModal() {
+  const modal = document.getElementById('plannerUpsellModal');
+  if (modal) modal.style.display = 'none';
+}
+
 

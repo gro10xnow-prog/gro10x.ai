@@ -307,6 +307,10 @@
       </div>
     </a>
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <button id="storeCurrencyToggleBtn" onclick="toggleStoreCurrency()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" title="Switch Currency (USD / BDT)">
+        <span id="storeCurrencyFlag">🇺🇸</span>
+        <span id="storeCurrencyLabel">$ USD</span>
+      </button>
       <span class="catalog-status-pill" id="catalogSyncBadge">
         <span class="catalog-status-dot"></span> <span id="catalogSyncText">Live Catalog Synced</span>
       </span>
@@ -332,7 +336,7 @@
         
         <div class="pricing-wrap">
           <div class="price-current" id="price-digital">$19.99</div>
-          <div class="price-original">$39.99</div>
+          <div class="price-original" id="orig-price-digital">$39.99</div>
           <span style="font-size: 11px; background: rgba(16,185,129,0.15); color: #34d399; padding: 2px 8px; border-radius: 12px; font-weight: 700;">50% OFF</span>
         </div>
 
@@ -360,7 +364,7 @@
         
         <div class="pricing-wrap">
           <div class="price-current" id="price-physical">$34.99</div>
-          <div class="price-original">$49.99</div>
+          <div class="price-original" id="orig-price-physical">$49.99</div>
         </div>
 
         <ul class="features-list">
@@ -473,12 +477,82 @@
   </div>
 
   <script>
+    const BDT_RATE = 120;
+    let currentCurrency = localStorage.getItem('gro10x_currency') || 'USD';
+
     let activeProduct = { skuId: '', title: '', price: 0, format: 'PDF' };
     let appliedDiscount = 0;
     let appliedPromo = null;
 
     let digitalProductData = { skuId: 'sku-pq-dir-01', title: 'PlannerQueen Digital Daily & Weekly System 2026', price: 19.99, format: 'PDF' };
     let physicalProductData = { skuId: 'sku-pq-phys-01', title: 'PlannerQueen Luxury Spiral Hardcover 2026 Planner', price: 34.99, format: 'PHYSICAL' };
+
+    function getCurrencySymbol(curr = currentCurrency) {
+      return curr === 'BDT' ? '৳' : '$';
+    }
+
+    function formatPrice(usdVal, curr = currentCurrency) {
+      if (curr === 'BDT') {
+        const bdt = Math.round(usdVal * BDT_RATE);
+        return '৳' + bdt.toLocaleString();
+      }
+      return '$' + Number(usdVal).toFixed(2);
+    }
+
+    function getNumericPrice(usdVal, curr = currentCurrency) {
+      return curr === 'BDT' ? Math.round(usdVal * BDT_RATE) : Number(usdVal);
+    }
+
+    function renderCurrencyBadge() {
+      const flagEl = document.getElementById('storeCurrencyFlag');
+      const labelEl = document.getElementById('storeCurrencyLabel');
+      if (flagEl) flagEl.innerText = currentCurrency === 'BDT' ? '🇧🇩' : '🇺🇸';
+      if (labelEl) labelEl.innerText = currentCurrency === 'BDT' ? '৳ BDT' : '$ USD';
+    }
+
+    function renderPrices() {
+      renderCurrencyBadge();
+
+      const elDig = document.getElementById('price-digital');
+      if (elDig) elDig.innerText = formatPrice(digitalProductData.price);
+      const origDig = document.getElementById('orig-price-digital');
+      if (origDig) origDig.innerText = formatPrice(39.99);
+
+      const btnDig = document.getElementById('btn-text-digital');
+      if (btnDig) btnDig.innerText = `⚡ Instant Download (${formatPrice(digitalProductData.price)})`;
+
+      const elPhys = document.getElementById('price-physical');
+      if (elPhys) elPhys.innerText = formatPrice(physicalProductData.price);
+      const origPhys = document.getElementById('orig-price-physical');
+      if (origPhys) origPhys.innerText = formatPrice(49.99);
+
+      const btnPhys = document.getElementById('btn-text-physical');
+      if (btnPhys) btnPhys.innerText = `📦 Order Physical Planner (${formatPrice(physicalProductData.price)})`;
+
+      if (activeProduct.skuId) {
+        document.getElementById('sumItemPrice').innerText = formatPrice(activeProduct.price);
+        recalcTotal();
+      }
+    }
+
+    function toggleStoreCurrency() {
+      currentCurrency = currentCurrency === 'USD' ? 'BDT' : 'USD';
+      localStorage.setItem('gro10x_currency', currentCurrency);
+      window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: currentCurrency } }));
+      if (appliedPromo) {
+        applyCoupon();
+      } else {
+        renderPrices();
+      }
+    }
+
+    window.addEventListener('gro10x_currency_changed', (e) => {
+      if (e.detail?.currency && e.detail.currency !== currentCurrency) {
+        currentCurrency = e.detail.currency;
+        localStorage.setItem('gro10x_currency', currentCurrency);
+        renderPrices();
+      }
+    });
 
     function handleBuyDigital() {
       openCheckout(digitalProductData.skuId, digitalProductData.title, digitalProductData.price, digitalProductData.format);
@@ -497,6 +571,7 @@
       if (prefillCoupon) {
         document.getElementById('promoCodeInput').value = prefillCoupon.toUpperCase();
       }
+      renderPrices();
       syncPricesFromCatalog();
     });
 
@@ -509,6 +584,7 @@
         const products = data.data || [];
         if (!products.length) {
           if (syncBadge) syncBadge.innerText = 'Catalog Active (Direct Fallback)';
+          renderPrices();
           return;
         }
 
@@ -528,21 +604,15 @@
           const priceVal = parseFloat(digitalSku.price);
           digitalProductData.skuId = digitalSku.sku || digitalSku.id || digitalProductData.skuId;
           digitalProductData.price = priceVal;
-          const el = document.getElementById('price-digital');
-          if (el) el.innerText = '$' + priceVal.toFixed(2);
-          const btnText = document.getElementById('btn-text-digital');
-          if (btnText) btnText.innerText = `⚡ Instant Download ($${priceVal.toFixed(2)})`;
         }
 
         if (physicalSku && physicalSku.price) {
           const priceVal = parseFloat(physicalSku.price);
           physicalProductData.skuId = physicalSku.sku || physicalSku.id || physicalProductData.skuId;
           physicalProductData.price = priceVal;
-          const el = document.getElementById('price-physical');
-          if (el) el.innerText = '$' + priceVal.toFixed(2);
-          const btnText = document.getElementById('btn-text-physical');
-          if (btnText) btnText.innerText = `📦 Order Physical Planner ($${priceVal.toFixed(2)})`;
         }
+
+        renderPrices();
 
         if (syncBadge) {
           syncBadge.innerText = `Verified · ${products.length} Products Active`;
@@ -550,6 +620,7 @@
       } catch (e) {
         console.warn('[Store Catalog Sync] Note:', e);
         if (syncBadge) syncBadge.innerText = 'Catalog Offline (Cached Fallback)';
+        renderPrices();
       }
     }
 
@@ -557,7 +628,7 @@
       activeProduct = { skuId, title, price, format };
       document.getElementById('checkoutTitle').innerText = 'Checkout — ' + title;
       document.getElementById('sumItemTitle').innerText = title;
-      document.getElementById('sumItemPrice').innerText = '$' + price.toFixed(2);
+      document.getElementById('sumItemPrice').innerText = formatPrice(price);
       
       const addrGroup = document.getElementById('addressGroup');
       addrGroup.style.display = format === 'PHYSICAL' ? 'block' : 'none';
@@ -588,22 +659,28 @@
 
       statusEl.innerHTML = '<span style="color: #94a3b8;">Validating coupon...</span>';
 
+      const activeNumPrice = getNumericPrice(activeProduct.price);
+
       try {
         const res = await fetch('/api/dce/promotions/validate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             code,
-            orderAmount: activeProduct.price
+            orderTotal: activeNumPrice,
+            orderAmount: activeNumPrice,
+            currency: currentCurrency
           })
         });
         const data = await res.json();
         if (data.success && data.data?.valid) {
-          appliedDiscount = data.data.discount_amount;
+          appliedDiscount = Number(data.data.discount_amount || 0);
           appliedPromo = code;
-          statusEl.innerHTML = `<span style="color: #34d399; font-weight: 700;">✅ Coupon "${code}" Applied (-$${appliedDiscount.toFixed(2)})</span>`;
+          const currSym = getCurrencySymbol();
+          const discountStr = currentCurrency === 'BDT' ? appliedDiscount.toLocaleString() : appliedDiscount.toFixed(2);
+          statusEl.innerHTML = `<span style="color: #34d399; font-weight: 700;">✅ Coupon "${code}" Applied (-${currSym}${discountStr})</span>`;
           document.getElementById('discountRow').style.display = 'flex';
-          document.getElementById('sumDiscount').innerText = '-$' + appliedDiscount.toFixed(2);
+          document.getElementById('sumDiscount').innerText = `-${currSym}${discountStr}`;
           recalcTotal();
         } else {
           statusEl.innerHTML = `<span style="color: #f87171;">❌ ${data.message || 'Invalid or expired coupon'}</span>`;
@@ -618,9 +695,12 @@
     }
 
     function recalcTotal() {
-      const total = Math.max(0, activeProduct.price - appliedDiscount);
-      document.getElementById('sumTotal').innerText = '$' + total.toFixed(2);
-      document.getElementById('payBtn').innerText = `🔒 Pay $${total.toFixed(2)} & Complete`;
+      const activeNumPrice = getNumericPrice(activeProduct.price);
+      const total = Math.max(0, activeNumPrice - appliedDiscount);
+      const currSym = getCurrencySymbol();
+      const formattedTotal = currentCurrency === 'BDT' ? `${currSym}${total.toLocaleString()}` : `${currSym}${total.toFixed(2)}`;
+      document.getElementById('sumTotal').innerText = formattedTotal;
+      document.getElementById('payBtn').innerText = `🔒 Pay ${formattedTotal} & Complete`;
     }
 
     document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
@@ -640,7 +720,8 @@
         quantity: 1,
         paymentMethod: document.getElementById('paymentMethod').value,
         promoCode: appliedPromo,
-        refCode: affiliateRef
+        refCode: affiliateRef,
+        currency: currentCurrency
       };
 
       try {

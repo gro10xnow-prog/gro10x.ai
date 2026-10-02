@@ -484,11 +484,15 @@
         <label class="form-label" for="manualTokenInput">Pass Token / JWT</label>
         <input type="text" id="manualTokenInput" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
       </div>
+      <div id="manualTokenError" style="display:none; color:var(--accent-red); font-size:0.8rem; margin-bottom:0.75rem;"></div>
       <button type="button" class="btn-submit" style="width:100%; justify-content:center;" onclick="applyManualToken()">
         🔓 Authenticate Gateway
       </button>
     </div>
   </div>
+
+  <!-- Toast Notification Container (Zero-Native-Dialog standard) -->
+  <div id="contractorToast" style="display:none; position:fixed; bottom:2rem; right:2rem; z-index:10000; padding:0.85rem 1.25rem; border-radius:10px; font-weight:700; font-size:0.88rem; box-shadow:0 10px 30px rgba(0,0,0,0.5); transition:all 0.3s ease;"></div>
 
   <div class="container">
 
@@ -744,12 +748,36 @@
       }
     }
 
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('contractorToast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.style.background = type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(16, 185, 129, 0.95)';
+      toast.style.color = '#fff';
+      toast.style.border = type === 'error' ? '1px solid #ef4444' : '1px solid #10b981';
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 4000);
+    }
+
     function applyManualToken() {
       const val = document.getElementById('manualTokenInput').value.trim();
-      if (!val) return alert('Please enter an access pass token.');
+      const errEl = document.getElementById('manualTokenError');
+      if (!val) {
+        if (errEl) {
+          errEl.textContent = 'Please enter an access pass token.';
+          errEl.style.display = 'block';
+        } else {
+          showToast('Please enter an access pass token.', 'error');
+        }
+        return;
+      }
+      if (errEl) errEl.style.display = 'none';
       token = val;
       localStorage.setItem('contractor_token', token);
       document.getElementById('tokenPromptModal').style.display = 'none';
+      showToast('Token registered. Loading project...');
       loadContractorProject();
     }
 
@@ -928,7 +956,7 @@
       const stagingUrl = document.getElementById('tktStagingUrl').value.trim();
       const description = document.getElementById('tktDescription').value.trim();
 
-      if (!title || !description) return alert('Please fill in title and description.');
+      if (!title || !description) return showToast('Please fill in title and description.', 'error');
 
       const btn = document.getElementById('btnSubmitTicket');
       btn.disabled = true;
@@ -955,11 +983,11 @@
           throw new Error(data.error || 'Failed to submit defect ticket.');
         }
 
-        alert(`✅ Defect Ticket #${data.ticket?.id || 'TKT'} submitted to Pod Lead.`);
+        showToast(`✅ Defect Ticket #${data.ticket?.id || 'TKT'} submitted to Pod Lead.`);
         document.getElementById('contractorTicketForm').reset();
         switchTab('deliverables', document.querySelector('.tab-btn'));
       } catch (err) {
-        alert('Ticket Submission Error: ' + err.message);
+        showToast('Ticket Submission Error: ' + err.message, 'error');
       } finally {
         btn.disabled = false;
         btn.textContent = '📤 Submit to Pod Lead';

@@ -59,10 +59,13 @@ async function runDefectEscalationCheck() {
     const isP0 = severity === 'P0' || severity.includes('CRITICAL') || severity.includes('BLOCKER');
     const isP1 = severity === 'P1' || severity.includes('MAJOR') || severity.includes('HIGH');
 
-    let shouldEscalate = false;
-    let thresholdTag = '';
+    let shouldHoldback = false;
 
-    if (isP0 && slaHoursRemaining <= 4) {
+    if (isP0 && elapsedHours >= 24) {
+      shouldEscalate = true;
+      shouldHoldback = true;
+      thresholdTag = 'P0_24H_BREACH_HOLDBACK';
+    } else if (isP0 && slaHoursRemaining <= 4) {
       shouldEscalate = true;
       thresholdTag = 'P0_4H_BREACH_WARNING';
     } else if (isP1 && slaHoursRemaining <= 8) {
@@ -112,12 +115,46 @@ async function runDefectEscalationCheck() {
           }
         } catch (_) {}
 
+        if (shouldHoldback) {
+          ticket.slaHoldback = {
+            applied: true,
+            percent: 15,
+            reason: 'Critical Defect Exceeded 24h SLA',
+            appliedAt: new Date().toISOString()
+          };
+          ticket.status = 'Escalated - Holdback Applied';
+
+          try {
+            const { emitStakeholderEvent } = require('./stakeholder-events');
+            emitStakeholderEvent('ticket.sla_breach_holdback', {
+              ticketId: ticket.id,
+              projectId,
+              projectName: projName,
+              holdbackPercent: 15,
+              reason: 'P0 24h SLA Breach'
+            }, {
+              stakeholderId: projectId,
+              stakeholderType: 'contractor'
+            }).catch?.(() => {});
+          } catch (_) {}
+
+          if (isSupabaseConfigured()) {
+            try {
+              await supabase.from('tickets').update({
+                status: 'Escalated - Holdback Applied',
+                sla_holdback: ticket.slaHoldback
+              }).eq('id', ticket.id);
+            } catch (_) {}
+          }
+        }
+
         escalationResults.push({
           ticketId: ticket.id,
           severity,
           slaHoursRemaining,
           escalated: true,
-          thresholdTag
+          thresholdTag,
+          holdbackApplied: shouldHoldback
         });
       }
     }

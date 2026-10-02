@@ -82,7 +82,13 @@ const PLATFORM_TAB_MAP = {
       { id: 'planner', name: '📅 Digital Planner Micro-App', path: '/planner', auditSuiteId: 'public_planner', active: true },
       { id: 'viewer3d', name: '🔮 3D Spatial Product Lab', path: '/3d-viewer', auditSuiteId: 'public_viewer3d', active: true },
       { id: 'proposal', name: '💼 Public Proposal & SOW Rail', path: '/proposal.html?token=nhf-enterprise-ai-2026', auditSuiteId: 'public_proposal', active: true },
-      { id: 'myPortal', name: '👑 Members Vault & GroCredits', path: '/my-portal', auditSuiteId: 'public_my_portal', suiteFile: 'my-portal-qa.js', active: true }
+      { id: 'myPortal', name: '👑 Members Vault & GroCredits', path: '/my-portal', auditSuiteId: 'public_my_portal', suiteFile: 'my-portal-qa.js', active: true },
+      { id: 'dceStore', name: '🛍️ PlannerQueen Storefront', path: '/dce/store', auditSuiteId: 'dce_store', active: true },
+      { id: 'digivaultStore', name: '📦 DigiVault BD Public Store', path: '/digivault', auditSuiteId: 'public_digivault', active: true },
+      { id: 'dceTrack', name: '🔍 Customer Order Tracking', path: '/dce/track', auditSuiteId: 'dce_track', active: true },
+      { id: 'dceAffiliate', name: '🤝 Affiliate & Creator Portal', path: '/dce/affiliate', auditSuiteId: 'dce_affiliate', active: true },
+      { id: 'real3d', name: '🧪 3D Real STEM Lab', path: '/3d-viewer/real3d.html', auditSuiteId: 'public_real3d', active: true },
+      { id: 'delivery', name: '📜 Cryptographic Delivery & Certificate', path: '/delivery', auditSuiteId: 'public_delivery', active: true }
     ]
   },
   workspace: {

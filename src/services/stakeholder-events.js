@@ -153,6 +153,48 @@ class StakeholderEventBus extends EventEmitter {
       }
 
       // ─── Client Onboarding & Sprint Operations ────────────────────────────
+      case 'lockin.prerequisite_submitted': {
+        const item = payload.item || {};
+        const note = payload.submissionNote || item.submission_note || 'Credentials/details provided';
+        const progress = payload.progress || {};
+        const msg = `🔐 *CLIENT PREREQUISITE SUBMITTED*\n\n` +
+          `• Client: *${payload.clientName || payload.clientId}* (\`${payload.clientId}\`)\n` +
+          `• Spec: \`${payload.specId}\`\n` +
+          `• Item: *${item.name || payload.itemId}* (\`${payload.itemId}\`)\n` +
+          `• Category: *${item.category || 'CREDENTIALS'}*\n` +
+          `• Progress: *${progress.completed || 0}/${progress.total || 5} (${progress.percent || 0}%)*\n` +
+          `• Note: _"${note}"_\n\n` +
+          `⚡ Action required: Verify credentials in Client Handover Cockpit.`;
+        const keyboard = [[{ text: '🔒 Inspect Handover Shield', url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/client#lockin` }]];
+        notifications.sendTelegramNotification(ownerChatId, msg, keyboard, false);
+        break;
+      }
+
+      case 'pod.assigned': {
+        const msg = `⚡ *DELIVERY POD ASSIGNED — Engine 2*\n\n` +
+          `• Project: *${payload.projectId}*\n` +
+          `• Pod: *${payload.podName}* (${payload.targetVelocityDays}-day sprint target)\n` +
+          `• Lead Engineer: *${payload.leadEngineer}*\n` +
+          `• Members: ${(payload.assignedMembers || []).join(', ') || 'Pod Crew'}\n\n` +
+          `Assigned sprint delivery is officially active.`;
+        const keyboard = [[{ text: '📊 View Pod in Admin', url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/app#engines` }]];
+        notifications.sendTelegramNotification(ownerChatId, msg, keyboard, true);
+        break;
+      }
+
+      case 'cogs.margin_warning': {
+        const msg = `⚠️ *GROSS MARGIN BENCHMARK WARNING — Engine 2*\n\n` +
+          `• Project: *${payload.projectName || payload.projectId}* (\`${payload.projectId}\`)\n` +
+          `• Gross Margin: *${payload.grossMarginPercent}%* (Benchmark: >70%)\n` +
+          `• Total COGS: *৳${Number(payload.totalCOGS || 0).toLocaleString()}* ($${payload.totalCogsUSD || 0})\n` +
+          `• Revenue: *৳${Number(payload.projectRevenue || 0).toLocaleString()}*\n` +
+          `• Status: *${payload.status || 'LOW_MARGIN'}*\n\n` +
+          `⚡ Action required: Review token consumption and compute allocation.`;
+        const keyboard = [[{ text: '💰 Review Project P&L', url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/app#finance` }]];
+        notifications.sendTelegramNotification(ownerChatId, msg, keyboard, true);
+        break;
+      }
+
       case 'client.onboarded': {
         const client = payload.client || payload;
         const msg = `👥 *NEW CLIENT ONBOARDED*\n\n` +

@@ -37,7 +37,7 @@ function normalize(order) {
 
   const customer = {
     email: order.customer_email || '',
-    phone: order.customer_phone || order.shipping_address?.phone || '',
+    phone: order.customer_phone || order.billing_phone || order.phone || order.shipping_address?.phone || '',
     full_name: `${order.customer_first_name || ''} ${order.customer_last_name || ''}`.trim() || 'Daraz Buyer',
     country_code: 'BD',
     channel_identity: {

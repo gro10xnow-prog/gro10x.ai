@@ -140,7 +140,7 @@ router.get('/batches/:id', asyncHandler(async (req, res) => {
 /**
  * 2b. Export Settlement Batch as CSV
  */
-router.get('/batches/:id/export/csv', asyncHandler(async (req, res) => {
+router.get(['/batches/:id/export/csv', '/batches/:id/export', '/export/:id'], asyncHandler(async (req, res) => {
   const { id } = req.params;
   let batch = null;
 

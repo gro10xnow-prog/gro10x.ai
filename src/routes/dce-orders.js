@@ -303,7 +303,7 @@ router.get('/', requireDCEAdmin, asyncHandler(async (req, res) => {
 /**
  * 2b. EXPORT ORDERS AS CSV
  */
-router.get('/export/csv', requireDCEAdmin, asyncHandler(async (req, res) => {
+router.get(['/export/csv', '/export'], requireDCEAdmin, asyncHandler(async (req, res) => {
   const { channel_code, brand_id, status } = req.query;
   let orders = [];
 
@@ -521,7 +521,7 @@ router.put('/:id/status', requireDCEAdmin, asyncHandler(async (req, res) => {
 /**
  * On-demand Etsy Sync Trigger
  */
-router.post('/connectors/etsy/sync', requireDCEAdmin, asyncHandler(async (req, res) => {
+router.post(['/connectors/etsy/sync', '/poll/etsy'], requireDCEAdmin, asyncHandler(async (req, res) => {
   const { brandId } = req.body;
   const connector = getConnector('ETSY');
   if (!connector) return fail(res, 'Etsy connector unavailable', 503);
@@ -553,7 +553,7 @@ router.post('/connectors/etsy/sync', requireDCEAdmin, asyncHandler(async (req, r
 /**
  * On-demand Amazon Sync Trigger (Scaffold)
  */
-router.post('/connectors/amazon/sync', requireDCEAdmin, asyncHandler(async (req, res) => {
+router.post(['/connectors/amazon/sync', '/poll/amazon'], requireDCEAdmin, asyncHandler(async (req, res) => {
   return ok(res, {
     synced: true,
     channel: 'AMAZON',
@@ -660,6 +660,84 @@ router.post('/track', trackLimiter, asyncHandler(async (req, res) => {
     }
   }
 
+  // Cross-Engine Lookup: DigiVault BD Orders
+  if (!order) {
+    let digiOrder = null;
+    if (isSupabaseConfigured()) {
+      try {
+        const isUUID = isValidUUID(cleanRef);
+        let digiQuery = supabase.from('digi_orders').select('*');
+        if (isUUID) {
+          digiQuery = digiQuery.or(`id.eq.${cleanRef},order_number.ilike.${cleanRef}`);
+        } else {
+          digiQuery = digiQuery.ilike('order_number', cleanRef);
+        }
+        const { data: digiData } = await digiQuery.maybeSingle();
+        if (digiData) digiOrder = digiData;
+      } catch (_) {}
+    }
+
+    if (!digiOrder) {
+      try {
+        const digiRouter = require('./digistore');
+        const inMem = digiRouter.inMemoryOrders || [];
+        digiOrder = inMem.find(o =>
+          (o.order_number || o.orderNumber || '').toUpperCase() === cleanRef.toUpperCase() ||
+          o.id === cleanRef
+        );
+      } catch (_) {}
+    }
+
+    if (digiOrder) {
+      const digiCustEmail = (digiOrder.customer_email || digiOrder.email || '').trim().toLowerCase();
+      if (digiCustEmail && cleanEmail && digiCustEmail !== cleanEmail) {
+        return fail(res, 'Order found, but the provided email does not match our records.', 403);
+      }
+
+      const isDelivered = digiOrder.delivery_status === 'delivered';
+      const orderRefVal = digiOrder.order_number || digiOrder.id;
+
+      return ok(res, {
+        orderRef: orderRefVal,
+        orderId: digiOrder.id,
+        status: isDelivered ? 'COMPLETED' : 'PROCESSING',
+        channelCode: 'DIGIVAULT',
+        fulfillmentType: 'DIGITAL',
+        brandName: 'DigiVault BD',
+        customerName: digiOrder.customer_name || 'DigiVault Subscriber',
+        customerEmail: cleanEmail,
+        totalAmount: Number(digiOrder.price_bdt || digiOrder.amount_bdt || 1200),
+        currency: 'BDT',
+        placedAt: digiOrder.created_at || new Date().toISOString(),
+        items: [{
+          title: digiOrder.product_name || 'Digital Subscription',
+          quantity: 1,
+          unitPrice: Number(digiOrder.price_bdt || 1200),
+          lineTotal: Number(digiOrder.price_bdt || 1200),
+          format: 'SAAS',
+          accessUrl: digiOrder.activation_link || `/digivault/track.html?ref=${orderRefVal}`,
+          interactiveUrl: `/digivault/track.html?ref=${orderRefVal}`,
+          pdfDownloadUrl: '#',
+          canvaTemplateUrl: '#'
+        }],
+        licenses: [{
+          licenseKey: orderRefVal,
+          accessUrl: digiOrder.activation_link || `/digivault/track.html?ref=${orderRefVal}`,
+          interactiveUrl: `/digivault/track.html?ref=${orderRefVal}`,
+          vaultUrl: `/my-portal?code=${encodeURIComponent(orderRefVal)}`,
+          status: isDelivered ? 'ACTIVE' : 'PENDING',
+          expiresAt: digiOrder.expiry_date || null
+        }],
+        tracking: null,
+        events: [
+          { event_type: 'ORDER_PLACED', created_at: digiOrder.created_at || new Date().toISOString() },
+          { event_type: digiOrder.payment_status === 'verified' ? 'PAYMENT_VERIFIED' : 'PENDING_PAYMENT', created_at: digiOrder.created_at || new Date().toISOString() },
+          { event_type: isDelivered ? 'DELIVERED' : 'PROCESSING', created_at: digiOrder.created_at || new Date().toISOString() }
+        ]
+      });
+    }
+  }
+
   if (!order) {
     return fail(res, 'No order found matching the provided reference and email.', 404);
   }
@@ -713,6 +791,48 @@ router.post('/track', trackLimiter, asyncHandler(async (req, res) => {
   });
 }));
 
+router.post('/resend', trackLimiter, asyncHandler(async (req, res) => {
+  const { orderRef, email } = req.body;
+  if (!orderRef || !email) {
+    return fail(res, 'Order reference and customer email are required', 400);
+  }
+  const cleanRef = String(orderRef).trim();
+  const cleanEmail = String(email).trim().toLowerCase();
+
+  let order = null;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data } = await supabase
+        .from('dce_orders')
+        .select('*, dce_customers(email)')
+        .or(`external_order_id.eq.${cleanRef},id.eq.${cleanRef}`)
+        .maybeSingle();
+      if (data && (data.dce_customers?.email || '').trim().toLowerCase() === cleanEmail) {
+        order = data;
+      }
+    } catch (_) {}
+  }
+  if (!order) {
+    await getDCEOrdersStore();
+    const found = memOrders.find(o =>
+      (o.id.toLowerCase() === cleanRef.toLowerCase() || (o.external_order_id && o.external_order_id.toLowerCase() === cleanRef.toLowerCase())) &&
+      (o.customer_email || '').toLowerCase() === cleanEmail
+    );
+    if (found) order = found;
+  }
+  if (!order) {
+    return fail(res, 'No matching order found for the provided reference and email.', 404);
+  }
+
+  try {
+    const { resendDeliveryEmail } = require('../services/dce-fulfillment');
+    const result = await resendDeliveryEmail(order.id);
+    return ok(res, { success: true, message: 'Delivery access has been resent to ' + cleanEmail, result });
+  } catch (err) {
+    return fail(res, err.message, 500);
+  }
+}));
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 6. DIRECT PLATFORM CHECKOUT ENGINE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -724,7 +844,8 @@ router.post('/checkout', asyncHandler(async (req, res) => {
     quantity = 1,
     paymentMethod = 'CARD',
     promoCode,
-    refCode
+    refCode,
+    currency = 'USD'
   } = req.body;
 
   if (!customer || !customer.email || !EMAIL_REGEX.test(String(customer.email).trim())) {
@@ -740,6 +861,9 @@ router.post('/checkout', asyncHandler(async (req, res) => {
     return fail(res, 'Quantity must be a positive integer', 400, 'VALIDATION_ERROR', { field: 'quantity' });
   }
 
+  const activeCurrency = String(currency).toUpperCase() === 'BDT' ? 'BDT' : 'USD';
+  const isBdt = activeCurrency === 'BDT';
+
   // 1. Resolve SKU pricing and format
   let sku = null;
   if (isSupabaseConfigured() && skuId && isValidUUID(skuId)) {
@@ -753,21 +877,26 @@ router.post('/checkout', asyncHandler(async (req, res) => {
 
   if (!sku) {
     // Default / Mock direct product catalogue
-    const format = (skuId && String(skuId).includes('PHYSICAL')) ? 'PHYSICAL' : 'PDF';
+    const format = (skuId && /phys|print/i.test(String(skuId))) ? 'PHYSICAL' : 'PDF';
+    const defaultUsd = format === 'PHYSICAL' ? 34.99 : 19.99;
     sku = {
-      id: skuId || 'sku-pq-dir-01',
-      sku: `PLNRQN-${format}-DIRECT-USD19.99`,
+      id: skuId || (format === 'PHYSICAL' ? 'sku-pq-phys-01' : 'sku-pq-dir-01'),
+      sku: `PLNRQN-${format}-DIRECT-${activeCurrency}`,
       title: format === 'PHYSICAL'
         ? 'PlannerQueen Luxury Spiral-Bound 2026 Life & Goal Planner (Hardcover)'
         : 'PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)',
-      unit_price: format === 'PHYSICAL' ? 34.99 : 19.99,
+      unit_price: defaultUsd,
+      price_bdt: format === 'PHYSICAL' ? 4200 : 2400,
       format: format,
-      currency: 'USD',
+      currency: activeCurrency,
       access_url: '/planner/'
     };
   }
 
-  const basePrice = Number(sku.unit_price || 19.99);
+  const basePriceUsd = Number(sku.unit_price || sku.price || 19.99);
+  const basePrice = isBdt
+    ? (sku.price_bdt ? Number(sku.price_bdt) : Math.round(basePriceUsd * 120))
+    : basePriceUsd;
   const grossSubtotal = Math.round(basePrice * qty * 100) / 100;
 
   // 2. Validate Promo Code / Coupon
@@ -779,7 +908,9 @@ router.post('/checkout', asyncHandler(async (req, res) => {
       const valResult = await validateCoupon(promoCode, {
         brandId: sku.brand_id,
         orderAmount: grossSubtotal,
-        skuId: sku.id
+        orderTotal: grossSubtotal,
+        skuId: sku.id,
+        currency: activeCurrency
       });
       if (valResult.valid) {
         discountAmount = valResult.discount_amount;
@@ -801,7 +932,7 @@ router.post('/checkout', asyncHandler(async (req, res) => {
     total_amount: finalTotal,
     channel_fee: 0.00, // 100% GRO10X Direct Margin
     net_amount: finalTotal,
-    currency: sku.currency || 'USD',
+    currency: activeCurrency,
     fulfillment_type: isPhysical ? 'PHYSICAL' : 'DIGITAL',
     placed_at: new Date().toISOString(),
     customer: {
@@ -824,6 +955,7 @@ router.post('/checkout', asyncHandler(async (req, res) => {
       discount_amount: discountAmount,
       coupon_id: appliedCoupon ? appliedCoupon.id : null,
       ref: refCode || null,
+      currency: activeCurrency,
       address: customer.address || ''
     }
   };
@@ -842,7 +974,7 @@ router.post('/checkout', asyncHandler(async (req, res) => {
     brand_id: 'b-pq-01',
     brand_name: 'PlannerQueen',
     total_amount: finalTotal,
-    currency: sku.currency || 'USD',
+    currency: activeCurrency,
     channel_fee: 0.00,
     net_amount: finalTotal,
     status: isPhysical ? 'PROCESSING' : 'COMPLETED',
@@ -884,10 +1016,12 @@ router.post('/checkout', asyncHandler(async (req, res) => {
   const telegramTarget = process.env.OWNER_TELEGRAM_ID || process.env.TELEGRAM_ADMIN_CHAT_ID;
   if (telegramTarget && typeof sendTelegramNotification === 'function') {
     try {
+      const currencySymbol = activeCurrency === 'BDT' ? '৳' : '$';
+      const formattedTotal = activeCurrency === 'BDT' ? `${currencySymbol}${finalTotal.toLocaleString()}` : `${currencySymbol}${finalTotal.toFixed(2)}`;
       const text = `🛍️ *New Direct Order Placed!*\n\n` +
         `• *Order:* \`${externalOrderId}\`\n` +
         `• *Customer:* ${customer.name} (${customer.email})\n` +
-        `• *Total:* $${finalTotal.toFixed(2)} ${sku.currency || 'USD'}\n` +
+        `• *Total:* ${formattedTotal} ${activeCurrency}\n` +
         `• *Product:* ${sku.title}\n` +
         `• *Fulfillment:* ${isPhysical ? 'PHYSICAL' : 'DIGITAL'}\n` +
         `• *Status:* ${isPhysical ? 'PROCESSING' : 'COMPLETED'}\n` +
@@ -901,12 +1035,14 @@ router.post('/checkout', asyncHandler(async (req, res) => {
   return ok(res, {
     orderId,
     externalOrderId,
+    orderRef: externalOrderId,
     status: isPhysical ? 'PROCESSING' : 'COMPLETED',
     fulfillmentType: isPhysical ? 'PHYSICAL' : 'DIGITAL',
     subtotal: grossSubtotal,
     discount: discountAmount,
     total: finalTotal,
-    currency: sku.currency || 'USD',
+    totalAmount: finalTotal,
+    currency: activeCurrency,
     paymentMethod,
     customer: { name: customer.name, email: customer.email },
     item: { title: sku.title, format: sku.format, quantity: qty },

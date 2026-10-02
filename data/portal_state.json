@@ -118,6 +118,24 @@
         "PLA-14",
         "PLA-15"
       ]
+    },
+    "CUST-FV5JOXV": {
+      "id": "CUST-FV5JOXV",
+      "email": "tester.subphase21@plannerqueengro.com",
+      "name": "Samantha VIP",
+      "createdAt": "2026-10-02T19:07:08.671Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
+    },
+    "CUST-SV6PPK6": {
+      "id": "CUST-SV6PPK6",
+      "email": "coach.tester@plannerqueengro.com",
+      "name": "Coach Tester",
+      "createdAt": "2026-10-02T19:07:09.011Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
     }
   },
   "wallets": {
@@ -183,6 +201,16 @@
     },
     "CUST-BV1YE4Q": {
       "balance": 50,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-FV5JOXV": {
+      "balance": 200,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-SV6PPK6": {
+      "balance": 170,
       "tier": "VIP Creator",
       "lifetimeEarned": 200
     }
@@ -436,6 +464,45 @@
         "type": "credit",
         "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
         "timestamp": "2026-10-01T21:50:54.809Z"
+      }
+    ],
+    "CUST-FV5JOXV": [
+      {
+        "id": "TXN-1790968028671",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-10-02T19:07:08.671Z"
+      }
+    ],
+    "CUST-SV6PPK6": [
+      {
+        "id": "TXN-1790969116341",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-10-02T19:25:16.341Z"
+      },
+      {
+        "id": "TXN-1790969028517",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-10-02T19:23:48.517Z"
+      },
+      {
+        "id": "TXN-1790968029092",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-10-02T19:07:09.092Z"
+      },
+      {
+        "id": "TXN-1790968029011",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-10-02T19:07:09.011Z"
       }
     ]
   },

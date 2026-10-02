@@ -364,7 +364,10 @@
           
           <div class="copy-box">
             <span id="resLicenseKey" style="font-family: monospace; font-size: 15px; font-weight: 700; color: #60a5fa; letter-spacing: 0.5px;"></span>
-            <button class="btn-action" style="padding: 6px 12px; font-size: 12px;" onclick="copyLicense()">📋 Copy Key</button>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-action" style="padding: 6px 12px; font-size: 12px;" onclick="copyLicense()">📋 Copy Key</button>
+              <button class="btn-action" id="btnResendDelivery" style="padding: 6px 12px; font-size: 12px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #818cf8; cursor: pointer;" onclick="resendDelivery()">📩 Resend Email</button>
+            </div>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 14px;">
@@ -379,6 +382,9 @@
             </a>
             <a id="resCanvaBtn" href="https://www.canva.com/design/DAGMockup14/view" target="_blank" class="btn-action" style="background: rgba(255,255,255,0.08); border: 1px solid #334155; text-align: center; justify-content: center;">
               <span>🎨 Open Canva Template</span>
+            </a>
+            <a id="resCertBtn" href="/delivery" target="_blank" class="btn-action" style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35); color: #fbbf24; text-align: center; justify-content: center; font-weight: 700;">
+              <span>📜 Verified Certificate</span>
             </a>
           </div>
           
@@ -604,6 +610,7 @@
       }
 
       // Items Table
+      const currSym = order.currency === 'BDT' ? '৳' : '$';
       const tbody = document.getElementById('itemsTableBody');
       tbody.innerHTML = (order.items || []).map(item => `
         <tr>
@@ -612,8 +619,8 @@
             <div style="font-size: 11px; color: #94a3b8;">Format: <span class="badge badge-purple" style="font-size: 9px;">${item.format}</span></div>
           </td>
           <td>${item.quantity}</td>
-          <td>$${Number(item.unitPrice).toFixed(2)}</td>
-          <td><strong>$${Number(item.lineTotal).toFixed(2)}</strong></td>
+          <td>${currSym}${Number(item.unitPrice).toFixed(2)}</td>
+          <td><strong>${currSym}${Number(item.lineTotal).toFixed(2)}</strong></td>
         </tr>
       `).join('');
 
@@ -630,6 +637,32 @@
       const num = document.getElementById('resTrackingNumber').innerText;
       navigator.clipboard.writeText(num);
       alert('✅ Tracking number copied to clipboard!');
+    }
+
+    async function resendDelivery() {
+      if (!currentOrderData) return;
+      const btn = document.getElementById('btnResendDelivery');
+      if (btn) { btn.disabled = true; btn.innerText = 'Resending...'; }
+      try {
+        const res = await fetch('/api/dce/orders/resend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderRef: currentOrderData.orderRef,
+            email: currentOrderData.customerEmail
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✅ ' + (data.message || 'Delivery email resent successfully!'));
+        } else {
+          alert('⚠️ ' + (data.message || 'Unable to resend at this moment.'));
+        }
+      } catch (err) {
+        alert('Failed to resend: ' + err.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerText = '📩 Resend Email'; }
+      }
     }
 
     // Modal Operations

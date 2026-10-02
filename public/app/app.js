@@ -30,6 +30,7 @@
     '#automation': { module: 'automation.js', title: 'Bot Engine & Automation Logs', icon: '⚡' },
     '#leads':      { module: 'leads.js',      title: 'Leads Pipeline', icon: '🎯' },
     '#proposals':  { module: 'proposals.js',  title: 'Client Proposals Studio', icon: '💼' },
+    '#webhooks':   { module: 'webhooks.js',   title: 'Webhook Subscriptions & Delivery Desk', icon: '🔗' },
     '#settings':   { module: 'settings.js',   title: 'Workspace Settings', icon: '⚙️' }
   };
 

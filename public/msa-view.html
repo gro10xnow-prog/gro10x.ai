@@ -422,12 +422,16 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const projectId = urlParams.get('projectId') || urlParams.get('id') || 'PRJ-2026-ENG2';
+    const queryToken = urlParams.get('token') || urlParams.get('t');
 
     async function loadMSA() {
       try {
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('token') || localStorage.getItem('sb-access-token');
+        const token = queryToken || localStorage.getItem('gro10x_token') || localStorage.getItem('token') || localStorage.getItem('sb-access-token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        const res = await fetch(`/api/projects/${projectId}/msa`, { headers });
+        const fetchUrl = queryToken 
+          ? `/api/projects/${encodeURIComponent(projectId)}/msa?token=${encodeURIComponent(queryToken)}`
+          : `/api/projects/${encodeURIComponent(projectId)}/msa`;
+        const res = await fetch(fetchUrl, { headers });
         if (res.ok) {
           const data = await res.json();
           if (data && data.msa) {
@@ -473,7 +477,9 @@
         { section: '2. Intellectual Property Assignment', title: 'Irrevocable Transfer of Ownership', content: 'Upon receipt of final invoice settlement, GRO10X irrevocably transfers and assigns 100% of all intellectual property, bespoke source code, and neural network weights to Client.' },
         { section: '3. Mutual Non-Disclosure & Data Confidentiality', title: 'Confidentiality of Proprietary Assets & Client Data', content: 'Both parties agree to protect all confidential proprietary information, including proprietary training datasets, production API keys, algorithms, customer records, and trade secrets, for a duration of not less than five (5) consecutive years.' },
         { section: '4. 30-Day Bug-Fix Warranty & Maintenance SLA', title: 'Zero-Cost Production Warranty', content: 'GRO10X guarantees a 30-calendar-day warranty commencing on the date of formal deliverable acceptance. Critical severity regressions (P0) will be responded to within 4 business hours; standard regressions (P1) within 24 business hours at zero additional cost to Client.' },
-        { section: '5. Multi-Rail Settlement & Commercial Terms', title: 'Invoicing Standards & Taxes', content: 'Invoicing follows milestone sprint completion. Client agrees to settle invoices via institutional bank wire transfer (BRAC Bank PLC) within five (5) business days of issuance conforming to applicable 5% statutory VAT.' }
+        { section: '5. Multi-Rail Settlement & Commercial Terms', title: 'Invoicing Standards & Taxes', content: 'Invoicing follows milestone sprint completion. Client agrees to settle invoices via institutional bank wire transfer (BRAC Bank PLC) within five (5) business days of issuance conforming to applicable 5% statutory VAT.' },
+        { section: '6. Limitation of Liability', title: 'Standard Enterprise Liability Cap', content: 'Except for breaches of Section 3 (Confidentiality) or Section 2 (IP Assignment), neither party shall be liable for indirect, punitive, or consequential damages. Maximum aggregate liability shall not exceed the total fees paid under the applicable SOW.' },
+        { section: '7. Governing Law & Dispute Escalation', title: 'Arbitration Protocol & Warranty Freeze', content: 'This Agreement is governed by the laws of Bangladesh. Any dispute arising out of or in connection with this contract shall be submitted to the dispute resolution mechanism with warranty pause protection, followed if unresolved by arbitration under the Arbitration Act 2001 of Bangladesh in Dhaka.' }
       ];
       const clausesHtml = defaultClauses.map(c => `
         <div class="clause-block ${c.section.includes('2.') ? 'highlight' : ''}">
@@ -490,6 +496,10 @@
     }
 
     function downloadMsaPdf() {
+      if (typeof html2pdf === 'undefined') {
+        window.print();
+        return;
+      }
       const el = document.getElementById('msaSheet');
       const opt = {
         margin: [0, 0, 0, 0],

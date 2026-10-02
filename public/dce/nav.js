@@ -299,6 +299,7 @@
         <a href="/dce/store" class="btn btn-secondary" style="padding: 6px 10px; font-size: 11px; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; text-decoration: none; border-radius: 6px;">🛍️ Store</a>
         <a href="/affiliate/portal" class="btn btn-secondary" style="padding: 6px 10px; font-size: 11px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; text-decoration: none; border-radius: 6px;">🤝 Partners</a>
         <span class="dce-profile-pill">SUPER ADMIN</span>
+        <a href="/workspace?engineId=engine3#pnl" class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #a5b4fc; text-decoration: none; border-radius: 6px;">Engine 3 P&L ↗</a>
         <a href="/app" class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px; background: #1e293b; color: #f8fafc; text-decoration: none; border-radius: 6px; border: 1px solid #334155;">Agency OS ↗</a>
         <button class="dce-hamburger-btn" id="dceMobileMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="dceMobileDrawer">☰</button>
       </div>
@@ -354,6 +355,9 @@
         </a>
         <a href="/affiliate/portal" class="dce-drawer-action-btn" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399;">
           <span>🤝</span> Partner Portal
+        </a>
+        <a href="/workspace?engineId=engine3#pnl" class="dce-drawer-action-btn" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #a5b4fc;">
+          <span>⚡</span> Engine 3 Workspace P&L
         </a>
         <a href="/app" class="dce-drawer-action-btn" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc;">
           <span>↗️</span> Agency OS Dashboard

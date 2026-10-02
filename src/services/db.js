@@ -66,7 +66,12 @@ function mapProfileToTeam(p) {
 
 let cachedDBState = null;
 let lastCacheTime = 0;
-const CACHE_TTL_MS = 15000; // 15-second TTL cache to prevent query stampedes on parallel auth/data requests
+const CACHE_TTL_MS = 15000; // 15-second TTL cache
+
+// Single-flight guard: when a cache miss is in-flight, all concurrent callers
+// await the SAME promise instead of each launching a separate 19-table waterfall.
+// This prevents the "thundering herd" / cache stampede under high concurrency.
+let _inflight = null;
 
 async function readDB(forceFresh = false) {
   if (!isSupabaseConfigured()) {
@@ -83,102 +88,117 @@ async function readDB(forceFresh = false) {
   }
 
   const now = Date.now();
+
+  // Cache hit — return immediately without any DB call
   if (!forceFresh && cachedDBState && (now - lastCacheTime < CACHE_TTL_MS)) {
     return cachedDBState;
   }
 
-  try {
-    const [
-      { data: profiles },
-      { data: clients },
-      { data: tasks },
-      { data: invoices },
-      { data: services },
-      { data: reviews },
-      { data: expenses },
-      { data: assets },
-      { data: attendance },
-      { data: eod },
-      { data: authPins },
-      { data: projects },
-      { data: subtasks },
-      { data: workflows },
-      { data: tickets },
-      { data: posts },
-      { data: quotes },
-      { data: leaves },
-      { data: leads }
-    ] = await Promise.all([
-      supabase.from('profiles').select('*').limit(1000),
-      supabase.from('clients').select('*').limit(2000),
-      supabase.from('tasks').select('*').limit(5000),
-      supabase.from('invoices').select('*').limit(5000),
-      supabase.from('services').select('*').limit(500),
-      supabase.from('reviews').select('*').limit(2000),
-      supabase.from('expenses').select('*').limit(5000),
-      supabase.from('assets').select('*').limit(2000),
-      supabase.from('attendance').select('*').limit(5000),
-      supabase.from('eod_reports').select('*').limit(5000),
-      supabase.from('auth_pins').select('*').limit(2000),
-      supabase.from('projects').select('*').limit(2000),
-      supabase.from('subtasks').select('*').limit(5000),
-      supabase.from('project_workflows').select('*').limit(1000),
-      supabase.from('tickets').select('*').limit(5000),
-      supabase.from('social_posts').select('*').limit(2000),
-      supabase.from('quotes').select('*').limit(2000),
-      supabase.from('leaves').select('*').limit(5000),
-      supabase.from('leads').select('*').limit(2000)
-    ]);
+  // Single-flight: if a refresh is already in-flight, piggyback on it
+  if (_inflight) {
+    return _inflight;
+  }
 
-    cachedDBState = {
-      team: (profiles || []).map(mapProfileToTeam),
-      clients: clients || [],
-      tasks: tasks || [],
-      invoices: invoices || [],
-      services: services || [],
-      reviews: reviews || [],
-      expenses: expenses || [],
-      assets: assets || [],
-      attendance: attendance || [],
-      eod_reports: eod || [],
-      projects: projects || [],
-      subtasks: subtasks || [],
-      workflows: workflows || [],
-      tickets: tickets || [],
-      posts: posts || [],
-      quotes: quotes || [],
-      leaves: leaves || [],
-      leads: leads || cachedDBState?.leads || [],
-      disputes: cachedDBState?.disputes || [],
-      testimonials: cachedDBState?.testimonials || [],
-      handover_manifests: cachedDBState?.handover_manifests || [],
-      authPins: (authPins || []).map(ap => ({
-        phone: ap.phone,
-        normPhone: ap.norm_phone,
-        pin: ap.pin,
-        isTemp: ap.is_temp,
-        linkedId: ap.linked_id,
-        linkedType: ap.linked_type,
-        email: ap.email
-      }))
-    };
-    lastCacheTime = Date.now();
-    return cachedDBState;
-  } catch (e) {
-    console.error('❌ Supabase readDB error:', e.message);
-    if (cachedDBState) {
-      console.warn('⚠️ Returning last-known-good cached DB state.');
-      return cachedDBState;
-    }
+  // Launch single-flight: one Promise for all concurrent callers until resolved
+  _inflight = (async () => {
     try {
-      if (fs.existsSync(DB_JSON_PATH)) {
-        const raw = fs.readFileSync(DB_JSON_PATH, 'utf8');
-        cachedDBState = { ...getEmptyFallbackDB(), ...JSON.parse(raw) };
+      const [
+        { data: profiles },
+        { data: clients },
+        { data: tasks },
+        { data: invoices },
+        { data: services },
+        { data: reviews },
+        { data: expenses },
+        { data: assets },
+        { data: attendance },
+        { data: eod },
+        { data: authPins },
+        { data: projects },
+        { data: subtasks },
+        { data: workflows },
+        { data: tickets },
+        { data: posts },
+        { data: quotes },
+        { data: leaves },
+        { data: leads }
+      ] = await Promise.all([
+        supabase.from('profiles').select('id, emp_code, name, role, department, dbm_id, telegram_id, phone, base_salary, status, xp, badge, email').limit(1000),
+        supabase.from('clients').select('id, name, email, phone, company, status, assigned_am, billing_tier, created_at').limit(2000),
+        supabase.from('tasks').select('id, title, stage, priority, due_date, client_id, assigned_to, sprint_id, created_at').limit(3000),
+        supabase.from('invoices').select('id, client_id, amount, status, due_date, issue_date, paid_at').limit(2000),
+        supabase.from('services').select('*').limit(500),
+        supabase.from('reviews').select('id, title, project_id, status, client_id, created_at').limit(1000),
+        supabase.from('expenses').select('id, title, amount, category, status, date, logged_by').limit(2000),
+        supabase.from('assets').select('*').limit(1000),
+        supabase.from('attendance').select('id, emp_code, date, clock_in_time, clock_out_time, status').limit(2000),
+        supabase.from('eod_reports').select('id, emp_code, date, tasks_completed, blockers, created_at').limit(2000),
+        supabase.from('auth_pins').select('phone, norm_phone, pin, is_temp, linked_id, linked_type, email').limit(2000),
+        supabase.from('projects').select('id, name, client_id, delivery_status, warranty_until, created_at').limit(1000),
+        supabase.from('subtasks').select('id, task_id, title, completed').limit(2000),
+        supabase.from('project_workflows').select('*').limit(500),
+        supabase.from('tickets').select('id, title, project_id, client_id, priority, status, created_at').limit(2000),
+        supabase.from('social_posts').select('id, client_id, status, scheduled_date, platform, content').limit(1000),
+        supabase.from('quotes').select('*').limit(1000),
+        supabase.from('leaves').select('id, emp_code, type, status, start_date, end_date').limit(1000),
+        supabase.from('leads').select('id, name, email, phone, company, stage, score, created_at').limit(1000)
+      ]);
+
+      cachedDBState = {
+        team: (profiles || []).map(mapProfileToTeam),
+        clients: clients || [],
+        tasks: tasks || [],
+        invoices: invoices || [],
+        services: services || [],
+        reviews: reviews || [],
+        expenses: expenses || [],
+        assets: assets || [],
+        attendance: attendance || [],
+        eod_reports: eod || [],
+        projects: projects || [],
+        subtasks: subtasks || [],
+        workflows: workflows || [],
+        tickets: tickets || [],
+        posts: posts || [],
+        quotes: quotes || [],
+        leaves: leaves || [],
+        leads: leads || cachedDBState?.leads || [],
+        disputes: cachedDBState?.disputes || [],
+        testimonials: cachedDBState?.testimonials || [],
+        handover_manifests: cachedDBState?.handover_manifests || [],
+        authPins: (authPins || []).map(ap => ({
+          phone: ap.phone,
+          normPhone: ap.norm_phone,
+          pin: ap.pin,
+          isTemp: ap.is_temp,
+          linkedId: ap.linked_id,
+          linkedType: ap.linked_type,
+          email: ap.email
+        }))
+      };
+      lastCacheTime = Date.now();
+      return cachedDBState;
+    } catch (e) {
+      console.error('❌ Supabase readDB error:', e.message);
+      if (cachedDBState) {
+        console.warn('⚠️ Returning last-known-good cached DB state.');
         return cachedDBState;
       }
-    } catch (_) {}
-    return getEmptyFallbackDB();
-  }
+      try {
+        if (fs.existsSync(DB_JSON_PATH)) {
+          const raw = fs.readFileSync(DB_JSON_PATH, 'utf8');
+          cachedDBState = { ...getEmptyFallbackDB(), ...JSON.parse(raw) };
+          return cachedDBState;
+        }
+      } catch (_) {}
+      return getEmptyFallbackDB();
+    } finally {
+      // Always clear the in-flight guard so the next cache miss starts fresh
+      _inflight = null;
+    }
+  })();
+
+  return _inflight;
 }
 
 async function writeDB(data) {

@@ -348,9 +348,32 @@ async function createProjectLockinSpec({
 }
 
 /**
+ * Calculates real-time progress and summary statistics for a lock-in spec
+ */
+function getLockinProgress(spec = {}) {
+  const checklist = Array.isArray(spec.prerequisites_checklist) ? spec.prerequisites_checklist : [];
+  const total = checklist.length;
+  const pending = checklist.filter(i => i.status === 'PENDING').length;
+  const received = checklist.filter(i => i.status === 'RECEIVED').length;
+  const verified = checklist.filter(i => i.status === 'VERIFIED').length;
+  const completed = received + verified;
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  return {
+    total,
+    pending,
+    received,
+    verified,
+    completed,
+    percent,
+    isReadyForKickoff: total > 0 && pending === 0
+  };
+}
+
+/**
  * Updates status of a prerequisite checklist item
  */
-async function updatePrerequisiteStatus(specId, itemId, newStatus = 'RECEIVED') {
+async function updatePrerequisiteStatus(specId, itemId, newStatus = 'RECEIVED', submissionNote = null) {
   const validStatuses = ['PENDING', 'RECEIVED', 'VERIFIED'];
   if (!validStatuses.includes(newStatus)) {
     throw new Error(`Invalid prerequisite status: ${newStatus}. Valid: ${validStatuses.join(', ')}`);
@@ -378,6 +401,9 @@ async function updatePrerequisiteStatus(specId, itemId, newStatus = 'RECEIVED') 
 
   targetItem.status = newStatus;
   targetItem.received_at = newStatus !== 'PENDING' ? new Date().toISOString() : null;
+  if (submissionNote !== null && submissionNote !== undefined) {
+    targetItem.submission_note = String(submissionNote).trim();
+  }
 
   // Check if all items are received/verified
   const allReady = checklist.every(i => i.status === 'RECEIVED' || i.status === 'VERIFIED');
@@ -397,6 +423,8 @@ async function updatePrerequisiteStatus(specId, itemId, newStatus = 'RECEIVED') 
     } catch (_) {}
   }
 
+  const progress = getLockinProgress(spec);
+
   return {
     ok: true,
     specId,
@@ -404,7 +432,8 @@ async function updatePrerequisiteStatus(specId, itemId, newStatus = 'RECEIVED') 
     newStatus,
     allPrerequisitesReady: allReady,
     specStatus: spec.status,
-    item: targetItem
+    item: targetItem,
+    progress
   };
 }
 
@@ -468,6 +497,7 @@ module.exports = {
   standardizeClientProfile,
   generateScopingQuestionnaire,
   createProjectLockinSpec,
+  getLockinProgress,
   updatePrerequisiteStatus,
   getClientLockinSpecs,
   getLockinSpecById

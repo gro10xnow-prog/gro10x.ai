@@ -74,12 +74,13 @@ function initRealtimePubSub() {
         } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED' || status === 'TIMED_OUT') {
           isRealtimeSubscribed = false;
           realtimeChannel = null;
-          if (reconnectAttempts < 6) {
-            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-            reconnectAttempts++;
-            clearTimeout(reconnectTimer);
-            reconnectTimer = setTimeout(() => initRealtimePubSub(), delay);
-          }
+          // Retry indefinitely with exponential backoff, capped at 30 seconds.
+          // No hard attempt limit — a temporary Supabase hiccup should never permanently
+          // silence cross-pod SSE broadcast for the lifetime of the process.
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+          reconnectAttempts++;
+          clearTimeout(reconnectTimer);
+          reconnectTimer = setTimeout(() => initRealtimePubSub(), delay);
         }
       });
   } catch (err) {
@@ -89,7 +90,34 @@ function initRealtimePubSub() {
 
 // Note: initRealtimePubSub() is called on-demand when an active SSE connection is opened in sseHandler()
 
+let redisAdapterLoaded = false;
+let redisAdapter = null;
+
+function tryGetRedis() {
+  if (!redisAdapterLoaded) {
+    redisAdapterLoaded = true;
+    try {
+      redisAdapter = require('./redis-pubsub');
+      if (redisAdapter && typeof redisAdapter.initRedisPubSub === 'function') {
+        redisAdapter.initRedisPubSub((payload) => {
+          if (payload && payload.senderId !== instanceId) {
+            deliverLocally(payload.eventType, payload.data, payload.filterType, payload.filterArgs);
+          }
+        });
+      }
+    } catch (_) {}
+  }
+  return redisAdapter;
+}
+
 function publishToRealtime(eventType, data, filterType = 'all', filterArgs = null) {
+  // 1. Cross-process Redis broadcast (if PM2 cluster configured with REDIS_URL)
+  const redis = tryGetRedis();
+  if (redis && redis.isRedisConnected()) {
+    redis.publishClusterEvent({ eventType, data, filterType, filterArgs, senderId: instanceId });
+  }
+
+  // 2. Supabase Realtime pub/sub broadcast (cross-pod / multi-server fallback)
   if (!realtimeChannel || !isRealtimeSubscribed) return;
   try {
     realtimeChannel.send({

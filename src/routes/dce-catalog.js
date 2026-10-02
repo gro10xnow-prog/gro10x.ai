@@ -27,19 +27,22 @@ const { validateSchema, whitelist, isValidUUID } = require('../middleware/dce-va
 let memVerticals = [
   { id: 'v-prod-01', slug: 'productivity', name: 'Productivity', description: 'Digital & physical organization, planning tools, and workflows', icon: '⚡', is_active: true, created_at: new Date().toISOString() },
   { id: 'v-fnb-02', slug: 'fnb', name: 'Food & Beverage', description: 'Specialty coffee roasters, culinary retail, and consumables', icon: '☕', is_active: true, created_at: new Date().toISOString() },
-  { id: 'v-sub-03', slug: 'digital-subscriptions', name: 'Digital Subscriptions & Licenses', description: 'Premium streaming, developer tools, AI credits, and software access', icon: '🔐', is_active: true, created_at: new Date().toISOString() }
+  { id: 'v-sub-03', slug: 'digital-subscriptions', name: 'Digital Subscriptions & Licenses', description: 'Premium streaming, developer tools, AI credits, and software access', icon: '🔐', is_active: true, created_at: new Date().toISOString() },
+  { id: 'v-stem-04', slug: 'stem-spatial-3d', name: 'STEM & Spatial 3D', description: 'Interactive WebGL, AR Quick Look, and educational spatial models', icon: '🔮', is_active: true, created_at: new Date().toISOString() }
 ];
 
 let memBrands = [
   { id: 'b-pq-01', vertical_id: 'v-prod-01', slug: 'plannerqueen', name: 'PlannerQueen', logo_url: 'https://gro10x-ai.vercel.app/images/plannerqueen-logo.png', brand_guidelines: { primaryColor: '#FF6B81', tone: 'Empowering & Aesthetic' }, is_active: true, created_at: new Date().toISOString() },
   { id: 'b-oro-02', vertical_id: 'v-fnb-02', slug: 'oro-roasters', name: 'ORO Roasters', logo_url: 'https://gro10x-ai.vercel.app/images/oro-logo.png', brand_guidelines: { primaryColor: '#D4A373', tone: 'Artisanal & Premium' }, is_active: true, created_at: new Date().toISOString() },
-  { id: 'b-dv-03', vertical_id: 'v-sub-03', slug: 'digivault', name: 'DigiVault BD', logo_url: 'https://gro10x-ai.vercel.app/images/digivault-logo.png', brand_guidelines: { primaryColor: '#A855F7', tone: 'Fast, Verified & Trusted' }, is_active: true, created_at: new Date().toISOString() }
+  { id: 'b-dv-03', vertical_id: 'v-sub-03', slug: 'digivault', name: 'DigiVault BD', logo_url: 'https://gro10x-ai.vercel.app/images/digivault-logo.png', brand_guidelines: { primaryColor: '#A855F7', tone: 'Fast, Verified & Trusted' }, is_active: true, created_at: new Date().toISOString() },
+  { id: 'b-stem-04', vertical_id: 'v-stem-04', slug: 'gro10x-spatial-lab', name: 'Gro10x Spatial Lab', logo_url: 'https://gro10x-ai.vercel.app/images/spatial-lab-logo.png', brand_guidelines: { primaryColor: '#00F0FF', tone: 'Futuristic, High-Fidelity & Educational' }, is_active: true, created_at: new Date().toISOString() }
 ];
 
 let memCategories = [
   { id: 'c-dw-01', brand_id: 'b-pq-01', slug: 'daily-weekly-planner', name: 'Daily & Weekly Planner', metadata_schema: { supportsDigital: true, supportsPrint: true }, is_active: true, created_at: new Date().toISOString() },
   { id: 'c-goal-02', brand_id: 'b-pq-01', slug: 'goal-setting-journals', name: 'Goal Setting Journals', metadata_schema: { supportsDigital: true, supportsPrint: true }, is_active: true, created_at: new Date().toISOString() },
-  { id: 'c-sub-01', brand_id: 'b-dv-03', slug: 'ai-software-subscriptions', name: 'AI & Software Subscriptions', metadata_schema: { supportsDigital: true, supportsPrint: false }, is_active: true, created_at: new Date().toISOString() }
+  { id: 'c-sub-01', brand_id: 'b-dv-03', slug: 'ai-software-subscriptions', name: 'AI & Software Subscriptions', metadata_schema: { supportsDigital: true, supportsPrint: false }, is_active: true, created_at: new Date().toISOString() },
+  { id: 'c-stem-01', brand_id: 'b-stem-04', slug: '3d-spatial-models', name: '3D Spatial Models & USDZ AR', metadata_schema: { supportsDigital: true, supportsPrint: true }, is_active: true, created_at: new Date().toISOString() }
 ];
 
 let memProducts = [
@@ -56,14 +59,30 @@ let memProducts = [
     physical_attributes: {},
     is_active: true,
     created_at: new Date().toISOString()
+  },
+  {
+    id: 'p-stem-01',
+    brand_id: 'b-stem-04',
+    category_id: 'c-stem-01',
+    product_code: 'STEM-3D-01',
+    title: 'Kids STEM 3D Explorer & Spatial Model Pack (Fox, Horse, Flamingo, Astronaut)',
+    product_type: 'DIGITAL',
+    description: 'Complete 3D spatial asset bundle with GLB/USDZ models, skeletal animations, hotspot callouts, sound synthesizers, and WebXR AR Quick Look commercial license.',
+    media_gallery: ['https://gro10x-ai.vercel.app/3d-viewer/models/Fox.glb'],
+    digital_assets: { downloadUrl: 'https://vault.gro10x.ai/digital/stem-3d-bundle.zip', format: 'GLB_USDZ' },
+    physical_attributes: {},
+    is_active: true,
+    created_at: new Date().toISOString()
   }
 ];
 
 let memSKUs = [
-  { id: 'sku-01', product_id: 'p-dw1-01', sku: 'PLNRQN-PDF-ETSY-USD9.99', format: 'PDF', channel_code: 'ETSY', price: 9.99, currency: 'USD', channel_title: 'Daily & Weekly Planner GoodNotes Aesthetic Digital Template', channel_listing_id: 'ETSY-11829', stock_quantity: null, is_active: true, created_at: new Date().toISOString() },
-  { id: 'sku-02', product_id: 'p-dw1-01', sku: 'PLNRQN-PDF-GUMROAD-USD7.99', format: 'PDF', channel_code: 'GUMROAD', price: 7.99, currency: 'USD', channel_title: 'PlannerQueen Digital Daily & Weekly System', channel_listing_id: 'GUM-pqdaily', stock_quantity: null, is_active: true, created_at: new Date().toISOString() },
-  { id: 'sku-03', product_id: 'p-dw1-01', sku: 'PLNRQN-PRINT-AMAZON-USD14.99', format: 'PRINT', channel_code: 'AMAZON', price: 14.99, currency: 'USD', channel_title: 'PlannerQueen Hardcover Daily & Weekly Undated Journal', channel_listing_id: 'B09XYZABC', stock_quantity: 250, is_active: true, created_at: new Date().toISOString() },
-  { id: 'sku-04', product_id: 'p-dw1-01', sku: 'PLNRQN-BUNDLE-DIRECT-USD19.99', format: 'BUNDLE', channel_code: 'DIRECT', price: 19.99, currency: 'USD', channel_title: 'All-In-One PlannerQueen Suite: Hardcover Print + GoodNotes PDF', channel_listing_id: 'DIR-BUNDLE-01', stock_quantity: 100, is_active: true, created_at: new Date().toISOString() }
+  { id: 'sku-01', product_id: 'p-dw1-01', sku: 'PLNRQN-PDF-ETSY-USD9.99', format: 'PDF', channel_code: 'ETSY', price: 9.99, price_bdt: 1200, currency: 'USD', channel_title: 'Daily & Weekly Planner GoodNotes Aesthetic Digital Template', channel_listing_id: 'ETSY-11829', stock_quantity: null, is_active: true, created_at: new Date().toISOString() },
+  { id: 'sku-02', product_id: 'p-dw1-01', sku: 'PLNRQN-PDF-GUMROAD-USD7.99', format: 'PDF', channel_code: 'GUMROAD', price: 7.99, price_bdt: 950, currency: 'USD', channel_title: 'PlannerQueen Digital Daily & Weekly System', channel_listing_id: 'GUM-pqdaily', stock_quantity: null, is_active: true, created_at: new Date().toISOString() },
+  { id: 'sku-03', product_id: 'p-dw1-01', sku: 'PLNRQN-PRINT-AMAZON-USD14.99', format: 'PRINT', channel_code: 'AMAZON', price: 14.99, price_bdt: 1800, currency: 'USD', channel_title: 'PlannerQueen Hardcover Daily & Weekly Undated Journal', channel_listing_id: 'B09XYZABC', stock_quantity: 250, is_active: true, created_at: new Date().toISOString() },
+  { id: 'sku-04', product_id: 'p-dw1-01', sku: 'PLNRQN-BUNDLE-DIRECT-USD19.99', format: 'BUNDLE', channel_code: 'DIRECT', price: 19.99, price_bdt: 2400, currency: 'USD', channel_title: 'All-In-One PlannerQueen Suite: Hardcover Print + GoodNotes PDF', channel_listing_id: 'DIR-BUNDLE-01', stock_quantity: 100, is_active: true, created_at: new Date().toISOString() },
+  { id: 'sku-05', product_id: 'p-dw1-01', sku: 'PLNRQN-PHYS-DIRECT-USD34.99', format: 'PHYSICAL', channel_code: 'DIRECT', price: 34.99, price_bdt: 4200, currency: 'USD', channel_title: 'PlannerQueen Luxury Spiral Hardcover 2026 Planner', channel_listing_id: 'DIR-PHYS-01', stock_quantity: 150, is_active: true, created_at: new Date().toISOString() },
+  { id: 'sku-stem-01', product_id: 'p-stem-01', sku: 'SKU-3D-STEM-01', format: 'GLB_USDZ', channel_code: 'DIRECT', price: 14.99, price_bdt: 1800, currency: 'USD', channel_title: 'Kids STEM 3D Spatial Explorer Commercial Bundle (Fox, Horse, Flamingo, Astronaut)', channel_listing_id: 'DIR-3D-STEM-01', stock_quantity: 9999, is_active: true, created_at: new Date().toISOString() }
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -123,6 +142,23 @@ router.get('/metrics', requireDCEAdmin, asyncHandler(async (req, res) => {
     supportedFormats: VALID_FORMATS,
     dataSource: 'memory'
   });
+}));
+
+// Public DCE Unified Product & SKU Catalog
+router.get('/catalog', asyncHandler(async (req, res) => {
+  const items = memSKUs.map(s => {
+    const p = memProducts.find(prod => prod.id === s.product_id);
+    return {
+      sku: s.sku,
+      title: s.channel_title || p?.title || s.sku,
+      format: s.format,
+      channel: s.channel_code,
+      priceUsd: s.currency === 'USD' ? s.price : Math.round((s.price / 120) * 100) / 100,
+      priceBdt: s.price_bdt || (s.currency === 'BDT' ? s.price : Math.round(s.price * 120)),
+      brandId: p?.brand_id || 'b-stem-04'
+    };
+  });
+  return ok(res, items);
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────

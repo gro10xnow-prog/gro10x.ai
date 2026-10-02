@@ -1087,6 +1087,10 @@ router.post('/ai-audit', leadSubmitLimiter, async (req, res) => {
     // Canonical catalog mapping for automated blueprint delivery
     let canonicalServiceCode = 'SVC-001';
     let canonicalServiceName = 'AI Mobile Apps & Native Software';
+    let readinessTier = 'Exploratory AI Candidate';
+    let recommendedService = 'ENG2-DISC';
+    let recommendedPod = 'CREATIVE_AI_POD';
+    let estimatedSprintDays = 21;
 
     if (score >= 80) {
       readinessTier = 'Enterprise AI Pioneer';
@@ -1142,14 +1146,17 @@ router.post('/ai-audit', leadSubmitLimiter, async (req, res) => {
     };
 
     // 3. Save Lead into DB / Supabase
+    const defaultAgencyPhone = process.env.AGENCY_PHONE || '+8801711019550';
+    const defaultAgencyWhatsApp = process.env.AGENCY_WHATSAPP || '+8801711019550';
+
     const leadRecord = {
       id: leadId,
       name: contactName || normCompany,
       company: normCompany,
       contact_person: contactName || normCompany,
       email: email || '',
-      phone: phone || '+8801711019550',
-      whatsapp: phone || '+8801711019550',
+      phone: phone || defaultAgencyPhone,
+      whatsapp: phone || defaultAgencyWhatsApp,
       source: 'AI_Readiness_Scorecard',
       engine_tag: 'engine2',
       stage: 'Qualified Lead',
@@ -1161,7 +1168,7 @@ router.post('/ai-audit', leadSubmitLimiter, async (req, res) => {
       budget: `$${budgetNum.toLocaleString()}/mo`,
       score: score,
       lead_score: score,
-      notes: `AI Readiness Score: ${score}/100 (${readinessTier}) | Recommended: ${recommendedService} (${canonicalServiceName}) | Priority: ${automationPriority} | Budget: $${budgetNum}/mo | Tech: ${techStackArray.join(', ')}`,
+      notes: `AI Audit Score: ${score}/100 (${readinessTier}) | Recommended: ${recommendedService} (${canonicalServiceName}) | Priority: ${automationPriority} | Budget: $${budgetNum}/mo | Tech: ${techStackArray.join(', ')}`,
       created_at: new Date().toISOString()
     };
 
@@ -1173,7 +1180,7 @@ router.post('/ai-audit', leadSubmitLimiter, async (req, res) => {
           company: normCompany,
           contact_person: contactName || normCompany,
           email: email || '',
-          phone: phone || '+8801711019550',
+          phone: phone || defaultAgencyPhone,
           source: 'AI_Readiness_Scorecard',
           stage: 'Qualified Lead',
           status: 'new',

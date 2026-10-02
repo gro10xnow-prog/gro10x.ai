@@ -224,6 +224,23 @@ function mapOrder(o, vendorMap = {}) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 0. CONFIGURATION & RECEIVER DETAILS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/digistore/config
+ * Public endpoint exposing verified payment receiver channels & contact details
+ */
+router.get('/config', (req, res) => {
+  return ok(res, {
+    bkashNumber: process.env.BKASH_NUMBER || '01711019550',
+    nagadNumber: process.env.NAGAD_NUMBER || '01711019550',
+    whatsappNumber: process.env.SUPPORT_WHATSAPP || '+880 1889-825025',
+    telegramBot: process.env.DIGIVAULT_BOT_USERNAME || 'Digivault20bot'
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 1. PRODUCTS CATALOG ENDPOINTS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -536,17 +553,19 @@ router.post('/orders', asyncHandler(async (req, res) => {
   let finalDuration = duration;
   let finalVPrice = Number(vendorPrice) || 0;
   let finalSPrice = Number(salePrice) || 0;
-  let finalVendorId = vendorId || null;
+  const isUUID = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(str || ''));
+  let finalVendorId = (vendorId && isUUID(vendorId)) ? vendorId : null;
+  let finalProductId = (productId && isUUID(productId)) ? productId : null;
 
-  if (productId && isSupabaseConfigured()) {
+  if (finalProductId && isSupabaseConfigured()) {
     try {
-      const { data: prod } = await supabase.from('digi_products').select('*').eq('id', productId).maybeSingle();
+      const { data: prod } = await supabase.from('digi_products').select('*').eq('id', finalProductId).maybeSingle();
       if (prod) {
         finalProdName = prod.name;
         finalDuration = prod.duration || duration;
         finalVPrice = Number(prod.vendor_price) || finalVPrice;
         finalSPrice = Number(prod.sale_price) || finalSPrice;
-        finalVendorId = prod.vendor_id || finalVendorId;
+        finalVendorId = (prod.vendor_id && isUUID(prod.vendor_id)) ? prod.vendor_id : finalVendorId;
       }
     } catch (e) {}
   }
@@ -561,7 +580,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
     customer_contact: customerContact,
     customer_whatsapp: finalWhatsapp,
     contact_channel: contactChannel,
-    product_id: productId || null,
+    product_id: finalProductId,
     product_name: finalProdName,
     duration: finalDuration,
     vendor_price: finalVPrice,
@@ -570,8 +589,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
     vendor_id: finalVendorId,
     payment_status: 'pending',
     payment_method: paymentMethod,
-    payment_ref: paymentRef,
-    sender_account: senderAccount || null,
+    payment_ref: paymentRef || (senderAccount ? `Sender: ${senderAccount}` : null),
     delivery_status: 'pending',
     order_stage: 'pending_payment',
     source_channel: sourceChannel,
@@ -579,7 +597,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
     utm_data: typeof utmData === 'object' ? utmData : {},
     telegram_chat_id: telegramChatId ? String(telegramChatId) : null,
     procurement_sent: false,
-    notes: notes,
+    notes: notes ? (senderAccount ? `${notes} | Sender: ${senderAccount}` : notes) : (senderAccount ? `Sender: ${senderAccount}` : null),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -588,12 +606,23 @@ router.post('/orders', asyncHandler(async (req, res) => {
   let vendorObj = null;
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase.from('digi_orders').insert([payload]).select().maybeSingle();
-    if (error) return fail(res, error.message, 500);
-    savedOrder = data;
+    try {
+      const { data, error } = await supabase.from('digi_orders').insert([payload]).select().maybeSingle();
+      if (!error && data) {
+        savedOrder = data;
+      } else {
+        console.warn('[DigiVault DB Note]:', error?.message);
+        inMemoryOrders.unshift(payload);
+      }
+    } catch (e) {
+      console.warn('[DigiVault DB Exception]:', e.message);
+      inMemoryOrders.unshift(payload);
+    }
 
     // Record initial timeline entry
-    await recordTimeline(savedOrder.id, 'order_created', 'customer', `Order placed via ${sourceChannel}`);
+    if (savedOrder.id) {
+      await recordTimeline(savedOrder.id, 'order_created', 'customer', `Order placed via ${sourceChannel}`);
+    }
 
     // Attribute conversion to UTM product link if campaign/source match
     if (utmData && utmData.utm_source) {
@@ -645,6 +674,8 @@ router.post('/orders', asyncHandler(async (req, res) => {
   } catch (e) {}
 
   broadcast('digistore_order_created', savedOrder);
+  broadcast('dce_digivault_order_created', savedOrder);
+  broadcast({ type: 'DCE_DIGIVAULT_ORDER_CREATED', order: savedOrder });
   const mapped = mapOrder(savedOrder, vendorObj ? { [vendorObj.id]: vendorObj } : {});
   return ok(res, mapped, 201);
 }));
@@ -1349,20 +1380,24 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
   let order = null;
 
   if (isSupabaseConfigured()) {
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderNumber.trim());
-    let query = supabase
-      .from('digi_orders')
-      .select('id, order_number, product_name, duration, payment_status, delivery_status, order_stage, activation_link, customer_confirmed_at, activation_date, expiry_date, notes, created_at');
+    try {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderNumber.trim());
+      let query = supabase
+        .from('digi_orders')
+        .select('id, order_number, product_name, duration, payment_status, delivery_status, order_stage, activation_link, customer_confirmed_at, activation_date, expiry_date, notes, created_at');
 
-    if (isUUID) {
-      query = query.or(`id.eq.${orderNumber.trim()},order_number.eq.${cleanRef}`);
-    } else {
-      query = query.eq('order_number', cleanRef);
-    }
+      if (isUUID) {
+        query = query.or(`id.eq.${orderNumber.trim()},order_number.eq.${cleanRef}`);
+      } else {
+        query = query.eq('order_number', cleanRef);
+      }
 
-    const { data } = await query.maybeSingle();
-    order = data;
-  } else {
+      const { data } = await query.maybeSingle();
+      order = data;
+    } catch (e) {}
+  }
+
+  if (!order) {
     const found = inMemoryOrders.find(o => (o.order_number || o.orderNumber || '').toUpperCase() === cleanRef || o.id === orderNumber);
     if (found) {
       order = {
@@ -1405,12 +1440,18 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
 
   return ok(res, {
     orderId: order.id,
+    id: order.id,
     orderNumber: order.order_number,
+    order_number: order.order_number,
     productName: order.product_name,
+    product_name: order.product_name,
     duration: order.duration,
     orderStage: stage,
+    order_stage: stage,
     paymentStatus: order.payment_status,
+    payment_status: order.payment_status,
     deliveryStatus: order.delivery_status,
+    delivery_status: order.delivery_status,
     rejectionReason: isRejected ? (order.notes || 'Payment verification failed.') : null,
     notes: order.notes,
     activationLink: (stage === 'delivered' || stage === 'confirmed_closed' || stage === 'admin_closed') ? order.activation_link : null,
@@ -1883,14 +1924,55 @@ router.post('/orders/:id/payment-proof', upload.single('screenshot'), asyncHandl
     updated_at: new Date().toISOString()
   };
 
+  let updatedOrder = null;
+
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase.from('digi_orders').update(updates).eq('id', id).select().maybeSingle();
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id).trim());
+    let updateQuery = supabase.from('digi_orders').update(updates);
+    if (isUUID) {
+      updateQuery = updateQuery.eq('id', id);
+    } else {
+      updateQuery = updateQuery.eq('order_number', String(id).toUpperCase().trim());
+    }
+    const { data, error } = await updateQuery.select().maybeSingle();
     if (error) return fail(res, error.message, 500);
-    broadcast('digistore_order_updated', data);
-    return ok(res, { success: true, proofUrl, order: data });
+    updatedOrder = data;
+  } else {
+    const cleanId = String(id).toUpperCase().trim();
+    const orderIdx = inMemoryOrders.findIndex(o => o.id === id || (o.order_number || o.orderNumber || '').toUpperCase() === cleanId);
+    if (orderIdx !== -1) {
+      inMemoryOrders[orderIdx] = { ...inMemoryOrders[orderIdx], ...updates };
+      updatedOrder = inMemoryOrders[orderIdx];
+    } else {
+      updatedOrder = { id, order_number: id, ...updates };
+    }
   }
 
-  return ok(res, { success: true, proofUrl });
+  const orderTarget = updatedOrder || { id, order_number: id };
+
+  // Realtime Broadcasts
+  broadcast('digistore_order_updated', orderTarget);
+  broadcast('dce_digivault_order_updated', orderTarget);
+  broadcast({ type: 'DCE_DIGIVAULT_PAYMENT_PROOF_UPLOADED', order: orderTarget });
+
+  // Record order timeline event
+  await recordTimeline(orderTarget.id || id, 'payment_proof_uploaded', 'customer', `Payment proof uploaded (${method.toUpperCase()}${trxId ? `, TrxID: ${trxId}` : ''})`, proofUrl);
+
+  // Instant Telegram Team Alert
+  try {
+    const teamBot = getTeamBot();
+    if (teamBot && process.env.TELEGRAM_TEAM_GROUP_ID) {
+      const tgMsg = `📸 *DigiVault Payment Proof Uploaded!*\n\n` +
+        `• *Order:* \`${orderTarget.order_number || orderTarget.orderNumber || id}\`\n` +
+        `• *Method:* ${method.toUpperCase()}\n` +
+        (trxId ? `• *TrxID:* \`${trxId}\`\n` : '') +
+        (proofUrl ? `• *Proof:* [View Proof](${proofUrl})\n` : '') +
+        `\n_Review and verify in DigiVault Ops Panel._`;
+      teamBot.sendMessage(process.env.TELEGRAM_TEAM_GROUP_ID, tgMsg, { parse_mode: 'Markdown' }).catch(() => {});
+    }
+  } catch (e) {}
+
+  return ok(res, { success: true, proofUrl, order: orderTarget });
 }));
 
 // ── 9. Automated Retention & Maintenance Cron Trigger Routes ───────────────────

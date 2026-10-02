@@ -4650,13 +4650,35 @@ const PORTAL_AUDITS = {
     "steps": [
       {
         "id": "dce-sr-1",
-        "title": "1. Verify Storefront Showcase Header & Catalog Sync Badge",
+        "title": "1. Verify Storefront Showcase Header, Currency Toggle & Catalog Sync Badge",
         "action": "wait_ms",
         "duration": 400,
         "assertion": {
           "type": "element_exists",
-          "selector": "#catalogSyncBadge, #price-digital"
+          "selector": "#storeCurrencyToggleBtn, #catalogSyncBadge, #price-digital, #price-physical"
         }
+      },
+      {
+        "id": "dce-sr-1b",
+        "title": "1b. Toggle Currency to BDT Mode",
+        "action": "click",
+        "selector": "#storeCurrencyToggleBtn"
+      },
+      {
+        "id": "dce-sr-1c",
+        "title": "1c. Verify BDT Currency Label and Symbol Active",
+        "action": "wait_ms",
+        "duration": 250,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#storeCurrencyLabel, #price-digital"
+        }
+      },
+      {
+        "id": "dce-sr-1d",
+        "title": "1d. Toggle Currency Back to USD Mode",
+        "action": "click",
+        "selector": "#storeCurrencyToggleBtn"
       },
       {
         "id": "dce-sr-2",
@@ -4740,6 +4762,65 @@ const PORTAL_AUDITS = {
       {
         "id": "dce-sr-12",
         "title": "12. Integrity Audit: Clean Console",
+        "action": "wait_ms",
+        "duration": 200,
+        "assertion": {
+          "type": "custom_check",
+          "check": "assert_clean_audit"
+        }
+      }
+    ]
+  },
+  "public_digivault": {
+    "id": "public_digivault",
+    "title": "DigiVault BD Public Customer Storefront Audit",
+    "targetPath": "/digivault",
+    "steps": [
+      {
+        "id": "dv-pub-1",
+        "title": "1. Verify DigiVault Hero Banner & Language Switcher",
+        "action": "wait_ms",
+        "duration": 400,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#btnLangToggle, .hero, a[href*='catalog']"
+        }
+      },
+      {
+        "id": "dv-pub-2",
+        "title": "2. Toggle Language to English",
+        "action": "click",
+        "selector": "#btnLangToggle"
+      },
+      {
+        "id": "dv-pub-3",
+        "title": "3. Verify Language Switched",
+        "action": "wait_ms",
+        "duration": 250,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#btnLangToggle"
+        }
+      },
+      {
+        "id": "dv-pub-4",
+        "title": "4. Verify Product Catalog Grid or Hero Spotlight Offer",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".spotlight-card, .product-card, #catalogGrid, a[href*='product.html'], .card"
+        }
+      },
+      {
+        "id": "dv-pub-5",
+        "title": "5. Toggle Language Back",
+        "action": "click",
+        "selector": "#btnLangToggle"
+      },
+      {
+        "id": "dv-pub-6",
+        "title": "6. Integrity Audit: Clean Console",
         "action": "wait_ms",
         "duration": 200,
         "assertion": {
@@ -5505,6 +5586,73 @@ const PORTAL_AUDITS = {
       }
     ]
   },
+  "public_msa": {
+    "id": "public_msa",
+    "title": "Master Service Agreement & NDA Document Audit",
+    "targetPath": "/msa-view.html?projectId=PRJ-2026-ENG2",
+    "steps": [
+      {
+        "id": "pb-msa-1",
+        "title": "1. Verify A4 Document Sheet & Top Controls Toolbar",
+        "action": "wait_ms",
+        "duration": 500,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#msaSheet, .toolbar, #tbTitle"
+        }
+      },
+      {
+        "id": "pb-msa-2",
+        "title": "2. Verify MSA Document Header & Ref Metadata",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#docMsaId, #docEffectiveDate"
+        }
+      },
+      {
+        "id": "pb-msa-3",
+        "title": "3. Verify Parties Grid (Provider & Client)",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".parties-grid, #docClientName, #docClientSignatory"
+        }
+      },
+      {
+        "id": "pb-msa-4",
+        "title": "4. Verify Enterprise Protection Clauses Container",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#docClausesContainer .clause-block"
+        }
+      },
+      {
+        "id": "pb-msa-5",
+        "title": "5. Verify Dual Signature Blocks & Verification Stamp",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".signatory-grid, #docSigClientName, #docVerificationHash"
+        }
+      },
+      {
+        "id": "pb-msa-6",
+        "title": "6. Verify PDF Export & Browser Print Action Controls",
+        "action": "wait_ms",
+        "duration": 200,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "button[onclick*=\"downloadMsaPdf()\"], button[onclick*=\"window.print()\"]"
+        }
+      }
+    ]
+  },
   "public_contractor": {
     "id": "public_contractor",
     "title": "Subcontractor Scoped Gateway Audit",
@@ -5604,7 +5752,7 @@ const PORTAL_AUDITS = {
         "duration": 400,
         "assertion": {
           "type": "element_exists",
-          "selector": ".planner-topbar, #syncStatus, #btnExportJson, #btnResetData, #btnPrintPdf"
+          "selector": ".planner-topbar, #syncStatus, #btnExportJson, #btnResetData, #btnUpgradeHardcover, #btnPrintPdf"
         }
       },
       {
@@ -5614,7 +5762,7 @@ const PORTAL_AUDITS = {
         "duration": 300,
         "assertion": {
           "type": "element_exists",
-          "selector": "#spreadViewport, #tab-index, #spread-1, #owner_name"
+          "selector": "#spreadViewport, #tab-index, #plannerUpsellRibbon, #spread-1, #owner_name, #ownerLicenseKeyDisplay"
         }
       },
       {
@@ -5671,7 +5819,27 @@ const PORTAL_AUDITS = {
       },
       {
         "id": "pb-pl-8",
-        "title": "8. Integrity Audit: Clean Console",
+        "title": "8. Open Luxury Physical Hardcover Upsell Modal",
+        "action": "click",
+        "selector": "#btnUpgradeHardcover",
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#plannerUpsellModal, #btn1ClickCheckout, #upsellLicenseKeyInput"
+        }
+      },
+      {
+        "id": "pb-pl-9",
+        "title": "9. Dismiss Luxury Hardcover Upsell Modal",
+        "action": "click",
+        "selector": "#btnCloseUpsellModal",
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".planner-workspace"
+        }
+      },
+      {
+        "id": "pb-pl-10",
+        "title": "10. Integrity Audit: Clean Console",
         "action": "wait_ms",
         "duration": 200,
         "assertion": {
@@ -5713,7 +5881,7 @@ const PORTAL_AUDITS = {
         "duration": 300,
         "assertion": {
           "type": "element_exists",
-          "selector": "#btnAutoOrbit, #btnResetAngle, #btnGyroToggle, #selectSpeed"
+          "selector": "#btnAutoOrbit, #btnResetAngle, #btnGyroToggle, #selectLighting, #selectSpeed, #btnOpenLicenseModal"
         }
       },
       {
@@ -5758,7 +5926,27 @@ const PORTAL_AUDITS = {
       },
       {
         "id": "pb-3d-8",
-        "title": "8. Integrity Audit: Clean Console",
+        "title": "8. Open Commercial 3D Asset Pack Licensing Drawer",
+        "action": "click",
+        "selector": "#btnOpenLicenseModal",
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#commercialLicenseDrawer, #btnLicenseCheckout"
+        }
+      },
+      {
+        "id": "pb-3d-9",
+        "title": "9. Dismiss Commercial Licensing Drawer",
+        "action": "click",
+        "selector": "#btnCloseLicenseDrawer",
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#stageContainer"
+        }
+      },
+      {
+        "id": "pb-3d-10",
+        "title": "10. Integrity Audit: Clean Console",
         "action": "wait_ms",
         "duration": 200,
         "assertion": {
@@ -5821,6 +6009,120 @@ const PORTAL_AUDITS = {
         "action": "wait_ms",
         "duration": 200,
         "assertion": { "type": "custom_check", "check": "assert_clean_audit" }
+      }
+    ]
+  },
+  "public_real3d": {
+    "id": "public_real3d",
+    "title": "3D Real STEM Spatial Lab Health Audit",
+    "targetPath": "/3d-viewer/real3d.html",
+    "steps": [
+      {
+        "id": "pb-r3d-1",
+        "title": "1. Verify Real 3D Spatial Lab Container & Header",
+        "action": "wait_ms",
+        "duration": 400,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".container, .header, h1"
+        }
+      },
+      {
+        "id": "pb-r3d-2",
+        "title": "2. Verify 3D Model Viewer and Viewport Canvas",
+        "action": "wait_ms",
+        "duration": 400,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "model-viewer, .viewer-container, canvas, #loadingOverlay"
+        }
+      },
+      {
+        "id": "pb-r3d-3",
+        "title": "3. Verify Featured STEM Interactive Model Card",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".stem-card, #btnBuyStemPack, .stem-badge"
+        }
+      },
+      {
+        "id": "pb-r3d-4",
+        "title": "4. Verify Multi-Format Commercial Download & Purchase CTAs",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": "#btnBuyStemPack, #btnEtsyCardBuy, a[href*=\"/dce/store\"], .format-badge"
+        }
+      },
+      {
+        "id": "pb-r3d-5",
+        "title": "5. Integrity Audit: Clean Console and Zero Errors",
+        "action": "wait_ms",
+        "duration": 200,
+        "assertion": {
+          "type": "custom_check",
+          "check": "assert_clean_audit"
+        }
+      }
+    ]
+  },
+  "public_delivery": {
+    "id": "public_delivery",
+    "title": "Etsy Order Delivery Certificate Audit",
+    "targetPath": "/delivery",
+    "steps": [
+      {
+        "id": "pb-del-1",
+        "title": "1. Verify Delivery Certificate Container & Luxury Seal",
+        "action": "wait_ms",
+        "duration": 400,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".delivery-certificate, .crown-seal, .cert-title"
+        }
+      },
+      {
+        "id": "pb-del-2",
+        "title": "2. Verify Order Metadata Pill & Cryptographic Hash",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".order-details-bar, #certOrderRef, #certStatus, #certCryptoHash, #certActivationCode"
+        }
+      },
+      {
+        "id": "pb-del-3",
+        "title": "3. Verify Deliverable Action Cards (Interactive, PDF, Canva)",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".deliverables-grid, .action-card, a[href*=\"/my-portal\"], a[href*=\".pdf\"], a[href*=\"canva\"]"
+        }
+      },
+      {
+        "id": "pb-del-4",
+        "title": "4. Verify Mobile QR Code Activation Block",
+        "action": "wait_ms",
+        "duration": 300,
+        "assertion": {
+          "type": "element_exists",
+          "selector": ".qr-activation-box, .qr-graphic, .promo-pill"
+        }
+      },
+      {
+        "id": "pb-del-5",
+        "title": "5. Integrity Audit: Clean Console",
+        "action": "wait_ms",
+        "duration": 200,
+        "assertion": {
+          "type": "custom_check",
+          "check": "assert_clean_audit"
+        }
       }
     ]
   }
