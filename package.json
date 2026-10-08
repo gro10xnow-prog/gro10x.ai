@@ -1,6 +1,6 @@
 {
   "name": "gro10x-os",
-  "version": "2.0.0",
+  "version": "2.1.0-hardened",
   "description": "GRO10X AI Growth Agency & Multi-Engine Operating System",
   "main": "server.js",
   "scripts": {
