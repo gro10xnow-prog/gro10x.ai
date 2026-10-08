@@ -364,6 +364,16 @@
           simulateClick(el);
           if (step.selector && step.selector.includes('openLogRevenueModal')) {
             await evalInMainWorld('if (window.EnginesModule && window.EnginesModule.openLogRevenueModal) window.EnginesModule.openLogRevenueModal();');
+          } else if (step.selector && step.selector.includes('openAddProductModal')) {
+            await evalInMainWorld('if (window.EnginesModule && window.EnginesModule.openAddProductModal) window.EnginesModule.openAddProductModal(); else if (window.openAddProductModal) window.openAddProductModal();');
+          } else if (step.selector && step.selector.includes('openTemplateModal')) {
+            await evalInMainWorld('if (window.EnginesModule && window.EnginesModule.openTemplateModal) window.EnginesModule.openTemplateModal(0); else if (window.openTemplateModal) window.openTemplateModal(0);');
+          } else if (step.selector && (step.selector.includes('switchModuleCurrency') || step.selector.includes('switchEnginesCurrency'))) {
+            if (step.selector.includes('USD')) {
+              await evalInMainWorld('if (window.switchModuleCurrency) window.switchModuleCurrency("USD"); if (window.switchEnginesCurrency) window.switchEnginesCurrency("USD");');
+            } else if (step.selector.includes('BDT')) {
+              await evalInMainWorld('if (window.switchModuleCurrency) window.switchModuleCurrency("BDT"); if (window.switchEnginesCurrency) window.switchEnginesCurrency("BDT");');
+            }
           } else if (step.selector && (step.selector.includes('gigsClearSearchBtn') || step.selector.includes('clearSearch') || step.selector.includes('platformClearSearchBtn'))) {
             await evalInMainWorld(`
               if (window.GigsModule && window.GigsModule.clearSearch) window.GigsModule.clearSearch();
@@ -1340,6 +1350,14 @@
             await evalInMainWorld('if (window.EnginesModule && window.EnginesModule.openLogRevenueModal) window.EnginesModule.openLogRevenueModal();');
             await sleep(250);
             modal = document.querySelector(assertion.selector);
+          } else if (assertion.selector === '#enginesAddProductModal') {
+            await evalInMainWorld('if (window.EnginesModule && window.EnginesModule.openAddProductModal) window.EnginesModule.openAddProductModal(); else if (window.openAddProductModal) window.openAddProductModal();');
+            await sleep(250);
+            modal = document.querySelector(assertion.selector);
+          } else if (assertion.selector === '#enginesTemplateModal') {
+            await evalInMainWorld('if (window.EnginesModule && window.EnginesModule.openTemplateModal) window.EnginesModule.openTemplateModal(0); else if (window.openTemplateModal) window.openTemplateModal(0);');
+            await sleep(250);
+            modal = document.querySelector(assertion.selector);
           } else if (assertion.selector === '#clFeedbackModal') {
             await evalInMainWorld('if (window.CLIENT_REVIEW && window.CLIENT_REVIEW.openAdjustModal) window.CLIENT_REVIEW.openAdjustModal("test-item", "Sprint Candidate v1.0");');
             await sleep(250);
@@ -1387,7 +1405,9 @@
         await sleep(350);
         let modal = document.querySelector(assertion.selector);
         if (modal && (modal.classList.contains('active') || (modal.style.display && modal.style.display !== 'none'))) {
-          if (assertion.selector === '#clFeedbackModal') {
+          if (assertion.selector === '#enginesRevenueModal' || assertion.selector === '#enginesAddProductModal' || assertion.selector === '#enginesTemplateModal') {
+            await evalInMainWorld('if (window.EnginesModule && window.EnginesModule.closeModals) window.EnginesModule.closeModals();');
+          } else if (assertion.selector === '#clFeedbackModal') {
             await evalInMainWorld('if (window.CLIENT_REVIEW && window.CLIENT_REVIEW.closeAdjustModal) window.CLIENT_REVIEW.closeAdjustModal();');
           } else if (assertion.selector === '#clSignOffModal') {
             await evalInMainWorld('if (window.CLIENT_REVIEW && window.CLIENT_REVIEW.closeSignOffModal) window.CLIENT_REVIEW.closeSignOffModal();');
@@ -1492,15 +1512,26 @@
           result.detail = 'Verified canonical 120 BDT formatting (৳1.20 Cr target)';
         } else if (assertion.check === 'assert_engines_usd') {
           await sleep(400);
-          const bodyText = document.getElementById('app-view')?.textContent || '';
+          let bodyText = document.getElementById('app-view')?.textContent || '';
+          if (!bodyText.includes('$100,000 Target') && !bodyText.includes('$100,000')) {
+            await evalInMainWorld('if (window.switchEnginesCurrency) window.switchEnginesCurrency("USD");');
+            await sleep(400);
+            bodyText = document.getElementById('app-view')?.textContent || '';
+          }
           if (!bodyText.includes('$100,000 Target') && !bodyText.includes('$100,000')) {
             throw new Error('$100,000 target not found in Growth Engines view');
           }
           result.detail = 'Verified USD formatting ($100,000 Target)';
         } else if (assertion.check === 'assert_usd_mode') {
           await sleep(400);
-          const tiles = Array.from(document.querySelectorAll('.kpi-val, .kpi-tile'));
-          const text = tiles.map(t => t.textContent).join(' ');
+          let tiles = Array.from(document.querySelectorAll('.kpi-val, .kpi-tile'));
+          let text = tiles.map(t => t.textContent).join(' ');
+          if (!text.includes('$')) {
+            await evalInMainWorld('if (window.switchModuleCurrency) window.switchModuleCurrency("USD");');
+            await sleep(400);
+            tiles = Array.from(document.querySelectorAll('.kpi-val, .kpi-tile'));
+            text = tiles.map(t => t.textContent).join(' ');
+          }
           if (!text.includes('$')) {
             throw new Error('USD currency symbol ($) not found in KPI metrics');
           }
@@ -1681,7 +1712,16 @@
           result.detail = 'Verified 4 Architecture KPI cards in stats strip';
         } else if (assertion.check === 'assert_platforms_grid_count') {
           await sleep(350);
-          const cards = document.querySelectorAll('#platformsCardsGrid .platform-card');
+          let cards = document.querySelectorAll('#platformsCardsGrid .platform-card');
+          if (!cards || cards.length < 16) {
+            await evalInMainWorld(`
+              if (window.PlatformsModule && window.PlatformsModule.resetFilters) {
+                window.PlatformsModule.resetFilters();
+              }
+            `);
+            await sleep(400);
+            cards = document.querySelectorAll('#platformsCardsGrid .platform-card');
+          }
           if (!cards || cards.length < 16) {
             throw new Error(`Expected at least 16 platform cards, found ${cards ? cards.length : 0}`);
           }

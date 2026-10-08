@@ -478,6 +478,10 @@ async function getProposalsStore() {
     } catch (_) {}
   }
 
+  if (Array.isArray(inMemoryProposals) && inMemoryProposals.length > 0) {
+    return inMemoryProposals;
+  }
+
   const localProps = readLocalDBProposals();
   if (localProps && localProps.length > 0) {
     inMemoryProposals = localProps;

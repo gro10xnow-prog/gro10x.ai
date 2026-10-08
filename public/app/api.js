@@ -11,14 +11,13 @@ window.APP_API = {
   _cacheTTL: 30000, // 30 seconds
 
   getToken() {
-    // First try known static keys
-    const staticToken = localStorage.getItem('sb-access-token') ||
-           localStorage.getItem('gro10x_token') ||
-           localStorage.getItem('gro10x_token') ||
-           localStorage.getItem('gro10x_token') ||
-           localStorage.getItem('jwt_token') || '';
-    if (staticToken) return staticToken;
-    // Supabase uses a dynamic key: sb-<project_ref>-auth-token containing JSON with access_token
+    // Prioritize the active GRO10X signed JWT session
+    const primaryToken = localStorage.getItem('gro10x_token') ||
+           sessionStorage.getItem('gro10x_token') ||
+           localStorage.getItem('jwt_token') ||
+           localStorage.getItem('sb-access-token') || '';
+    if (primaryToken) return primaryToken;
+    // Supabase fallback dynamic key: sb-<project_ref>-auth-token containing JSON with access_token
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -75,6 +74,17 @@ window.APP_API = {
       if (response.status === 401) {
         console.warn('[PurpleOS API] 401 Unauthorized — Redirecting to login...');
         localStorage.removeItem('gro10x_token');
+        sessionStorage.removeItem('gro10x_token');
+        localStorage.removeItem('sb-access-token');
+        localStorage.removeItem('jwt_token');
+        try {
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith('sb-') || k.includes('token'))) {
+              localStorage.removeItem(k);
+            }
+          }
+        } catch (_) {}
         window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
         return null;
       }

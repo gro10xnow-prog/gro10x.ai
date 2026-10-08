@@ -35,8 +35,10 @@
         }
       } catch (e) {}
 
-      var token = localStorage.getItem('sb-access-token') ||
-                  localStorage.getItem('gro10x_token');
+      var token = localStorage.getItem('gro10x_token') ||
+                  sessionStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('jwt_token') ||
+                  localStorage.getItem('sb-access-token');
       if (!token) {
         window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
       }

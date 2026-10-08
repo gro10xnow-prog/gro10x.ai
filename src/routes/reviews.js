@@ -116,11 +116,19 @@ async function requireReviewOwnership(req, res, next) {
           .eq('id', req.params.id)
           .maybeSingle();
         if (data) review = data;
+        if (!review) {
+          const { data: alt } = await supabase
+            .from('reviews')
+            .select('client_id, client')
+            .or(`task_id.eq.${req.params.id},project_id.eq.${req.params.id}`)
+            .maybeSingle();
+          if (alt) review = alt;
+        }
       } catch (_) {}
     }
 
     if (!review) {
-      review = fallbackReviews.find(r => r.id === req.params.id);
+      review = fallbackReviews.find(r => r.id === req.params.id || r.task_id === req.params.id || r.project_id === req.params.id);
     }
     if (!review) {
       try {
@@ -236,13 +244,19 @@ router.get('/:id', requireAuth, async (req, res) => {
     let commentsData = [];
 
     try {
-      const { data, error: rErr } = await supabase.from('reviews').select('*').eq('id', id).single();
+      const { data, error: rErr } = await supabase.from('reviews').select('*').eq('id', id).maybeSingle();
       if (!rErr && data) reviewData = data;
-      const { data: cData } = await supabase.from('review_comments').select('*').eq('review_id', id).order('created_at', { ascending: true });
+      if (!reviewData) {
+        // Fallback: check if id was actually a task_id or project_id
+        const { data: altData } = await supabase.from('reviews').select('*').or(`task_id.eq.${id},project_id.eq.${id}`).maybeSingle();
+        if (altData) reviewData = altData;
+      }
+      const actualReviewId = reviewData?.id || id;
+      const { data: cData } = await supabase.from('review_comments').select('*').eq('review_id', actualReviewId).order('created_at', { ascending: true });
       if (cData) commentsData = cData;
     } catch (_) {}
 
-    const fbRev = fallbackReviews.find(r => r.id === id);
+    const fbRev = fallbackReviews.find(r => r.id === id || r.task_id === id || r.project_id === id);
     if (fbRev) {
       reviewData = reviewData ? { ...fbRev, ...reviewData } : fbRev;
     }
@@ -602,12 +616,16 @@ async function handleReviewApproveInternal(req, res) {
     const { id } = req.params;
     let reviewData = null;
     try {
-      const res = await supabase.from('reviews').select('*').eq('id', id).single();
+      const res = await supabase.from('reviews').select('*').eq('id', id).maybeSingle();
       if (res.data) reviewData = res.data;
+      if (!reviewData) {
+        const alt = await supabase.from('reviews').select('*').or(`task_id.eq.${id},project_id.eq.${id}`).maybeSingle();
+        if (alt.data) reviewData = alt.data;
+      }
     } catch (_) {}
 
     if (!reviewData) {
-      reviewData = fallbackReviews.find(r => r.id === id);
+      reviewData = fallbackReviews.find(r => r.id === id || r.task_id === id || r.project_id === id);
     }
     if (!reviewData) {
       try {
@@ -905,12 +923,16 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
 
     let reviewData = null;
     try {
-      const res = await supabase.from('reviews').select('*').eq('id', id).single();
+      const res = await supabase.from('reviews').select('*').eq('id', id).maybeSingle();
       if (res.data) reviewData = res.data;
+      if (!reviewData) {
+        const alt = await supabase.from('reviews').select('*').or(`task_id.eq.${id},project_id.eq.${id}`).maybeSingle();
+        if (alt.data) reviewData = alt.data;
+      }
     } catch (_) {}
 
     if (!reviewData) {
-      reviewData = fallbackReviews.find(r => r.id === id);
+      reviewData = fallbackReviews.find(r => r.id === id || r.task_id === id || r.project_id === id);
     }
     if (!reviewData) {
       try {

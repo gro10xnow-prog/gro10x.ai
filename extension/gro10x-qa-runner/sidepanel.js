@@ -203,6 +203,7 @@
       const suiteNameMap = {
         dashboard: window.DASHBOARD_QA_SUITE,
         engines: window.ENGINES_QA_SUITE,
+        engine1: window.ENGINE1_QA_SUITE,
         platforms: window.PLATFORMS_QA_SUITE,
         gigs: window.GIGS_QA_SUITE,
         analytics: window.ANALYTICS_QA_SUITE,

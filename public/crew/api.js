@@ -1,12 +1,13 @@
-﻿/**
+/**
  * public/crew/api.js
  * Crew Workspace API Client
  */
 window.CREW_API = {
   getToken() {
-    return localStorage.getItem('sb-access-token') ||
-           localStorage.getItem('gro10x_token') ||
-           localStorage.getItem('gro10x_token') || '';
+    return localStorage.getItem('gro10x_token') ||
+           sessionStorage.getItem('gro10x_token') ||
+           localStorage.getItem('jwt_token') ||
+           localStorage.getItem('sb-access-token') || '';
   },
 
   getHeaders() {
@@ -30,9 +31,19 @@ window.CREW_API = {
       const response = await fetch(url, config);
       if (response.status === 401) {
         localStorage.removeItem('gro10x_token');
-        localStorage.removeItem('gro10x_token');
-        localStorage.removeItem('gro10x_token');
+        sessionStorage.removeItem('gro10x_token');
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('sb-access-token');
+        localStorage.removeItem('gro10x_user');
         localStorage.removeItem('purple_user');
+        try {
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith('sb-') || k.includes('token'))) {
+              localStorage.removeItem(k);
+            }
+          }
+        } catch (_) {}
         const target = window.location.pathname + window.location.hash;
         window.location.href = '/auth?redirect=' + encodeURIComponent(target);
         return {};

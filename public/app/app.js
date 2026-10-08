@@ -11,6 +11,7 @@
   const ROUTES = {
     '#dashboard':  { module: 'dashboard.js',  title: 'Executive Overview', icon: '📊' },
     '#engines':    { module: 'engines.js',    title: '5-Engine Growth Operations', icon: '🚀' },
+    '#engine1':    { module: 'engine1.js',    title: 'Engine 1 Desk (AI Agents)', icon: '🤖' },
     '#platforms':  { module: 'platforms.js',  title: 'Platform Portfolio Registry', icon: '🏗️' },
     '#gigs':       { module: 'gigs.js',       title: 'Marketplace Gig Studio', icon: '⚡' },
     '#analytics':  { module: 'analytics.js',  title: 'Agency Analytics & Scorecards', icon: '📈' },

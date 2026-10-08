@@ -499,17 +499,21 @@ app.use('/client/modules', express.static(path.join(__dirname, 'public/client/mo
   }
 }));
 
+// Manager and Crew Portal Modules - static assets served before workstation redirects
+app.use('/manager/modules', express.static(path.join(__dirname, 'public/manager/modules')));
+app.use('/crew/modules', express.static(path.join(__dirname, 'public/crew/modules')));
+
 // Phase 5: Consolidated Workstation Redirects (Decommissioned Standalone Internal Portals)
 // Placed before express.static so Express doesn't issue a 301 trailing slash redirect
-app.get(['/crew', '/crew/', '/crew/*', '/team', '/staff'], (req, res) => {
+app.get(['/crew', '/crew/', '/team', '/staff'], (req, res) => {
   res.redirect(302, '/workspace#tasks');
 });
 
-app.get(['/manager', '/manager/', '/manager/*', '/manager-portal'], (req, res) => {
+app.get(['/manager', '/manager/', '/manager-portal'], (req, res) => {
   res.redirect(302, '/workspace#overview');
 });
 
-app.get(['/dbm', '/dbm/', '/dbm/*', '/dbm-portal'], (req, res) => {
+app.get(['/dbm', '/dbm/', '/dbm-portal'], (req, res) => {
   res.redirect(302, '/workspace?engineId=engine3#deliverables');
 });
 

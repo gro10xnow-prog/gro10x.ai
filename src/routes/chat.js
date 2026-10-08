@@ -14,9 +14,10 @@ const { ok, fail, asyncHandler } = require('../utils/response');
 const { verifyToken } = require('../services/jwt');
 const { readDB } = require('../services/db');
 const { findProject, calculateWarrantyStatus, memoryProjects } = require('../services/post-delivery');
+const chatTakeover = require('../services/chat-takeover');
 
 router.post('/send', asyncHandler(async (req, res) => {
-  const { command, mode, token, projectId: explicitProjectId } = req.body;
+  const { command, mode, token, projectId: explicitProjectId, conversationId: explicitConvId, channel = 'web', clientName } = req.body;
   
   if (!command || typeof command !== 'string') {
     return fail(res, 400, 'command is required', 'INVALID_INPUT');
@@ -29,6 +30,41 @@ router.post('/send', asyncHandler(async (req, res) => {
     try {
       authUser = verifyToken(rawToken);
     } catch (_) {}
+  }
+
+  // Resolve or initialize conversation thread in chat-takeover service
+  const convId = explicitConvId || (authUser?.id ? `conv_user_${authUser.id}` : (explicitProjectId ? `conv_proj_${explicitProjectId}` : 'conv_web_session'));
+  const effectiveClientName = clientName || authUser?.name || authUser?.company || (explicitProjectId ? `Project ${explicitProjectId}` : 'Client Visitor');
+  
+  // Record user message in thread
+  const { conv } = chatTakeover.recordUserMessage(convId, command, {
+    clientName: effectiveClientName,
+    projectId: explicitProjectId || authUser?.projectId || 'proj-general',
+    channel: channel || 'web'
+  });
+
+  // Check if this thread has been locked into Human Takeover
+  if (conv.isHumanTakeover) {
+    const takeoverNotice = `💬 [Operator Takeover Active] Your message has been received directly by ${conv.takenOverBy || 'our Pod Lead'}. They will respond shortly.`;
+    // Broadcast human triage alert via SSE
+    broadcast('chat_message', {
+      conversationId: conv.id,
+      sender: 'user',
+      text: command,
+      timestamp: new Date().toISOString(),
+      mode: mode || 'client',
+      waitingHumanTriage: true
+    });
+
+    return res.json({
+      ok: true,
+      success: true,
+      status: 'taken_over',
+      reply: takeoverNotice,
+      isHumanTakeover: true,
+      takenOverBy: conv.takenOverBy,
+      data: { status: 'taken_over', reply: takeoverNotice, isHumanTakeover: true }
+    });
   }
 
   const lowerCmd = command.trim().toLowerCase();
@@ -202,8 +238,12 @@ INSTRUCTIONS:
     }
   }
 
+  // Record bot reply in thread history
+  chatTakeover.recordAiReply(convId, reply);
+
   // Broadcast the bot's response via SSE
   const ssePayload = {
+    conversationId: convId,
     mode: mode || 'client',
     sender: 'bot',
     text: reply,
@@ -221,9 +261,88 @@ INSTRUCTIONS:
     status: 'sent',
     reply,
     isAiCoPilot,
-    data: { status: 'sent', reply, isAiCoPilot }
+    conversationId: convId,
+    data: { status: 'sent', reply, isAiCoPilot, conversationId: convId }
+  });
+}));
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Engine 1 Desk Operations Endpoints
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+// 1. Live Telemetry: 5 KPI Cards, Channel Distribution, Spending Burn
+router.get('/telemetry', asyncHandler(async (req, res) => {
+  const telemetry = chatTakeover.getTelemetry();
+  return ok(res, telemetry);
+}));
+
+// 2. Conversation Streams: Omnichannel thread query
+router.get('/conversations', asyncHandler(async (req, res) => {
+  const { channel, status, projectId, isHumanTakeover } = req.query;
+  const list = chatTakeover.listConversations({ channel, status, projectId, isHumanTakeover });
+  return ok(res, list);
+}));
+
+// 3. Conversation Thread Details
+router.get('/conversations/:id', asyncHandler(async (req, res) => {
+  const conv = chatTakeover.getConversation(req.params.id);
+  if (!conv) {
+    return fail(res, 404, 'Conversation thread not found', 'NOT_FOUND');
+  }
+  return ok(res, conv);
+}));
+
+// 4. 1-Click Human Takeover Toggle
+router.post('/takeover', asyncHandler(async (req, res) => {
+  const { conversationId, enabled, operatorName } = req.body;
+  if (!conversationId) {
+    return fail(res, 400, 'conversationId is required', 'INVALID_INPUT');
+  }
+
+  const opName = operatorName || req.user?.name || 'Internal Pod Operator';
+  const updated = chatTakeover.setTakeover(conversationId, enabled, opName);
+  if (!updated) {
+    return fail(res, 404, 'Conversation thread not found', 'NOT_FOUND');
+  }
+
+  return ok(res, {
+    message: updated.isHumanTakeover ? `Takeover activated by ${opName}` : 'AI Co-Pilot resumed',
+    conversation: updated
+  });
+}));
+
+// 5. Operator Direct Reply (Bypasses AI)
+router.post('/operator-reply', asyncHandler(async (req, res) => {
+  const { conversationId, text, operatorName } = req.body;
+  if (!conversationId || !text) {
+    return fail(res, 400, 'conversationId and text are required', 'INVALID_INPUT');
+  }
+
+  const opName = operatorName || req.user?.name || 'Internal Pod Operator';
+  const result = chatTakeover.recordOperatorReply(conversationId, text, opName);
+  if (!result) {
+    return fail(res, 404, 'Conversation thread not found', 'NOT_FOUND');
+  }
+
+  return ok(res, {
+    status: 'delivered',
+    message: result.message,
+    conversation: result.conv
+  });
+}));
+
+// 6. Update Internal Spending Limits & Safety Kill Switch
+router.post('/spending-limits', asyncHandler(async (req, res) => {
+  const { monthlyBudgetUSD, safetyKillSwitchActive } = req.body;
+  const updated = chatTakeover.updateSpendingLimits({ monthlyBudgetUSD, safetyKillSwitchActive });
+  return ok(res, {
+    message: 'Spending limits and safety controls updated',
+    spendingLimits: updated
   });
 }));
 
 module.exports = router;
+
 

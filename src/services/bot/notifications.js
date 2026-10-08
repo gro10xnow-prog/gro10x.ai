@@ -482,9 +482,25 @@ module.exports = {
   sendWarrantyActivatedNotification,
   sendTeamWarrantyAlert,
   sendSprintDeliveredNotification,
-  sendRetainerBurndownAlert,
   sendWarrantyExpiryAlert,
-  sendAffiliatePayoutNotification
+  sendAffiliatePayoutNotification,
+  sendRetainerBurndownAlert,
+  sendEngine1TriageAlert: function(conv) {
+    const text = `🚨 *ENGINE 1: HUMAN TRIAGE ALERT*\n\n` +
+      `• *Client:* ${conv.clientName || 'Visitor'}\n` +
+      `• *Thread ID:* \`${conv.id}\`\n` +
+      `• *Channel:* ${conv.channel.toUpperCase()}\n` +
+      `• *Project Ref:* ${conv.projectId || 'General'}\n` +
+      `• *Latest Message:* "${conv.messages && conv.messages.length ? conv.messages[conv.messages.length - 1].text : 'N/A'}"\n\n` +
+      `_Action: Open Engine 1 Desk to intervene directly._`;
+
+    const inlineKeyboard = [
+      [
+        { text: '⚡ Open Engine 1 Desk', url: 'https://gro10x-ai.vercel.app/app#engine1' }
+      ]
+    ];
+    return module.exports.sendTelegramNotification(null, text, inlineKeyboard, true);
+  }
 };
 
 

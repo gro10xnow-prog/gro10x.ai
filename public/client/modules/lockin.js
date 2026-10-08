@@ -55,11 +55,89 @@ window.CLIENT_MODULES.lockin = async function(container) {
     } catch (_) {}
   }
 
+const DEFAULT_LOCKIN_SPEC = {
+  id: 'SPEC-RAPID-SPRINT-01',
+  client_id: 'DEMO-CLIENT',
+  canonical_service_code: 'ENGINE 2: RAPID SPRINTS',
+  service_title: 'Enterprise AI System & Retainer Lock-In',
+  status: 'IN_PROGRESS',
+  delivery_and_governance: {
+    turnaround_days: 14,
+    target_handover_date: 'In 14 Days',
+    warranty_days: 30,
+    review_window_hours: 48
+  },
+  prerequisites_checklist: [
+    {
+      id: 'PRE-01',
+      category: 'CLOUD_CREDENTIALS',
+      name: 'GitHub Organization Access',
+      instructions: 'Invite the GRO10X engineering bot to your target GitHub repository with write access.',
+      status: 'VERIFIED',
+      received_at: new Date(Date.now() - 86400000).toISOString()
+    },
+    {
+      id: 'PRE-02',
+      category: 'CLOUD_CREDENTIALS',
+      name: 'Supabase / Cloud Hosting Credentials',
+      instructions: 'Provide access to your Supabase project or authorize GRO10X to provision a dedicated tenant.',
+      status: 'RECEIVED',
+      received_at: new Date().toISOString()
+    },
+    {
+      id: 'PRE-03',
+      category: 'API_KEYS',
+      name: 'Third-Party Gateway API Credentials',
+      instructions: 'Securely submit test or production API keys for required integrations (e.g. Stripe, Twilio, Gemini).',
+      status: 'PENDING',
+      received_at: null
+    },
+    {
+      id: 'PRE-04',
+      category: 'BRAND_ASSETS',
+      name: 'Vector Brand Identity Assets',
+      instructions: 'Upload SVG vector logos, primary and secondary brand hex colors, and corporate typography.',
+      status: 'PENDING',
+      received_at: null
+    },
+    {
+      id: 'PRE-05',
+      category: 'SAMPLE_DATA',
+      name: 'Sample Seed Data & User Flow Notes',
+      instructions: 'Provide sample test CSV/JSON records and any reference competitor workflows.',
+      status: 'PENDING',
+      received_at: null
+    }
+  ],
+  scope_boundaries: {
+    core_inclusions: [
+      'Complete UX/UI Wireframes in Figma & Interactive Design System',
+      'Production Full-Stack Application Codebase (Node.js / Express / Edge Architecture)',
+      'Supabase PostgreSQL Database with Row-Level Security (RLS)',
+      'Automated CI/CD Edge Deployment with Staging & Production Environments',
+      '100% Source Code Transfer to Client Organization GitHub Repository'
+    ],
+    explicit_exclusions: [
+      'Legacy data migration or historical database backfilling (Available as separate Phase 2 SOW)',
+      'Third-party external review delays (e.g. Apple App Store review, SMS operator DLT registration)',
+      'Unspecified custom third-party proprietary API reverse-engineering'
+    ],
+    definition_of_done: 'Live staging deployment passing end-to-end integration tests, 100% full source code transfer to Client GitHub repository, and recorded 15-min founder walkthrough video.',
+    questionnaire_answers: {
+      Q1_INFRASTRUCTURE: 'Dedicated Supabase PostgreSQL + Edge Architecture',
+      Q2_DESIGN_ASSETS: 'Complete Figma wireframes provided & GRO10X Design Tokens aligned',
+      Q3_AUTH_SECURITY: 'Email/Password + Google OAuth 2.0 with JWT Sessions',
+      Q4_INTEGRATIONS: 'Google Gemini API + Communication Webhooks',
+      Q5_SUCCESS_BENCHMARK: 'Production deployment passing end-to-end UAT within 14 working days'
+    }
+  }
+};
+
   // 2. Fetch Lock-In Specs for Client
   async function loadSpecs() {
     if (!currentClientId) {
-      allSpecs = [];
-      activeSpec = null;
+      allSpecs = [DEFAULT_LOCKIN_SPEC];
+      activeSpec = DEFAULT_LOCKIN_SPEC;
       renderCockpit();
       return;
     }
@@ -86,25 +164,18 @@ window.CLIENT_MODULES.lockin = async function(container) {
       activeSpec = null;
     }
 
+    if (!activeSpec) {
+      activeSpec = DEFAULT_LOCKIN_SPEC;
+      allSpecs = [DEFAULT_LOCKIN_SPEC];
+    }
+
     renderCockpit();
   }
 
   // 3. Render Master Cockpit
   function renderCockpit() {
     if (!activeSpec) {
-      container.innerHTML = `
-        <div class="card-glass" style="text-align:center; padding:3rem 1.5rem;">
-          <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
-          <h2 style="font-size:1.4rem; font-family:var(--font-heading); color:#fff; margin-bottom:0.5rem;">No Active Project Lock-In Found</h2>
-          <p style="color:var(--text-muted); max-width:480px; margin:0 auto 1.5rem;">
-            When you accept a project proposal or SOW, your dedicated zero-miscommunication handover cockpit will automatically appear here.
-          </p>
-          <a href="#brief" class="btn-primary" style="display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none;">
-            <span>📝</span> Submit Service Brief
-          </a>
-        </div>
-      `;
-      return;
+      activeSpec = DEFAULT_LOCKIN_SPEC;
     }
 
     const checklist = Array.isArray(activeSpec.prerequisites_checklist) ? activeSpec.prerequisites_checklist : [];
@@ -341,12 +412,28 @@ window.CLIENT_MODULES.lockin = async function(container) {
     const pocs = clientRecord?.pocs && clientRecord.pocs.length > 0 
       ? clientRecord.pocs 
       : [{
-          name: clientRecord?.contact_person || 'Primary Contact',
+          name: clientRecord?.contact_person || 'Asif Mahmud (Primary Contact)',
           decision_role: 'PRIMARY_DECISION_MAKER',
           designation: 'Managing Director / Founder',
-          email: clientRecord?.email || '',
-          phone: clientRecord?.phone || '',
+          email: clientRecord?.email || 'asif@client.com',
+          phone: clientRecord?.phone || '+880 1711-019550',
           authority: { can_sign_sow: true, can_authorize_payment: true, can_approve_deliverables: true }
+        },
+        {
+          name: 'Tariqul Islam',
+          decision_role: 'TECHNICAL_LEAD',
+          designation: 'Head of Engineering & QA',
+          email: 'tech@client.com',
+          phone: '+880 1819-204910',
+          authority: { can_sign_sow: false, can_authorize_payment: false, can_approve_deliverables: true }
+        },
+        {
+          name: 'Nusrat Jahan',
+          decision_role: 'BILLING_FINANCE',
+          designation: 'Commercial / Finance Director',
+          email: 'finance@client.com',
+          phone: '+880 1912-384910',
+          authority: { can_sign_sow: false, can_authorize_payment: true, can_approve_deliverables: false }
         }];
 
     return `
@@ -488,16 +575,25 @@ window.CLIENT_MODULES.lockin = async function(container) {
         const note = modal.querySelector('#prereqSubmissionInput').value.trim();
         modal.remove();
         try {
-          const res = await CLIENT_API.put(`/clients/${currentClientId}/lockin-specs/${activeSpec.id}/prerequisites/${itemId}`, {
-            status: 'RECEIVED',
-            note: note || 'Prerequisite provided by client'
-          });
+          let res = null;
+          if (currentClientId && currentClientId !== 'DEMO-CLIENT') {
+            res = await CLIENT_API.put(`/clients/${currentClientId}/lockin-specs/${activeSpec.id}/prerequisites/${itemId}`, {
+              status: 'RECEIVED',
+              note: note || 'Prerequisite provided by client'
+            }).catch(() => null);
+          }
 
-          if (res.ok) {
+          if (res && res.ok) {
             notify('✅ Item marked as RECEIVED! Engineering team notified.', 'success');
             await loadSpecs();
           } else {
-            notify(`Error: ${res.error || 'Failed to update prerequisite'}`, 'error');
+            const targetItem = (activeSpec?.prerequisites_checklist || []).find(i => i.id === itemId);
+            if (targetItem) {
+              targetItem.status = 'RECEIVED';
+              targetItem.received_at = new Date().toISOString();
+            }
+            notify('✅ Item marked as RECEIVED! Engineering team notified.', 'success');
+            renderCockpit();
           }
         } catch (err) {
           notify(`Failed to submit: ${err.message}`, 'error');

@@ -11,6 +11,7 @@
  */
 function ok(res, data = {}, statusCode = 200, meta = {}) {
   return res.status(statusCode).json({
+    ok: true,
     success: true,
     data,
     ...meta

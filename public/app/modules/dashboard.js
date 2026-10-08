@@ -35,7 +35,7 @@ window.APP_MODULES.dashboard = async function(container) {
   function formatMoney(amount, isUSDMode) {
     const val = Number(amount) || 0;
     if (isUSDMode) {
-      return `${Math.round(val / 120).toLocaleString()}`;
+      return `$${Math.round(val / 120).toLocaleString()}`;
     }
     return formatBDT(val);
   }

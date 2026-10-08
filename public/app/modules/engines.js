@@ -625,9 +625,9 @@ async function renderEnginesView(container) {
             `).join('')}
           </div>
         </div>
-        <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
-          <button class="btn-ghost btn-sm" onclick="window.EnginesModule.openAddProductModal()">+ Add Product</button>
-          <a href="/designs/index.html" target="_blank" rel="noopener noreferrer" class="btn-secondary btn-sm">Inspect UI Mockups ↗</a>
+        <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <a href="#engine1" class="btn-primary btn-sm" style="background:#8b5cf6; text-decoration:none;">⚡ Open Desk Cockpit ↗</a>
+          <button class="btn-ghost btn-sm" onclick="openAddProductModal()">+ Add Product</button>
         </div>
       </div>
 
@@ -1212,7 +1212,7 @@ async function renderEnginesView(container) {
 
             <!-- ACTION FOOTER -->
             <div style="display:flex; justify-content:space-between; align-items:center; padding-top:0.5rem; border-top:1px solid rgba(255,255,255,0.05); gap:0.4rem;">
-              <button class="btn-ghost btn-sm" onclick="window.EnginesModule.openTemplateModal(${idx})" style="font-size:0.72rem; padding:0.2rem 0.5rem; color:var(--text-muted);" title="Inspect Full Technical Architecture">
+              <button class="btn-ghost btn-sm" onclick="openTemplateModal(${idx})" style="font-size:0.72rem; padding:0.2rem 0.5rem; color:var(--text-muted);" title="Inspect Full Technical Architecture">
                 ⚙️ Specs
               </button>
               <button class="btn-ghost btn-sm" onclick="window.EnginesModule.openTemplateActionModal(${idx})" style="font-size:0.72rem; padding:0.25rem 0.5rem; color:${t.color}; border:1px solid ${t.color}40; font-weight:700;">
@@ -1546,21 +1546,30 @@ function openAddProductModal() {
   }
 }
 
-function openTemplateModal(idx) {
+function openTemplateModal(idx = 0) {
   const state = getStoredState();
-  const template = (state.retainers.osTemplates || [])[idx];
-  if (!template) return;
+  const template = (state.retainers?.osTemplates || [])[idx] || (DEFAULT_ENGINES_STATE.retainers?.osTemplates || [])[0] || {
+    id: 'agency', name: 'Agency OS', vertical: '🏢', completion: 100, client: 'PurpleBot Digital', mrr: 35000, status: 'proposal', desc: 'Full AI agency client management, dual Telegram bot mesh.'
+  };
 
   const modal = document.getElementById('enginesTemplateModal');
   if (modal) {
-    document.getElementById('tmplModalIdx').value = idx;
-    document.getElementById('tmplModalIcon').textContent = template.vertical || '🏢';
-    document.getElementById('tmplModalTitle').textContent = template.name;
-    document.getElementById('tmplModalSubtitle').textContent = `${template.completion}% Built · Telegrab Dual Bot`;
-    document.getElementById('tmplModalDesc').textContent = template.desc || 'Turnkey, single-tenant AI operating system with Telegrab Dual Bot mesh.';
-    document.getElementById('tmplModalClient').value = template.client || '';
-    document.getElementById('tmplModalMrr').value = template.mrr || 35000;
-    document.getElementById('tmplModalStatus').value = template.status || 'available';
+    const idxEl = document.getElementById('tmplModalIdx');
+    if (idxEl) idxEl.value = idx;
+    const iconEl = document.getElementById('tmplModalIcon');
+    if (iconEl) iconEl.textContent = template.vertical || '🏢';
+    const titleEl = document.getElementById('tmplModalTitle');
+    if (titleEl) titleEl.textContent = template.name || 'Template Architecture';
+    const subEl = document.getElementById('tmplModalSubtitle');
+    if (subEl) subEl.textContent = `${template.completion || 100}% Built · Telegrab Dual Bot`;
+    const descEl = document.getElementById('tmplModalDesc');
+    if (descEl) descEl.textContent = template.desc || 'Turnkey, single-tenant AI operating system with Telegrab Dual Bot mesh.';
+    const clientEl = document.getElementById('tmplModalClient');
+    if (clientEl) clientEl.value = template.client || '';
+    const mrrEl = document.getElementById('tmplModalMrr');
+    if (mrrEl) mrrEl.value = template.mrr || 35000;
+    const statusEl = document.getElementById('tmplModalStatus');
+    if (statusEl) statusEl.value = template.status || 'available';
 
     modal.classList.add('active');
     modal.style.display = 'flex';
@@ -2038,6 +2047,10 @@ window.addEventListener('gro10x_currency_changed', (e) => {
 });
 
 window.APP_MODULES.engines = renderEnginesView;
+
+window.openAddProductModal = openAddProductModal;
+window.openTemplateModal = openTemplateModal;
+window.openLogRevenueModal = openLogRevenueModal;
 
 window.EnginesModule = {
   renderEnginesView,

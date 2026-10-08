@@ -29,7 +29,11 @@
   async function getMyProfile() {
     if (_myEmpCode && _myName) return { empCode: _myEmpCode, name: _myName };
     try {
-      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token') || '';
+      const token = (window.CREW_API && window.CREW_API.getToken && window.CREW_API.getToken()) ||
+                    localStorage.getItem('gro10x_token') ||
+                    sessionStorage.getItem('gro10x_token') ||
+                    localStorage.getItem('jwt_token') ||
+                    localStorage.getItem('sb-access-token') || '';
       const res = await fetch('/api/auth/me', { headers: { Authorization: token ? `Bearer ${token}` : '' } });
       const d = await res.json();
       _myEmpCode = d.user?.emp_code || d.user?.id || null;

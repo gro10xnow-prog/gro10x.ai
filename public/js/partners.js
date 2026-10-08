@@ -41,17 +41,32 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function handlePartnerLogout() {
+  if (window.GRO10XAuth && typeof window.GRO10XAuth.logout === 'function') {
+    window.GRO10XAuth.logout('/auth');
+    return;
+  }
   localStorage.removeItem('purple_user');
   localStorage.removeItem('purple_user_phone');
   localStorage.removeItem('purple_user_email');
   localStorage.removeItem('purple_user_name');
   localStorage.removeItem('purple_user_role');
   localStorage.removeItem('purple_user_access');
+  localStorage.removeItem('gro10x_user');
   localStorage.removeItem('gro10x_token');
-  localStorage.removeItem('gro10x_token');
-  localStorage.removeItem('gro10x_token');
+  sessionStorage.removeItem('gro10x_token');
+  localStorage.removeItem('jwt_token');
   sessionStorage.removeItem('jwt_token');
+  localStorage.removeItem('sb-access-token');
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('sb-') || k.includes('token'))) {
+        localStorage.removeItem(k);
+      }
+    }
+  } catch (_) {}
   document.cookie = "sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+  document.cookie = "gro10x_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
   window.location.href = '/auth';
 }
 
@@ -60,7 +75,10 @@ let partnerAuthUser = null;
 
 async function initPartnerPortal() {
   try {
-    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+    const token = localStorage.getItem('gro10x_token') ||
+                  sessionStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('jwt_token') ||
+                  localStorage.getItem('sb-access-token');
     const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
 
     // Fetch authenticated user profile
@@ -86,6 +104,20 @@ async function initPartnerPortal() {
       }
     } else {
       console.warn('[partners] Invalid or expired session, redirecting to login');
+      localStorage.removeItem('gro10x_token');
+      sessionStorage.removeItem('gro10x_token');
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('gro10x_user');
+      localStorage.removeItem('purple_user');
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('sb-') || k.includes('token'))) {
+            localStorage.removeItem(k);
+          }
+        }
+      } catch (_) {}
       window.location.href = '/auth?portal=client';
       return;
     }

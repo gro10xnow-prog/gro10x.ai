@@ -1,4 +1,4 @@
-﻿/**
+/**
  * public/js/shell.js
  * ─────────────────────────────────────────────────────────────────────────────
  * PurpleOS Shared Navigation & Page Shell Manager v2.0
@@ -12,11 +12,12 @@
   document.documentElement.setAttribute('data-theme', savedTheme);
 
   // 2. IIFE Auth Guard
-  const token = localStorage.getItem('sb-access-token') ||
-                localStorage.getItem('gro10x_token') ||
-                localStorage.getItem('gro10x_token');
+  const token = localStorage.getItem('gro10x_token') ||
+                sessionStorage.getItem('gro10x_token') ||
+                localStorage.getItem('jwt_token') ||
+                localStorage.getItem('sb-access-token');
   if (!token && !window.location.pathname.startsWith('/auth')) {
-    console.warn('[PurpleOS Shell] ⛔ No session token found. Redirecting to auth...');
+    console.warn('[GRO10X Shell] ⛔ No session token found. Redirecting to auth...');
     window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname));
     return;
   }
@@ -228,10 +229,24 @@ function hydrateUserInfo() {
 }
 
 function adminSignOut() {
+  if (window.GRO10XAuth && typeof window.GRO10XAuth.logout === 'function') {
+    window.GRO10XAuth.logout('/auth');
+    return;
+  }
   localStorage.removeItem('gro10x_token');
-  localStorage.removeItem('gro10x_token');
-  localStorage.removeItem('gro10x_token');
+  sessionStorage.removeItem('gro10x_token');
+  localStorage.removeItem('jwt_token');
+  localStorage.removeItem('sb-access-token');
+  localStorage.removeItem('gro10x_user');
   localStorage.removeItem('purple_user');
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('sb-') || k.includes('token'))) {
+        localStorage.removeItem(k);
+      }
+    }
+  } catch (_) {}
   window.location.href = '/auth';
 }
 

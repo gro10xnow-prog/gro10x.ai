@@ -40,10 +40,21 @@ window.CLIENT_API = {
       const response = await fetch(url, config);
       if (response.status === 401) {
         localStorage.removeItem('gro10x_token');
+        sessionStorage.removeItem('gro10x_token');
+        localStorage.removeItem('jwt_token');
         localStorage.removeItem('sb-access-token');
         localStorage.removeItem('gro10x_user');
         localStorage.removeItem('purple_user');
+        try {
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith('sb-') || k.includes('token'))) {
+              localStorage.removeItem(k);
+            }
+          }
+        } catch (_) {}
         document.cookie = 'sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        document.cookie = 'gro10x_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
         return null;
       }

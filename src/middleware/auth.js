@@ -78,10 +78,6 @@ async function requireAuth(req, res, next) {
       return next();
     }
 
-    // If token was explicitly provided as a JWT (3 dot-separated parts) but failed verification (expired or invalid), reject immediately with 401
-    if (typeof token === 'string' && token.split('.').length === 3) {
-      return res.status(401).json({ error: 'Unauthorized: Session token is expired or invalid', expired: true });
-    }
   }
 
   // 2. Verify Supabase Session if token is a Supabase Token
@@ -131,6 +127,11 @@ async function requireAuth(req, res, next) {
     } catch (err) {
       console.warn('[Auth Middleware Warning]', err.message);
     }
+  }
+
+  // If token was a 3-part JWT but failed both GRO10X HMAC and Supabase Auth validation, reject immediately
+  if (token && typeof token === 'string' && token.split('.').length === 3) {
+    return res.status(401).json({ error: 'Unauthorized: Session token is expired or invalid', expired: true });
   }
 
   // 3. Fallback PIN user lookup (if token matched raw phone/pin for legacy session compatibility)

@@ -18,9 +18,16 @@
   <link rel="stylesheet" href="/css/shell.css">
   <script src="/js/auth-session.js" defer></script>
   <script>
+    window.getReviewToken = function() {
+      return localStorage.getItem('gro10x_token') ||
+             sessionStorage.getItem('gro10x_token') ||
+             localStorage.getItem('jwt_token') ||
+             localStorage.getItem('sb-access-token') || '';
+    };
+
     (function() {
       // Support Founder (Admin), DBM, Team, and Client session holders without redirect loop (P4-6)
-      const token = localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || localStorage.getItem('token');
+      const token = window.getReviewToken() || localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('gro10x_user') || sessionStorage.getItem('gro10x_user') || localStorage.getItem('user') || 'null');
       if (token || user) {
         return; // Session present, permit access
@@ -387,40 +394,54 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       configureRoleBackLink();
-      // Auto-load from URL ?id= param
+      // Auto-load from URL query param (?id=, ?reviewId=, ?taskId=, or ?projectId=)
       const urlParams = new URLSearchParams(window.location.search);
-      const reviewId = urlParams.get('id');
+      const reviewId = urlParams.get('id') || urlParams.get('reviewId') || urlParams.get('taskId') || urlParams.get('projectId');
       fetchReviewsCatalog(reviewId);
     });
 
     // Configure role-based navigation link
     function configureRoleBackLink() {
       try {
-        const userRaw = localStorage.getItem('purple_user');
+        const userRaw = localStorage.getItem('gro10x_user') || localStorage.getItem('purple_user');
         const link = document.getElementById('rrBackLink');
         if (!link) return;
         if (userRaw) {
           const user = JSON.parse(userRaw);
-          if (user.linkedType === 'client' || (user.role && user.role.toLowerCase().includes('client')) || user.accessLevel === 'Client Partner') {
+          const role = String(user.role || '').toLowerCase();
+          const access = String(user.accessLevel || user.access_level || '').toLowerCase();
+          const linkedType = String(user.linkedType || '').toLowerCase();
+
+          if (linkedType === 'client' || role.includes('client') || access.includes('client')) {
             link.href = '/client';
             link.innerText = '← Client Portal';
             return;
           }
-          if (user.role && (user.role.toLowerCase().includes('crew') || user.role.toLowerCase().includes('specialist'))) {
-            link.href = '/crew';
-            link.innerText = '⚡ Back to Crew Hub';
+          if (access.includes('owner') || access.includes('admin') || role.includes('admin') || role.includes('owner')) {
+            link.href = '/app#reviews';
+            link.innerText = '👑 Back to Admin Cockpit';
+            return;
+          }
+          if (role.includes('manager') || access.includes('director') || access.includes('manager')) {
+            link.href = '/workspace#overview';
+            link.innerText = '📊 Back to Manager Desk';
+            return;
+          }
+          if (role.includes('crew') || role.includes('specialist') || role.includes('engineer') || role.includes('artist')) {
+            link.href = '/workspace#tasks';
+            link.innerText = '⚡ Back to Tasks Hub';
             return;
           }
         }
-        link.href = '/admin#reviews';
-        link.innerText = '👑 Back to Admin Dashboard';
+        link.href = '/app#reviews';
+        link.innerText = '👑 Back to Admin Cockpit';
       } catch (e) {}
     }
 
     // Fetch review projects list from API
     async function fetchReviewsCatalog(preloadId) {
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        const token = window.getReviewToken();
         const res = await fetch('/api/reviews', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -428,9 +449,14 @@
         if (res.ok) {
           const data = await res.json();
           reviewsList = Array.isArray(data) ? data : [];
-          populateProjectSelector(reviewsList, preloadId);
+          // Match either direct review id, or linked task_id / project_id
+          let matchedReview = null;
+          if (preloadId) {
+            matchedReview = reviewsList.find(r => r.id === preloadId || r.taskId === preloadId || r.projectId === preloadId);
+          }
+          const targetId = matchedReview ? matchedReview.id : (reviewsList.length > 0 ? reviewsList[0].id : null);
+          populateProjectSelector(reviewsList, targetId);
 
-          const targetId = preloadId || (reviewsList.length > 0 ? reviewsList[0].id : null);
           if (targetId) {
             loadReviewDetails(targetId);
           } else {
@@ -491,7 +517,7 @@
 
     async function loadReviewDetails(id) {
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        const token = window.getReviewToken();
         const res = await fetch(`/api/reviews/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -770,7 +796,7 @@
       formData.append('asset', file);
 
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        const token = window.getReviewToken();
         const res = await fetch(`/api/reviews/${activeReviewData.id}/upload`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
@@ -836,7 +862,7 @@
       // Persist to backend
       if (activeReviewData && activeReviewData.id) {
         try {
-          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+          const token = window.getReviewToken();
           const apiRes = await fetch(`/api/reviews/${activeReviewData.id}/comments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -860,7 +886,7 @@
 
         // Persist resolve to backend
         try {
-          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+          const token = window.getReviewToken();
           const res = await fetch(`/api/reviews/comments/${commentId}/resolve`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -905,7 +931,7 @@
       if (!activeReviewData?.id) return;
       closeRevisionModal();
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        const token = window.getReviewToken();
         const res = await fetch(`/api/reviews/${activeReviewData.id}/request-revisions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -934,7 +960,7 @@
         try { user = JSON.parse(localStorage.getItem('purple_user') || '{}'); } catch(e) {}
         const approvedBy = user.name || 'Authorized Client POC';
 
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        const token = window.getReviewToken();
         const res = await fetch(`/api/reviews/${activeReviewData.id}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -972,7 +998,7 @@
       if (body) body.style.display = 'none';
 
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        const token = window.getReviewToken();
         const res = await fetch(`/api/reviews/${activeReviewData.id}/compare`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1049,7 +1075,7 @@
       const consentShowcase = Boolean(document.getElementById('rrNpsConsent')?.checked);
 
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+        const token = window.getReviewToken();
         await fetch(`/api/reviews/${activeReviewData.id}/feedback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -1179,7 +1205,7 @@
         // Save to DB
         if (activeReviewData && activeReviewData.id) {
           try {
-            const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+            const token = window.getReviewToken();
             await fetch(`/api/reviews/${activeReviewData.id}/drawings`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -1225,7 +1251,7 @@
       // Hook into loadReviewDetails to fetch drawings
       window.fetchDrawings = async function(reviewId) {
         try {
-          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
+          const token = window.getReviewToken();
           const res = await fetch(`/api/reviews/${reviewId}/drawings`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });

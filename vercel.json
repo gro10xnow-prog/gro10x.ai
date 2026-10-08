@@ -197,17 +197,25 @@
       "dest": "/public/app/$1"
     },
     {
-      "src": "/crew(.*)",
+      "src": "/manager/modules/(.*)",
+      "dest": "/public/manager/modules/$1"
+    },
+    {
+      "src": "/crew/modules/(.*)",
+      "dest": "/public/crew/modules/$1"
+    },
+    {
+      "src": "^/crew(/.*)?$",
       "status": 302,
       "headers": { "Location": "/workspace#tasks" }
     },
     {
-      "src": "/manager(.*)",
+      "src": "^/manager(/.*)?$",
       "status": 302,
       "headers": { "Location": "/workspace#overview" }
     },
     {
-      "src": "/dbm(.*)",
+      "src": "^/dbm(/.*)?$",
       "status": 302,
       "headers": { "Location": "/workspace?engineId=engine3#deliverables" }
     },

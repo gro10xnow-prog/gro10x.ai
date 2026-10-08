@@ -16,6 +16,7 @@ const GRO10X_REGISTRY = {
     pages: [
       { id: 'dashboard', name: '📊 Executive Overview', hash: '#dashboard', auditSuiteId: 'dashboard', workflows: [] },
       { id: 'engines', name: '🚀 5-Engine Growth Operations', hash: '#engines', auditSuiteId: 'engines', workflows: [] },
+      { id: 'engine1', name: '🤖 Engine 1 Desk (AI Agents)', hash: '#engine1', auditSuiteId: 'engine1', workflows: [] },
       { id: 'platforms', name: '🏗️ Platform Portfolio', hash: '#platforms', auditSuiteId: 'platforms', workflows: ['workflow_platforms_registry_cycle'] },
       { id: 'gigs', name: '⚡ Marketplace Gig Studio', hash: '#gigs', auditSuiteId: 'gigs', workflows: [] },
       { id: 'analytics', name: '📈 Agency Analytics', hash: '#analytics', auditSuiteId: 'analytics', workflows: [] },

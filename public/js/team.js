@@ -1,4 +1,4 @@
-﻿// 👥 GRO10X CREW OPERATIONS PORTAL JS
+// 👥 GRO10X CREW OPERATIONS PORTAL JS
 
 let currentCrewEmpCode = 'EMP-002';
 let crewStaffList = [];
@@ -234,7 +234,11 @@ function renderCrewView() {
 
 async function crewClockIn() {
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
-  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
+  const token = (window.GRO10XAuth && window.GRO10XAuth.getToken && window.GRO10XAuth.getToken()) ||
+              localStorage.getItem('gro10x_token') ||
+              sessionStorage.getItem('gro10x_token') ||
+              localStorage.getItem('jwt_token') ||
+              localStorage.getItem('sb-access-token');
   try {
     const res = await fetch('/api/team/clockin', {
       method: 'POST',
@@ -258,7 +262,11 @@ async function crewClockIn() {
 
 async function crewClockOut() {
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
-  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
+  const token = (window.GRO10XAuth && window.GRO10XAuth.getToken && window.GRO10XAuth.getToken()) ||
+              localStorage.getItem('gro10x_token') ||
+              sessionStorage.getItem('gro10x_token') ||
+              localStorage.getItem('jwt_token') ||
+              localStorage.getItem('sb-access-token');
   try {
     const res = await fetch('/api/team/clockout', {
       method: 'POST',
@@ -344,7 +352,11 @@ async function quickGearReturn() {
 async function submitCrewExpense(event) {
   event.preventDefault();
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
-  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
+  const token = (window.GRO10XAuth && window.GRO10XAuth.getToken && window.GRO10XAuth.getToken()) ||
+              localStorage.getItem('gro10x_token') ||
+              sessionStorage.getItem('gro10x_token') ||
+              localStorage.getItem('jwt_token') ||
+              localStorage.getItem('sb-access-token');
 
   const payload = {
     submittedBy: staff ? staff.name : 'Crew Specialist',
@@ -381,7 +393,11 @@ async function submitCrewExpense(event) {
 async function submitCrewLeave(event) {
   event.preventDefault();
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
-  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
+  const token = (window.GRO10XAuth && window.GRO10XAuth.getToken && window.GRO10XAuth.getToken()) ||
+              localStorage.getItem('gro10x_token') ||
+              sessionStorage.getItem('gro10x_token') ||
+              localStorage.getItem('jwt_token') ||
+              localStorage.getItem('sb-access-token');
 
   const payload = {
     staffId: currentCrewEmpCode,
@@ -416,7 +432,11 @@ async function submitCrewLeave(event) {
 async function submitCrewEod(event) {
   event.preventDefault();
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
-  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
+  const token = (window.GRO10XAuth && window.GRO10XAuth.getToken && window.GRO10XAuth.getToken()) ||
+              localStorage.getItem('gro10x_token') ||
+              sessionStorage.getItem('gro10x_token') ||
+              localStorage.getItem('jwt_token') ||
+              localStorage.getItem('sb-access-token');
 
   const payload = {
     employeeId: currentCrewEmpCode,

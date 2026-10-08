@@ -9,7 +9,7 @@
 
 window.APP_MODULES = window.APP_MODULES || {};
 
-var PLATFORMS_REGISTRY_DATA = window.PLATFORMS_REGISTRY_DATA || [
+var PLATFORMS_REGISTRY_DATA = [
   {
     id: 'groupacademy',
     name: 'GroUp Academy',
@@ -522,10 +522,21 @@ async function deleteCustomPlatform(id) {
   } catch (_) {}
 }
 
+window.PLATFORMS_REGISTRY_DATA = PLATFORMS_REGISTRY_DATA;
+
 function getAllPlatforms() {
-  if (_remotePlatforms.length > 0) return _remotePlatforms;
-  return [...getCustomPlatforms(), ...PLATFORMS_REGISTRY_DATA];
+  const custom = getCustomPlatforms();
+  const remote = _remotePlatforms.length > 0 ? _remotePlatforms : [];
+  const map = new Map();
+  // Always populate with all baseline platforms
+  PLATFORMS_REGISTRY_DATA.forEach(p => map.set(p.id, p));
+  // Override or add from remote
+  remote.forEach(p => map.set(p.id, p));
+  // Add custom
+  custom.forEach(p => map.set(p.id, p));
+  return Array.from(map.values());
 }
+window.getAllPlatforms = getAllPlatforms;
 
 function renderPlatformsView(container) {
   let activeFilter = 'all';

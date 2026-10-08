@@ -679,7 +679,7 @@
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+            'Authorization': `Bearer ${(localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || localStorage.getItem('jwt_token') || localStorage.getItem('sb-access-token'))}`
           },
           body: JSON.stringify({ status: newStatus })
         });
@@ -956,7 +956,7 @@
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+            'Authorization': `Bearer ${(localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || localStorage.getItem('jwt_token') || localStorage.getItem('sb-access-token'))}`
           },
           body: JSON.stringify({
             baseSalary: parseFloat(newSalary) || 0,
@@ -982,7 +982,7 @@
         const res = await fetch(`/api/team/${id}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+            'Authorization': `Bearer ${(localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || localStorage.getItem('jwt_token') || localStorage.getItem('sb-access-token'))}`
           }
         });
 

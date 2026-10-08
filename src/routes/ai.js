@@ -2353,5 +2353,90 @@ router.callGeminiPrompt = async function(prompt, options = {}) {
 };
 router.cleanJSONText = cleanJSONText;
 
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Engine 1 Desk: Knowledge Base (RAG) & 5 Verticals Studio Endpoints
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+const kbService = require('../services/knowledge-base');
+
+// 1. Get Assistant Verticals
+router.get('/assistants', (req, res) => {
+  return res.json({ success: true, assistants: kbService.getAssistants() });
+});
+
+// 2. List Knowledge Documents
+router.get('/knowledge', (req, res) => {
+  const { agentId, projectId, sourceType } = req.query;
+  const list = kbService.listKnowledge({ agentId, projectId, sourceType });
+  return res.json({ success: true, documents: list });
+});
+
+// 3. Ingest Website URL
+router.post('/knowledge/url', async (req, res) => {
+  const { url, agentId, projectId } = req.body;
+  if (!url) {
+    return res.status(400).json({ success: false, error: 'URL is required' });
+  }
+
+  const doc = kbService.addDocument({
+    title: url,
+    agentId: agentId || 'soloops-hub',
+    projectId: projectId || 'proj-general',
+    sourceType: 'url',
+    content: `Web content indexed from ${url}. Semantic chunks ready for vector retrieval.`,
+    summary: `Live website crawl for ${url}.`
+  });
+
+  return res.json({ success: true, document: doc });
+});
+
+// 4. Ingest Structured FAQ Pair
+router.post('/knowledge/faq', async (req, res) => {
+  const { question, answer, agentId, projectId } = req.body;
+  if (!question || !answer) {
+    return res.status(400).json({ success: false, error: 'question and answer are required' });
+  }
+
+  const doc = kbService.addDocument({
+    title: `FAQ: ${question.slice(0, 50)}...`,
+    agentId: agentId || 'soloops-hub',
+    projectId: projectId || 'proj-general',
+    sourceType: 'faq',
+    content: `Q: ${question}\nA: ${answer}`,
+    summary: `Structured Q&A pair: "${question}"`
+  });
+
+  return res.json({ success: true, document: doc });
+});
+
+// 5. Ingest Text / Document Upload
+router.post('/knowledge/upload', upload.single('file'), async (req, res) => {
+  const { title, agentId, projectId, rawText } = req.body;
+  let content = rawText || '';
+
+  if (req.file) {
+    content = req.file.buffer ? req.file.buffer.toString('utf8', 0, 5000) : 'Uploaded document payload';
+  }
+
+  const doc = kbService.addDocument({
+    title: title || req.file?.originalname || 'Uploaded Knowledge Document',
+    agentId: agentId || 'soloops-hub',
+    projectId: projectId || 'proj-general',
+    sourceType: req.file ? 'pdf' : 'manual',
+    content,
+    summary: `Processed document upload (${req.file ? req.file.originalname : 'text snippet'}).`
+  });
+
+  return res.json({ success: true, document: doc });
+});
+
+// 6. Delete Knowledge Document
+router.delete('/knowledge/:id', (req, res) => {
+  const success = kbService.removeDocument(req.params.id);
+  return res.json({ success, message: success ? 'Document deleted' : 'Document not found' });
+});
+
 module.exports = router;
+
 

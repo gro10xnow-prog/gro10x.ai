@@ -59,6 +59,8 @@ async function runDefectEscalationCheck() {
     const isP0 = severity === 'P0' || severity.includes('CRITICAL') || severity.includes('BLOCKER');
     const isP1 = severity === 'P1' || severity.includes('MAJOR') || severity.includes('HIGH');
 
+    let shouldEscalate = false;
+    let thresholdTag = '';
     let shouldHoldback = false;
 
     if (isP0 && elapsedHours >= 24) {

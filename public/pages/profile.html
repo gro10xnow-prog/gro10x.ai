@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
@@ -201,10 +201,13 @@
       const btn = e.target.querySelector('button[type="submit"]');
 
       try {
-        const rawUser = localStorage.getItem('purple_user');
+        const rawUser = localStorage.getItem('gro10x_user') || localStorage.getItem('purple_user');
         const user = rawUser ? JSON.parse(rawUser) : {};
         const userId = user.id || user.emp_code;
-        const token = localStorage.getItem('sb-access-token');
+        const token = localStorage.getItem('gro10x_token') ||
+                      sessionStorage.getItem('gro10x_token') ||
+                      localStorage.getItem('jwt_token') ||
+                      localStorage.getItem('sb-access-token');
 
         if (btn) btn.disabled = true;
 
@@ -268,11 +271,14 @@
 
       try {
         if (submitBtn) submitBtn.disabled = true;
-        const rawUser = localStorage.getItem('purple_user');
+        const rawUser = localStorage.getItem('gro10x_user') || localStorage.getItem('purple_user');
         const user = rawUser ? JSON.parse(rawUser) : {};
-        const phone = user.phone || localStorage.getItem('purple_user_phone') || '';
+        const phone = user.phone || localStorage.getItem('gro10x_user_phone') || localStorage.getItem('purple_user_phone') || '';
         const email = user.email || '';
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
+        const token = localStorage.getItem('gro10x_token') ||
+                      sessionStorage.getItem('gro10x_token') ||
+                      localStorage.getItem('jwt_token') ||
+                      localStorage.getItem('sb-access-token');
 
         const res = await fetch('/api/auth/pin/set', {
           method: 'POST',

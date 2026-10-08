@@ -213,6 +213,24 @@
       "paid_at": null
     },
     {
+      "id": "INV-2026-5922",
+      "client_id": null,
+      "amount": 63000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5923",
+      "client_id": "CLI-MU1TLEQ1-DE57",
+      "amount": 50400,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
       "id": "INV-2026-5838",
       "client_id": null,
       "amount": 25000,
@@ -246,6 +264,24 @@
       "status": "Pending",
       "due_date": "2026-10-12",
       "issue_date": "2026-09-28",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5929",
+      "client_id": "CLI-MULEN4X0-BA05",
+      "amount": 12600,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5934",
+      "client_id": "CLI-MTWK4BNC-24F6EA",
+      "amount": 26250,
+      "status": "Paid",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
       "paid_at": null
     },
     {
@@ -717,6 +753,15 @@
       "paid_at": null
     },
     {
+      "id": "INV-2026-5924",
+      "client_id": null,
+      "amount": 25000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
       "id": "INV-2026-5870",
       "client_id": null,
       "amount": 25000,
@@ -906,6 +951,15 @@
       "paid_at": null
     },
     {
+      "id": "INV-2026-5925",
+      "client_id": null,
+      "amount": 30000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
       "id": "INV-2026-5788",
       "client_id": null,
       "amount": 25000,
@@ -958,15 +1012,6 @@
       "due_date": "2026-10-12",
       "issue_date": "2026-09-28",
       "paid_at": null
-    },
-    {
-      "id": "INV-2026-001",
-      "client_id": null,
-      "amount": 80000,
-      "status": "Paid",
-      "due_date": "2026-09-25",
-      "issue_date": "2026-09-11",
-      "paid_at": "2026-09-29T17:58:53.191+00:00"
     },
     {
       "id": "INV-2026-5831",
@@ -1066,6 +1111,15 @@
       "due_date": "2026-10-01",
       "issue_date": "2026-09-17",
       "paid_at": "2026-09-17T05:25:03.358+00:00"
+    },
+    {
+      "id": "INV-2026-5939",
+      "client_id": null,
+      "amount": 63000,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
     },
     {
       "id": "INV-2026-5845",
@@ -1257,6 +1311,15 @@
       "paid_at": null
     },
     {
+      "id": "INV-2026-5947",
+      "client_id": null,
+      "amount": 30000,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
       "id": "INV-2026-5874",
       "client_id": "CLI-MUKC9FP4-A584",
       "amount": 336000,
@@ -1275,6 +1338,24 @@
       "paid_at": null
     },
     {
+      "id": "INV-2026-5943",
+      "client_id": null,
+      "amount": 2500,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-001",
+      "client_id": null,
+      "amount": 80000,
+      "status": "Paid",
+      "due_date": "2026-09-25",
+      "issue_date": "2026-09-11",
+      "paid_at": "2026-10-08T08:05:32.732+00:00"
+    },
+    {
       "id": "INV-2026-5821",
       "client_id": null,
       "amount": 25000,
@@ -1290,6 +1371,15 @@
       "status": "Pending",
       "due_date": "2026-10-04",
       "issue_date": "2026-09-20",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5917",
+      "client_id": null,
+      "amount": 50000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
       "paid_at": null
     },
     {
@@ -1338,12 +1428,39 @@
       "paid_at": null
     },
     {
+      "id": "INV-2026-5927",
+      "client_id": null,
+      "amount": 63000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
       "id": "INV-2026-5891",
       "client_id": "CLI-MULLKF7G-A1E5",
       "amount": 52500,
       "status": "Pending",
       "due_date": "2026-10-12",
       "issue_date": "2026-09-28",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5930",
+      "client_id": null,
+      "amount": 25000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5935",
+      "client_id": null,
+      "amount": 2500,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
       "paid_at": null
     },
     {
@@ -1381,6 +1498,15 @@
       "due_date": "2026-10-01",
       "issue_date": "2026-09-17",
       "paid_at": "2026-09-17T05:53:41.965+00:00"
+    },
+    {
+      "id": "INV-2026-5918",
+      "client_id": "CLI-MUSG3NC9-111A",
+      "amount": 2625,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
     },
     {
       "id": "INV-2026-5850",
@@ -1497,6 +1623,15 @@
       "status": "Pending",
       "due_date": "2026-09-30",
       "issue_date": "2026-09-16",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5920",
+      "client_id": null,
+      "amount": 2500,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
       "paid_at": null
     },
     {
@@ -1626,6 +1761,15 @@
       "paid_at": "2026-09-17T04:56:50.915+00:00"
     },
     {
+      "id": "INV-2026-5919",
+      "client_id": "CLI-MTWK4BNC-24F6EA",
+      "amount": 26250,
+      "status": "Paid",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
       "id": "INV-2026-5836",
       "client_id": null,
       "amount": 25000,
@@ -1671,6 +1815,24 @@
       "paid_at": null
     },
     {
+      "id": "INV-2026-5926",
+      "client_id": "CLI-MUKC9FP4-A584",
+      "amount": 336000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5928",
+      "client_id": "CLI-MUSG3NC9-111A",
+      "amount": 2625,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
       "id": "INV-2026-5895",
       "client_id": "CLI-MU4FXM7E-1366",
       "amount": 105000,
@@ -1686,6 +1848,24 @@
       "status": "Pending",
       "due_date": "2026-10-12",
       "issue_date": "2026-09-28",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5932",
+      "client_id": null,
+      "amount": 50000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5921",
+      "client_id": null,
+      "amount": 25000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
       "paid_at": null
     },
     {
@@ -1750,6 +1930,150 @@
       "due_date": "2026-10-12",
       "issue_date": "2026-09-28",
       "paid_at": null
+    },
+    {
+      "id": "INV-2026-5931",
+      "client_id": null,
+      "amount": 25000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5916",
+      "client_id": "CLI-MULEN4X0-BA05",
+      "amount": 12600,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5933",
+      "client_id": "CLI-MU1TLEQ1-DE57",
+      "amount": 50400,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5936",
+      "client_id": null,
+      "amount": 30000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5937",
+      "client_id": "CLI-MUKC9FP4-A584",
+      "amount": 336000,
+      "status": "Pending",
+      "due_date": "2026-10-17",
+      "issue_date": "2026-10-03",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5938",
+      "client_id": "CLI-MUSG3NC9-111A",
+      "amount": 2625,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5940",
+      "client_id": null,
+      "amount": 25000,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5941",
+      "client_id": null,
+      "amount": 25000,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5948",
+      "client_id": "CLI-MUKC9FP4-A584",
+      "amount": 336000,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5942",
+      "client_id": "CLI-MTWK4BNC-24F6EA",
+      "amount": 26250,
+      "status": "Paid",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5944",
+      "client_id": null,
+      "amount": 50000,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5945",
+      "client_id": "CLI-MULEN4X0-BA05",
+      "amount": 12600,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5946",
+      "client_id": "CLI-MU1TLEQ1-DE57",
+      "amount": 50400,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5949",
+      "client_id": "CLI-MU4Q02BV-0EE6",
+      "amount": 105000,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5950",
+      "client_id": "CLI-MU4Q02BV-0EE6",
+      "amount": 105000,
+      "status": "Pending",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": null
+    },
+    {
+      "id": "INV-2026-5951",
+      "client_id": "CLI-MU4Q02BV-0EE6",
+      "amount": 105000,
+      "status": "Paid",
+      "due_date": "2026-10-22",
+      "issue_date": "2026-10-08",
+      "paid_at": "2026-10-08T09:36:20.571+00:00"
     }
   ],
   "expenses": [],
@@ -1785,6 +2109,16 @@
       "stage": "New Inquiry",
       "score": 50,
       "created_at": "2026-09-20T21:12:40.036+00:00"
+    },
+    {
+      "id": "LED-204",
+      "name": "Jahangir Alam",
+      "email": "jahangir_1791035953935@retail.test",
+      "phone": "+8801611556677",
+      "company": "Local Retailer BD",
+      "stage": "Qualified Lead",
+      "score": 55,
+      "created_at": "2026-10-03T13:59:14.447+00:00"
     },
     {
       "id": "LED-013",
@@ -2317,6 +2651,56 @@
       "created_at": "2026-09-28T08:41:14.926+00:00"
     },
     {
+      "id": "LED-205",
+      "name": "Tariq Al-Mansoor",
+      "email": "prospect-962790@fintechfirm.com",
+      "phone": "+880 1799-962790",
+      "company": "FinTech Horizons",
+      "stage": "New Inquiry",
+      "score": 85,
+      "created_at": "2026-10-03T13:59:27.456+00:00"
+    },
+    {
+      "id": "LED-218",
+      "name": "Kazi Farhan",
+      "email": "farhan_1791040787288@pathao.test",
+      "phone": "+8801811334455",
+      "company": "Pathao Delivery Support",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-03T15:19:47.687+00:00"
+    },
+    {
+      "id": "LED-223",
+      "name": "Nadia Rahman",
+      "email": "nadia@apexfintech.io",
+      "phone": "+8801711998877",
+      "company": "Apex Fintech Solutions",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-08T07:58:17.785+00:00"
+    },
+    {
+      "id": "LED-228",
+      "name": "Mehedi Hasan",
+      "email": "mehedi@auditverifier.com",
+      "phone": "+8801755667788",
+      "company": "Audit Governance Verifier Ltd",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-08T07:58:22.048+00:00"
+    },
+    {
+      "id": "LED-232",
+      "name": "Kazi Farhan",
+      "email": "farhan_1791446532355@pathao.test",
+      "phone": "+8801811334455",
+      "company": "Pathao Delivery Support",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-08T08:02:12.73+00:00"
+    },
+    {
       "id": "LED-059",
       "name": "Kazi Farhan",
       "email": "farhan@primehorizon.com.bd",
@@ -2535,6 +2919,86 @@
       "stage": "Qualified Lead",
       "score": 55,
       "created_at": "2026-09-28T15:00:38.601+00:00"
+    },
+    {
+      "id": "LED-200",
+      "name": "Kazi Farhan",
+      "email": "farhan@primehorizon.com.bd",
+      "phone": "+880 1711-223344",
+      "company": "Prime Horizon Real Estate Ltd",
+      "stage": "Proposal Sent",
+      "score": 90,
+      "created_at": "2026-10-03T13:59:06.488+00:00"
+    },
+    {
+      "id": "LED-201",
+      "name": "Tanveer Hasan",
+      "email": "tanveer_1791035950532@bracbank.test",
+      "phone": "+8801711223344",
+      "company": "Brac Bank Innovation Lab",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-03T13:59:12.431+00:00"
+    },
+    {
+      "id": "LED-206",
+      "name": "QA Executive Lead",
+      "email": "lead-mesh-1791040078954@test.gro10x.ai",
+      "phone": "+880 1799-078954",
+      "company": "Omni Mesh Technologies Ltd",
+      "stage": "New Inquiry",
+      "score": 70,
+      "created_at": "2026-10-03T15:08:01.612+00:00"
+    },
+    {
+      "id": "LED-209",
+      "name": "Nadia Rahman",
+      "email": "nadia@apexfintech.io",
+      "phone": "+8801711998877",
+      "company": "Apex Fintech Solutions",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-03T15:16:11.684+00:00"
+    },
+    {
+      "id": "LED-212",
+      "name": "Kazi Masum",
+      "email": "",
+      "phone": "+8801708000000",
+      "company": "WhatsApp Priority Client",
+      "stage": "Qualified Lead",
+      "score": 66,
+      "created_at": "2026-10-03T15:16:14.565+00:00"
+    },
+    {
+      "id": "LED-219",
+      "name": "Shahadat Hossain",
+      "email": "shahadat_1791040788291@apex.test",
+      "phone": "+8801911445566",
+      "company": "Apex Footwear Supply Chain",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-03T15:19:48.864+00:00"
+    },
+    {
+      "id": "LED-224",
+      "name": "Shahidul Alam",
+      "email": "shahidul@retailflow.com",
+      "phone": "+8801811445566",
+      "company": "RetailFlow Omnichannel",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-08T07:58:18.607+00:00"
+    },
+    {
+      "id": "LED-234",
+      "name": "Jahangir Alam",
+      "email": "jahangir_1791446534522@retail.test",
+      "phone": "+8801611556677",
+      "company": "Local Retailer BD",
+      "stage": "Qualified Lead",
+      "score": 55,
+      "created_at": "2026-10-08T08:02:15.059+00:00"
     },
     {
       "id": "LED-081",
@@ -2815,6 +3279,16 @@
       "stage": "Qualified Lead",
       "score": 55,
       "created_at": "2026-09-28T15:44:37.479+00:00"
+    },
+    {
+      "id": "LED-229",
+      "name": "QA Executive Lead",
+      "email": "lead-mesh-1791446365195@test.gro10x.ai",
+      "phone": "+880 1799-365195",
+      "company": "Omni Mesh Technologies Ltd",
+      "stage": "New Inquiry",
+      "score": 70,
+      "created_at": "2026-10-08T07:59:27.838+00:00"
     },
     {
       "id": "LED-109",
@@ -3175,6 +3649,116 @@
       "stage": "Qualified Lead",
       "score": 55,
       "created_at": "2026-09-28T19:06:17.994+00:00"
+    },
+    {
+      "id": "LED-202",
+      "name": "Kazi Farhan",
+      "email": "farhan_1791035952779@pathao.test",
+      "phone": "+8801811334455",
+      "company": "Pathao Delivery Support",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-03T13:59:13.093+00:00"
+    },
+    {
+      "id": "LED-207",
+      "name": "Sarah Jenkins",
+      "email": "sarah@nexusfin.io",
+      "phone": "+1 415 555 2671",
+      "company": "Fintech Nexus International",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-03T15:11:17.884+00:00"
+    },
+    {
+      "id": "LED-208",
+      "name": "Tariq Al-Mansoor",
+      "email": "prospect-424339@fintechfirm.com",
+      "phone": "+880 1799-424339",
+      "company": "FinTech Horizons",
+      "stage": "New Inquiry",
+      "score": 85,
+      "created_at": "2026-10-03T15:13:46.389+00:00"
+    },
+    {
+      "id": "LED-210",
+      "name": "Shahidul Alam",
+      "email": "shahidul@retailflow.com",
+      "phone": "+8801811445566",
+      "company": "RetailFlow Omnichannel",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-03T15:16:12.417+00:00"
+    },
+    {
+      "id": "LED-213",
+      "name": "Saadman Sakib",
+      "email": "saadman@sakibtech.com",
+      "phone": "+8801711019550",
+      "company": "Email Only Enterprise",
+      "stage": "Qualified Lead",
+      "score": 77,
+      "created_at": "2026-10-03T15:16:15.934+00:00"
+    },
+    {
+      "id": "LED-221",
+      "name": "Alex Morgan",
+      "email": "alex@acmefintech.io",
+      "phone": "+8801711019550",
+      "company": "Acme FinTech Corp",
+      "stage": "Qualified Lead",
+      "score": 89,
+      "created_at": "2026-10-03T19:29:04.164+00:00"
+    },
+    {
+      "id": "LED-225",
+      "name": "Farhana Yasmin",
+      "email": "farhana@boutiquebd.net",
+      "phone": "+8801911223344",
+      "company": "Boutique Apparel BD",
+      "stage": "Qualified Lead",
+      "score": 55,
+      "created_at": "2026-10-08T07:58:19.552+00:00"
+    },
+    {
+      "id": "LED-230",
+      "name": "Dr. Rafiqul Islam",
+      "email": "apex_health_1791446509332@clinicbd.com",
+      "phone": "01746509332",
+      "company": "Apex Health Systems",
+      "stage": "New Inquiry",
+      "score": 80,
+      "created_at": "2026-10-08T08:01:59.973+00:00"
+    },
+    {
+      "id": "LED-233",
+      "name": "Shahadat Hossain",
+      "email": "shahadat_1791446533482@apex.test",
+      "phone": "+8801911445566",
+      "company": "Apex Footwear Supply Chain",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-08T08:02:14.113+00:00"
+    },
+    {
+      "id": "LED-235",
+      "name": "Kazi Farhan",
+      "email": "farhan@primehorizon.com.bd",
+      "phone": "+880 1711-223344",
+      "company": "Prime Horizon Real Estate Ltd",
+      "stage": "Proposal Sent",
+      "score": 90,
+      "created_at": "2026-10-08T08:03:45.252+00:00"
+    },
+    {
+      "id": "LED-236",
+      "name": "Tariq Al-Mansoor",
+      "email": "prospect-678988@fintechfirm.com",
+      "phone": "+880 1799-678988",
+      "company": "FinTech Horizons",
+      "stage": "New Inquiry",
+      "score": 85,
+      "created_at": "2026-10-08T08:04:42.187+00:00"
     },
     {
       "id": "LED-145",
@@ -3625,6 +4209,216 @@
       "stage": "Proposal Sent",
       "score": 90,
       "created_at": "2026-10-02T19:24:30.642+00:00"
+    },
+    {
+      "id": "LED-190",
+      "name": "Alex Morgan",
+      "email": "alex@acmefintech.io",
+      "phone": "+8801711019550",
+      "company": "Acme FinTech Corp",
+      "stage": "Qualified Lead",
+      "score": 89,
+      "created_at": "2026-10-03T13:40:44.116+00:00"
+    },
+    {
+      "id": "LED-191",
+      "name": "QA Executive Lead",
+      "email": "lead-mesh-1791035059802@test.gro10x.ai",
+      "phone": "+880 1799-059802",
+      "company": "Omni Mesh Technologies Ltd",
+      "stage": "New Inquiry",
+      "score": 70,
+      "created_at": "2026-10-03T13:44:23.29+00:00"
+    },
+    {
+      "id": "LED-192",
+      "name": "Sarah Jenkins",
+      "email": "sarah@nexusfin.io",
+      "phone": "+1 415 555 2671",
+      "company": "Fintech Nexus International",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-03T13:54:23.541+00:00"
+    },
+    {
+      "id": "LED-193",
+      "name": "Dr. Rafiqul Islam",
+      "email": "apex_health_1791035730123@clinicbd.com",
+      "phone": "01735730123",
+      "company": "Apex Health Systems",
+      "stage": "New Inquiry",
+      "score": 80,
+      "created_at": "2026-10-03T13:55:31.861+00:00"
+    },
+    {
+      "id": "LED-196",
+      "name": "Farhana Yasmin",
+      "email": "farhana@boutiquebd.net",
+      "phone": "+8801911223344",
+      "company": "Boutique Apparel BD",
+      "stage": "Qualified Lead",
+      "score": 55,
+      "created_at": "2026-10-03T13:56:37.793+00:00"
+    },
+    {
+      "id": "LED-197",
+      "name": "Kazi Masum",
+      "email": "",
+      "phone": "+8801708000000",
+      "company": "WhatsApp Priority Client",
+      "stage": "Qualified Lead",
+      "score": 66,
+      "created_at": "2026-10-03T13:56:38.776+00:00"
+    },
+    {
+      "id": "LED-194",
+      "name": "Nadia Rahman",
+      "email": "nadia@apexfintech.io",
+      "phone": "+8801711998877",
+      "company": "Apex Fintech Solutions",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-03T13:56:36.201+00:00"
+    },
+    {
+      "id": "LED-195",
+      "name": "Shahidul Alam",
+      "email": "shahidul@retailflow.com",
+      "phone": "+8801811445566",
+      "company": "RetailFlow Omnichannel",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-03T13:56:36.972+00:00"
+    },
+    {
+      "id": "LED-198",
+      "name": "Saadman Sakib",
+      "email": "saadman@sakibtech.com",
+      "phone": "+8801711019550",
+      "company": "Email Only Enterprise",
+      "stage": "Qualified Lead",
+      "score": 77,
+      "created_at": "2026-10-03T13:56:39.481+00:00"
+    },
+    {
+      "id": "LED-199",
+      "name": "Mehedi Hasan",
+      "email": "mehedi@auditverifier.com",
+      "phone": "+8801755667788",
+      "company": "Audit Governance Verifier Ltd",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-03T13:56:40.199+00:00"
+    },
+    {
+      "id": "LED-203",
+      "name": "Shahadat Hossain",
+      "email": "shahadat_1791035953404@apex.test",
+      "phone": "+8801911445566",
+      "company": "Apex Footwear Supply Chain",
+      "stage": "Qualified Lead",
+      "score": 76,
+      "created_at": "2026-10-03T13:59:13.663+00:00"
+    },
+    {
+      "id": "LED-211",
+      "name": "Farhana Yasmin",
+      "email": "farhana@boutiquebd.net",
+      "phone": "+8801911223344",
+      "company": "Boutique Apparel BD",
+      "stage": "Qualified Lead",
+      "score": 55,
+      "created_at": "2026-10-03T15:16:13.538+00:00"
+    },
+    {
+      "id": "LED-214",
+      "name": "Mehedi Hasan",
+      "email": "mehedi@auditverifier.com",
+      "phone": "+8801755667788",
+      "company": "Audit Governance Verifier Ltd",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-03T15:16:16.604+00:00"
+    },
+    {
+      "id": "LED-215",
+      "name": "Dr. Rafiqul Islam",
+      "email": "apex_health_1791040621578@clinicbd.com",
+      "phone": "01740621578",
+      "company": "Apex Health Systems",
+      "stage": "New Inquiry",
+      "score": 80,
+      "created_at": "2026-10-03T15:17:03.729+00:00"
+    },
+    {
+      "id": "LED-216",
+      "name": "Kazi Farhan",
+      "email": "farhan@primehorizon.com.bd",
+      "phone": "+880 1711-223344",
+      "company": "Prime Horizon Real Estate Ltd",
+      "stage": "Proposal Sent",
+      "score": 90,
+      "created_at": "2026-10-03T15:18:26.117+00:00"
+    },
+    {
+      "id": "LED-217",
+      "name": "Tanveer Hasan",
+      "email": "tanveer_1791040783912@bracbank.test",
+      "phone": "+8801711223344",
+      "company": "Brac Bank Innovation Lab",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-03T15:19:46.941+00:00"
+    },
+    {
+      "id": "LED-220",
+      "name": "Jahangir Alam",
+      "email": "jahangir_1791040789203@retail.test",
+      "phone": "+8801611556677",
+      "company": "Local Retailer BD",
+      "stage": "Qualified Lead",
+      "score": 55,
+      "created_at": "2026-10-03T15:19:49.739+00:00"
+    },
+    {
+      "id": "LED-222",
+      "name": "Sarah Jenkins",
+      "email": "sarah@nexusfin.io",
+      "phone": "+1 415 555 2671",
+      "company": "Fintech Nexus International",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-08T07:57:34.68+00:00"
+    },
+    {
+      "id": "LED-226",
+      "name": "Kazi Masum",
+      "email": "",
+      "phone": "+8801708000000",
+      "company": "WhatsApp Priority Client",
+      "stage": "Qualified Lead",
+      "score": 66,
+      "created_at": "2026-10-08T07:58:20.368+00:00"
+    },
+    {
+      "id": "LED-227",
+      "name": "Saadman Sakib",
+      "email": "saadman@sakibtech.com",
+      "phone": "+8801711019550",
+      "company": "Email Only Enterprise",
+      "stage": "Qualified Lead",
+      "score": 77,
+      "created_at": "2026-10-08T07:58:21.184+00:00"
+    },
+    {
+      "id": "LED-231",
+      "name": "Tanveer Hasan",
+      "email": "tanveer_1791446527525@bracbank.test",
+      "phone": "+8801711223344",
+      "company": "Brac Bank Innovation Lab",
+      "stage": "Qualified Lead",
+      "score": 100,
+      "created_at": "2026-10-08T08:02:11.683+00:00"
     }
   ],
   "quotes": [
@@ -3863,7 +4657,7 @@
       "currency": "BDT",
       "status": "Viewed",
       "valid_until": "2026-12-27",
-      "line_items": "{\"share_token\":\"nhf-brand-transformation-2026\",\"client_company\":\"National Housing Finance and Investments Limited\",\"client_email\":\"brand@nationalhousingbd.com\",\"client_phone\":\"+880 1711-019550\",\"project_summary\":\"GRO10x will execute a comprehensive brand transformation and digital ecosystem overhaul for National Housing Finance Limited, establishing complete communication channel consistency across web and social media. This 3-month pilot integrates a high-performing CMS and lead collection architecture linked to web applications to systematically drive and scale qualified client acquisition.\",\"canonical_service_code\":\"BRAND-TRANSFORM-PILOT\",\"scope_items\":[{\"title\":\"Digital Brand & Channel Overhaul\",\"description\":\"Complete design and messaging revamp across Website, LinkedIn, Facebook page, YouTube channel, and brand touchpoints maintaining brand consistency without altering the core logo.\"},{\"title\":\"Integrated CMS & Lead Capture Architecture\",\"description\":\"Modern CMS setup with high-converting landing pages, lead capture funnels, and web application synchronization.\"},{\"title\":\"Monthly Multi-Channel Content & Management\",\"description\":\"Active content creation, scheduled distribution, community engagement, and brand channel maintenance across all platforms.\"},{\"title\":\"Qualified Lead Operations & Revenue Engine\",\"description\":\"End-to-end performance funnel optimization and qualified lead handoff with performance-linked attribution.\"}],\"one_time_items\":[{\"name\":\"Website Revamp & Channel Architecture Overhaul\",\"description\":\"Initial complete overhaul of web portal, CMS setup, and communication channels (Website, LinkedIn, Facebook, YouTube)\",\"amount\":75000}],\"recurring_items\":[{\"name\":\"Monthly Content Creation, Channel Maintenance & Lead Ops\",\"description\":\"Ongoing monthly content production, channel management, and lead generation operations (3-Month Pilot)\",\"amount\":25000,\"frequency\":\"Monthly\"}],\"one_time_total\":75000,\"recurring_total\":25000,\"timeline\":\"3-Month Pilot ending December 27\",\"terms\":\"Pilot Phase: BDT 50,000/month (BDT 25,000 platform overhaul + BDT 25,000 monthly maintenance/content) for the first 3 months. Performance Revenue Share: Qualified lead conversion incentive agreed upon milestone delivery. Terms: 50% advance on monthly cycle; cancel or renew at end of 3-month pilot evaluation.\",\"notes\":\"3-Month Pilot brand transformation for National Housing Finance Limited. Pilot budget 50,000 BDT/month (25k platform overhaul + 25k monthly retainer).\",\"created_by\":\"GRO-001\",\"view_count\":10,\"viewed_at\":\"2026-09-29T09:29:48.329Z\",\"accepted_at\":null,\"converted_project_id\":null}",
+      "line_items": "{\"share_token\":\"nhf-brand-transformation-2026\",\"client_company\":\"National Housing Finance and Investments Limited\",\"client_email\":\"brand@nationalhousingbd.com\",\"client_phone\":\"+880 1711-019550\",\"project_summary\":\"GRO10x will execute a comprehensive brand transformation and digital ecosystem overhaul for National Housing Finance Limited, establishing complete communication channel consistency across web and social media. This 3-month pilot integrates a high-performing CMS and lead collection architecture linked to web applications to systematically drive and scale qualified client acquisition.\",\"canonical_service_code\":\"BRAND-TRANSFORM-PILOT\",\"scope_items\":[{\"title\":\"Digital Brand & Channel Overhaul\",\"description\":\"Complete design and messaging revamp across Website, LinkedIn, Facebook page, YouTube channel, and brand touchpoints maintaining brand consistency without altering the core logo.\"},{\"title\":\"Integrated CMS & Lead Capture Architecture\",\"description\":\"Modern CMS setup with high-converting landing pages, lead capture funnels, and web application synchronization.\"},{\"title\":\"Monthly Multi-Channel Content & Management\",\"description\":\"Active content creation, scheduled distribution, community engagement, and brand channel maintenance across all platforms.\"},{\"title\":\"Qualified Lead Operations & Revenue Engine\",\"description\":\"End-to-end performance funnel optimization and qualified lead handoff with performance-linked attribution.\"}],\"one_time_items\":[{\"name\":\"Website Revamp & Channel Architecture Overhaul\",\"description\":\"Initial complete overhaul of web portal, CMS setup, and communication channels (Website, LinkedIn, Facebook, YouTube)\",\"amount\":75000}],\"recurring_items\":[{\"name\":\"Monthly Content Creation, Channel Maintenance & Lead Ops\",\"description\":\"Ongoing monthly content production, channel management, and lead generation operations (3-Month Pilot)\",\"amount\":25000,\"frequency\":\"Monthly\"}],\"one_time_total\":75000,\"recurring_total\":25000,\"timeline\":\"3-Month Pilot ending December 27\",\"terms\":\"Pilot Phase: BDT 50,000/month (BDT 25,000 platform overhaul + BDT 25,000 monthly maintenance/content) for the first 3 months. Performance Revenue Share: Qualified lead conversion incentive agreed upon milestone delivery. Terms: 50% advance on monthly cycle; cancel or renew at end of 3-month pilot evaluation.\",\"notes\":\"3-Month Pilot brand transformation for National Housing Finance Limited. Pilot budget 50,000 BDT/month (25k platform overhaul + 25k monthly retainer).\",\"created_by\":\"GRO-001\",\"view_count\":13,\"viewed_at\":\"2026-09-29T09:29:48.329Z\",\"accepted_at\":null,\"converted_project_id\":null}",
       "notes": "3-Month Pilot brand transformation for National Housing Finance Limited. Pilot budget 50,000 BDT/month (25k platform overhaul + 25k monthly retainer).",
       "created_at": "2026-09-29T08:48:16.272995+00:00",
       "updated_at": "2026-09-29T09:30:24.747+00:00"
@@ -3919,6 +4713,1107 @@
   "social_posts": [],
   "eod_reports": [],
   "dce_orders": [
+    {
+      "id": "ord-1791446581626-271",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-580459",
+      "customer_id": "cust-1791446582462",
+      "customer_name": "E2E QA Planner User",
+      "customer_email": "qa.e2e.planner@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 2400,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 2400,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T08:03:00.459Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446551691-131",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-550436",
+      "customer_id": "cust-1791446552561",
+      "customer_name": "STEM Interactive Learner",
+      "customer_email": "stem.learner@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T08:02:30.436Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446485323-18",
+      "channel_code": "ETSY",
+      "external_order_id": "QA-TEST-ORD-1791446478245",
+      "customer_id": null,
+      "customer_name": "QA Operations Lead",
+      "customer_email": "qa.ops.tester@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 55,
+      "currency": "USD",
+      "channel_fee": 3.5,
+      "net_amount": 51.5,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T08:01:24.211Z",
+      "items": [
+        {
+          "title": "PlannerQueen 2026 Core Digital Planner",
+          "quantity": 1,
+          "unit_price": 55,
+          "line_total": 55,
+          "external_sku_ref": "PQ-CORE-001"
+        }
+      ],
+      "events": [
+        {
+          "id": "ev-1791446488213",
+          "event_type": "STATUS_CHANGE",
+          "old_status": "CONFIRMED",
+          "new_status": "PROCESSING",
+          "source": "QA Operations Lead",
+          "created_at": "2026-10-08T08:01:28.213Z"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446474855-962",
+      "channel_code": "GUMROAD",
+      "external_order_id": "IDEMP-1791446473800",
+      "customer_id": null,
+      "customer_name": "Idempotency Tester",
+      "customer_email": "idemp@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 15,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 15,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T08:01:13.800Z",
+      "items": [
+        {
+          "title": "Preset Pack",
+          "quantity": 1,
+          "unit_price": 15,
+          "line_total": 15
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446472943-676",
+      "channel_code": "ETSY",
+      "external_order_id": "TEST-INGEST-1791446471631",
+      "customer_id": null,
+      "customer_name": "Omnichannel Ingest Tester",
+      "customer_email": "ingest.tester@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 1.3,
+      "net_amount": 18.69,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T08:01:11.634Z",
+      "items": [
+        {
+          "title": "Digital Planner 2026",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "sku-01"
+        }
+      ]
+    },
+    {
+      "id": "TEST-PHYS-ORD-1791446446941",
+      "external_order_id": "TEST-PHYS-ORD-1791446446941",
+      "channel_code": "DIRECT",
+      "customer_name": "Physical Hardcover Collector",
+      "customer_email": "collector@gro10x.ai",
+      "customer_phone": "+880 1711-019550",
+      "brand_name": "PlannerQueen",
+      "total_amount": 49.99,
+      "currency": "USD",
+      "status": "CONFIRMED",
+      "fulfillment_type": "PHYSICAL",
+      "items": [
+        {
+          "title": "PlannerQueen Luxury Hardcover Gold Foil Edition",
+          "format": "PHYSICAL",
+          "quantity": 1,
+          "unit_price": 49.99
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446357433-343",
+      "channel_code": "ETSY",
+      "external_order_id": "REGR-IDEMP-1791446356395",
+      "customer_id": null,
+      "customer_name": "Regression Ingest",
+      "customer_email": "regr@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 45,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 45,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T07:59:16.397Z",
+      "items": [
+        {
+          "title": "2026 Ultimate Planner",
+          "quantity": 1,
+          "unit_price": 45,
+          "line_total": 45
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446076588-488",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-075496",
+      "customer_id": "cust-1791446077388",
+      "customer_name": "Nusrat Physical BDT",
+      "customer_email": "nusrat.phys@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 4200,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 4200,
+      "status": "PROCESSING",
+      "fulfillment_type": "PHYSICAL",
+      "placed_at": "2026-10-08T07:54:35.496Z",
+      "items": [
+        {
+          "title": "PlannerQueen Luxury Spiral-Bound 2026 Life & Goal Planner (Hardcover)",
+          "quantity": 1,
+          "unit_price": 4200,
+          "line_total": 4200,
+          "external_sku_ref": "PLNRQN-PHYSICAL-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446073570-613",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-072547",
+      "customer_id": "cust-1791446074406",
+      "customer_name": "Karim Discount BDT",
+      "customer_email": "karim.promo@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 1200,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 1200,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T07:54:32.547Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446070380-508",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-069338",
+      "customer_id": "cust-1791446071172",
+      "customer_name": "Rahim Khan BDT",
+      "customer_email": "rahim.bdt@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 2400,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 2400,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T07:54:29.338Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446067387-351",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-066302",
+      "customer_id": "cust-1791446068224",
+      "customer_name": "Jane Doe USD",
+      "customer_email": "jane.usd@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T07:54:26.302Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446022735-766",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-021673",
+      "customer_id": "cust-1791446023559",
+      "customer_name": "Resend User",
+      "customer_email": "resend.user@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T07:53:41.673Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446019242-794",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-018126",
+      "customer_id": "cust-1791446020060",
+      "customer_name": "Private User",
+      "customer_email": "private.user@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T07:53:38.126Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791446001393-137",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-000084",
+      "customer_id": "cust-1791446002214",
+      "customer_name": "Track Tester",
+      "customer_email": "track.tester@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-08T07:53:20.084Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040641705-608",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-640627",
+      "customer_id": "cust-1791040642492",
+      "customer_name": "E2E QA Planner User",
+      "customer_email": "qa.e2e.planner@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 2400,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 2400,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:17:20.627Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "TEST-PHYS-ORD-1791040630074",
+      "external_order_id": "TEST-PHYS-ORD-1791040630074",
+      "channel_code": "DIRECT",
+      "customer_name": "Physical Hardcover Collector",
+      "customer_email": "collector@gro10x.ai",
+      "customer_phone": "+880 1711-019550",
+      "brand_name": "PlannerQueen",
+      "total_amount": 49.99,
+      "currency": "USD",
+      "status": "CONFIRMED",
+      "fulfillment_type": "PHYSICAL",
+      "items": [
+        {
+          "title": "PlannerQueen Luxury Hardcover Gold Foil Edition",
+          "format": "PHYSICAL",
+          "quantity": 1,
+          "unit_price": 49.99
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040563318-932",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-562259",
+      "customer_id": "cust-1791040564490",
+      "customer_name": "STEM Interactive Learner",
+      "customer_email": "stem.learner@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:16:02.259Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040536806-174",
+      "channel_code": "ETSY",
+      "external_order_id": "REGR-IDEMP-1791040535097",
+      "customer_id": null,
+      "customer_name": "Regression Ingest",
+      "customer_email": "regr@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 45,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 45,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:15:35.097Z",
+      "items": [
+        {
+          "title": "2026 Ultimate Planner",
+          "quantity": 1,
+          "unit_price": 45,
+          "line_total": 45
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040486633-28",
+      "channel_code": "GUMROAD",
+      "external_order_id": "IDEMP-1791040484944",
+      "customer_id": null,
+      "customer_name": "Idempotency Tester",
+      "customer_email": "idemp@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 15,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 15,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:14:44.944Z",
+      "items": [
+        {
+          "title": "Preset Pack",
+          "quantity": 1,
+          "unit_price": 15,
+          "line_total": 15
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040484155-6",
+      "channel_code": "ETSY",
+      "external_order_id": "TEST-INGEST-1791040482100",
+      "customer_id": null,
+      "customer_name": "Omnichannel Ingest Tester",
+      "customer_email": "ingest.tester@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 1.3,
+      "net_amount": 18.69,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:14:42.100Z",
+      "items": [
+        {
+          "title": "Digital Planner 2026",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "sku-01"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040463235-214",
+      "channel_code": "ETSY",
+      "external_order_id": "QA-TEST-ORD-1791040459449",
+      "customer_id": null,
+      "customer_name": "QA Operations Lead",
+      "customer_email": "qa.ops.tester@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 55,
+      "currency": "USD",
+      "channel_fee": 3.5,
+      "net_amount": 51.5,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:14:21.994Z",
+      "items": [
+        {
+          "title": "PlannerQueen 2026 Core Digital Planner",
+          "quantity": 1,
+          "unit_price": 55,
+          "line_total": 55,
+          "external_sku_ref": "PQ-CORE-001"
+        }
+      ],
+      "events": [
+        {
+          "id": "ev-1791040466003",
+          "event_type": "STATUS_CHANGE",
+          "old_status": "CONFIRMED",
+          "new_status": "PROCESSING",
+          "source": "QA Operations Lead",
+          "created_at": "2026-10-03T15:14:26.003Z"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040208931-810",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-207616",
+      "customer_id": "cust-1791040209722",
+      "customer_name": "Resend User",
+      "customer_email": "resend.user@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:10:07.616Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040205072-548",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-203901",
+      "customer_id": "cust-1791040206186",
+      "customer_name": "Private User",
+      "customer_email": "private.user@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:10:03.901Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040198861-156",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-196647",
+      "customer_id": "cust-1791040199684",
+      "customer_name": "Track Tester",
+      "customer_email": "track.tester@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:09:56.648Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040159451-351",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-158448",
+      "customer_id": "cust-1791040160174",
+      "customer_name": "Nusrat Physical BDT",
+      "customer_email": "nusrat.phys@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 4200,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 4200,
+      "status": "PROCESSING",
+      "fulfillment_type": "PHYSICAL",
+      "placed_at": "2026-10-03T15:09:18.448Z",
+      "items": [
+        {
+          "title": "PlannerQueen Luxury Spiral-Bound 2026 Life & Goal Planner (Hardcover)",
+          "quantity": 1,
+          "unit_price": 4200,
+          "line_total": 4200,
+          "external_sku_ref": "PLNRQN-PHYSICAL-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040156836-377",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-155810",
+      "customer_id": "cust-1791040157569",
+      "customer_name": "Karim Discount BDT",
+      "customer_email": "karim.promo@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 1200,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 1200,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:09:15.810Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040153855-710",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-152913",
+      "customer_id": "cust-1791040154697",
+      "customer_name": "Rahim Khan BDT",
+      "customer_email": "rahim.bdt@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 2400,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 2400,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:09:12.913Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791040151201-244",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-150215",
+      "customer_id": "cust-1791040152171",
+      "customer_name": "Jane Doe USD",
+      "customer_email": "jane.usd@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T15:09:10.216Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035981078-900",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-978996",
+      "customer_id": "cust-1791035981849",
+      "customer_name": "STEM Interactive Learner",
+      "customer_email": "stem.learner@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:59:38.996Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035938524-155",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-937573",
+      "customer_id": "cust-1791035939388",
+      "customer_name": "E2E QA Planner User",
+      "customer_email": "qa.e2e.planner@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 2400,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 2400,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:58:57.573Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "TEST-PHYS-ORD-1791035873328",
+      "external_order_id": "TEST-PHYS-ORD-1791035873328",
+      "channel_code": "DIRECT",
+      "customer_name": "Physical Hardcover Collector",
+      "customer_email": "collector@gro10x.ai",
+      "customer_phone": "+880 1711-019550",
+      "brand_name": "PlannerQueen",
+      "total_amount": 49.99,
+      "currency": "USD",
+      "status": "CONFIRMED",
+      "fulfillment_type": "PHYSICAL",
+      "items": [
+        {
+          "title": "PlannerQueen Luxury Hardcover Gold Foil Edition",
+          "format": "PHYSICAL",
+          "quantity": 1,
+          "unit_price": 49.99
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035834910-485",
+      "channel_code": "ETSY",
+      "external_order_id": "REGR-IDEMP-1791035834003",
+      "customer_id": null,
+      "customer_name": "Regression Ingest",
+      "customer_email": "regr@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 45,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 45,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:57:14.003Z",
+      "items": [
+        {
+          "title": "2026 Ultimate Planner",
+          "quantity": 1,
+          "unit_price": 45,
+          "line_total": 45
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035787117-743",
+      "channel_code": "ETSY",
+      "external_order_id": "QA-TEST-ORD-1791035783197",
+      "customer_id": null,
+      "customer_name": "QA Operations Lead",
+      "customer_email": "qa.ops.tester@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 55,
+      "currency": "USD",
+      "channel_fee": 3.5,
+      "net_amount": 51.5,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:56:26.143Z",
+      "items": [
+        {
+          "title": "PlannerQueen 2026 Core Digital Planner",
+          "quantity": 1,
+          "unit_price": 55,
+          "line_total": 55,
+          "external_sku_ref": "PQ-CORE-001"
+        }
+      ],
+      "events": [
+        {
+          "id": "ev-1791035789534",
+          "event_type": "STATUS_CHANGE",
+          "old_status": "CONFIRMED",
+          "new_status": "PROCESSING",
+          "source": "QA Operations Lead",
+          "created_at": "2026-10-03T13:56:29.534Z"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035675201-901",
+      "channel_code": "GUMROAD",
+      "external_order_id": "IDEMP-1791035674128",
+      "customer_id": null,
+      "customer_name": "Idempotency Tester",
+      "customer_email": "idemp@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 15,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 15,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:54:34.128Z",
+      "items": [
+        {
+          "title": "Preset Pack",
+          "quantity": 1,
+          "unit_price": 15,
+          "line_total": 15
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035673224-490",
+      "channel_code": "ETSY",
+      "external_order_id": "TEST-INGEST-1791035671611",
+      "customer_id": null,
+      "customer_name": "Omnichannel Ingest Tester",
+      "customer_email": "ingest.tester@gro10x.ai",
+      "brand_id": null,
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 1.3,
+      "net_amount": 18.69,
+      "status": "CONFIRMED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:54:31.612Z",
+      "items": [
+        {
+          "title": "Digital Planner 2026",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "sku-01"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035570281-532",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-569161",
+      "customer_id": "cust-1791035571083",
+      "customer_name": "Resend User",
+      "customer_email": "resend.user@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:52:49.162Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035566910-833",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-565592",
+      "customer_id": "cust-1791035567726",
+      "customer_name": "Private User",
+      "customer_email": "private.user@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:52:45.592Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035561799-3",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-560125",
+      "customer_id": "cust-1791035562606",
+      "customer_name": "Track Tester",
+      "customer_email": "track.tester@gro10x.ai",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:52:40.125Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035516670-7",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-515568",
+      "customer_id": "cust-1791035517443",
+      "customer_name": "Nusrat Physical BDT",
+      "customer_email": "nusrat.phys@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 4200,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 4200,
+      "status": "PROCESSING",
+      "fulfillment_type": "PHYSICAL",
+      "placed_at": "2026-10-03T13:51:55.568Z",
+      "items": [
+        {
+          "title": "PlannerQueen Luxury Spiral-Bound 2026 Life & Goal Planner (Hardcover)",
+          "quantity": 1,
+          "unit_price": 4200,
+          "line_total": 4200,
+          "external_sku_ref": "PLNRQN-PHYSICAL-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035513893-624",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-512870",
+      "customer_id": "cust-1791035514649",
+      "customer_name": "Karim Discount BDT",
+      "customer_email": "karim.promo@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 1200,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 1200,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:51:52.870Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035510580-241",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-509405",
+      "customer_id": "cust-1791035511375",
+      "customer_name": "Rahim Khan BDT",
+      "customer_email": "rahim.bdt@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 2400,
+      "currency": "BDT",
+      "channel_fee": 0,
+      "net_amount": 2400,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:51:49.405Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 2400,
+          "line_total": 2400,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-BDT"
+        }
+      ]
+    },
+    {
+      "id": "ord-1791035507493-501",
+      "channel_code": "DIRECT",
+      "external_order_id": "DIR-PQ-506461",
+      "customer_id": "cust-1791035508421",
+      "customer_name": "Jane Doe USD",
+      "customer_email": "jane.usd@example.com",
+      "brand_id": "b-pq-01",
+      "brand_name": "PlannerQueen",
+      "total_amount": 19.99,
+      "currency": "USD",
+      "channel_fee": 0,
+      "net_amount": 19.99,
+      "status": "COMPLETED",
+      "fulfillment_type": "DIGITAL",
+      "placed_at": "2026-10-03T13:51:46.461Z",
+      "items": [
+        {
+          "title": "PlannerQueen Digital Daily & Weekly System 2026 (GoodNotes + Notion + PDF)",
+          "quantity": 1,
+          "unit_price": 19.99,
+          "line_total": 19.99,
+          "external_sku_ref": "PLNRQN-PDF-DIRECT-USD"
+        }
+      ]
+    },
     {
       "id": "TEST-PHYS-ORD-1790978752053",
       "external_order_id": "TEST-PHYS-ORD-1790978752053",
@@ -5541,27 +7436,113 @@
       ]
     }
   ],
-  "proposals": [],
-  "disputes": [],
-  "testimonials": [],
-  "handover_manifests": [],
-  "projects": [
+  "proposals": [
     {
-      "id": "PRJ-158477",
-      "name": "AI Fraud Screening Engine",
-      "client_id": null,
-      "client_name": "Alpha Fintech Ltd",
-      "description": "Automated KYC and real-time transaction monitoring.",
-      "department": "Production",
-      "workflow_type": "ai_automation",
-      "status": "Active",
-      "budget": 150000,
+      "id": "PROP-WIRE-ID",
+      "share_token": "PROP-WIRE-muzcdxmj",
+      "client_name": "Summit Power AI",
+      "client_company": "Summit Power AI",
+      "client_email": "procurement@summitpower.com",
+      "project_title": "Enterprise AI Operations Hub",
+      "one_time_total": 100000,
       "currency": "BDT",
-      "start_date": "2026-10-02",
-      "due_date": "2026-10-16",
-      "created_at": "2026-10-02T19:25:58.477Z"
+      "status": "Accepted",
+      "affiliate_id": "AFF-TANVIR",
+      "ref_code": "AFF-TANVIR",
+      "accepted_at": "2026-10-08T09:36:48.884Z",
+      "accepted_by": "Chief Technology Officer",
+      "acceptedBy": "Chief Technology Officer",
+      "accepted_notes": "Approved for Q4 delivery sprint",
+      "acceptedNotes": "Approved for Q4 delivery sprint",
+      "updated_at": "2026-10-08T09:36:48.884Z",
+      "lockin_spec_id": "SPEC-MUZCE3FU-23E1",
+      "invoice_id": "INV-2026-5953",
+      "client_id": "CLI-MU4Q02BV-0EE6"
     }
   ],
+  "disputes": [
+    {
+      "id": "DISP-92FA95F9",
+      "projectId": "PRJ-WIRE-TEST-2026",
+      "reason": "QUALITY_DEFECT",
+      "description": "Output latency exceeds 500ms baseline in stress test.",
+      "evidenceLinks": [],
+      "requestedRemedy": "CORRECTION_SPRINT",
+      "submittedBy": "Apex Fintech Lead",
+      "status": "RESOLVED",
+      "disputePausedAt": "2026-10-08T09:36:51.938Z",
+      "createdAt": "2026-10-08T09:36:51.938Z",
+      "resolutionType": "CORRECTION_SPRINT_GRANTED",
+      "resolutionNotes": "Granted +7 days correction sprint with dedicated senior engineer",
+      "extensionDaysAdded": 7,
+      "resolvedBy": "Managing Director",
+      "resolvedAt": "2026-10-08T09:36:52.694Z"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "TST-214487",
+      "projectId": "PRJ-WIRE-TEST-2026",
+      "projectName": "Autonomous Agent Platform Sprint",
+      "clientDisplayName": "Dr. Tariq Rahman",
+      "clientRole": "Chief Executive Officer",
+      "clientCompany": "Apex Fintech Solutions",
+      "csatRating": 5,
+      "npsScore": 10,
+      "reviewText": "GRO10X transformed our entire AI workflow in 14 days with zero downtime.",
+      "videoUrl": null,
+      "consentShowcase": true,
+      "createdAt": "2026-10-08T09:36:54.487Z"
+    }
+  ],
+  "handover_manifests": [
+    {
+      "manifestId": "MAN-2026-2026",
+      "projectId": "PRJ-WIRE-TEST-2026",
+      "projectName": "Autonomous Agent Platform Sprint",
+      "clientName": "Apex Fintech Solutions",
+      "clientCompany": "Apex Fintech Solutions",
+      "deliveryStatus": "HANDOVER_COMPLETE",
+      "generatedAt": "2026-10-08T09:36:54.027Z",
+      "signedAt": "2026-10-08T09:36:53.355Z",
+      "signedBy": "Dr. Tariq Rahman",
+      "signatoryRole": "Chief Executive Officer",
+      "isSigned": true,
+      "ipTransferStatus": "IRREVOCABLY_ASSIGNED",
+      "ipAssignmentClause": "Upon commercial settlement of project invoices for Autonomous Agent Platform Sprint, Neoncore Tech Solution / Gro10x.ai irrevocably assigns, transfers, and conveys all right, title, and interest, including copyrights, proprietary AI workflows, prompt architecture, custom models, and design assets exclusively to Apex Fintech Solutions.",
+      "technicalAssets": {
+        "codeRepositories": [],
+        "deploymentUrls": [],
+        "credentialsTransferred": true,
+        "secretsRotated": true,
+        "documentationDelivered": true,
+        "definitionOfDoneMet": true
+      },
+      "deliverablesSummary": [],
+      "warranty": {
+        "warrantyUntil": "2026-11-14T09:36:42.628Z",
+        "isActive": true,
+        "remainingDays": 37,
+        "slaTerms": "30-Day Bug-Fix Guarantee: 4h Initial Response / 24h Defect Resolution"
+      },
+      "signatories": {
+        "agencyLead": {
+          "name": "Mehedi Bin Jayed / Lead Delivery Officer",
+          "role": "Managing Director & Delivery Lead",
+          "entity": "Neoncore Tech Solution / Gro10x.ai",
+          "status": "VERIFIED_SIGNATURE",
+          "timestamp": "2026-10-08T09:36:53.355Z"
+        },
+        "clientSignatory": {
+          "name": "Dr. Tariq Rahman",
+          "role": "Chief Executive Officer",
+          "status": "DIGITALLY_SIGNED",
+          "timestamp": "2026-10-08T09:36:53.355Z"
+        }
+      }
+    }
+  ],
+  "projects": [],
   "subtasks": [],
   "workflows": [],
   "authPins": [
@@ -5575,22 +7556,13 @@
       "email": ""
     },
     {
-      "phone": "01760753971",
-      "normPhone": "1760753971",
-      "pin": "3911",
-      "isTemp": true,
-      "linkedId": "GRO-002",
-      "linkedType": "team",
-      "email": "anikanower10152@gmail.com"
-    },
-    {
-      "phone": "01799887766",
-      "normPhone": "1799887766",
-      "pin": "5678",
+      "phone": "+8801708459008",
+      "normPhone": "1708459008",
+      "pin": "0621",
       "isTemp": false,
-      "linkedId": "",
+      "linkedId": "GRO-000",
       "linkedType": "team",
-      "email": ""
+      "email": "gro10xnow@gmail.com"
     },
     {
       "phone": "01711223344",
@@ -5611,11 +7583,11 @@
       "email": ""
     },
     {
-      "phone": "01700000000",
-      "normPhone": "1700000000",
-      "pin": "8899",
+      "phone": "01799887766",
+      "normPhone": "1799887766",
+      "pin": "5678",
       "isTemp": false,
-      "linkedId": "GRO-PIN-1790872250860",
+      "linkedId": "",
       "linkedType": "team",
       "email": ""
     },
@@ -5627,6 +7599,24 @@
       "linkedId": "",
       "linkedType": "team",
       "email": "tanvir@gro10x.ai"
+    },
+    {
+      "phone": "01700000000",
+      "normPhone": "1700000000",
+      "pin": "8899",
+      "isTemp": false,
+      "linkedId": "GRO-PIN-1790872250860",
+      "linkedType": "team",
+      "email": ""
+    },
+    {
+      "phone": "01760753971",
+      "normPhone": "1760753971",
+      "pin": "3911",
+      "isTemp": true,
+      "linkedId": "GRO-002",
+      "linkedType": "team",
+      "email": "anikanower10152@gmail.com"
     }
   ],
   "payment_logs": [
@@ -5641,12 +7631,12 @@
       "trx_id": "NAG-88990011",
       "verified": false,
       "notes": "Customer submitted proof via portal",
-      "created_at": "2026-10-01T21:40:25.908Z"
+      "created_at": "2026-10-08T08:04:51.635Z"
     }
   ],
   "payslips": [
     {
-      "id": "PAY-802606",
+      "id": "PAY-823289",
       "employee_id": "GRO-TEST-503",
       "emp_code": "GRO-TEST-503",
       "employee_name": "Farhan Media Buyer",
@@ -5659,28 +7649,28 @@
       "deductions": 0,
       "net_salary": 45000,
       "status": "Disbursed",
-      "disbursed_at": "2026-10-01T21:40:02.606Z",
+      "disbursed_at": "2026-10-08T08:07:03.289Z",
       "disbursed_by": "Tariq HR Finance Lead",
-      "created_at": "2026-10-01T21:40:02.606Z"
+      "created_at": "2026-10-08T08:07:03.289Z"
     }
   ],
   "platforms": [],
   "automationLogs": [
     {
-      "id": "LOG-1790946890156",
-      "rule": "AUT-022 (Client Onboarded Alert)",
-      "event": "client_onboarded",
-      "target": "Alpha Health Corp",
+      "id": "LOG-1791445891044",
+      "rule": "AUT-005 (Payment Receipt Alert)",
+      "event": "invoice_paid",
+      "target": "INV-HOOK-VERIFY-01",
       "status": "Executed",
-      "timestamp": "2026-10-02T13:14:50.156Z"
+      "timestamp": "2026-10-08T07:51:31.044Z"
     },
     {
-      "id": "LOG-1790946890109",
-      "rule": "AUT-022 (Client Onboarded Alert)",
-      "event": "client_onboarded",
-      "target": "Alpha Health Corp",
+      "id": "LOG-1791445891037",
+      "rule": "AUT-005 (Payment Receipt Alert)",
+      "event": "invoice_paid",
+      "target": "INV-HOOK-VERIFY-01",
       "status": "Executed",
-      "timestamp": "2026-10-02T13:14:50.109Z"
+      "timestamp": "2026-10-08T07:51:31.037Z"
     }
   ]
 }

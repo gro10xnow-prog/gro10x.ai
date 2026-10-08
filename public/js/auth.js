@@ -136,8 +136,13 @@ async function submitPermanentPinSetup(event) {
     }
 
     document.getElementById('setup-pin-modal').style.display = 'none';
-    const userPayload = { phone: currentPhone, email: email, token: tempAuthToken };
-    saveSessionAndRedirect(userPayload, 'team', email, tempAuthToken);
+    const userPayload = {
+      ...(data.user || {}),
+      phone: currentPhone,
+      email: email,
+      token: tempAuthToken
+    };
+    saveSessionAndRedirect(userPayload, data.linkedType || 'team', email, tempAuthToken);
 
   } catch (err) {
     showAlert(`Error setting PIN: ${err.message}`, 'error');
@@ -160,9 +165,16 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
     accessLevel: user?.accessLevel || (linkedType === 'client' ? 'Client' : 'Specialist / Crew')
   };
 
-  try {
-    // Clear all legacy token keys
-    ['sb-access-token', 'purple_token', 'purpleos_pin_token'].forEach(k => localStorage.removeItem(k));
+    // Clear all legacy token keys and old Supabase session artifacts
+    ['sb-access-token', 'purple_token', 'purpleos_pin_token', 'jwt_token'].forEach(k => localStorage.removeItem(k));
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+          localStorage.removeItem(k);
+        }
+      }
+    } catch (_) {}
 
     localStorage.setItem('gro10x_user', JSON.stringify(userObj));
     localStorage.setItem('gro10x_user_phone', cleanPhone);

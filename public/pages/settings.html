@@ -389,7 +389,7 @@
         const uRaw = localStorage.getItem('purple_user');
         let u = uRaw ? JSON.parse(uRaw) : {};
         const userId = u.id || u.emp_code;
-        const token = localStorage.getItem('sb-access-token');
+        const token = getSettingsToken();
 
         if (userId) {
           const res = await fetch(`/api/team/${userId}`, {
@@ -421,11 +421,18 @@
       alert('🔒 To reset your PIN, open your Telegram App and send command /setpin to @Purplemanbot.');
     }
 
+    function getSettingsToken() {
+      return localStorage.getItem('gro10x_token') ||
+             sessionStorage.getItem('gro10x_token') ||
+             localStorage.getItem('jwt_token') ||
+             localStorage.getItem('sb-access-token') || '';
+    }
+
     // Automation UI Functions
     async function loadAutomationData() {
       try {
-        const token = localStorage.getItem('sb-access-token');
-        const headers = { 'Authorization': `Bearer ${token}` };
+        const token = getSettingsToken();
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         
         // Load Logs
         const logsRes = await fetch('/api/automation/logs', { headers }).then(r => r.json()).catch(() => []);
@@ -466,7 +473,7 @@
       if (!payload.rule_name) return alert('Rule Name is required.');
 
       try {
-        const token = localStorage.getItem('sb-access-token');
+        const token = getSettingsToken();
         const res = await fetch('/api/automation/rules', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -494,7 +501,7 @@
       if (!confirmTest) return;
 
       try {
-        const token = localStorage.getItem('sb-access-token');
+        const token = getSettingsToken();
         const res = await fetch('/api/automation/trigger', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

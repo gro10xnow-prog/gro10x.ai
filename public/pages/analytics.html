@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -167,8 +167,11 @@
 
     async function loadAnalytics() {
       const days = document.getElementById('timeRangeSelect').value;
-      const token = localStorage.getItem('sb-access-token');
-      const headers = { 'Authorization': `Bearer ${token}` };
+      const token = localStorage.getItem('gro10x_token') ||
+                    sessionStorage.getItem('gro10x_token') ||
+                    localStorage.getItem('jwt_token') ||
+                    localStorage.getItem('sb-access-token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
       try {
         // Fetch Time-Series Data
@@ -317,7 +320,10 @@
           return;
         }
         try {
-          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
+          const token = localStorage.getItem('gro10x_token') ||
+                        sessionStorage.getItem('gro10x_token') ||
+                        localStorage.getItem('jwt_token') ||
+                        localStorage.getItem('sb-access-token');
           const res = await fetch(`/api/export/${cleanTable}`, {
             headers: {
               ...(token ? { 'Authorization': `Bearer ${token}` } : {})

@@ -49,9 +49,12 @@
     .btn-secondary:hover { background: rgba(255,255,255,0.12); }
   </style>
   <script>
-    const savedPhone = localStorage.getItem('purple_user_phone');
-    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
-    let empId = localStorage.getItem('purple_user_id') || localStorage.getItem('purple_emp_code');
+    const savedPhone = localStorage.getItem('gro10x_user_phone') || localStorage.getItem('purple_user_phone');
+    const token = localStorage.getItem('gro10x_token') ||
+                  sessionStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('jwt_token') ||
+                  localStorage.getItem('sb-access-token');
+    let empId = localStorage.getItem('gro10x_user_id') || localStorage.getItem('purple_user_id') || localStorage.getItem('purple_emp_code');
 
     if (!token) {
       window.location.href = '/auth';

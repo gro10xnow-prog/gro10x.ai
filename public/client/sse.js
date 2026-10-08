@@ -27,9 +27,11 @@
       const t = window.CLIENT_API.getToken();
       if (t) return t;
     }
-    return localStorage.getItem('sb-access-token') ||
-           localStorage.getItem('gro10x_token') ||
+    return localStorage.getItem('gro10x_token') ||
+           sessionStorage.getItem('gro10x_token') ||
+           localStorage.getItem('jwt_token') ||
            localStorage.getItem('gro10x_client_token') ||
+           localStorage.getItem('sb-access-token') ||
            '';
   }
 
