@@ -165,6 +165,7 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
     accessLevel: user?.accessLevel || (linkedType === 'client' ? 'Client' : 'Specialist / Crew')
   };
 
+  try {
     // Clear all legacy token keys and old Supabase session artifacts
     ['sb-access-token', 'purple_token', 'purpleos_pin_token', 'jwt_token'].forEach(k => localStorage.removeItem(k));
     try {
