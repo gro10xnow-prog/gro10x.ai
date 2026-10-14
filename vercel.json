@@ -173,8 +173,22 @@
       "dest": "/public/proposal.html"
     },
     {
+      "src": "/prototypes/(.*)",
+      "dest": "/public/prototypes/$1"
+    },
+    {
+      "src": "/prototypes",
+      "dest": "/public/prototypes/index.html"
+    },
+    {
       "src": "/nhf(/.*)?",
-      "dest": "/public/nhf/index.html"
+      "status": 302,
+      "headers": { "Location": "/prototypes/nhf-portal/" }
+    },
+    {
+      "src": "/3d-viewer(/.*)?",
+      "status": 302,
+      "headers": { "Location": "/prototypes/3d-spatial-viewer/" }
     },
     {
       "src": "/pages/(.*)",

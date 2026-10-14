@@ -2535,7 +2535,7 @@ window.APP_MODULES.kanban = async function(container) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'purpleos_projects_tasks_template.csv');
+      link.setAttribute('download', 'gro10x_projects_tasks_template.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

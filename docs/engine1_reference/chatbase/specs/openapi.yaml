@@ -1,0 +1,1698 @@
+openapi: 3.0.3
+info:
+  title: Chatbase API v1
+  description: |
+    Comprehensive API documentation for all Chatbase v1 endpoints.
+    
+    ## Authentication
+    All endpoints require authentication using a Bearer token in the Authorization header:
+    ```
+    Authorization: Bearer YOUR_API_KEY
+    ```
+    
+  version: 1.0.0
+  contact:
+    name: Chatbase Support
+    url: https://chatbase.co/help
+servers:
+  - url: https://www.chatbase.co/api/v1
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Chatbots
+    description: Chatbot management operations
+  - name: Chat
+    description: Chat conversation endpoints  
+  - name: Conversations
+    description: Conversation history and management
+  - name: Leads
+    description: Lead collection and management
+  - name: Contacts
+    description: Contact management for chatbots
+  - name: Assets
+    description: File upload and management
+
+paths:
+  /chat:
+    post:
+      tags:
+        - Chat
+      summary: Chat with a chatbot
+      x-mint:
+        content: |
+          <Note>
+          **Looking for API v2?** The new Chatbase API v2 features structured error codes, cursor-based pagination, and SSE streaming. Note that API v2 is available starting from the Standard Plan. [Check out the API v2 Reference →](/api-v2/overview)
+          </Note>
+      description: |
+        Send a message to a chatbot and receive a response. Supports streaming responses.
+        Can continue existing conversations by providing a conversationId.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chatbotId
+                - messages
+              properties:
+                chatbotId:
+                  type: string
+                  description: ID of the chatbot to chat with
+                  example: "ckl123abc456"
+                messages:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - role
+                      - content
+                    properties:
+                      role:
+                        type: string
+                        enum: [user, assistant]
+                        description: Message sender role
+                        example: "user"
+                      content:
+                        type: string
+                        description: Message content
+                        example: "Hello, I need help with my order"
+                  description: Array of messages in the conversation
+                conversationId:
+                  type: string
+                  description: ID of existing conversation to continue, if not provided, the conversation will not be saved
+                  example: "conv_abc123"
+                contactId:
+                  type: string
+                  description: External ID of the contact/user
+                  example: "user_123"
+                model:
+                  $ref: '#/components/schemas/AIModel'
+                temperature:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  description: Temperature setting for AI response creativity
+                  example: 0.7
+                stream:
+                  type: boolean
+                  description: Whether to stream the response
+                  default: false
+      responses:
+        '200':
+          description: Chat response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: The chatbot's response text
+                    example: "Hello! How can I help you today?"
+            text/plain:
+              schema:
+                type: string
+                description: Streaming response (when stream=true)
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Pages API Endpoints
+  /create-chatbot:
+    post:
+      tags:
+        - Chatbots
+      summary: Create a new chatbot
+      description: Creates a new chatbot with training data from text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chatbotName
+              properties:
+                chatbotName:
+                  type: string
+                  minLength: 3
+                  description: Name of the chatbot (minimum 3 characters)
+                  example: "Customer Support Bot"
+                sourceText:
+                  type: string
+                  description: Raw text content to train the chatbot
+                  example: "Welcome to our company..."
+      responses:
+        '200':
+          description: Chatbot created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatbotId:
+                    type: string
+                    description: Unique identifier for the created chatbot
+                    example: "ckl123abc456"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  
+  /get-chatbots:
+    get:
+      tags:
+        - Chatbots
+      summary: Get all chatbots
+      description: Retrieves all chatbots for the authenticated account
+      responses:
+        '200':
+          description: List of chatbots retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatbots:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Chatbot'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /get-conversations:
+    get:
+      tags:
+        - Conversations
+      summary: Get conversations for a chatbot
+      x-mint:
+        content: |
+          <Note>
+          **Looking for API v2?** The new Chatbase API v2 features structured error codes, cursor-based pagination, and SSE streaming. [Check out the API v2 Reference →](/api-v2/overview)
+          </Note>
+      description: Retrieves conversation history for a specific chatbot
+      parameters:
+        - name: chatbotId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+        - name: filteredSources
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated list of conversation sources to filter by. Example API,WhatsApp,Messenger,Instagram,Slack,Playground,Action preview,Widget or Iframe
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Start date for conversation filtering (YYYY-MM-DD)
+          example: "2024-01-01"
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: End date for conversation filtering (YYYY-MM-DD)
+          example: "2024-12-31"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Page number for pagination
+          example: "1"
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Number of items per page
+          example: "10"
+      responses:
+        '200':
+          description: Conversations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /get-leads:
+    get:
+      tags:
+        - Leads
+      summary: Get leads for a chatbot
+      description: Retrieves collected leads/customers for a specific chatbot
+      parameters:
+        - name: chatbotId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Start date for lead filtering (YYYY-MM-DD)
+          example: "2024-01-01"
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: End date for lead filtering (YYYY-MM-DD)
+          example: "2024-12-31"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Page number for pagination
+          example: "1"
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Number of items per page
+          example: "10"
+      responses:
+        '200':
+          description: Leads retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collectedCustomers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+
+
+  /delete-chatbot:
+    delete:
+      tags:
+        - Chatbots
+      summary: Delete a chatbot
+      description: Permanently deletes a chatbot and all associated data
+      parameters:
+        - name: chatbotId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot to delete
+          example: "ckl123abc456"
+      responses:
+        '200':
+          description: Chatbot deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Deleted successfully"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /update-chatbot-data:
+    post:
+      tags:
+        - Chatbots
+      summary: Update a chatbot
+      description: Updates and retrains a chatbot with new content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chatbotId
+                - chatbotName
+              properties:
+                chatbotId:
+                  type: string
+                  description: ID of the chatbot to update
+                  example: "ckl123abc456"
+                chatbotName:
+                  type: string
+                  minLength: 3
+                  description: Updated name for the chatbot
+                  example: "Updated Bot Name"
+                sourceText:
+                  type: string
+                  description: New training text content
+                  example: "Updated training content..."
+      responses:
+        '200':
+          description: Chatbot updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatbotId:
+                    type: string
+                    example: "ckl123abc456"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /update-chatbot-settings:
+    post:
+      tags:
+        - Chatbots
+      summary: Update chatbot settings
+      description: Updates various chatbot configuration settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chatbotId
+              properties:
+                chatbotId:
+                  type: string
+                  description: ID of the chatbot to update
+                  example: "ckl123abc456"
+                name:
+                  type: string
+                  description: Chatbot name
+                  example: "My Chatbot"
+                instructions:
+                  type: string
+                  description: System instructions for the chatbot
+                  example: "You are a helpful customer service assistant"
+                initialMessages:
+                  type: array
+                  items:
+                    type: string
+                  description: Initial greeting messages
+                  example: ["Hello! How can I help you?"]
+                suggestedMessages:
+                  type: array
+                  items:
+                    type: string
+                  description: Suggested conversation starters
+                  example: ["What are your hours?", "How can I contact support?"]
+                visibility:
+                  type: string
+                  enum: [public, private]
+                  description: Enable or disable access to the chatbot
+                  example: "public"
+                domains:
+                  type: array
+                  items:
+                    type: string
+                  description: Allowed domains for the chatbot
+                  example: ["example.com", "subdomain.example.com"]
+                onlyAllowOnAddedDomains:
+                  type: boolean
+                  description: Whether to restrict to allowed domains only
+                  example: false
+                ipLimit:
+                  type: integer
+                  description: Rate limit per IP address
+                  example: 10
+                ipLimitTimeframe:
+                  type: integer
+                  description: Timeframe for IP rate limiting
+                  example: 3600
+                ipLimitMessage:
+                  type: string
+                  description: Message shown when rate limit is exceeded
+                  example: "Too many requests. Please try again later."
+                model:
+                  $ref: '#/components/schemas/AIModel'
+                temp:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  description: Temperature setting for AI responses
+                  example: 0.7
+                styles:
+                  $ref: '#/components/schemas/ChatbotStyles'
+                collectCustomerInformation:
+                  $ref: '#/components/schemas/CollectLeadsSettings'
+      responses:
+        '202':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Your changes are saved."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /upload-chatbot-icon:
+    post:
+      tags:
+        - Assets
+      summary: Upload chatbot icon
+      description: Uploads an icon image for the chatbot
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - chatbotId
+                - chatbotIconFile
+              properties:
+                chatbotId:
+                  type: string
+                  description: ID of the chatbot
+                  example: "ckl123abc456"
+                chatbotIconFile:
+                  type: string
+                  format: binary
+                  description: Icon image file
+      responses:
+        '200':
+          description: Icon uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Chatbot chat icon uploaded successfully."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /upload-chatbot-profile-picture:
+    post:
+      tags:
+        - Assets
+      summary: Upload chatbot profile picture
+      description: Uploads a profile picture for the chatbot
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - chatbotId
+                - profilePictureFile
+              properties:
+                chatbotId:
+                  type: string
+                  description: ID of the chatbot
+                  example: "ckl123abc456"
+                profilePictureFile:
+                  type: string
+                  format: binary
+                  description: Profile picture image file
+      responses:
+        '200':
+          description: Profile picture uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Chatbot Profile Picture uploaded successfully."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /delete-chatbot-icon:
+    delete:
+      tags:
+        - Assets
+      summary: Delete chatbot icon
+      description: Deletes the chatbot's icon image
+      parameters:
+        - name: chatbotId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+      responses:
+        '200':
+          description: Icon deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Chat Icon deleted successfully."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /delete-chatbot-profile-picture:
+    delete:
+      tags:
+        - Assets
+      summary: Delete chatbot profile picture
+      description: Deletes the chatbot's profile picture
+      parameters:
+        - name: chatbotId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+      responses:
+        '200':
+          description: Profile picture deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Chatbot Profile Picture deleted successfully."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /chatbots/{chatbotId}/contacts:
+    get:
+      tags:
+        - Contacts
+      summary: Get contacts for a chatbot
+      description: Retrieves paginated list of contacts for a specific chatbot
+      parameters:
+        - name: chatbotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 1000
+          description: Number of contacts per page (10-1000)
+          example: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+          description: Page number (starts from 1)
+          example: 1
+      responses:
+        '200':
+          description: Contacts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Contact'
+                  total:
+                    type: integer
+                    description: Total number of contacts
+                    example: 250
+                  pages:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      per_page:
+                        type: integer
+                        example: 100
+                      total_pages:
+                        type: integer
+                        example: 3
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Contacts
+      summary: Create contacts for a chatbot
+      description: Creates one or more contacts for a specific chatbot (max 1000 per request)
+      parameters:
+        - name: chatbotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - users
+              properties:
+                users:
+                  type: array
+                  minItems: 1
+                  maxItems: 1000
+                  items:
+                    $ref: '#/components/schemas/ContactInput'
+                  description: Array of contacts to create (1-1000)
+      responses:
+        '200':
+          description: Contacts created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Contact'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflict - External IDs or emails already exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "One or more external IDs or emails already exist."
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /chatbots/{chatbotId}/contacts/{contactId}:
+    get:
+      tags:
+        - Contacts
+      summary: Get a specific contact
+      description: Retrieves a single contact by ID
+      parameters:
+        - name: chatbotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: External ID of the contact
+          example: "user_123"
+      responses:
+        '200':
+          description: Contact retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    $ref: '#/components/schemas/Contact'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags:
+        - Contacts
+      summary: Update a contact
+      description: Updates an existing contact's information
+      parameters:
+        - name: chatbotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: External ID of the contact
+          example: "user_123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ContactUpdateInput'
+      responses:
+        '200':
+          description: Contact updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    $ref: '#/components/schemas/Contact'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflict - External ID or email already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error saving chatbot contact. External ID or email already exists."
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Contacts
+      summary: Delete a contact
+      description: Permanently deletes a contact
+      parameters:
+        - name: chatbotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: External ID of the contact
+          example: "user_123"
+      responses:
+        '200':
+          description: Contact deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    $ref: '#/components/schemas/Contact'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /chatbots/{chatbotId}/custom-attributes:
+    get:
+      tags:
+        - Contacts
+      summary: Get custom attributes schema
+      description: Retrieves the custom attributes schema for contacts
+      parameters:
+        - name: chatbotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+      responses:
+        '200':
+          description: Custom attributes schema retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: array
+                    description: Array of custom attribute definitions
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Attribute name
+                          example: "department"
+                        label:
+                          type: string
+                          description: Display label for the attribute
+                          example: "Department"
+                        type:
+                          type: string
+                          enum: [text, number, boolean, date]
+                          description: Attribute data type
+                          example: "text"
+                        description:
+                          type: string
+                          description: Description of the attribute
+                          example: "Employee department"
+                        archived:
+                          type: boolean
+                          description: Whether the attribute is archived
+                          example: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Contacts
+      summary: Create custom attribute
+      description: Creates a new custom attribute for contacts
+      parameters:
+        - name: chatbotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomAttributeInput'
+      responses:
+        '200':
+          description: Custom attribute created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    description: Created custom attribute
+                    properties:
+                      name:
+                        type: string
+                        description: Attribute name
+                        example: "department"
+                      label:
+                        type: string
+                        description: Display label for the attribute
+                        example: "Department"
+                      type:
+                        type: string
+                        enum: [text, number, boolean, date]
+                        description: Attribute data type
+                        example: "text"
+                      description:
+                        type: string
+                        description: Description of the attribute
+                        example: "Employee department"
+                      archived:
+                        type: boolean
+                        description: Whether the attribute is archived
+                        example: false
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /chatbots/{chatbotId}/custom-attributes/{name}:
+    put:
+      tags:
+        - Contacts
+      summary: Update custom attribute
+      description: Updates an existing custom attribute
+      parameters:
+        - name: chatbotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the chatbot
+          example: "ckl123abc456"
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Name of the custom attribute
+          example: "department"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomAttributeUpdateInput'
+      responses:
+        '200':
+          description: Custom attribute updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    description: Updated custom attribute
+                    properties:
+                      name:
+                        type: string
+                        description: Attribute name
+                        example: "department"
+                      label:
+                        type: string
+                        description: Display label for the attribute
+                        example: "Department"
+                      type:
+                        type: string
+                        enum: [text, number, boolean, date]
+                        description: Attribute data type
+                        example: "text"
+                      description:
+                        type: string
+                        description: Description of the attribute
+                        example: "Employee department"
+                      archived:
+                        type: boolean
+                        description: Whether the attribute is archived
+                        example: false
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: API key in Bearer token format
+
+  responses:
+    BadRequest:
+      description: Bad Request - Invalid input parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid request data"
+
+    Unauthorized:
+      description: Unauthorized - Invalid or missing API key
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "No API key provided."
+
+    Forbidden:
+      description: Forbidden - Access denied or quota exceeded
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Access denied or quota exceeded"
+
+    NotFound:
+      description: Not Found - Resource does not exist
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Resource not found"
+
+    RateLimited:
+      description: Rate Limited - Too many requests
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Rate limit exceeded. Please try again later."
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Internal server error"
+
+  schemas:
+    ChatMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        id:
+          type: string
+          description: Unique message identifier
+          example: "msg_123"
+        role:
+          type: string
+          enum: [user, assistant]
+          description: Message sender role
+          example: "user"
+        content:
+          type: string
+          description: Message content
+          example: "Hello, I need help with my order"
+        type:
+          type: string
+          enum: [text]
+          description: Message type
+          default: "text"
+
+    Chatbot:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique chatbot identifier
+          example: "ckl123abc456"
+        name:
+          type: string
+          description: Chatbot name
+          example: "Customer Support Bot"
+        status:
+          type: string
+          enum: [training, ready, failed]
+          description: Current chatbot status
+          example: "ready"
+        model:
+          type: string
+          description: AI model being used
+          example: "gpt-4o-mini"
+        instructions:
+          type: string
+          description: System instructions for the chatbot
+          example: "You are a helpful customer service assistant"
+        visibility:
+          type: string
+          enum: [public, private]
+          description: Chatbot visibility setting
+          example: "public"
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2024-01-01T12:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2024-01-02T12:00:00Z"
+
+    ChatbotStyles:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [light, dark]
+          description: UI theme
+          example: "light"
+        buttonColor:
+          type: string
+          description: Color for buttons (hex code)
+          example: "#007bff"
+        displayName:
+          type: string
+          description: Display name for the chatbot
+          example: "Support Bot"
+        alignChatButton:
+          type: string
+          enum: [left, right]
+          description: Chat button alignment
+          example: "right"
+        userMessageColor:
+          type: string
+          description: Color for user messages (hex code)
+          example: "#007bff"
+        autoOpenChatWindowAfter:
+          type: integer
+          description: Auto-open delay in seconds (0 to disable)
+          example: 5
+
+    CollectLeadsSettings:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Form title
+          example: "Contact Information"
+        name:
+          type: object
+          properties:
+            active:
+              type: boolean
+              description: Whether name field is enabled
+              example: true
+            label:
+              type: string
+              description: Label for name field
+              example: "Full Name"
+        email:
+          type: object
+          properties:
+            active:
+              type: boolean
+              description: Whether email field is enabled
+              example: true
+            label:
+              type: string
+              description: Label for email field
+              example: "Email Address"
+        phone:
+          type: object
+          properties:
+            active:
+              type: boolean
+              description: Whether phone field is enabled
+              example: false
+            label:
+              type: string
+              description: Label for phone field
+              example: "Phone Number"
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique conversation identifier
+          example: "conv_123"
+        chatbot_id:
+          type: string
+          description: Associated chatbot ID
+          example: "ckl123abc456"
+        created_at:
+          type: string
+          format: date-time
+          description: Conversation start time
+          example: "2024-01-01T12:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last message time
+          example: "2024-01-01T12:05:00Z"
+        source:
+          type: string
+          enum: [api, website, whatsapp, slack, messenger, instagram]
+          description: Conversation source
+          example: "api"
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+          description: Messages in the conversation
+
+    Lead:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique lead identifier
+          example: "lead_123"
+        name:
+          type: string
+          description: Lead's name
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: Lead's email address
+          example: "john@example.com"
+        phone:
+          type: string
+          description: Lead's phone number
+          example: "+1234567890"
+        created_at:
+          type: string
+          format: date-time
+          description: Lead collection timestamp
+          example: "2024-01-01T12:00:00Z"
+        chatbot_id:
+          type: string
+          description: Associated chatbot ID
+          example: "ckl123abc456"
+        account_id:
+          type: string
+          description: Associated account ID
+          example: "acc_123abc456"
+
+
+    Contact:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Internal contact ID
+          example: "contact_internal_123"
+        external_id:
+          type: string
+          description: External contact identifier
+          example: "user_123"
+        name:
+          type: string
+          description: Contact's name
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: Contact's email address
+          example: "john@example.com"
+        phonenumber:
+          type: string
+          description: Contact's phone number
+          example: "+1234567890"
+        stripe_accounts:
+          type: array
+          description: Array of Stripe accounts associated with this contact
+          items:
+            $ref: '#/components/schemas/StripeAccount'
+          example:
+            - label: "main"
+              stripe_id: "cus_123abc456"
+              stripe_email: "john@example.com"
+        custom_attributes:
+          type: object
+          description: Custom attributes for the contact
+          additionalProperties: true
+          example:
+            department: "Sales"
+            subscription_tier: "Premium"
+        created_at:
+          type: integer
+          description: Contact creation timestamp (Unix timestamp)
+          example: 1704067200
+        updated_at:
+          type: integer
+          description: Last update timestamp (Unix timestamp)
+          example: 1704153600
+
+    ContactInput:
+      type: object
+      required:
+        - external_id
+      properties:
+        external_id:
+          type: string
+          description: External contact identifier
+          example: "user_123"
+        name:
+          type: string
+          description: Contact's name
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: Contact's email address
+          example: "john@example.com"
+        phonenumber:
+          type: string
+          description: Contact's phone number
+          example: "+1234567890"
+        stripe_accounts:
+          type: array
+          description: Array of Stripe accounts associated with this contact
+          items:
+            $ref: '#/components/schemas/StripeAccountInput'
+          example:
+            - label: "main"
+              stripe_id: "cus_123abc456"
+              stripe_email: "john@example.com"
+        custom_attributes:
+          type: object
+          description: Custom attributes for the contact
+          additionalProperties: true
+          example:
+            department: "Sales"
+            subscription_tier: "Premium"
+
+    ContactUpdateInput:
+      type: object
+      properties:
+        external_id:
+          type: string
+          description: External contact identifier
+          example: "user_123"
+        name:
+          type: string
+          description: Contact's name
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: Contact's email address
+          example: "john@example.com"
+        phonenumber:
+          type: string
+          description: Contact's phone number
+          example: "+1234567890"
+        stripe_accounts:
+          type: array
+          description: Array of Stripe accounts associated with this contact
+          items:
+            $ref: '#/components/schemas/StripeAccountInput'
+          example:
+            - label: "main"
+              stripe_id: "cus_123abc456"
+              stripe_email: "john@example.com"
+        custom_attributes:
+          type: object
+          description: Custom attributes for the contact
+          additionalProperties: true
+          example:
+            department: "Engineering"
+            subscription_tier: "Enterprise"
+
+    CustomAttributeInput:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          pattern: "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          description: Attribute name (must start with a letter and can only contain letters, numbers, underscores, and hyphens)
+          example: "department"
+        label:
+          type: string
+          description: Display label for the attribute
+          example: "Department"
+        type:
+          type: string
+          enum: [text, number, boolean, date]
+          description: Attribute data type
+          example: "text"
+        description:
+          type: string
+          description: Description of the attribute
+          example: "Employee department"
+        archived:
+          type: boolean
+          description: Whether the attribute is archived
+          default: false
+          example: false
+
+    CustomAttributeUpdateInput:
+      type: object
+      properties:
+        label:
+          type: string
+          description: Display label for the attribute
+          example: "Department"
+        description:
+          type: string
+          description: Description of the attribute
+          example: "Updated employee department"
+        archived:
+          type: boolean
+          description: Whether the attribute is archived
+          example: false
+
+    StripeAccount:
+      type: object
+      required:
+        - label
+        - stripe_id
+      properties:
+        label:
+          type: string
+          description: Label identifier for the Stripe account
+          example: "main"
+        stripe_id:
+          type: string
+          description: Stripe customer ID
+          example: "cus_123abc456"
+        stripe_email:
+          type: string
+          format: email
+          description: Email address associated with the Stripe account
+          example: "john@example.com"
+
+    AIModel:
+      type: string
+      description: AI model to use for the response
+      enum:
+        # OpenAI
+        - gpt-4o-mini
+        - gpt-oss-120b
+        - gpt-oss-20b
+        - gpt-5.2
+        - gpt-5.5
+        - gpt-5.6-terra
+        - gpt-6-luna
+        - gpt-6.1-sol
+        # Anthropic
+        - claude-opus-5-5
+        - claude-sonnet-5-5
+        - claude-haiku-5-5
+        # Google
+        - gemini-2.5-pro
+        - gemini-3-flash
+        - gemini-3.1-flash-lite
+        - gemini-3.1-pro
+        - gemini-3.5-flash-lite
+        - gemini-3.6-flash
+        - gemini-3.8-flash
+        # Grok
+        - grok-4.7
+        # DeepSeek
+        - DeepSeek-V3.1
+        - DeepSeek-R1
+        - DeepSeek-V4-Flash
+        - DeepSeek-V4.1-Flash
+        # Kimi
+        - kimi-k2.6
+        # Mistral
+        - mistral-medium-3.5
+        - mistral-small-2603
+        # Zhipu
+        - glm-5.2
+        - glm-5.3-flash
+        # Auto
+        - auto
+      example: "gpt-4o-mini"
+
+    StripeAccountInput:
+      type: object
+      required:
+        - label
+        - stripe_id
+      properties:
+        label:
+          type: string
+          description: Label identifier for the Stripe account
+          example: "main"
+        stripe_id:
+          type: string
+          description: Stripe customer ID
+          example: "cus_123abc456"
+        stripe_email:
+          type: string
+          format: email
+          description: Email address associated with the Stripe account
+          example: "john@example.com"

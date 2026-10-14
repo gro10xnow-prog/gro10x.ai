@@ -42,36 +42,49 @@ function setupGracefulShutdown(server, options = {}) {
         });
       }
 
-      // 2. Teardown active SSE client connections
+      // 2. Teardown active SSE client connections & Realtime PubSub
       try {
-        const { broadcast } = require('../services/sse');
+        const { broadcast, stopRealtimePubSub } = require('../services/sse');
         if (typeof broadcast === 'function') {
           broadcast('system_shutdown', { message: 'Server is restarting for deployment', timestamp: new Date().toISOString() });
+        }
+        if (typeof stopRealtimePubSub === 'function') {
+          stopRealtimePubSub();
         }
       } catch (_) {}
 
       // 3. Stop Telegram Bot Polling if active
       try {
-        const { getTeamBot, getClientBot } = require('../services/bot');
-        const teamBot = getTeamBot();
-        const clientBot = getClientBot();
-        if (teamBot && typeof teamBot.stopPolling === 'function' && teamBot.isPolling()) {
-          await teamBot.stopPolling();
-          logger.info('✅ Telegram Team Bot polling stopped.');
-        }
-        if (clientBot && typeof clientBot.stopPolling === 'function' && clientBot.isPolling()) {
-          await clientBot.stopPolling();
-          logger.info('✅ Telegram Client Bot polling stopped.');
+        const { stopBot, getTeamBot, getClientBot } = require('../services/bot');
+        if (typeof stopBot === 'function') {
+          await stopBot();
+          logger.info('✅ Telegram Bot mesh polling stopped.');
+        } else {
+          const teamBot = getTeamBot();
+          const clientBot = getClientBot();
+          if (teamBot && typeof teamBot.stopPolling === 'function' && teamBot.isPolling()) {
+            await teamBot.stopPolling();
+            logger.info('✅ Telegram Team Bot polling stopped.');
+          }
+          if (clientBot && typeof clientBot.stopPolling === 'function' && clientBot.isPolling()) {
+            await clientBot.stopPolling();
+            logger.info('✅ Telegram Client Bot polling stopped.');
+          }
         }
       } catch (_) {}
 
       // 4. Stop DigiVault Commerce Bot Polling if active
       try {
-        const { getDigiVaultBot } = require('../services/digivault-bot');
-        const digiBot = typeof getDigiVaultBot === 'function' ? getDigiVaultBot() : null;
-        if (digiBot && typeof digiBot.stopPolling === 'function' && digiBot.isPolling()) {
-          await digiBot.stopPolling();
+        const { stopDigiVaultBot, getDigiVaultBot } = require('../services/digivault-bot');
+        if (typeof stopDigiVaultBot === 'function') {
+          await stopDigiVaultBot();
           logger.info('✅ DigiVault Bot polling stopped.');
+        } else {
+          const digiBot = typeof getDigiVaultBot === 'function' ? getDigiVaultBot() : null;
+          if (digiBot && typeof digiBot.stopPolling === 'function' && digiBot.isPolling()) {
+            await digiBot.stopPolling();
+            logger.info('✅ DigiVault Bot polling stopped.');
+          }
         }
       } catch (_) {}
 

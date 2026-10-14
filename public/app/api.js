@@ -1,7 +1,7 @@
 /**
  * public/app/api.js
  * ─────────────────────────────────────────────────────────────────────────────
- * PurpleOS Admin Portal API Client & Data Store v3.0
+ * GRO10X OS Admin Command Center API Client & Data Store v3.0
  * Handles session tokens, API requests, error catching, and local caching.
  * ─────────────────────────────────────────────────────────────────────────────
  */
@@ -72,7 +72,7 @@ window.APP_API = {
       const response = await fetch(url, config);
 
       if (response.status === 401) {
-        console.warn('[PurpleOS API] 401 Unauthorized — Redirecting to login...');
+        console.warn('[GRO10X OS API] 401 Unauthorized — Redirecting to login...');
         localStorage.removeItem('gro10x_token');
         sessionStorage.removeItem('gro10x_token');
         localStorage.removeItem('sb-access-token');
@@ -112,7 +112,7 @@ window.APP_API = {
       
       return data;
     } catch (err) {
-      console.error(`[PurpleOS API] Error fetching ${url}:`, err);
+      console.error(`[GRO10X OS API] Error fetching ${url}:`, err);
       throw err;
     }
   },

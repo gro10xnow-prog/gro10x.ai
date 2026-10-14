@@ -267,6 +267,11 @@
       headerTitleEl.textContent = `${routeInfo.icon} ${routeInfo.title}`;
     }
 
+    // Notify Universal Copilot of Context / Persona Switch
+    if (window.GRO10X_COPILOT && typeof window.GRO10X_COPILOT.switchContext === 'function') {
+      window.GRO10X_COPILOT.switchContext(hash);
+    }
+
     const viewContainer = document.getElementById('app-view');
     if (!viewContainer) return;
 
@@ -320,7 +325,7 @@
           console.warn('[GRO10X Router] Pending action handler note:', pendingErr);
         }
       } else {
-        console.error(`[PurpleOS Router] Module function missing for '${moduleName}'. Available:`, Object.keys(window.APP_MODULES || {}));
+        console.error(`[GRO10X OS Router] Module function missing for '${moduleName}'. Available:`, Object.keys(window.APP_MODULES || {}));
         viewContainer.innerHTML = `
           <div class="card-glass" style="text-align:center; padding:3rem;">
             <div style="font-size:2rem; margin-bottom:0.5rem;">⚠️ Module Error</div>
@@ -331,7 +336,7 @@
       }
     } catch (err) {
       if (currentSeq !== routeNavSeq) return;
-      console.error(`[PurpleOS Router] Error loading route ${hash}:`, err);
+      console.error(`[GRO10X OS Router] Error loading route ${hash}:`, err);
       viewContainer.innerHTML = `
         <div class="card-glass" style="text-align:center; padding:3rem;">
           <div style="font-size:2rem; margin-bottom:0.5rem;">❌ Failed to load page</div>
@@ -365,13 +370,13 @@
       script.onload = () => {
         loadedModules[moduleFile] = true;
         delete moduleLoadPromises[moduleFile];
-        console.log(`[PurpleOS Router] Script loaded successfully: /app/modules/${moduleFile}`);
+        console.log(`[GRO10X OS Router] Script loaded successfully: /app/modules/${moduleFile}`);
         resolve();
       };
       script.onerror = (e) => {
         delete moduleLoadPromises[moduleFile];
         delete loadedModules[moduleFile];
-        console.error(`[PurpleOS Router] Failed script load event for /app/modules/${moduleFile}`, e);
+        console.error(`[GRO10X OS Router] Failed script load event for /app/modules/${moduleFile}`, e);
         reject(new Error(`Could not load /app/modules/${moduleFile}`));
       };
       document.body.appendChild(script);

@@ -42,7 +42,8 @@
 
   <!-- Top App Header -->
   <header class="top-header">
-    <div style="display: flex; align-items: center; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.85rem;">
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="window.GRO10X_COPILOT.toggleSidebar()" title="Toggle Sidebar (Mini / Full)">◧</button>
       <a href="#dashboard" class="brand-container">
         <div class="brand-logo" style="background:var(--brand-primary, #00df89); color:#070b12; font-weight:900; border-radius:10px; display:flex; align-items:center; justify-content:center;">⚡</div>
         <div>
@@ -56,9 +57,16 @@
       </span>
 
       <!-- Quick Command Palette Trigger (Ctrl+K) -->
-      <button class="quick-search-trigger" onclick="openCommandPalette()" title="Press Ctrl+K or Cmd+K to search" style="margin-left: 0.5rem;">
+      <button class="quick-search-trigger" onclick="openCommandPalette()" title="Press Ctrl+K or Cmd+K to search" style="margin-left: 0.25rem;">
         <span>🔍 Jump to...</span>
         <kbd>Ctrl K</kbd>
+      </button>
+
+      <!-- Universal Copilot Trigger (Ctrl+J) -->
+      <button class="copilot-header-trigger" id="copilotHeaderBtn" onclick="window.GRO10X_COPILOT.toggleExpand()" title="Toggle Universal Copilot (Ctrl+J)">
+        <span class="copilot-dot-online"></span>
+        <span>🤖 Copilot</span>
+        <kbd>Ctrl J</kbd>
       </button>
     </div>
 
@@ -103,10 +111,10 @@
   </header>
 
   <!-- Main App Layout Wrapper -->
-  <div class="main-wrapper">
+  <div class="main-wrapper" id="mainWrapper">
     
     <!-- Left Navigation Sidebar -->
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" id="sidebarNav">
       <div class="nav-category">Command Center</div>
       <a href="#dashboard" class="nav-item active">
         <span class="icon">📊</span>
@@ -233,6 +241,18 @@
       <!-- Dynamic Views Rendered Here -->
     </main>
 
+    <!-- Universal Platform Copilot Surface -->
+    <aside id="app-copilot" class="copilot-surface" aria-label="GRO10X Copilot">
+      <!-- Populated dynamically by copilot-shell.js -->
+    </aside>
+
+    <!-- Slim 48px Idle Icon Rail (Active when Copilot is Collapsed) -->
+    <div id="copilotSlimRail" class="copilot-slim-rail" onclick="window.GRO10X_COPILOT.expand()" title="Open Universal Copilot (Ctrl+J)">
+      <div class="rail-avatar">🤖</div>
+      <span class="rail-status-dot"></span>
+      <div class="rail-shortcut-hint">Ctrl J</div>
+    </div>
+
   </div>
 
   <!-- Ops Health Quickview Modal -->
@@ -275,6 +295,7 @@
   </div>
 
   <script src="/app/api.js?v=3.0"></script>
+  <script src="/app/copilot-shell.js?v=1.0"></script>
   <script src="/app/app.js?v=3.0"></script>
   <script>
     function toggleTheme() {

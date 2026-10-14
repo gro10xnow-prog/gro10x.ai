@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JAM SPACE 3D — Room Decorator & Delusion Reality-Check | GRO10X</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=VT323&display=swap" rel="stylesheet">
+  
+  <!-- Three.js + OrbitControls (CDN, zero build step) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #080A0F;
+      --panel-bg: rgba(13, 17, 26, 0.85);
+      --panel-border: rgba(0, 223, 137, 0.25);
+      --accent-emerald: #00DF89;
+      --accent-cyan: #00F0FF;
+      --accent-pink: #FF007A;
+      --accent-amber: #FFB703;
+      --text-light: #F8FAFC;
+      --text-muted: #94A3B8;
+      --thermal-bg: #FAF9F6;
+      --thermal-ink: #111111;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
+
+    /* HUD Layout */
+    .hud-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px 24px;
+    }
+
+    .interactive {
+      pointer-events: auto;
+    }
+
+    /* Top Navigation Header */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--panel-border);
+      padding: 12px 20px;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
+      color: #060e18;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-name span {
+      color: var(--accent-cyan);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, var(--accent-emerald), #059669);
+      color: #060e18;
+      box-shadow: 0 4px 14px rgba(0, 223, 137, 0.3);
+    }
+
+    .btn-emerald:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0, 223, 137, 0.45);
+    }
+
+    .btn-pink {
+      background: linear-gradient(135deg, var(--accent-pink), #D80064);
+      color: white;
+      box-shadow: 0 4px 14px rgba(255, 0, 122, 0.3);
+    }
+
+    .btn-pink:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(255, 0, 122, 0.5);
+    }
+
+    .btn-glass {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-light);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-glass:hover, .btn-glass.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Left Control Sidebar */
+    .left-tools {
+      position: absolute;
+      top: 85px;
+      left: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .tool-widget {
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      width: 220px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .widget-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mode-pill {
+      font-size: 10px;
+      color: var(--accent-cyan);
+      background: rgba(0, 240, 255, 0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .lighting-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .lighting-btn {
+      padding: 6px 4px;
+      font-size: 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .lighting-btn.active {
+      border-color: var(--accent-amber);
+      background: rgba(255, 183, 3, 0.2);
+      color: var(--accent-amber);
+    }
+
+    .counter-stat {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-emerald);
+      margin-top: 4px;
+    }
+
+    /* Bottom Furniture Catalog Dock */
+    .catalog-dock {
+      align-self: center;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 95vw;
+      overflow-x: auto;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+      scrollbar-width: none;
+    }
+
+    .catalog-dock::-webkit-scrollbar {
+      display: none;
+    }
+
+    .dock-category {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      letter-spacing: 1px;
+      margin-right: 4px;
+    }
+
+    .catalog-item-card {
+      min-width: 110px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 4px;
+    }
+
+    .catalog-item-card:hover {
+      background: rgba(0, 223, 137, 0.1);
+      border-color: var(--accent-emerald);
+      transform: translateY(-3px);
+    }
+
+    .catalog-icon {
+      font-size: 22px;
+    }
+
+    .catalog-name {
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .catalog-price {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    /* Walkthrough WASD Overlay */
+    .walkthrough-guide {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(8, 10, 15, 0.85);
+      border: 1px solid var(--accent-cyan);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+    }
+
+    /* Thermal Receipt Modal (Delusion Reality-Check) */
+    .receipt-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .thermal-receipt {
+      background: var(--thermal-bg);
+      color: var(--thermal-ink);
+      font-family: 'VT323', monospace;
+      width: 340px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      position: relative;
+      border-radius: 2px;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+      animation: printReceipt 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes printReceipt {
+      0% { transform: translateY(-50px) scale(0.9); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* Zigzag perforated edges */
+    .thermal-receipt::before, .thermal-receipt::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background-size: 12px 6px;
+    }
+
+    .thermal-receipt::before {
+      top: -6px;
+      background-image: radial-gradient(circle at 6px 0, transparent 6px, var(--thermal-bg) 6px);
+    }
+
+    .thermal-receipt::after {
+      bottom: -6px;
+      background-image: radial-gradient(circle at 6px 6px, transparent 6px, var(--thermal-bg) 6px);
+    }
+
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px dashed #333;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    .receipt-brand {
+      font-size: 24px;
+      letter-spacing: 1px;
+      font-weight: bold;
+    }
+
+    .receipt-sub {
+      font-size: 14px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .receipt-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .receipt-total {
+      border-top: 2px dashed #333;
+      border-bottom: 2px dashed #333;
+      padding: 8px 0;
+      margin: 10px 0;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .reality-box {
+      background: #eee;
+      border: 1px solid #ccc;
+      padding: 8px;
+      margin: 10px 0;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .reality-tag {
+      font-size: 16px;
+      color: #b91c1c;
+      font-weight: bold;
+    }
+
+    .barcode {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 32px;
+      letter-spacing: 4px;
+      line-height: 1;
+    }
+
+    .receipt-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .receipt-btn {
+      flex: 1;
+      padding: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Agency Contact Lead Modal */
+    .lead-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 1001;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .lead-card {
+      background: #0E131F;
+      border: 1px solid var(--accent-emerald);
+      border-radius: 16px;
+      width: 440px;
+      padding: 28px;
+      box-shadow: 0 16px 48px rgba(0, 223, 137, 0.2);
+    }
+
+    .form-group {
+      margin-top: 14px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: white;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Render Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- HUD Interface Layer -->
+  <div class="hud-layer">
+    <!-- Top Header -->
+    <header class="header-bar interactive">
+      <div class="brand-title">
+        <span class="brand-badge">Lab Prototype</span>
+        <div class="brand-name">JAM SPACE <span>3D</span></div>
+      </div>
+
+      <div class="header-controls">
+        <button id="toggle-camera-btn" class="btn btn-glass" onclick="toggleCameraMode()">
+          <span id="cam-icon">🚶</span> <span id="cam-label">Walkthrough (WASD)</span>
+        </button>
+        <button class="btn btn-pink" onclick="openReceiptModal()">
+          🧾 Delusion Reality-Check
+        </button>
+        <button class="btn btn-emerald" onclick="openLeadModal()">
+          ⚡ Pitch This Tech
+        </button>
+      </div>
+    </header>
+
+    <!-- Left Controls Panel -->
+    <div class="left-tools interactive">
+      <div class="tool-widget">
+        <div class="widget-title">
+          <span>Atmosphere</span>
+          <span class="mode-pill">Real-time</span>
+        </div>
+        <div class="lighting-options">
+          <button class="lighting-btn active" onclick="setMood('cyberpunk', this)">Cyber</button>
+          <button class="lighting-btn" onclick="setMood('sunset', this)">Sunset</button>
+          <button class="lighting-btn" onclick="setMood('studio', this)">Studio</button>
+        </div>
+      </div>
+
+      <div class="tool-widget">
+        <div class="widget-title">
+          <span>Total Delusion Cart</span>
+          <span class="mode-pill" id="item-count-badge">3 Items</span>
+        </div>
+        <div class="counter-stat" id="total-price-display">$11,800</div>
+        <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px;">
+          Click items in dock to spawn into room
+        </div>
+      </div>
+
+      <div class="tool-widget">
+        <div class="widget-title">
+          <span>Controls Guide</span>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+          • <b>Orbit:</b> Left Click + Drag<br>
+          • <b>Pan:</b> Right Click + Drag<br>
+          • <b>Zoom:</b> Scroll Wheel<br>
+          • <b>Walk:</b> Press [W,A,S,D]
+        </div>
+      </div>
+    </div>
+
+    <!-- Walkthrough WASD Notification -->
+    <div id="walkthrough-hud" class="walkthrough-guide">
+      <span>WASD or Arrow Keys to navigate · Click to return to Orbit Mode</span>
+    </div>
+
+    <!-- Bottom Furniture Catalog Dock -->
+    <div class="catalog-dock interactive">
+      <div class="dock-category">INVENTORY</div>
+
+      <div class="catalog-item-card" onclick="spawnItem('desk')">
+        <div class="catalog-icon">🖥️</div>
+        <div class="catalog-name">Cyber Workstation</div>
+        <div class="catalog-price">$3,800</div>
+      </div>
+
+      <div class="catalog-item-card" onclick="spawnItem('sofa')">
+        <div class="catalog-icon">🛋️</div>
+        <div class="catalog-name">Velvet Cloud Sofa</div>
+        <div class="catalog-price">$5,500</div>
+      </div>
+
+      <div class="catalog-item-card" onclick="spawnItem('amp')">
+        <div class="catalog-icon">🔊</div>
+        <div class="catalog-name">Hi-Fi Audio Tower</div>
+        <div class="catalog-price">$2,500</div>
+      </div>
+
+      <div class="catalog-item-card" onclick="spawnItem('arcade')">
+        <div class="catalog-icon">🕹️</div>
+        <div class="catalog-name">Retro Arcade 1984</div>
+        <div class="catalog-price">$3,200</div>
+      </div>
+
+      <div class="catalog-item-card" onclick="spawnItem('coffee')">
+        <div class="catalog-icon">☕</div>
+        <div class="catalog-name">Artisan Espresso</div>
+        <div class="catalog-price">$4,400</div>
+      </div>
+
+      <div class="catalog-item-card" onclick="spawnItem('neon')">
+        <div class="catalog-icon">⚡</div>
+        <div class="catalog-name">Neon Glow Sign</div>
+        <div class="catalog-price">$1,200</div>
+      </div>
+
+      <div class="catalog-item-card" onclick="spawnItem('plant')">
+        <div class="catalog-icon">🪴</div>
+        <div class="catalog-name">Zen Bonsai</div>
+        <div class="catalog-price">$850</div>
+      </div>
+
+      <button class="btn btn-glass" onclick="clearRoom()" style="height: 100%; padding: 0 12px;" title="Reset Room">
+        🧹 Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Delusion Reality-Check Thermal Receipt Modal -->
+  <div id="receipt-modal" class="receipt-modal-backdrop">
+    <div id="thermal-receipt-el" class="thermal-receipt">
+      <div class="receipt-header">
+        <div class="receipt-brand">*** JAM SPACE ***</div>
+        <div class="receipt-sub">Delusion Reality-Check™</div>
+        <div style="font-size: 13px; margin-top: 4px;">TERMINAL #09 · GRO10X LABS</div>
+        <div style="font-size: 12px; color: #444;" id="receipt-date">2026-10-15 04:12 UTC</div>
+      </div>
+
+      <div id="receipt-items-list">
+        <!-- Dynamically populated -->
+      </div>
+
+      <div class="receipt-line receipt-total">
+        <span>TOTAL FANTASY:</span>
+        <span id="receipt-total-cost">$11,800</span>
+      </div>
+
+      <div class="reality-box">
+        <div style="font-weight: bold; margin-bottom: 2px;">REALITY DIAGNOSTIC:</div>
+        <div class="reality-tag" id="reality-status">SEVERE COPING (8.4 Months Starvation)</div>
+        <div style="font-size: 12px; margin-top: 4px;" id="reality-desc">
+          At an estimated $3,000/mo salary with $0 saved, you must forfeit nutrition and rent for 8 months to afford this room.
+        </div>
+      </div>
+
+      <div class="receipt-line" style="font-size: 13px;">
+        <span>Delusion Index:</span>
+        <span style="font-weight: bold; color: #b91c1c;">94.8% CRITICAL</span>
+      </div>
+      <div class="receipt-line" style="font-size: 13px;">
+        <span>GRO10X Feasibility:</span>
+        <span>100% (Instant 3D)</span>
+      </div>
+
+      <div class="barcode">||| | ||||| || |||||| | |||</div>
+      <div style="text-align: center; font-size: 12px; margin-top: 4px;">* POWERED BY GRO10X SPATIAL ENGINE *</div>
+
+      <div class="receipt-actions">
+        <button class="receipt-btn" style="background:#111; color:#fff;" onclick="closeReceiptModal()">Close</button>
+        <button class="receipt-btn" style="background:#00DF89; color:#060e18;" onclick="downloadReceipt()">Save Receipt PNG</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lead Pitch Modal -->
+  <div id="lead-modal" class="lead-modal">
+    <div class="lead-card">
+      <h2 style="font-size: 20px; font-weight: 800; color: white;">Bring Spatial 3D to Your Brand</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">
+        GRO10X engineers high-converting WebGL 3D configurators, viral sales calculators, and real-time commerce engines for ambitious brands.
+      </p>
+
+      <form onsubmit="handleLeadSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Work Email / WhatsApp</label>
+          <input type="text" id="lead-contact" required class="form-input" placeholder="e.g. founder@acme.com or +88017...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Brand / Product Concept</label>
+          <input type="text" id="lead-concept" required class="form-input" placeholder="e.g. Luxury Furniture, EV Configurator, Real Estate">
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button type="button" class="btn btn-glass" style="flex:1;" onclick="closeLeadModal()">Cancel</button>
+          <button type="submit" class="btn btn-emerald" style="flex:2;">Request Sprint Briefing</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Three.js Scene Implementation -->
+  <script>
+    // Global State
+    let scene, camera, renderer, controls;
+    let roomGroup, furnitureGroup;
+    let pointLights = [];
+    let isWalkthrough = false;
+    let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+    let clock = new THREE.Clock();
+
+    // Inventory Catalog & Placed Items
+    const CATALOG = {
+      desk: { name: 'Cyber Workstation', price: 3800, color: 0x1E293B, accent: 0x00F0FF, icon: '🖥️' },
+      sofa: { name: 'Velvet Cloud Sofa', price: 5500, color: 0x8B5CF6, accent: 0xFF007A, icon: '🛋️' },
+      amp: { name: 'Hi-Fi Audio Tower', price: 2500, color: 0x0F172A, accent: 0x00DF89, icon: '🔊' },
+      arcade: { name: 'Retro Arcade 1984', price: 3200, color: 0xDC2626, accent: 0xFFB703, icon: '🕹️' },
+      coffee: { name: 'Artisan Espresso', price: 4400, color: 0x78350F, accent: 0xF59E0B, icon: '☕' },
+      neon: { name: 'Neon Glow Sign', price: 1200, color: 0xFF007A, accent: 0x00F0FF, icon: '⚡' },
+      plant: { name: 'Zen Bonsai', price: 850, color: 0x059669, accent: 0x10B981, icon: '🪴' }
+    };
+
+    let placedItems = [
+      { type: 'desk', x: 0, z: -3.5, rot: 0 },
+      { type: 'sofa', x: -3.5, z: 1.5, rot: Math.PI / 2 },
+      { type: 'amp', x: 3.5, z: -3.5, rot: -Math.PI / 4 }
+    ];
+
+    function init() {
+      const canvas = document.getElementById('webgl-canvas');
+      
+      // Scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x080A0F);
+      scene.fog = new THREE.FogExp2(0x080A0F, 0.035);
+
+      // Camera
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(9, 8, 12);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      // Orbit Controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 - 0.05; // Don't clip below floor
+      controls.minDistance = 3;
+      controls.maxDistance = 25;
+      controls.target.set(0, 1.5, 0);
+
+      // Groups
+      roomGroup = new THREE.Group();
+      furnitureGroup = new THREE.Group();
+      scene.add(roomGroup);
+      scene.add(furnitureGroup);
+
+      buildRoom();
+      setupLighting();
+      renderAllItems();
+      updateCartDisplay();
+
+      // Events
+      window.addEventListener('resize', onWindowResize);
+      window.addEventListener('keydown', onKeyDown);
+      window.addEventListener('keyup', onKeyUp);
+
+      // Start Loop
+      animate();
+    }
+
+    // Room Geometry & Materials
+    function buildRoom() {
+      // Floor (Reflective Matte Slate)
+      const floorGeo = new THREE.PlaneGeometry(12, 12);
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0x111622,
+        roughness: 0.25,
+        metalness: 0.4
+      });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.receiveShadow = true;
+      roomGroup.add(floor);
+
+      // Floor Grid Trim
+      const grid = new THREE.GridHelper(12, 12, 0x00DF89, 0x1E293B);
+      grid.position.y = 0.005;
+      roomGroup.add(grid);
+
+      // Back Wall
+      const wallMat = new THREE.MeshStandardMaterial({ color: 0x0F141F, roughness: 0.8 });
+      const backWallGeo = new THREE.BoxGeometry(12, 6, 0.3);
+      const backWall = new THREE.Mesh(backWallGeo, wallMat);
+      backWall.position.set(0, 3, -6);
+      backWall.receiveShadow = true;
+      roomGroup.add(backWall);
+
+      // Left Wall
+      const leftWallGeo = new THREE.BoxGeometry(0.3, 6, 12);
+      const leftWall = new THREE.Mesh(leftWallGeo, wallMat);
+      leftWall.position.set(-6, 3, 0);
+      leftWall.receiveShadow = true;
+      roomGroup.add(leftWall);
+
+      // Baseboard Glow Trim
+      const trimGeo = new THREE.BoxGeometry(12, 0.08, 0.08);
+      const trimMat = new THREE.MeshBasicMaterial({ color: 0x00F0FF });
+      const backTrim = new THREE.Mesh(trimGeo, trimMat);
+      backTrim.position.set(0, 0.04, -5.85);
+      roomGroup.add(backTrim);
+
+      const sideTrim = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 12), trimMat);
+      sideTrim.position.set(-5.85, 0.04, 0);
+      roomGroup.add(sideTrim);
+
+      // Holographic Neon Wall Logo Sign
+      const signMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(3.5, 0.8, 0.05),
+        new THREE.MeshBasicMaterial({ color: 0xFF007A })
+      );
+      signMesh.position.set(0, 4.2, -5.8);
+      roomGroup.add(signMesh);
+    }
+
+    // Dynamic Lighting
+    function setupLighting() {
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
+      scene.add(ambientLight);
+
+      // Cyber Key Light (Cyan)
+      const lightCyan = new THREE.PointLight(0x00F0FF, 1.8, 15);
+      lightCyan.position.set(-3, 4.5, -2);
+      lightCyan.castShadow = true;
+      lightCyan.shadow.mapSize.width = 1024;
+      lightCyan.shadow.mapSize.height = 1024;
+      scene.add(lightCyan);
+      pointLights.push(lightCyan);
+
+      // Magenta Accent Light
+      const lightPink = new THREE.PointLight(0xFF007A, 1.6, 15);
+      lightPink.position.set(4, 3.5, 2);
+      lightPink.castShadow = true;
+      scene.add(lightPink);
+      pointLights.push(lightPink);
+
+      // Warm Ceiling Spot
+      const ceilingSpot = new THREE.SpotLight(0xFFFFFF, 1.2);
+      ceilingSpot.position.set(0, 7.5, 0);
+      ceilingSpot.angle = Math.PI / 4;
+      ceilingSpot.penumbra = 0.5;
+      ceilingSpot.castShadow = true;
+      scene.add(ceilingSpot);
+    }
+
+    // Procedural Item Geometries
+    function createItemMesh(type) {
+      const g = new THREE.Group();
+      const meta = CATALOG[type];
+
+      if (type === 'desk') {
+        // Table top
+        const top = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 1.1), new THREE.MeshStandardMaterial({ color: meta.color, roughness: 0.3 }));
+        top.position.y = 1.0;
+        top.castShadow = true;
+        g.add(top);
+
+        // Legs
+        const legMat = new THREE.MeshStandardMaterial({ color: 0x111, metalness: 0.8 });
+        [-1, 1].forEach(lx => {
+          [-0.4, 0.4].forEach(lz => {
+            const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1), legMat);
+            leg.position.set(lx, 0.5, lz);
+            leg.castShadow = true;
+            g.add(leg);
+          });
+        });
+
+        // Ultrawide Curve Monitor
+        const screen = new THREE.Mesh(
+          new THREE.BoxGeometry(1.6, 0.55, 0.05),
+          new THREE.MeshBasicMaterial({ color: 0x00F0FF })
+        );
+        screen.position.set(0, 1.45, -0.3);
+        g.add(screen);
+
+      } else if (type === 'sofa') {
+        // Base Cushion
+        const base = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.45, 1.2), new THREE.MeshStandardMaterial({ color: meta.color, roughness: 0.8 }));
+        base.position.y = 0.3;
+        base.castShadow = true;
+        g.add(base);
+
+        // Backrest
+        const back = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.6, 0.3), new THREE.MeshStandardMaterial({ color: meta.color, roughness: 0.8 }));
+        back.position.set(0, 0.75, -0.45);
+        back.castShadow = true;
+        g.add(back);
+
+        // Neon Accent Stripe
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.04, 0.04), new THREE.MeshBasicMaterial({ color: meta.accent }));
+        stripe.position.set(0, 0.55, -0.28);
+        g.add(stripe);
+
+      } else if (type === 'amp') {
+        const tower = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.8, 0.5), new THREE.MeshStandardMaterial({ color: meta.color, metalness: 0.5 }));
+        tower.position.y = 0.9;
+        tower.castShadow = true;
+        g.add(tower);
+
+        // Glowing Woofers
+        [0.4, 0.9, 1.4].forEach(wy => {
+          const woofer = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.05), new THREE.MeshBasicMaterial({ color: meta.accent }));
+          woofer.rotation.x = Math.PI / 2;
+          woofer.position.set(0, wy, 0.25);
+          g.add(woofer);
+        });
+
+      } else if (type === 'arcade') {
+        const cabinet = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.9, 0.8), new THREE.MeshStandardMaterial({ color: meta.color, roughness: 0.4 }));
+        cabinet.position.y = 0.95;
+        cabinet.castShadow = true;
+        g.add(cabinet);
+
+        // Screen
+        const screen = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.5, 0.05), new THREE.MeshBasicMaterial({ color: 0x00F0FF }));
+        screen.position.set(0, 1.25, 0.4);
+        g.add(screen);
+
+        // Marquee Glow
+        const marquee = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.2, 0.05), new THREE.MeshBasicMaterial({ color: 0xFFB703 }));
+        marquee.position.set(0, 1.75, 0.4);
+        g.add(marquee);
+
+      } else if (type === 'coffee') {
+        // Counter
+        const counter = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.0, 0.7), new THREE.MeshStandardMaterial({ color: 0x1E293B }));
+        counter.position.y = 0.5;
+        counter.castShadow = true;
+        g.add(counter);
+
+        // Machine
+        const machine = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.45, 0.4), new THREE.MeshStandardMaterial({ color: 0xD97706, metalness: 0.8 }));
+        machine.position.set(0, 1.22, 0);
+        g.add(machine);
+
+      } else if (type === 'neon') {
+        const sign = new THREE.Mesh(new THREE.RingGeometry(0.4, 0.5, 32), new THREE.MeshBasicMaterial({ color: 0xFF007A, side: THREE.DoubleSide }));
+        sign.position.set(0, 3.2, 0);
+        g.add(sign);
+
+      } else if (type === 'plant') {
+        const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.2, 0.5), new THREE.MeshStandardMaterial({ color: 0xFFFFFF }));
+        pot.position.y = 0.25;
+        pot.castShadow = true;
+        g.add(pot);
+
+        const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45), new THREE.MeshStandardMaterial({ color: 0x10B981, roughness: 0.6 }));
+        leaf.position.y = 0.75;
+        leaf.castShadow = true;
+        g.add(leaf);
+      }
+
+      return g;
+    }
+
+    function renderAllItems() {
+      // Clear previous furniture
+      while (furnitureGroup.children.length > 0) {
+        furnitureGroup.remove(furnitureGroup.children[0]);
+      }
+
+      placedItems.forEach(item => {
+        const mesh = createItemMesh(item.type);
+        mesh.position.set(item.x, 0, item.z);
+        mesh.rotation.y = item.rot || 0;
+        furnitureGroup.add(mesh);
+      });
+    }
+
+    function spawnItem(type) {
+      // Scatter in open radius
+      const rx = (Math.random() - 0.5) * 6;
+      const rz = (Math.random() - 0.5) * 6;
+      placedItems.push({ type, x: rx, z: rz, rot: Math.random() * Math.PI * 2 });
+      
+      renderAllItems();
+      updateCartDisplay();
+    }
+
+    function clearRoom() {
+      placedItems = [];
+      renderAllItems();
+      updateCartDisplay();
+    }
+
+    function updateCartDisplay() {
+      const total = placedItems.reduce((acc, curr) => acc + (CATALOG[curr.type]?.price || 0), 0);
+      document.getElementById('total-price-display').innerText = '$' + total.toLocaleString();
+      document.getElementById('item-count-badge').innerText = `${placedItems.length} Items`;
+    }
+
+    // Mood Lighting Switcher
+    function setMood(mood, btn) {
+      document.querySelectorAll('.lighting-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      if (mood === 'cyberpunk') {
+        scene.background = new THREE.Color(0x080A0F);
+        pointLights[0].color.setHex(0x00F0FF);
+        pointLights[1].color.setHex(0xFF007A);
+      } else if (mood === 'sunset') {
+        scene.background = new THREE.Color(0x1F111E);
+        pointLights[0].color.setHex(0xFF7E40);
+        pointLights[1].color.setHex(0x9D4EDD);
+      } else if (mood === 'studio') {
+        scene.background = new THREE.Color(0x161821);
+        pointLights[0].color.setHex(0xFFFFFF);
+        pointLights[1].color.setHex(0x94A3B8);
+      }
+    }
+
+    // Camera Mode (Orbit vs Walkthrough WASD)
+    function toggleCameraMode() {
+      isWalkthrough = !isWalkthrough;
+      const btn = document.getElementById('toggle-camera-btn');
+      const hud = document.getElementById('walkthrough-hud');
+
+      if (isWalkthrough) {
+        btn.classList.add('active');
+        document.getElementById('cam-label').innerText = 'Exit Walkthrough';
+        document.getElementById('cam-icon').innerText = '🛰️';
+        camera.position.set(0, 1.7, 4);
+        camera.lookAt(0, 1.7, 0);
+        controls.enabled = false;
+        hud.style.display = 'flex';
+      } else {
+        btn.classList.remove('active');
+        document.getElementById('cam-label').innerText = 'Walkthrough (WASD)';
+        document.getElementById('cam-icon').innerText = '🚶';
+        camera.position.set(9, 8, 12);
+        controls.enabled = true;
+        controls.target.set(0, 1.5, 0);
+        hud.style.display = 'none';
+      }
+    }
+
+    function onKeyDown(e) {
+      if (!isWalkthrough) return;
+      if (e.key === 'w' || e.key === 'ArrowUp') moveForward = true;
+      if (e.key === 's' || e.key === 'ArrowDown') moveBackward = true;
+      if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = true;
+      if (e.key === 'd' || e.key === 'ArrowRight') moveRight = true;
+    }
+
+    function onKeyUp(e) {
+      if (!isWalkthrough) return;
+      if (e.key === 'w' || e.key === 'ArrowUp') moveForward = false;
+      if (e.key === 's' || e.key === 'ArrowDown') moveBackward = false;
+      if (e.key === 'a' || e.key === 'ArrowLeft') moveLeft = false;
+      if (e.key === 'd' || e.key === 'ArrowRight') moveRight = false;
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+
+      if (isWalkthrough) {
+        const speed = 4.0 * delta;
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        forward.y = 0;
+        forward.normalize();
+
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+        right.y = 0;
+        right.normalize();
+
+        if (moveForward) camera.position.addScaledVector(forward, speed);
+        if (moveBackward) camera.position.addScaledVector(forward, -speed);
+        if (moveLeft) camera.position.addScaledVector(right, -speed);
+        if (moveRight) camera.position.addScaledVector(right, speed);
+
+        // Clamp to room bounds
+        camera.position.x = Math.max(-5.2, Math.min(5.2, camera.position.x));
+        camera.position.z = Math.max(-5.2, Math.min(5.2, camera.position.z));
+      } else {
+        controls.update();
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // Receipt Delusion Generator
+    function openReceiptModal() {
+      const modal = document.getElementById('receipt-modal');
+      const listEl = document.getElementById('receipt-items-list');
+      const dateEl = document.getElementById('receipt-date');
+      const totalCostEl = document.getElementById('receipt-total-cost');
+      const realityStatusEl = document.getElementById('reality-status');
+      const realityDescEl = document.getElementById('reality-desc');
+
+      dateEl.innerText = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+
+      let total = 0;
+      let html = '';
+      
+      placedItems.forEach(item => {
+        const m = CATALOG[item.type];
+        if (m) {
+          total += m.price;
+          html += `
+            <div class="receipt-line">
+              <span>${m.name.toUpperCase()}</span>
+              <span>$${m.price.toLocaleString()}</span>
+            </div>
+          `;
+        }
+      });
+
+      if (placedItems.length === 0) {
+        html = '<div style="text-align:center; padding:10px;">ROOM EMPTY - ZERO FANTASY</div>';
+      }
+
+      listEl.innerHTML = html;
+      totalCostEl.innerText = '$' + total.toLocaleString();
+
+      const assumedSalary = 3000;
+      const starvationMonths = (total / assumedSalary).toFixed(1);
+
+      if (total === 0) {
+        realityStatusEl.innerText = 'NO DELUSION DETECTED';
+        realityDescEl.innerText = 'You placed nothing. Safe from economic ruination.';
+      } else if (total < 5000) {
+        realityStatusEl.innerText = `MILD IMPULSIVITY (${starvationMonths} Mo. Pay)`;
+        realityDescEl.innerText = `Sacrifice weekends and your latte addiction to pay off this starter set.`;
+      } else {
+        realityStatusEl.innerText = `SEVERE COPING (${starvationMonths} Months Starvation)`;
+        realityDescEl.innerText = `At $3,000/mo salary with $0 saved, you must forfeit food and shelter for ${starvationMonths} months to afford this room.`;
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receipt-modal').style.display = 'none';
+    }
+
+    function downloadReceipt() {
+      const receiptEl = document.getElementById('thermal-receipt-el');
+      if (window.html2canvas) {
+        html2canvas(receiptEl, { scale: 2 }).then(canvas => {
+          const a = document.createElement('a');
+          a.download = `JAM_SPACE_DELUSION_RECEIPT_${Date.now()}.png`;
+          a.href = canvas.toDataURL();
+          a.click();
+        });
+      } else {
+        alert('Downloading receipt snapshot...');
+      }
+    }
+
+    // Lead Capture Modal
+    function openLeadModal() {
+      document.getElementById('lead-modal').style.display = 'flex';
+    }
+
+    function closeLeadModal() {
+      document.getElementById('lead-modal').style.display = 'none';
+    }
+
+    function handleLeadSubmit(e) {
+      e.preventDefault();
+      const contact = document.getElementById('lead-contact').value;
+      const concept = document.getElementById('lead-concept').value;
+      
+      // Zero Database Pollution: Client-side feedback + optional CRM telemetry beacon
+      alert(`⚡ Inbound Brief Logged for GRO10X Foundry:\n\nContact: ${contact}\nConcept: ${concept}\n\nA rapid prototype sprint proposal will be prepared.`);
+      closeLeadModal();
+    }
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

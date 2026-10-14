@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Serviq BPO Limited - 1-Week Social Media Pilot Sprint Content Calendar</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+    :root {
+      --primary: #0f2744;
+      --primary-light: #1e3a8a;
+      --accent: #0284c7;
+      --accent-cyan: #06b6d4;
+      --success: #059669;
+      --warning: #d97706;
+      --dark: #0f172a;
+      --gray-900: #0f172a;
+      --gray-800: #1e293b;
+      --gray-700: #334155;
+      --gray-600: #475569;
+      --gray-400: #94a3b8;
+      --gray-200: #e2e8f0;
+      --gray-100: #f1f5f9;
+      --gray-50: #f8fafc;
+      --white: #ffffff;
+      --linkedin: #0077b5;
+      --facebook: #1877f2;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--gray-800);
+      background-color: #cbd5e1;
+      line-height: 1.45;
+      font-size: 11.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      max-height: 297mm;
+      padding: 14mm 16mm 14mm 16mm;
+      background: var(--white);
+      margin: 0 auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      page-break-inside: avoid;
+      overflow: hidden;
+    }
+
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Header & Footer */
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gray-200);
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    .doc-header .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      padding: 5px 12px;
+      border-radius: 5px;
+      text-transform: uppercase;
+    }
+
+    .doc-header .header-meta {
+      font-size: 10.5px;
+      color: var(--gray-600);
+      font-weight: 600;
+    }
+
+    .doc-footer {
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9.5px;
+      color: var(--gray-600);
+      flex-shrink: 0;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4 {
+      color: var(--primary);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .section-badge {
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section-desc {
+      font-size: 11px;
+      color: var(--gray-600);
+      margin-bottom: 12px;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+
+    /* Cover Page */
+    .cover-container {
+      background: linear-gradient(145deg, #09192b 0%, #0f2744 45%, #133b66 100%);
+      color: white;
+      padding: 36px 32px;
+      border-radius: 14px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cover-container::before {
+      content: "";
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(2, 132, 199, 0.28) 0%, rgba(2, 132, 199, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .partner-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7dd3fc;
+      margin-bottom: 20px;
+    }
+
+    .cover-title {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cover-subtitle {
+      font-size: 14px;
+      font-weight: 400;
+      color: #93c5fd;
+      line-height: 1.45;
+      max-width: 90%;
+      margin-bottom: 24px;
+    }
+
+    .cover-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-pill {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 20px;
+      font-weight: 800;
+      color: #38bdf8;
+      line-height: 1.1;
+      margin-bottom: 3px;
+    }
+
+    .stat-label {
+      font-size: 9.5px;
+      color: #cbd5e1;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .cover-meta {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .meta-group h4 {
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-bottom: 3px;
+    }
+
+    .meta-group p {
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .meta-group small {
+      font-size: 10.5px;
+      color: #93c5fd;
+      display: block;
+      line-height: 1.35;
+    }
+
+    /* Grids & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 11px 13px;
+    }
+
+    .card.highlight {
+      background: #f0f9ff;
+      border-color: #bae6fd;
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card p, .card li {
+      font-size: 10.5px;
+      color: var(--gray-700);
+      line-height: 1.4;
+    }
+
+    .card ul {
+      list-style-position: inside;
+      padding-left: 2px;
+    }
+
+    .card li {
+      margin-bottom: 2px;
+    }
+
+    /* Tables */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 10.5px;
+    }
+
+    table.data-table th {
+      background: var(--primary);
+      color: white;
+      text-align: left;
+      padding: 7px 9px;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.03em;
+    }
+
+    table.data-table td {
+      padding: 7px 9px;
+      border-bottom: 1px solid var(--gray-200);
+      color: var(--gray-700);
+      vertical-align: top;
+      line-height: 1.35;
+    }
+
+    table.data-table tr:nth-child(even) td {
+      background: var(--gray-50);
+    }
+
+    /* Callouts */
+    .callout {
+      background: #eff6ff;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+
+    .callout-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 3px;
+    }
+
+    .callout-body {
+      font-size: 10.5px;
+      color: #1e3a8a;
+      line-height: 1.4;
+    }
+
+    /* Pillars */
+    .pillar-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .pillar-card.p-navy { border-left-color: #0f2744; }
+    .pillar-card.p-blue { border-left-color: #0284c7; }
+    .pillar-card.p-teal { border-left-color: #0d9488; }
+    .pillar-card.p-purple { border-left-color: #7c3aed; }
+    .pillar-card.p-amber { border-left-color: #d97706; }
+    .pillar-card.p-emerald { border-left-color: #059669; }
+
+    .pillar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3px;
+    }
+
+    .pillar-num {
+      font-size: 8.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gray-400);
+    }
+
+    .pillar-tag {
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .pillar-name {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 3px;
+    }
+
+    .pillar-desc {
+      font-size: 10px;
+      color: var(--gray-600);
+      line-height: 1.35;
+    }
+
+    /* Single Day Layout */
+    .day-sheet {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .day-header-banner {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    .day-badge-combo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .calendar-stamp {
+      background: var(--primary);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-align: center;
+      min-width: 70px;
+    }
+
+    .calendar-dow {
+      font-size: 9px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #93c5fd;
+    }
+
+    .calendar-dom {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .day-headline-group h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .meta-chip {
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chip-pillar { background: #e0f2fe; color: #0369a1; }
+    .chip-format { background: #fef3c7; color: #b45309; }
+    .chip-time { background: #f3e8ff; color: #7e22ce; }
+
+    /* Dual Post Columns */
+    .dual-post-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex: 1;
+    }
+
+    .post-panel {
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 11px;
+      background: var(--gray-50);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .post-panel.linkedin-panel {
+      border-top: 3px solid var(--linkedin);
+    }
+
+    .post-panel.fb-panel {
+      border-top: 3px solid var(--facebook);
+    }
+
+    .post-panel-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+
+    .platform-title {
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--gray-900);
+    }
+
+    .post-audience {
+      font-size: 9.5px;
+      color: var(--gray-600);
+      font-weight: 600;
+    }
+
+    .post-body-text {
+      font-size: 10px;
+      line-height: 1.42;
+      color: var(--gray-800);
+      white-space: pre-line;
+      background: white;
+      padding: 9px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--gray-200);
+      margin-bottom: 8px;
+      flex: 1;
+    }
+
+    .post-tags {
+      font-size: 9px;
+      color: var(--accent);
+      font-weight: 600;
+      line-height: 1.35;
+      flex-shrink: 0;
+    }
+
+    /* Creative Spec Strip */
+    .creative-spec-strip {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+
+    .creative-spec-strip .spec-left {
+      flex: 1;
+    }
+
+    .spec-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+
+    .spec-detail {
+      font-size: 9.5px;
+      color: var(--gray-600);
+      line-height: 1.35;
+    }
+
+    .spec-pill {
+      background: var(--primary);
+      color: #38bdf8;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Playbook Strip */
+    .lead-playbook-strip {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9.5px;
+      color: #166534;
+      flex-shrink: 0;
+    }
+
+    .playbook-title {
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Timeline in Roadmap */
+    .roadmap-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .roadmap-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      padding: 7px 10px;
+    }
+
+    .roadmap-index {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: 9.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .roadmap-body {
+      flex: 1;
+    }
+
+    .roadmap-title-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .roadmap-title-row strong {
+      font-size: 11px;
+      color: var(--primary);
+    }
+
+    .roadmap-phase-tag {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent);
+      background: #e0f2fe;
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    .roadmap-desc {
+      font-size: 10px;
+      color: var(--gray-600);
+      line-height: 1.35;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PAGE 1: COVER ==================== -->
+  <div class="page">
+    <div class="cover-container">
+      <div>
+        <div class="partner-pill">
+          <span>GRO10X Growth Engine × Serviq BPO Limited</span>
+        </div>
+        <h1 class="cover-title">1-Week Social Media Pilot Sprint</h1>
+        <p class="cover-subtitle">
+          Strategic Content Calendar & Execution Architecture for LinkedIn & Facebook<br>
+          <strong>Sprint Duration: October 11, 2026 – October 17, 2026</strong>
+        </p>
+
+        <div class="cover-stats-grid">
+          <div class="stat-pill">
+            <div class="stat-num">4,700+</div>
+            <div class="stat-label">Deployed Workforce</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-num">22+</div>
+            <div class="stat-label">Multinational Accounts</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-num">64</div>
+            <div class="stat-label">Districts Reach</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-num">Paylio</div>
+            <div class="stat-label">Proprietary HR Tech</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cover-meta">
+          <div class="meta-group">
+            <h4>Client Organization</h4>
+            <p>Serviq BPO Limited</p>
+            <small>People · Solutions · Growth | Dhaka, Bangladesh</small>
+            <small>Web: www.serviq.limited · HR Portal: www.mypaylio.com</small>
+          </div>
+          <div class="meta-group">
+            <h4>Key Client Stakeholder</h4>
+            <p>Moon Munzurul Islam</p>
+            <small>Chief Operating Officer | +880 1717 797681</small>
+            <small>House 31 (2nd Floor), Road 1/A, Block-I, Banani, Dhaka-1213</small>
+          </div>
+          <div class="meta-group">
+            <h4>Growth Agency Partner</h4>
+            <p>GRO10X (gro10x.ai)</p>
+            <small>Enterprise Growth Systems & Performance Media</small>
+          </div>
+          <div class="meta-group">
+            <h4>Deliverable Focus</h4>
+            <p>Full 7-Day Editorial & Publishing Sprint</p>
+            <small>Targeting CXOs, HR Heads, CFOs & MNC Leadership in Bangladesh</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 2: EXECUTIVE SUMMARY & PERSONAS ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">1-Week Pilot Social Media Strategy</span>
+      </div>
+      <div class="header-meta">October 11 – 17, 2026 | Prepared by GRO10X</div>
+    </div>
+
+    <div>
+      <div class="section-title">
+        Executive Summary & Pilot Objectives
+        <span class="section-badge">Strategic Brief</span>
+      </div>
+      <p class="section-desc">
+        Serviq BPO Limited has built a proven institutional backbone in Bangladesh: 45+ years of combined leadership experience, 30+ client organisations, 22 multinational accounts, 4,700+ payrolls under active management, and proprietary HR technology (Paylio). The goal of this 1-week pilot sprint is to translate this offline scale into B2B digital brand authority, inbound corporate inquiries, and qualified sales conversations on LinkedIn and Facebook.
+      </p>
+
+      <div class="grid-3">
+        <div class="card highlight">
+          <div class="card-title">🎯 Objective 1: Category Dominance</div>
+          <p>Position Serviq not merely as a staffing vendor, but as Bangladesh’s premier <strong>tech-enabled Employer of Record (EOR)</strong> that carries complete legal liability, statutory dues, and severance risk.</p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">⚡ Objective 2: Showcase HR Tech</div>
+          <p>Differentiate Serviq from traditional local agencies by spotlighting <strong>Paylio (mypaylio.com)</strong>: GPS geofenced attendance, automated biometric synchronization, and zero-error real-time payroll MIS.</p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">📈 Objective 3: Generate Inbound Leads</div>
+          <p>Target C-Suite, CFOs, and HR Directors actively seeking risk transfer, expatriate work-permit processing (BIDA/SB/NSI clearances), and nationwide blue/white-collar deployment across 64 districts.</p>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top: 10px;">
+        Audience Personas & Value Proposition Matrix
+        <span class="section-badge">Targeting Architecture</span>
+      </div>
+      <p class="section-desc">Each piece of content across the pilot week is precision-mapped to address the high-stakes pain points of four core buyer personas in Bangladesh:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 23%;">Target Persona</th>
+            <th style="width: 27%;">Primary Operational Pain Point</th>
+            <th style="width: 28%;">Serviq Solution Angle</th>
+            <th style="width: 22%;">Platform Focus</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Managing Directors & CEOs</strong><br><small>Enterprises & Scaleups</small></td>
+            <td>Labour law liabilities, headcounts bloating balance sheets, compliance disputes, and administrative drag.</td>
+            <td><strong>Employer of Record (EOR):</strong> One contract, one invoice, zero employment liability. Complete risk absorption.</td>
+            <td>LinkedIn (Thought Leadership & ROI Case Studies)</td>
+          </tr>
+          <tr>
+            <td><strong>Chief Financial Officers (CFOs)</strong><br><small>Corporate & MNCs</small></td>
+            <td>Payroll leakage, severance accrual unpredictability, ghost attendance, tax filing non-compliance.</td>
+            <td><strong>Paylio Automated Engine:</strong> Direct salary disbursal, automated tax calculations, fixed predictable outsourcing cost.</td>
+            <td>LinkedIn (Data Carousels & Cost-Saving Breakdowns)</td>
+          </tr>
+          <tr>
+            <td><strong>CHROs & Heads of HR</strong><br><small>Telecom, FMCG, Banking, Pharma</small></td>
+            <td>Rapid nationwide hiring hurdles, unverified fraudulent credentials, high turnover, field attendance tracking.</td>
+            <td><strong>Ready Talent Pool & 64-District Reach:</strong> 6-point background verification (NID, ground address, criminal checks).</td>
+            <td>LinkedIn & Facebook (Process Checklists & Visual Badges)</td>
+          </tr>
+          <tr>
+            <td><strong>MNC Country Heads & Expat Directors</strong><br><small>Foreign-invested firms</small></td>
+            <td>Navigating bureaucratic BIDA work permits, security clearances (SB, NSI, Home Ministry), expatriate tax.</td>
+            <td><strong>Expatriate Turnkey Desk:</strong> E-Visa, work permit, clearances, extensions, and fully compliant expat payroll.</td>
+            <td>LinkedIn (Regulatory Explainer Posts & Guides)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <div class="callout-title">💡 The Platform Distribution Strategy (LinkedIn vs. Facebook in Bangladesh)</div>
+        <div class="callout-body">
+          <strong>LinkedIn</strong> serves as the primary B2B deal-closing channel—capturing corporate decision-makers during business hours with strategic carousels, legal compliance clarity, and operational frameworks.<br>
+          <strong>Facebook</strong> in Bangladesh functions as a critical cross-touchpoint for institutional credibility, employer branding, interactive polls, and high-volume workforce attraction. Captions are adapted with conversational tone, engaging bullet structures, and direct Messenger/WhatsApp CTAs.
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Pilot Strategy</span>
+      <span>Page 2 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 3: PILLARS & ARCHITECTURE ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Strategic Content Pillars & Architecture</span>
+      </div>
+      <div class="header-meta">Foundational Content Strategy</div>
+    </div>
+
+    <div>
+      <div class="section-title">
+        6 Core Service Pillars Extracted from Portfolio
+        <span class="section-badge">Editorial Foundation</span>
+      </div>
+      <p class="section-desc">Every piece of social content during this sprint directly roots in Serviq's institutional service capabilities:</p>
+
+      <div class="grid-3" style="margin-bottom: 14px;">
+        <div class="pillar-card p-navy">
+          <div class="pillar-header"><span class="pillar-num">Pillar 01</span><span class="pillar-tag">Core BPO</span></div>
+          <div class="pillar-name">Staffing & EOR Model</div>
+          <div class="pillar-desc">White & blue collar deployment. Serviq carries contracts, statutory dues, severance & labour law risk.</div>
+        </div>
+        <div class="pillar-card p-blue">
+          <div class="pillar-header"><span class="pillar-num">Pillar 02</span><span class="pillar-tag">Proprietary Tech</span></div>
+          <div class="pillar-name">Paylio HR Platform</div>
+          <div class="pillar-desc">GPS geofencing, remote biometrics, automated payroll & mobile employee self-service.</div>
+        </div>
+        <div class="pillar-card p-teal">
+          <div class="pillar-header"><span class="pillar-num">Pillar 03</span><span class="pillar-tag">MNC Gateway</span></div>
+          <div class="pillar-name">Expat Visas & Permits</div>
+          <div class="pillar-desc">BIDA E-Visa, 1-year work permit, SB/NSI/Ministry clearances & expat payroll tax compliance.</div>
+        </div>
+        <div class="pillar-card p-purple">
+          <div class="pillar-header"><span class="pillar-num">Pillar 04</span><span class="pillar-tag">Risk Shield</span></div>
+          <div class="pillar-name">Background Verification</div>
+          <div class="pillar-desc">NID validation, physical address ground check, criminal checks, and degree institution verification.</div>
+        </div>
+        <div class="pillar-card p-amber">
+          <div class="pillar-header"><span class="pillar-num">Pillar 05</span><span class="pillar-tag">Talent Scale</span></div>
+          <div class="pillar-name">Bulk Hiring & Headhunting</div>
+          <div class="pillar-desc">Rapid deployment across all 64 districts; dedicated mandate owners for confidential C-suite search.</div>
+        </div>
+        <div class="pillar-card p-emerald">
+          <div class="pillar-header"><span class="pillar-num">Pillar 06</span><span class="pillar-tag">Advisory</span></div>
+          <div class="pillar-name">Labour Law & HR Audit</div>
+          <div class="pillar-desc">Compliance with Bangladesh Labour Act 2006, policy handbooks, and salary benchmarking.</div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        Publishing Cadence & Optimal Time Windows
+        <span class="section-badge">Bangladesh Standard Time (BST)</span>
+      </div>
+      <p class="section-desc">Audience consumption patterns among corporate executives in Dhaka peak during specific daily windows:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>Primary Publishing Window</th>
+            <th>Secondary Window</th>
+            <th>Audience Behaviour Context</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>LinkedIn</strong></td>
+            <td><strong>10:00 AM – 11:30 AM BST</strong> (Morning Desk)</td>
+            <td><strong>3:30 PM – 4:30 PM BST</strong> (Mid-Afternoon Pause)</td>
+            <td>Corporate leaders, HR heads, and CFOs check industry feeds before midday meetings and during afternoon tea breaks.</td>
+          </tr>
+          <tr>
+            <td><strong>Facebook</strong></td>
+            <td><strong>7:00 PM – 8:30 PM BST</strong> (Post-Commute Evening)</td>
+            <td><strong>1:30 PM – 2:30 PM BST</strong> (Post-Lunch Mobile Check)</td>
+            <td>High mobile engagement during Dhaka evening traffic and relaxation hours. Perfect for visual storytelling and conversational videos.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🎨 Tone of Voice Principles</div>
+          <p><strong>Authoritative, Pragmatic & Enterprise-Grade:</strong> Serviq speaks from 45+ years of operational experience. We do not use generic motivation quotes; every post delivers hard operational insights, statutory clarity, or tangible ROI metrics.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🌐 Bilingual Social Strategy</div>
+          <p><strong>English on LinkedIn, Curated Bangla on Facebook:</strong> LinkedIn content uses crisp international corporate English. Facebook content pairs concise English headlines with high-impact Bangla body copy for maximum national resonance.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Editorial Architecture</span>
+      <span>Page 3 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 4: DAY 1 (SUNDAY, OCT 11) ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Day 1 Content Blueprint (Sunday, Oct 11, 2026)</span>
+      </div>
+      <div class="header-meta">Pillar 01: Staffing & EOR</div>
+    </div>
+
+    <div class="day-sheet">
+      <div class="day-header-banner">
+        <div class="day-badge-combo">
+          <div class="calendar-stamp">
+            <div class="calendar-dow">Sunday</div>
+            <div class="calendar-dom">Oct 11</div>
+          </div>
+          <div class="day-headline-group">
+            <h3>Direct Payroll vs. Employer of Record (EOR): Who Carries the Risk?</h3>
+            <div class="chip-row">
+              <span class="meta-chip chip-pillar">Pillar 01: EOR & Staffing</span>
+              <span class="meta-chip chip-format">Format: Multi-Slide Carousel</span>
+              <span class="meta-chip chip-time">BST: 10:30 AM (LI) / 7:30 PM (FB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dual-post-grid">
+        <div class="post-panel linkedin-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--linkedin);">●</span> LinkedIn Version</span>
+            <span class="post-audience">Audience: CEOs, CFOs, HR Directors</span>
+          </div>
+          <div class="post-body-text">Is your growing headcount exposing your business to hidden statutory risks in Bangladesh?
+
+When hiring talent directly, your organisation carries:
+❌ Employment law liabilities under Bangladesh Labour Act 2006
+❌ Statutory gratuity, provident fund, and severance accruals
+❌ Endless administrative drag in payroll processing and compliance audits
+
+There is a smarter, modern alternative: The Employer of Record (EOR) model.
+
+With Serviq BPO Limited as your EOR partner:
+✅ You direct daily work and deliverables
+✅ We carry the employment contract, payroll, group insurance, and legal liabilities
+✅ You receive one clean monthly invoice with zero statutory exposure
+
+With 4,700+ employees deployed across 30+ client organisations (including 22 multinational accounts), Serviq enables companies to scale fast with zero compliance headaches.
+
+👉 Read the 4-slide breakdown attached. Where is your firm currently feeling the biggest workforce administrative burden? Comment below or message us for a confidential consultation.</div>
+          <div class="post-tags">#EmployerOfRecord #HRBangladesh #PayrollOutsourcing #StaffingSolutions #ServiqBPO #ComplianceBD</div>
+        </div>
+
+        <div class="post-panel fb-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--facebook);">●</span> Facebook Version</span>
+            <span class="post-audience">Audience: Business Owners & Corporate Managers</span>
+          </div>
+          <div class="post-body-text">ব্যবসা বড় হচ্ছে, কিন্তু কর্মী নিয়োগ ও পে-রোল জটিলতা কি আপনার সময় নষ্ট করছে? 🏢
+
+আপনি কি জানেন? Serviq BPO Limited-এর Employer of Record (EOR) সেবার মাধ্যমে আপনি কর্মীর কাজের নির্দেশনা দেবেন, আর যাবতীয় চুক্তি, পে-রোল, গ্রুপ ইনস্যুরেন্স ও লিগ্যাল দায়ভার থাকবে Serviq-এর ওপর!
+
+💡 এক নজরে Serviq সুবিধা:
+🔹 One Contract, One Invoice, Zero Employment Risk
+🔹 দেশজুড়ে ৪,৭০০+ কর্মীর পে-রোল ম্যানেজমেন্টের অভিজ্ঞতা
+🔹 ২২+ বহুজাতিক (MNC) ক্লায়েন্টের আস্থা
+🔹 নিজস্ব অত্যাধুনিক HR Tech: Paylio
+
+আপনার কোম্পানির স্টাফিং ও পে-রোলকে শতভাগ ঝামেলামুক্ত করতে আজই যোগাযোগ করুন আমাদের সাথে।
+
+📩 ইনবক্স করুন অথবা ভিজিট করুন: www.serviq.limited</div>
+          <div class="post-tags">#ServiqBPO #HROutsourcing #BusinessGrowthBangladesh #PayrollManagement #DhakaBusiness</div>
+        </div>
+      </div>
+
+      <div class="creative-spec-strip">
+        <div class="spec-left">
+          <div class="spec-label">🎨 Visual Creative Specification</div>
+          <div class="spec-detail"><strong>Carousel Slide 1 (Hook):</strong> High-contrast split banner: "Direct Employment vs. Serviq EOR Model" with visual comparison badges (Risk vs. Shield). Deep navy background, bold cyan accent, Serviq logo top right.</div>
+        </div>
+        <div class="spec-pill">Carousel (4 Slides)</div>
+      </div>
+
+      <div class="lead-playbook-strip">
+        <span class="playbook-title">⚡ Inbound Lead Response Playbook:</span>
+        <span>When a user asks about EOR fees or contract terms, respond within 15 minutes inviting them to a confidential 15-minute scoping call with COO Moon Munzurul Islam.</span>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Daily Content Blueprint</span>
+      <span>Page 4 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 5: DAY 2 (MONDAY, OCT 12) ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Day 2 Content Blueprint (Monday, Oct 12, 2026)</span>
+      </div>
+      <div class="header-meta">Pillar 02: Proprietary HR Tech (Paylio)</div>
+    </div>
+
+    <div class="day-sheet">
+      <div class="day-header-banner">
+        <div class="day-badge-combo">
+          <div class="calendar-stamp">
+            <div class="calendar-dow">Monday</div>
+            <div class="calendar-dom">Oct 12</div>
+          </div>
+          <div class="day-headline-group">
+            <h3>Managing Teams Across 64 Districts? How Paylio Stops Ghost Attendance</h3>
+            <div class="chip-row">
+              <span class="meta-chip chip-pillar">Pillar 02: Paylio HR Tech</span>
+              <span class="meta-chip chip-format">Format: Product UI Showcase / Video Reel</span>
+              <span class="meta-chip chip-time">BST: 11:00 AM (LI) / 8:00 PM (FB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dual-post-grid">
+        <div class="post-panel linkedin-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--linkedin);">●</span> LinkedIn Version</span>
+            <span class="post-audience">Focus: Operational Efficiency & Tech-Enabled Control</span>
+          </div>
+          <div class="post-body-text">How do you track 500 sales officers, warehouse staff, and field executives scattered across Bogura, Chittagong, Sylhet, and Dhaka—without ghost attendance or payroll disputes?
+
+Most companies rely on messy spreadsheets and manual punch-ins. At Serviq BPO, we power our entire workforce operations with our proprietary HR platform: Paylio (mypaylio.com).
+
+Here is how Paylio transforms field force governance:
+📍 Remote Attendance with GPS Geofencing & Biometrics: Field teams check in only within authorized geozones.
+⚡ Seamless Workflow Pipeline: Attendance flows directly into leave, overtime, and salary calculations without manual data re-entry.
+📱 Employee Self-Service in their pocket: Every worker accesses transparent digital payslips, tax certificates, and leave requests via mobile.
+📊 Executive Live MIS: C-suite and HR heads see real-time headcount, daily attendance percentage, and workforce cost at a single glance.
+
+Technology shouldn't complicate HR—it should liberate your leaders to focus on growth.
+
+Ready to see Paylio in action? Drop a comment or connect with our Chief Operating Officer, Moon Munzurul Islam.</div>
+          <div class="post-tags">#HRTech #Paylio #AttendanceManagement #WorkforceManagement #Serviq #DhakaTech</div>
+        </div>
+
+        <div class="post-panel fb-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--facebook);">●</span> Facebook Version</span>
+            <span class="post-audience">Focus: Real-Time Mobile Simplicity & Transparency</span>
+          </div>
+          <div class="post-body-text">সারাদেশে ছড়িয়ে থাকা কর্মীদের উপস্থিতি ট্র্যাক করা কি আপনার টিমের জন্য মাথাব্যথার কারণ? 📱📍
+
+কাগজে-কলমে বা স্প্রেডশিটের দিন শেষ! Serviq BPO নিয়ে এসেছে নিজস্ব স্মার্ট HR প্ল্যাটফর্ম—Paylio (mypaylio.com)।
+
+কেন Paylio আলাদা?
+✅ GPS Geofence রিমোট অ্যাটেনডেন্স—সঠিক স্থান থেকেই চেক-ইন নিশ্চিত।
+✅ স্বয়ংক্রিয় পে-রোল লিঙ্ক—উপস্থিতি সরাসরি স্যালারি ক্যালকুলেশনে চলে যায়।
+✅ মোবাইল সেলফ সার্ভিস—কর্মীর ফোনেই ডিজিটাল পে-স্লিপ ও ছুটির আবেদন।
+✅ রিয়েল-টাইম ড্যাশবোর্ড—ম্যানেজমেন্ট দেখতে পায় লাইভ হেডকাউন্ট ও রিপোর্ট।
+
+আপনার প্রতিষ্ঠানকে ডিজিটাল করতে আজই ট্রাই করুন Paylio।
+
+🌐 বিস্তারিত জানুন: www.mypaylio.com | কল করুন: +880 1717 797681</div>
+          <div class="post-tags">#Paylio #HRSoftwareBD #SmartAttendance #RemoteTeamManagement #ServiqBPO</div>
+        </div>
+      </div>
+
+      <div class="creative-spec-strip">
+        <div class="spec-left">
+          <div class="spec-label">🎨 Visual Creative Specification</div>
+          <div class="spec-detail"><strong>UI Mockup Graphic:</strong> Floating smartphone mockup displaying Paylio's live GPS check-in screen with green verified badge, flanked by laptop showing executive analytics dashboard. Sleek dark-mode aesthetic with neon cyan UI highlights.</div>
+        </div>
+        <div class="spec-pill">UI Mockup Graphic</div>
+      </div>
+
+      <div class="lead-playbook-strip">
+        <span class="playbook-title">⚡ Inbound Lead Response Playbook:</span>
+        <span>When a corporate manager inquires about Paylio pricing or demo, share the direct link to mypaylio.com and offer a free 30-minute sandbox walkthrough.</span>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Daily Content Blueprint</span>
+      <span>Page 5 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 6: DAY 3 (TUESDAY, OCT 13) ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Day 3 Content Blueprint (Tuesday, Oct 13, 2026)</span>
+      </div>
+      <div class="header-meta">Pillar 03: Expatriate Management</div>
+    </div>
+
+    <div class="day-sheet">
+      <div class="day-header-banner">
+        <div class="day-badge-combo">
+          <div class="calendar-stamp">
+            <div class="calendar-dow">Tuesday</div>
+            <div class="calendar-dom">Oct 13</div>
+          </div>
+          <div class="day-headline-group">
+            <h3>Bringing Foreign Leadership to Bangladesh? The 6 Regulatory Gates</h3>
+            <div class="chip-row">
+              <span class="meta-chip chip-pillar">Pillar 03: Expatriate Management</span>
+              <span class="meta-chip chip-format">Format: Step-by-Step Regulatory Infographic</span>
+              <span class="meta-chip chip-time">BST: 10:00 AM (LI) / 6:30 PM (FB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dual-post-grid">
+        <div class="post-panel linkedin-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--linkedin);">●</span> LinkedIn Version</span>
+            <span class="post-audience">Focus: MNC Foreign Talent Compliance & Visas</span>
+          </div>
+          <div class="post-body-text">Deploying foreign experts, country heads, or technical directors into Bangladesh? A single documentation flaw can stall work permits and trigger severe regulatory penalties.
+
+MNCs face multiple bureaucratic touchpoints across ministries. Serviq BPO runs an end-to-end Expatriate Management & Payroll Desk that navigates the complete lifecycle:
+
+1️⃣ BIDA E-Visa Recommendation & Mandatory Newspaper Advertisement
+2️⃣ BIDA Work Permit Processing & E-TIN Registration
+3️⃣ Multi-agency Security Clearances (Special Branch - SB, NSI, Ministry of Home Affairs)
+4️⃣ Work-Permit Visa Extension & Annual Renewals
+5️⃣ Expatriate Monthly Payroll, Bangladesh Tax Assessment & Legal Disbursement
+
+"We handle the government process so your leadership can focus on execution."
+
+Trusted by 22 multinational accounts operating in Bangladesh. Need guidance on your foreign executive visas? Contact our expatriate desk today.</div>
+          <div class="post-tags">#ExpatriateManagement #WorkPermitBangladesh #BIDA #MNCBangladesh #ExpatPayroll #ServiqBPO</div>
+        </div>
+
+        <div class="post-panel fb-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--facebook);">●</span> Facebook Version</span>
+            <span class="post-audience">Focus: Complete Expat Solution in One Window</span>
+          </div>
+          <div class="post-body-text">বাংলাদেশে বিদেশী কর্মী ও বিশেষজ্ঞদের ওয়ার্ক পারমিট প্রসেসিং নিয়ে ঝামেলায় পড়ছেন? ✈️🛂
+
+Serviq BPO Limited-এর ডেডিকেটেড Expatriate Management সার্ভিসের মাধ্যমে পান ঝামেলাহীন ও শতভাগ কমপ্লায়েন্ট সল্যুশন:
+
+✅ BIDA E-Visa রিকমেন্ডেশন ও বিজ্ঞাপন
+✅ BIDA ওয়ার্ক পারমিট ও E-TIN রেজিস্ট্রেশন
+✅ স্পেশাল ব্রাঞ্চ (SB), NSI ও স্বরাষ্ট্র মন্ত্রণালয়ের ক্লিয়ারেন্স
+✅ বাৎসরিক পারমিট ও ভিসা এক্সটেনশন
+✅ সম্পূর্ণ কমপ্লায়েন্ট এক্সপ্যাট পে-রোল ও ট্যাক্স অ্যাসেসমেন্ট
+
+২২টি বহুজাতিক প্রতিষ্ঠান ইতিমধ্যেই আমাদের ওপর আস্থা রেখেছে। সরকারি সব প্রক্রিয়া সম্পন্ন করুন এক ছাদের নিচে!
+
+📞 সরাসরি পরামর্শের জন্য কল করুন: +880 1717 797681 | www.serviq.limited</div>
+          <div class="post-tags">#WorkPermit #ExpatVisaBD #MNCSupport #ServiqSolutions #GlobalMobilityBD</div>
+        </div>
+      </div>
+
+      <div class="creative-spec-strip">
+        <div class="spec-left">
+          <div class="spec-label">🎨 Visual Creative Specification</div>
+          <div class="spec-detail"><strong>Step-by-Step Flowchart Graphic:</strong> High-end clean timeline showing 5 interconnected nodes: [E-Visa] → [BIDA Permit] → [SB / NSI Clearances] → [Permit Extension] → [Compliant Expat Payroll]. Stamp of compliance and gold accent seals.</div>
+        </div>
+        <div class="spec-pill">Regulatory Flowchart</div>
+      </div>
+
+      <div class="lead-playbook-strip">
+        <span class="playbook-title">⚡ Inbound Lead Response Playbook:</span>
+        <span>When foreign companies or liaison offices inquire, flag as High-Priority and initiate a direct introduction to Serviq's Senior Regulatory Consultant.</span>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Daily Content Blueprint</span>
+      <span>Page 6 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 7: DAY 4 (WEDNESDAY, OCT 14) ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Day 4 Content Blueprint (Wednesday, Oct 14, 2026)</span>
+      </div>
+      <div class="header-meta">Pillar 04: Background Verification (BGV)</div>
+    </div>
+
+    <div class="day-sheet">
+      <div class="day-header-banner">
+        <div class="day-badge-combo">
+          <div class="calendar-stamp">
+            <div class="calendar-dow">Wednesday</div>
+            <div class="calendar-dom">Oct 14</div>
+          </div>
+          <div class="day-headline-group">
+            <h3>1 in 6 Resumes Contain Discrepancies: The True Cost of Bad Hires</h3>
+            <div class="chip-row">
+              <span class="meta-chip chip-pillar">Pillar 04: Background Checks</span>
+              <span class="meta-chip chip-format">Format: Risk Analysis & 6-Point Checklist</span>
+              <span class="meta-chip chip-time">BST: 11:30 AM (LI) / 7:00 PM (FB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dual-post-grid">
+        <div class="post-panel linkedin-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--linkedin);">●</span> LinkedIn Version</span>
+            <span class="post-audience">Focus: Corporate Risk & Fraud Prevention</span>
+          </div>
+          <div class="post-body-text">A forged academic certificate. A fictitious past designation. A fabricated address.
+
+In Bangladesh's fast-moving corporate landscape, hiring without rigorous background checks exposes your brand to financial fraud, IP theft, and workplace safety crises.
+
+How does Serviq protect your organization before a candidate signs the offer letter?
+
+Our 6-Point Background Verification (BGV) Protocol:
+1. National ID (NID) Validation: Authenticated directly against national ID databases.
+2. Ground-Level Address Verification: Physical verification of present and permanent residences.
+3. Employment History Audit: Tenures, real designations, conduct, and reason for exit confirmed with past employers.
+4. Education & Certificate Verification: Degrees vetted with issuing universities and boards.
+5. Professional Reference Inquiries: Confidential qualitative feedback from verified reporting managers.
+6. Police & Criminal Record Checks: Verification through official law enforcement channels.
+
+Every hire is checked. Every finding remains strictly confidential.
+
+Protect your workplace culture before day one. How does your company currently verify high-stakes hires?</div>
+          <div class="post-tags">#BackgroundVerification #RiskMitigation #HRCompliance #CorporateSecurity #ServiqBPO #SafeHiring</div>
+        </div>
+
+        <div class="post-panel fb-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--facebook);">●</span> Facebook Version</span>
+            <span class="post-audience">Focus: Trust & Peace of Mind for Organizations</span>
+          </div>
+          <div class="post-body-text">ভুল নিয়োগের ক্ষতি পূরণ করা অত্যন্ত কঠিন! একটি ভুয়া সার্টিফিকেট বা ভুল ঠিকানা কি আপনার প্রতিষ্ঠানের জন্য ঝুঁকি তৈরি করছে? 🔍🛡️
+
+Serviq BPO Limited নিশ্চিত করে ৬-স্তরের নিখুঁত Background Verification (BGV) সেবা:
+
+🛡️ NID ডাটাবেস যাচাই
+🛡️ বর্তমান ও স্থায়ী ঠিকানার সরেজমিনে ভেরিফিকেশন
+🛡️ পূর্ববর্তী চাকরির অভিজ্ঞতা ও পদবী নিশ্চিতকরণ
+🛡️ শিক্ষাগত সার্টিফিকেট ও বোর্ড ভেরিফিকেশন
+🛡️ পেশাদার রেফারেন্স চেক
+🛡️ পুলিশ ক্লিয়ারেন্স ও ক্রিমিনাল রেকর্ড চেক
+
+নিয়োগের আগেই জেনে নিন আপনার সম্ভাব্য কর্মীর সত্যতা। আপনার ব্র্যান্ড ও কর্মপরিবেশ রাখুন সুরক্ষিত।
+
+📩 কর্পোরেট ভেরিফিকেশন সার্ভিসের জন্য ইনবক্স করুন অথবা ভিজিট করুন: www.serviq.limited</div>
+          <div class="post-tags">#BackgroundCheck #SafeHiring #CorporateIntegrity #ServiqBD #HRVerification</div>
+        </div>
+      </div>
+
+      <div class="creative-spec-strip">
+        <div class="spec-left">
+          <div class="spec-label">🎨 Visual Creative Specification</div>
+          <div class="spec-detail"><strong>Security Shield Infographic:</strong> Stylized metallic shield graphic with 6 interactive checklist nodes: NID, Physical Address, Past Employers, University Degrees, Professional References, and Criminal Records. Text: "6-Point Verification Shield: Zero Compromise."</div>
+        </div>
+        <div class="spec-pill">Checklist Infographic</div>
+      </div>
+
+      <div class="lead-playbook-strip">
+        <span class="playbook-title">⚡ Inbound Lead Response Playbook:</span>
+        <span>Offer HR Heads a pilot verification batch (test 3 sample candidates) to evaluate turnaround speed and reporting thoroughness.</span>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Daily Content Blueprint</span>
+      <span>Page 7 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 8: DAY 5 (THURSDAY, OCT 15) ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Day 5 Content Blueprint (Thursday, Oct 15, 2026)</span>
+      </div>
+      <div class="header-meta">Pillar 05: Bulk Hiring & Executive Search</div>
+    </div>
+
+    <div class="day-sheet">
+      <div class="day-header-banner">
+        <div class="day-badge-combo">
+          <div class="calendar-stamp">
+            <div class="calendar-dow">Thursday</div>
+            <div class="calendar-dom">Oct 15</div>
+          </div>
+          <div class="day-headline-group">
+            <h3>Deploying 100+ Staff Across 14 Districts in 14 Days: Rapid Sourcing</h3>
+            <div class="chip-row">
+              <span class="meta-chip chip-pillar">Pillar 05: Talent Scale</span>
+              <span class="meta-chip chip-format">Format: Case Study / Map Stat Card</span>
+              <span class="meta-chip chip-time">BST: 10:30 AM (LI) / 8:00 PM (FB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dual-post-grid">
+        <div class="post-panel linkedin-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--linkedin);">●</span> LinkedIn Version</span>
+            <span class="post-audience">Focus: Scale, Speed, and Nationwide Footprint</span>
+          </div>
+          <div class="post-body-text">When expanding retail lines, launching seasonal FMCG distribution, or staffing nationwide telecom hubs, hiring one candidate at a time is simply too slow.
+
+You need volume. You need speed. But you cannot compromise on candidate quality.
+
+How Serviq delivers High-Volume Sourcing without bottlenecks:
+🌐 64-District Ground Reach: Pre-screened talent networks ready for rapid field deployment.
+⚡ Dedicated Mandate Owners: One named senior HR recruiter drives each project from initial screening to onboarding.
+🎯 Dual-Spectrum Capability:
+• Blue-collar: Factory floor, sales force, delivery logistics, warehouse operations.
+• White-collar & Leadership: Specialist managers, finance officers, and confidential C-suite executive search.
+🛡️ Full Backup Guarantee: Trained stand-by cover to ensure zero empty seats or operational downtime.
+
+From territory fill to confidential headhunting—Serviq turns weeks into days.
+
+Planning an expansion before year-end? Let's discuss your manpower targets.</div>
+          <div class="post-tags">#TalentAcquisition #BulkHiring #ExecutiveSearch #NationwideRecruitment #ServiqBPO #BangladeshJobs</div>
+        </div>
+
+        <div class="post-panel fb-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--facebook);">●</span> Facebook Version</span>
+            <span class="post-audience">Focus: Massive Scale & Rapid Placement</span>
+          </div>
+          <div class="post-body-text">একসাথে ১০০+ ফিল্ড ফোর্স বা সেলস টিম দরকার? দেশের প্রত্যন্ত অঞ্চলেও দ্রুত লোকবল প্রয়োজন? 🚀
+
+Serviq BPO Limited দিচ্ছে দেশের ৬৪ জেলায় দ্রুততম রিক্রুটমেন্ট ও ম্যানপাওয়ার ডিপ্লয়মেন্ট সমাধান!
+
+আমাদের সক্ষমতা:
+👥 বাল্ক হায়ার: ফ্যাক্টরি, ওয়্যারহাউস, সেলস ও ডেলিভারি টিম
+👔 এক্সিকিউটিভ সার্চ: হেড অব ডিপার্টমেন্ট ও সি-লেভেল এক্সিকিউটিভ নিয়োগ
+⏱️ দ্রুত অনবোর্ডিং: প্রি-স্ক্রিনড ক্যান্ডিডেটদের দিয়ে কম সময়ে শূন্য পদ পূরণ
+🔄 ব্যাকআপ রিপ্লেসমেন্ট সুবিধা যাতে কোনো কাজ থেমে না থাকে
+
+সঠিক মানুষ, সঠিক সময়ে, সঠিক দায়িত্বে।
+
+কর্পোরেট রিক্রুটমেন্ট পার্টনারশিপের জন্য আজই যোগাযোগ করুন:
+📞 +880 1717 797681 | www.serviq.limited</div>
+          <div class="post-tags">#RecruitmentBangladesh #ManpowerSolutions #HiringAtScale #ServiqTeam #CorporateHiring</div>
+        </div>
+      </div>
+
+      <div class="creative-spec-strip">
+        <div class="spec-left">
+          <div class="spec-label">🎨 Visual Creative Specification</div>
+          <div class="spec-detail"><strong>Nationwide Map Stat Card:</strong> Stylized map of Bangladesh glowing with active pins across all 64 districts. Highlighted headline: "64 Districts. 4,700+ Deployed. 14-Day Deployment Speed." Modern geometric data visualization.</div>
+        </div>
+        <div class="spec-pill">Map Stat Card</div>
+      </div>
+
+      <div class="lead-playbook-strip">
+        <span class="playbook-title">⚡ Inbound Lead Response Playbook:</span>
+        <span>Route inquiries directly to Serviq's Talent Acquisition Lead with candidate criteria templates to quote fulfillment SLAs within 24 hours.</span>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Daily Content Blueprint</span>
+      <span>Page 8 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 9: DAY 6 (FRIDAY, OCT 16) ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Day 6 Content Blueprint (Friday, Oct 16, 2026)</span>
+      </div>
+      <div class="header-meta">Pillar 06: Labour Law Advisory</div>
+    </div>
+
+    <div class="day-sheet">
+      <div class="day-header-banner">
+        <div class="day-badge-combo">
+          <div class="calendar-stamp">
+            <div class="calendar-dow">Friday</div>
+            <div class="calendar-dom">Oct 16</div>
+          </div>
+          <div class="day-headline-group">
+            <h3>Bangladesh Labour Act 2006 Red Flags: Is Your Contractor Outsourcing Compliant?</h3>
+            <div class="chip-row">
+              <span class="meta-chip chip-pillar">Pillar 06: Labour Law Advisory</span>
+              <span class="meta-chip chip-format">Format: Thought Leadership / Compliance Byte</span>
+              <span class="meta-chip chip-time">BST: 3:30 PM (LI) / 8:30 PM (FB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dual-post-grid">
+        <div class="post-panel linkedin-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--linkedin);">●</span> LinkedIn Version</span>
+            <span class="post-audience">Focus: Legal Shielding & HR Advisory</span>
+          </div>
+          <div class="post-body-text">Many companies believe that using an informal third-party staffing vendor protects them from labour disputes. Under Bangladesh Labour Act 2006, that assumption can be catastrophic.
+
+If your third-party vendor fails to document statutory dues correctly, principal employers can be held jointly liable in Labour Court.
+
+3 critical red flags every HR Director must check:
+🚩 Are severance and gratuity liabilities clearly documented and funded on the vendor’s statutory books?
+🚩 Does your contractor have group insurance cover for accidental hazards as mandated by law?
+🚩 Is overtime and festival bonus calculated under statutory thresholds or arbitrary flat rates?
+
+At Serviq BPO Limited, our compliance backbone is watertight:
+⚖️ Complete statutory dues and gratuity managed on our balance sheet
+🏥 Group life and accident insurance for every single deployed employee
+📋 Comprehensive HR audits, policy handbooks, and salary benchmarking aligned to local labour legislation
+
+Ensure your outsourcing partner is protecting your reputation—not jeopardizing it.
+
+Connect with our COO, Moon Munzurul Islam, for an exploratory HR compliance audit.</div>
+          <div class="post-tags">#BangladeshLabourLaw #HRCompliance #LabourAct2006 #StatutoryDues #ServiqConsulting #HRAudit</div>
+        </div>
+
+        <div class="post-panel fb-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--facebook);">●</span> Facebook Version</span>
+            <span class="post-audience">Focus: Friday Knowledge Byte & Legal Tips</span>
+          </div>
+          <div class="post-body-text">শুক্রবার বিশেষ টিপস: আপনার প্রতিষ্ঠানে তৃতীয় পক্ষের কর্মী নিয়োগ কি শ্রম আইন অনুযায়ী সম্পূর্ণ নিরাপদ? ⚖️📋
+
+বাংলাদেশ শ্রম আইন ২০০৬ অনুযায়ী, আউটসোর্সড ভেন্ডরদের সঠিক কমপ্লায়েন্স না থাকলে মূল প্রতিষ্ঠানের ওপর আইনি ঝুঁকি চলে আসতে পারে।
+
+Serviq BPO নিশ্চিত করে:
+✅ শ্রম আইনের পূর্ণাঙ্গ কমপ্লায়েন্স ও স্বচ্ছ রেকর্ড
+✅ গ্র্যাচুইটি ও প্রভিডেন্ট ফান্ডের নির্ভুল ব্যবস্থাপনা
+✅ প্রত্যেক কর্মীর জন্য গ্রুপ লাইফ ও দুর্ঘটনা বীমা
+✅ স্বচ্ছ ও নিয়মতান্ত্রিক উৎসব ভাতা ও ওভারটাইম হিসাব
+
+সঠিক পার্টনার বেছে নিন, ঝুঁকিমুক্তভাবে প্রতিষ্ঠান পরিচালনা করুন।
+
+🌐 পরামর্শের জন্য যোগাযোগ করুন: www.serviq.limited | +880 1717 797681</div>
+          <div class="post-tags">#LabourLawBD #HRCompliance #FridayKnowledge #ServiqBPO #BusinessSafety</div>
+        </div>
+      </div>
+
+      <div class="creative-spec-strip">
+        <div class="spec-left">
+          <div class="spec-label">🎨 Visual Creative Specification</div>
+          <div class="spec-detail"><strong>Executive Quote / Authority Card:</strong> Elegant dark-navy quote graphic featuring Moon Munzurul Islam (Chief Operating Officer, Serviq BPO Limited). Key quote: "True workforce agility is impossible without a watertight compliance backbone."</div>
+        </div>
+        <div class="spec-pill">Quote Card</div>
+      </div>
+
+      <div class="lead-playbook-strip">
+        <span class="playbook-title">⚡ Inbound Lead Response Playbook:</span>
+        <span>Offer HR Heads a complimentary gap analysis checklist to benchmark their current contractor contracts against the 2006 Labour Act.</span>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Daily Content Blueprint</span>
+      <span>Page 9 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 10: DAY 7 (SATURDAY, OCT 17) ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Day 7 Content Blueprint (Saturday, Oct 17, 2026)</span>
+      </div>
+      <div class="header-meta">Social Proof & Interactive Community Dialogue</div>
+    </div>
+
+    <div class="day-sheet">
+      <div class="day-header-banner">
+        <div class="day-badge-combo">
+          <div class="calendar-stamp">
+            <div class="calendar-dow">Saturday</div>
+            <div class="calendar-dom">Oct 17</div>
+          </div>
+          <div class="day-headline-group">
+            <h3>4,700+ Lives. 22 MNCs. 64 Districts: One Partner for People & Growth</h3>
+            <div class="chip-row">
+              <span class="meta-chip chip-pillar">Social Proof & Community Dialogue</span>
+              <span class="meta-chip chip-format">Format: Interactive Poll & Milestone Recap</span>
+              <span class="meta-chip chip-time">BST: 11:00 AM (LI) / 7:00 PM (FB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dual-post-grid">
+        <div class="post-panel linkedin-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--linkedin);">●</span> LinkedIn Version (Social Proof & Interactive Poll)</span>
+            <span class="post-audience">Focus: Community Engagement & C-Suite Dialogue</span>
+          </div>
+          <div class="post-body-text">Managing enterprise workforce operations doesn't have to mean juggling 5 different vendors for hiring, payroll, visas, background checks, and attendance software.
+
+Serviq BPO Limited delivers it all under one roof:
+🔹 45+ years combined leadership experience
+🔹 4,700+ live payrolls disbursed every month
+🔹 30+ client organisations (22 multinational accounts)
+🔹 64 districts covered nationwide
+🔹 Powered by Paylio (mypaylio.com)
+
+📊 Quick Poll for Bangladesh Business Leaders:
+What is currently your greatest workforce management bottleneck this quarter?
+1. Escalating statutory compliance & employment risks
+2. High-volume field hiring delays
+3. Manual attendance & payroll leakage
+4. Bureaucratic expatriate visa & work-permit delays
+
+Cast your vote below, and our team will share our proprietary 2026 Bangladesh Workforce Benchmarking Report with participants!</div>
+          <div class="post-tags">#WorkforceManagement #PeopleSolutionsGrowth #ServiqBPO #LeadershipBangladesh #HRCommunity</div>
+        </div>
+
+        <div class="post-panel fb-panel">
+          <div class="post-panel-top">
+            <span class="platform-title"><span style="color:var(--facebook);">●</span> Facebook Version (Weekend Community Dialogue)</span>
+            <span class="post-audience">Focus: Poll & Direct WhatsApp Engagement</span>
+          </div>
+          <div class="post-body-text">একটি সফল কোম্পানির প্রাণশক্তি হলো তার কর্মীবাহিনী। কিন্তু তাদের সঠিক ব্যবস্থাপনা কি আপনার ব্যবসার মূল লক্ষ্য থেকে আপনাকে দূরে সরিয়ে দিচ্ছে? 🌟
+
+Serviq BPO Limited নিয়ে এসেছে সম্পূর্ণ মানুষের পরিচালনা সমাধান—এক ছাদের নিচে:
+✅ রিক্রুটমেন্ট ও বাল্ক স্টাফিং
+✅ শতভাগ আইনি সুরক্ষায় Employer of Record (EOR)
+✅ Paylio স্মার্ট অ্যাটেনডেন্স ও পে-রোল সফটওয়্যার
+✅ এক্সপ্যাট ভিসা ও ওয়ার্ক পারমিট ক্লিয়ারেন্স
+✅ ৬-স্তরের নিখুঁত ব্যাকগ্রাউন্ড ভেরিফিকেশন
+
+৪,৭০০+ কর্মীর আস্থা, ২২টি বহুজাতিক পার্টনার—আমরা বিশ্বাস করি: "People · Solutions · Growth"।
+
+আপনার কোম্পানির ওয়ার্কফোর্সকে শক্তিশালী করতে আমাদের টিম প্রস্তুত।
+📲 সরাসরি হোয়াটসঅ্যাপ করুন: +880 1717 797681 | ভিজিট: www.serviq.limited</div>
+          <div class="post-tags">#ServiqBPO #PeopleSolutionsGrowth #DhakaCorporate #HRTechBD #WeekendPoll</div>
+        </div>
+      </div>
+
+      <div class="creative-spec-strip">
+        <div class="spec-left">
+          <div class="spec-label">🎨 Visual Creative Specification</div>
+          <div class="spec-detail"><strong>Milestone Bento Grid:</strong> Premium 4-box bento graphic with stats: [4,700+ Payrolls Active] [22 MNCs Trusted] [64 Districts Covered] [Paylio Integrated]. Dark navy luxury finish with cyan accents and corporate branding.</div>
+        </div>
+        <div class="spec-pill">Bento Stat Card</div>
+      </div>
+
+      <div class="lead-playbook-strip">
+        <span class="playbook-title">⚡ Inbound Lead Response Playbook:</span>
+        <span>Reach out via InMail/DM to every executive who responds to the poll, delivering the benchmark report and offering a strategic meeting with Serviq leadership.</span>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Daily Content Blueprint</span>
+      <span>Page 10 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 11: PILOT EXECUTION ROADMAP ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Agency Execution Cadence (Oct 11 – 17, 2026)</span>
+      </div>
+      <div class="header-meta">GRO10X Operational Roadmap</div>
+    </div>
+
+    <div>
+      <div class="section-title">
+        What GRO10X Will Do in This 1-Week Pilot Sprint
+        <span class="section-badge">Agency Execution Cadence</span>
+      </div>
+      <p class="section-desc">Here is the exact operational roadmap and day-by-day deliverables executed by the GRO10X growth team between October 11 and October 17:</p>
+
+      <div class="roadmap-list">
+        <div class="roadmap-row">
+          <div class="roadmap-index">1</div>
+          <div class="roadmap-body">
+            <div class="roadmap-title-row">
+              <strong>Day 1 (Sun, Oct 11): Strategic Kickoff & Calendar Delivery</strong>
+              <span class="roadmap-phase-tag">Phase: Alignment</span>
+            </div>
+            <div class="roadmap-desc">Deliver full 7-day content blueprint (this PDF); finalize tone of voice; extract key brand assets from Serviq portfolio PPT; configure LinkedIn & Facebook audience targeting hooks.</div>
+          </div>
+        </div>
+
+        <div class="roadmap-row">
+          <div class="roadmap-index">2</div>
+          <div class="roadmap-body">
+            <div class="roadmap-title-row">
+              <strong>Day 2 (Mon, Oct 12): Creative Asset Batching & UI Render Production</strong>
+              <span class="roadmap-phase-tag">Phase: Production</span>
+            </div>
+            <div class="roadmap-desc">Design complete 7-day visual asset suite (Carousels, Paylio UI mockups, Expat flowchart, BGV checklist, Bangladesh 64-district map); submit draft batch to Moon Munzurul Islam for one-touch approval.</div>
+          </div>
+        </div>
+
+        <div class="roadmap-row">
+          <div class="roadmap-index">3</div>
+          <div class="roadmap-body">
+            <div class="roadmap-title-row">
+              <strong>Day 3 (Tue, Oct 13): Channel Optimization & Automated Scheduling</strong>
+              <span class="roadmap-phase-tag">Phase: Deployment</span>
+            </div>
+            <div class="roadmap-desc">Audit Serviq LinkedIn Company Page & Facebook Page; optimize bio, CTA buttons, and trackable links (serviq.limited & mypaylio.com); queue approved posts across optimal publishing windows (BST).</div>
+          </div>
+        </div>
+
+        <div class="roadmap-row">
+          <div class="roadmap-index">4</div>
+          <div class="roadmap-body">
+            <div class="roadmap-title-row">
+              <strong>Day 4 (Wed, Oct 14): Mid-Sprint Review & Community Inbound Routing</strong>
+              <span class="roadmap-phase-tag">Phase: Live Operations</span>
+            </div>
+            <div class="roadmap-desc">Monitor live comments and direct messages; triage B2B corporate inquiries within a 15-minute SLA directly to Serviq sales team via WhatsApp/email; analyze early reach and CTR performance.</div>
+          </div>
+        </div>
+
+        <div class="roadmap-row">
+          <div class="roadmap-index">5</div>
+          <div class="roadmap-body">
+            <div class="roadmap-title-row">
+              <strong>Day 5 (Thu, Oct 15): Executive Profile Amplification</strong>
+              <span class="roadmap-phase-tag">Phase: Amplification</span>
+            </div>
+            <div class="roadmap-desc">Draft personal thought-leadership post for COO Moon Munzurul Islam on LinkedIn to cross-amplify company page posts; engage in high-value industry conversations in HR & MNC leadership circles.</div>
+          </div>
+        </div>
+
+        <div class="roadmap-row">
+          <div class="roadmap-index">6</div>
+          <div class="roadmap-body">
+            <div class="roadmap-title-row">
+              <strong>Day 6 (Fri, Oct 16): Weekend Engagement Setup & Boosting Calibration</strong>
+              <span class="roadmap-phase-tag">Phase: Engagement</span>
+            </div>
+            <div class="roadmap-desc">Deploy Friday Labour Law advisory post; calibrate organic engagement; test micro-targeted audience boost for weekend decision-makers browsing on mobile devices.</div>
+          </div>
+        </div>
+
+        <div class="roadmap-row">
+          <div class="roadmap-index">7</div>
+          <div class="roadmap-body">
+            <div class="roadmap-title-row">
+              <strong>Day 7 (Sat, Oct 17): Pilot Performance Audit & 3-Month Scale Roadmap</strong>
+              <span class="roadmap-phase-tag">Phase: Evaluation & Scale</span>
+            </div>
+            <div class="roadmap-desc">Compile end-of-pilot analytics report (impressions, engagement rate, top-performing pillars, inbound inquiries); present the full 3-Month Retainer Growth Proposal to Serviq executive leadership.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-bottom: 0;">
+        <div class="callout-title">🤝 Client Collaboration Cadence</div>
+        <div class="callout-body">Serviq leadership has zero operational burden. GRO10X handles full copywriting, graphic production, formatting, and scheduling. The only client touchpoint is a single 10-minute visual review gate on Monday afternoon.</div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — Operational Roadmap</span>
+      <span>Page 11 of 12</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 12: SLAS, KPIS & NEXT STEPS ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-area">
+        <span class="brand-badge">SERVIQ BPO</span>
+        <span class="header-meta">Operational SLAs & Retainer Transition</span>
+      </div>
+      <div class="header-meta">Execution Standards & KPIs</div>
+    </div>
+
+    <div>
+      <div class="section-title">
+        Lead Handover Protocol & Quality Assurance SLAs
+        <span class="section-badge">Operational Protocols</span>
+      </div>
+      <p class="section-desc">To ensure seamless coordination between GRO10X and Serviq during the pilot week, the following service level agreements (SLAs) are established:</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">⚡ 15-Minute Inbound Lead Protocol</div>
+          <p>When a prospective corporate client inquires via LinkedIn DM, post comment, or Facebook Messenger:</p>
+          <ul style="margin-top: 4px;">
+            <li>GRO10X community manager acknowledges within <strong>5 minutes</strong>.</li>
+            <li>Lead details (Company name, role, requirement) sent directly to <strong>Moon Munzurul Islam (+880 1717 797681)</strong> within <strong>15 minutes</strong>.</li>
+            <li>All inquiries logged in a shared Google Sheet for transparent tracking.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🛡️ Creative Review & Revision SLA</div>
+          <p>Rigorous editorial standards to protect Serviq's enterprise reputation:</p>
+          <ul style="margin-top: 4px;">
+            <li>All copywriting vetted for compliance with Bangladesh Labour Act 2006.</li>
+            <li>Visual drafts delivered 24 hours prior to scheduled publishing.</li>
+            <li>One-touch revisions executed within <strong>4 hours</strong>.</li>
+            <li>Zero posts published without explicit client sign-off.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top: 6px;">
+        Pilot Success Metrics & Baseline Benchmarks
+        <span class="section-badge">Pilot Measurement Framework</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Evaluation Metric</th>
+            <th>LinkedIn Target (Pilot Week)</th>
+            <th>Facebook Target (Pilot Week)</th>
+            <th>Pilot Sprint Significance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Publishing Execution SLA</strong></td>
+            <td><strong>7 / 7 Posts</strong> (100% On-Time)</td>
+            <td><strong>7 / 7 Posts</strong> (100% On-Time)</td>
+            <td>Proves GRO10X speed, zero operational burden on Serviq, and flawless consistency.</td>
+          </tr>
+          <tr>
+            <td><strong>Estimated Organic Reach / Imp.</strong></td>
+            <td>1,200 – 2,500 Impressions</td>
+            <td>2,500 – 5,000 Organic Reach</td>
+            <td>Builds organic category visibility across Dhaka HR, CXO, and operations networks.</td>
+          </tr>
+          <tr>
+            <td><strong>Organic Engagement Rate</strong></td>
+            <td>1.8% – 3.2% (Healthy B2B standard)</td>
+            <td>1.5% – 2.8%</td>
+            <td>Tests audience resonance across EOR, Paylio tech, and compliance pillars.</td>
+          </tr>
+          <tr>
+            <td><strong>Initial Inbound Interactions</strong></td>
+            <td>1 – 2 Direct B2B Inquiries / DMs</td>
+            <td>2 – 4 Direct Messages / Comments</td>
+            <td>Early signal of interest for EOR, background checks, or Paylio demo sandbox.</td>
+          </tr>
+          <tr>
+            <td><strong>Profile & Web Discovery</strong></td>
+            <td>35 – 70 Profile Visits</td>
+            <td>50 – 100 Page & Link Actions</td>
+            <td>Drives targeted decision-maker traffic to Serviq and Paylio online touchpoints.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size: 9px; color: #64748b; font-style: italic; margin-top: -8px; margin-bottom: 10px;">
+        * Note: The 1-week pilot sprint measures organic baseline engagement, message testing, and workflow velocity. Scaled B2B lead generation campaigns (with paid ad spend & LinkedIn Lead Gen Forms) activate in the Monthly Retainer phase.
+      </div>
+
+      <div class="section-title" style="margin-top: 6px;">
+        Transition to Ongoing Monthly Retainer
+        <span class="section-badge">Scale Roadmap</span>
+      </div>
+      <div class="card highlight" style="margin-bottom: 12px; padding: 9px 12px;">
+        <p style="margin-bottom: 6px; font-size: 10.5px;">
+          On Saturday, October 17th, GRO10X will present a consolidated <strong>Pilot Performance & ROI Audit</strong>. Upon mutual agreement, the pilot seamlessly transitions into a comprehensive <strong>Monthly Growth Retainer</strong>:
+        </p>
+        <div class="grid-3" style="margin-bottom: 0;">
+          <div style="background: white; padding: 6px 8px; border-radius: 5px; border: 1px solid #bae6fd;">
+            <strong style="color: var(--primary); font-size: 10px;">1. Full Social Engine</strong>
+            <p style="font-size: 9px; color: var(--gray-600); margin-top: 2px;">16-20 high-production posts/month, video reels, Paylio feature showcases, and thought leadership.</p>
+          </div>
+          <div style="background: white; padding: 6px 8px; border-radius: 5px; border: 1px solid #bae6fd;">
+            <strong style="color: var(--primary); font-size: 10px;">2. Paid B2B Lead Gen</strong>
+            <p style="font-size: 9px; color: var(--gray-600); margin-top: 2px;">Targeted LinkedIn Lead Gen Forms for CFOs & HR Directors; Meta retargeting campaigns.</p>
+          </div>
+          <div style="background: white; padding: 6px 8px; border-radius: 5px; border: 1px solid #bae6fd;">
+            <strong style="color: var(--primary); font-size: 10px;">3. Executive Branding</strong>
+            <p style="font-size: 9px; color: var(--gray-600); margin-top: 2px;">Positioning Serviq C-suite as definitive thought leaders in Bangladesh labour law & BPO.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background: var(--primary); color: white; border: none; padding: 11px 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h4 style="color: white; font-size: 12px; margin-bottom: 2px;">Ready to Launch the Pilot Sprint Today</h4>
+            <p style="color: #93c5fd; font-size: 10px;">All copy and visual blueprints for Sunday, Oct 11 and Monday, Oct 12 are approved for production.</p>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 9.5px; color: #cbd5e1;">Contact / Escalations:</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: #38bdf8;">GRO10X Growth Engine</div>
+            <div style="font-size: 9px; color: #94a3b8;">team@gro10x.ai · www.gro10x.ai</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Serviq BPO Limited × GRO10X — End of Pilot Architecture</span>
+      <span>Page 12 of 12</span>
+    </div>
+  </div>
+
+</body>
+</html>

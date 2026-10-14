@@ -567,7 +567,7 @@ async function generatePDF() {
       <div class="meta-field">
         <div class="title">Presented By</div>
         <div class="val">GRO10X AI Growth Agency & Advisory</div>
-        <div class="subval">Hotline: +880 1711-019550 | corporate@gro10x.ai</div>
+        <div class="subval">Business Development: Rafsan Ameen (+880 1798-558479) | corporate@gro10x.ai</div>
       </div>
       <div class="meta-field">
         <div class="title">Dossier Reference</div>
@@ -1134,9 +1134,9 @@ async function generatePDF() {
           </div>
           <div>
             <div class="line"></div>
-            <div class="name">Managing Partner & Principal Strategist</div>
-            <div class="title">GRO10X AI Growth Agency (gro10x.ai)</div>
-            <div style="font-size: 7.5px; color: #94A3B8; margin-top: 2px;">Hotline: +880 1711-019550 | corporate@gro10x.ai</div>
+            <div class="name">Rafsan Ameen</div>
+            <div class="title">Business Development Lead · GRO10X AI Growth Agency (gro10x.ai)</div>
+            <div style="font-size: 7.5px; color: #94A3B8; margin-top: 2px;">Business Development: +880 1798-558479 | corporate@gro10x.ai</div>
           </div>
         </div>
       </div>

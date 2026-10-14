@@ -15,6 +15,7 @@ const { verifyToken } = require('../services/jwt');
 const { readDB } = require('../services/db');
 const { findProject, calculateWarrantyStatus, memoryProjects } = require('../services/post-delivery');
 const chatTakeover = require('../services/chat-takeover');
+const engine1Bridge = require('../services/engine1-bridge');
 
 router.post('/send', asyncHandler(async (req, res) => {
   const { command, mode, token, projectId: explicitProjectId, conversationId: explicitConvId, channel = 'web', clientName } = req.body;
@@ -272,10 +273,14 @@ INSTRUCTIONS:
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-// 1. Live Telemetry: 5 KPI Cards, Channel Distribution, Spending Burn
+// 1. Live Telemetry: 5 KPI Cards, Channel Distribution + Satellite Agent 10X Bridge
 router.get('/telemetry', asyncHandler(async (req, res) => {
   const telemetry = chatTakeover.getTelemetry();
-  return ok(res, telemetry);
+  const satellite = await engine1Bridge.getEngine1Summary();
+  return ok(res, {
+    ...telemetry,
+    satelliteEngine1: satellite
+  });
 }));
 
 // 2. Conversation Streams: Omnichannel thread query

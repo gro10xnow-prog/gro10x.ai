@@ -272,6 +272,311 @@ window.APP_MODULES.finance = async function(container) {
   let e2Metrics = { grossMargin: '74.2%', totalCogsUSD: 56.42, totalCogsBDT: 6770 };
   let waterfallData = null;
 
+  // Smart Canvas Density States
+  let isWaterfallExpanded = false;
+  let isChartExpanded = false;
+  let copilotDrafts = {};
+
+  function processCopilotIntent(rawText, copilotInstance) {
+    const copilot = copilotInstance || window.GRO10X_COPILOT;
+    const text = rawText.toLowerCase();
+
+    // 1. Invoicing Intent Detection
+    const isInvoiceIntent = /\b(issue|create|draft|bill|invoice|retainer)\b/i.test(rawText) && (
+      /\d+/.test(rawText) || /\b(retainer|purplebot|chillox|client)\b/i.test(rawText)
+    );
+
+    if (isInvoiceIntent) {
+      let netAmount = 20000;
+      const kMatch = rawText.match(/(\d+(?:\.\d+)?)\s*k\b/i);
+      if (kMatch) {
+        netAmount = Math.round(parseFloat(kMatch[1]) * 1000);
+      } else {
+        const numMatches = rawText.replace(/inv-\d+/gi, '').match(/[\d,]+/g);
+        if (numMatches) {
+          for (const m of numMatches) {
+            const val = parseFloat(m.replace(/,/g, ''));
+            if (!isNaN(val) && val >= 100) {
+              netAmount = val;
+              break;
+            }
+          }
+        }
+      }
+
+      let matchedClient = null;
+      if (clientsData && clientsData.length > 0) {
+        matchedClient = clientsData.find(c => {
+          const name = (c.name || '').toLowerCase();
+          const comp = (c.company || c.brand || '').toLowerCase();
+          return (name && text.includes(name)) || (comp && text.includes(comp));
+        });
+      }
+
+      if (!matchedClient) {
+        if (text.includes('purplebot')) {
+          matchedClient = (clientsData && clientsData.find(c => (c.name || '').toLowerCase().includes('purplebot') || (c.company || '').toLowerCase().includes('purplebot'))) || {
+            id: 'CLI-MTWK4BNC-24F6EA',
+            name: 'Purplebot Digital Limited',
+            company: 'Purplebot Digital Limited'
+          };
+        } else if (text.includes('chillox')) {
+          matchedClient = (clientsData && clientsData.find(c => (c.name || '').toLowerCase().includes('chillox') || (c.company || '').toLowerCase().includes('chillox'))) || {
+            id: 'CLI-CHILLOX-001',
+            name: 'Chillox Bangladesh',
+            company: 'Chillox Bangladesh'
+          };
+        } else if (clientsData && clientsData.length > 0) {
+          matchedClient = clientsData[0];
+        } else {
+          matchedClient = {
+            id: 'CLI-MTWK4BNC-24F6EA',
+            name: 'Purplebot Digital Limited',
+            company: 'Purplebot Digital Limited'
+          };
+        }
+      }
+
+      let projectName = 'Monthly Retainer & AI Engineering Operations';
+      if (text.includes('m3') || text.includes('month 3')) projectName = 'Month 3 Retainer — AI Automation & Operations';
+      else if (text.includes('m2') || text.includes('month 2')) projectName = 'Month 2 Retainer — AI Automation & Operations';
+      else if (text.includes('sprint')) projectName = 'AI Acceleration Sprint & System Deployment';
+
+      const taxRate = 5;
+      const vatAmount = Math.round(netAmount * (taxRate / 100));
+      const totalAmount = netAmount + vatAmount;
+      const usdEquiv = Math.round(totalAmount / 120);
+
+      const draftId = 'draft_' + Date.now();
+      const draft = {
+        draftId,
+        clientId: matchedClient.id || null,
+        clientName: matchedClient.name || matchedClient.company || 'Client Organization',
+        projectName,
+        netBase: netAmount,
+        taxRate,
+        vatAmount,
+        totalAmount,
+        engineTag: 'engine2',
+        settlementRail: 'bdt_bank_wire',
+        notes: 'Corporate BDT Bank Wire Transfer: BRAC Bank Limited (Neoncore Tech Solution / 2081636480001)'
+      };
+      copilotDrafts[draftId] = draft;
+
+      const cardHtml = `
+        <div class="copilot-action-card" id="card_${draftId}" style="background:rgba(15,23,42,0.85); border:1px solid rgba(0,223,137,0.3); border-radius:10px; padding:0.85rem; margin-top:0.4rem; font-size:0.75rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.35rem; margin-bottom:0.45rem;">
+            <span style="font-weight:700; color:#00df89; font-size:0.8rem;">⚡ Invoice Action Card</span>
+            <span class="badge" style="background:rgba(0,223,137,0.15); color:#00df89; font-size:0.65rem;">5% ITES VAT</span>
+          </div>
+          <div style="display:grid; grid-template-columns:75px 1fr; gap:0.25rem; color:#cbd5e1; font-size:0.74rem;">
+            <span style="color:var(--text-muted);">Client:</span> <strong style="color:#fff;">${escapeHTML(draft.clientName)}</strong>
+            <span style="color:var(--text-muted);">Scope:</span> <span>${escapeHTML(draft.projectName)}</span>
+            <span style="color:var(--text-muted);">Net Base:</span> <span>৳${draft.netBase.toLocaleString()} BDT</span>
+            <span style="color:var(--text-muted);">VAT (5%):</span> <span>৳${draft.vatAmount.toLocaleString()} BDT</span>
+            <span style="color:var(--text-muted);">Total Due:</span> <strong style="color:#00df89; font-size:0.85rem;">৳${draft.totalAmount.toLocaleString()} BDT <span style="font-size:0.68rem; color:var(--text-muted);">($${usdEquiv} USD)</span></strong>
+            <span style="color:var(--text-muted);">Rail:</span> <span>BRAC Bank Wire (Mohakhali)</span>
+          </div>
+          <div style="display:flex; gap:0.4rem; margin-top:0.65rem;">
+            <button type="button" class="btn-primary btn-sm" id="btnConfirm_${draftId}" onclick="window.FINANCE_COPILOT.confirmInvoice('${draftId}')" style="flex:1; padding:0.35rem 0.55rem; font-size:0.72rem;">🚀 Confirm &amp; Issue Invoice</button>
+            <button type="button" class="btn-secondary btn-sm" onclick="window.FINANCE_COPILOT.cancelDraft('${draftId}')" style="padding:0.35rem 0.55rem; font-size:0.72rem;">✕ Cancel</button>
+          </div>
+        </div>
+      `;
+
+      if (copilot) {
+        copilot.appendAssistantMessage(`I have prepared an invoice draft grounded in **NBR S099.10 ITES guidelines** (5% VAT):`, cardHtml);
+      }
+      return;
+    }
+
+    // 2. Ledger Inquiries: Outstanding / Unpaid
+    if (/\b(unpaid|outstanding|due|balance|pending)\b/i.test(text)) {
+      const pending = invoicesData.filter(i => (i.status || '').toLowerCase() !== 'paid');
+      const totPending = pending.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+      const overdueList = invoicesData.filter(i => isOverdue(i));
+      const totOverdue = overdueList.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+      const usdPending = Math.round(totPending / 120);
+
+      const content = `📊 <strong>Outstanding Ledger Summary:</strong><br><br>
+        • <strong>Total Outstanding:</strong> ৳${totPending.toLocaleString()} BDT <span style="color:var(--text-muted);">($${usdPending.toLocaleString()} USD)</span><br>
+        • <strong>Pending Invoices:</strong> ${pending.length} invoices<br>
+        • <strong>🔴 Overdue Invoices:</strong> ${overdueList.length} invoices (৳${totOverdue.toLocaleString()} BDT)<br><br>
+        Check the Center Canvas table filtered by <em>Pending</em> or <em>Overdue</em> for one-click payment clearance.`;
+      if (copilot) copilot.appendAssistantMessage(content);
+      return;
+    }
+
+    // 3. Bank Details
+    if (/\b(bank|account|wire|details|routing|brac)\b/i.test(text)) {
+      const content = `🏛️ <strong>Official Corporate Settlement Rail:</strong><br><br>
+        • <strong>Beneficiary:</strong> Neoncore Tech Solution<br>
+        • <strong>Bank Name:</strong> BRAC Bank Limited<br>
+        • <strong>Account Number:</strong> <code style="color:#00df89; font-weight:700;">2081636480001</code><br>
+        • <strong>Branch:</strong> Mohakhali Branch<br>
+        • <strong>Routing Number:</strong> <code>060263290</code><br>
+        • <strong>Swift Code:</strong> <code>BRAKBDDH</code><br>
+        • <strong>Settlement Rail:</strong> Direct Institutional BDT Bank Wire Transfer<br>
+        • <strong>Canonical Parity:</strong> 120 BDT = 1 USD`;
+      if (copilot) copilot.appendAssistantMessage(content);
+      return;
+    }
+
+    // 4. Latest Invoices
+    if (/\b(latest|recent|invoices|list)\b/i.test(text)) {
+      const recent = invoicesData.slice(0, 4);
+      const rows = recent.map(inv => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.72rem;">
+          <div>
+            <strong style="color:#fff;">${escapeHTML(inv.id)}</strong> - ${escapeHTML(inv.clientName || inv.client || 'Client')}
+            <div style="color:var(--text-muted); font-size:0.68rem;">৳${(Number(inv.amount) || 0).toLocaleString()} BDT</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <span class="badge ${inv.status === 'Paid' ? 'badge-emerald' : 'badge-amber'}" style="font-size:0.65rem;">${escapeHTML(inv.status || 'Pending')}</span>
+            <button type="button" class="btn-secondary btn-sm" style="font-size:0.65rem; padding:0.15rem 0.35rem;" onclick="window.FINANCE_MODULE.downloadInvoice('${inv.id}')">PDF</button>
+          </div>
+        </div>
+      `).join('');
+
+      if (copilot) copilot.appendAssistantMessage(`🧾 <strong>Recent Ledger Invoices:</strong><div style="margin-top:0.4rem;">${rows || 'No invoices found.'}</div>`);
+      return;
+    }
+
+    // 5. Currency Converter
+    const convMatch = text.match(/(?:convert\s+)?(\d+(?:\.\d+)?)\s*(k)?\s*(bdt|usd)\s*(?:to|in)?\s*(bdt|usd)?/i);
+    if (convMatch) {
+      let val = parseFloat(convMatch[1]);
+      if (convMatch[2]) val *= 1000;
+      const fromCur = convMatch[3].toUpperCase();
+      if (fromCur === 'BDT') {
+        const inUSD = (val / 120).toFixed(2);
+        if (copilot) copilot.appendAssistantMessage(`💱 <strong>Currency Conversion (@ 120 BDT/USD parity):</strong><br>৳${val.toLocaleString()} BDT = <strong>$${Number(inUSD).toLocaleString()} USD</strong>`);
+        return;
+      } else {
+        const inBDT = Math.round(val * 120);
+        if (copilot) copilot.appendAssistantMessage(`💱 <strong>Currency Conversion (@ 120 BDT/USD parity):</strong><br>$${val.toLocaleString()} USD = <strong>৳${inBDT.toLocaleString()} BDT</strong>`);
+        return;
+      }
+    }
+
+    // Fallback response
+    if (copilot) {
+      copilot.appendAssistantMessage(`Understood! You can instruct me with commands such as:<br>
+        • <em>"Issue PurpleBot retainer for 20k BDT"</em><br>
+        • <em>"How much is unpaid / outstanding?"</em><br>
+        • <em>"Show official bank payment details"</em><br>
+        • <em>"Show latest invoices"</em><br>
+        • <em>"Convert 50000 BDT to USD"</em>`);
+    }
+  }
+
+  window.FINANCE_COPILOT = {
+    triggerChip(type) {
+      if (window.GRO10X_COPILOT) {
+        window.GRO10X_COPILOT.triggerChip(type);
+      }
+    },
+    async confirmInvoice(draftId) {
+      const draft = copilotDrafts[draftId];
+      if (!draft) {
+        if (window.showToast) window.showToast('Draft expired or not found', 'error');
+        return;
+      }
+      const btn = document.getElementById('btnConfirm_' + draftId);
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '🚀 Issuing via Supabase...';
+      }
+
+      try {
+        const payload = {
+          clientId: draft.clientId,
+          clientName: draft.clientName,
+          projectName: draft.projectName,
+          project_name: draft.projectName,
+          amount: draft.totalAmount,
+          subtotal: draft.netBase,
+          taxRate: draft.taxRate,
+          discount: 0,
+          engineTag: draft.engineTag || 'engine2',
+          engine_tag: draft.engineTag || 'engine2',
+          invoiceType: 'monthly_retainer',
+          settlementRail: draft.settlementRail || 'bdt_bank_wire',
+          notes: draft.notes,
+          items: [{
+            description: draft.projectName,
+            amount: draft.netBase,
+            qty: 1,
+            rate: draft.netBase
+          }]
+        };
+
+        const res = await APP_API.post('/invoices', payload);
+        const invId = res?.id || res?.invoice?.id || ('INV-2026-0' + (invoicesData.length + 1));
+        
+        delete copilotDrafts[draftId];
+
+        const cardHtml = `
+          <div style="background:rgba(0,223,137,0.08); border:1px solid rgba(0,223,137,0.3); border-radius:8px; padding:0.75rem; margin-top:0.4rem; font-size:0.75rem;">
+            <div style="color:#00df89; font-weight:700; margin-bottom:0.3rem;">✅ Ledger &amp; Database Synchronized</div>
+            <div style="color:#cbd5e1; margin-bottom:0.5rem;">
+              Issued to <strong>${escapeHTML(draft.clientName)}</strong> for <strong>৳${draft.totalAmount.toLocaleString()} BDT</strong> ($${Math.round(draft.totalAmount / 120)} USD).
+            </div>
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+              <button type="button" class="btn-emerald btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.downloadInvoice('${invId}')">📄 PDF Invoice</button>
+              <a href="/invoice-view.html?id=${encodeURIComponent(invId)}" target="_blank" class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem; text-decoration:none;">🧾 A4 Print Sheet</a>
+            </div>
+          </div>
+        `;
+
+        if (window.GRO10X_COPILOT) {
+          window.GRO10X_COPILOT.appendAssistantMessage(`🎉 <strong>Invoice ${escapeHTML(invId)} Created &amp; Issued!</strong>`, cardHtml);
+        }
+
+        if (window.showToast) {
+          window.showToast(`Invoice ${invId} issued successfully!`, 'success');
+        }
+
+        await loadFinance();
+      } catch (err) {
+        console.error('[Copilot] Invoice creation error:', err);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '🚀 Confirm & Issue Invoice';
+        }
+        if (window.GRO10X_COPILOT) {
+          window.GRO10X_COPILOT.appendAssistantMessage(`❌ <strong>Failed to issue invoice:</strong> ${escapeHTML(err.message || 'Server error')}`);
+        }
+      }
+    },
+    cancelDraft(draftId) {
+      delete copilotDrafts[draftId];
+      if (window.GRO10X_COPILOT) {
+        window.GRO10X_COPILOT.appendAssistantMessage(`⚠️ Invoice draft cancelled. Let me know if you would like to prepare another draft.`);
+      }
+    }
+  };
+
+  // Register with Global Universal Copilot Shell
+  if (window.GRO10X_COPILOT) {
+    window.GRO10X_COPILOT.registerModule('#finance', {
+      personaName: 'Mother OS Finance Lead',
+      personaRole: 'Autonomous Digital Employee · Billing & Revenue Operations',
+      avatar: '🤖',
+      statusText: 'Online · NBR S099.10 VAT Certified',
+      welcomeMessage: `👋 <strong>Greetings, Executive!</strong> I am your <strong>Mother OS Finance Copilot</strong>. I manage our commercial ledger, statutory 5% ITES VAT calculations (NBR S099.10), BRAC Bank wire instructions, and rapid invoice issuance.<br><br>💡 Type an instruction like <em>"Issue PurpleBot retainer for 20k BDT"</em> or use a quick action below.`,
+      quickChips: [
+        { id: 'retainer_draft', label: '📄 Retainer Draft', prompt: 'Issue PurpleBot retainer for 20,000 BDT' },
+        { id: 'outstanding_balance', label: '📊 Outstanding Balance', prompt: 'How much is unpaid / outstanding?' },
+        { id: 'bank_details', label: '🏛️ Bank Details', prompt: 'Show official corporate bank wire details' },
+        { id: 'latest_invoices', label: '🧾 Latest Invoices', prompt: 'Show latest ledger invoices' }
+      ],
+      intentHandler: async (text, copilot) => {
+        processCopilotIntent(text, copilot);
+      }
+    });
+  }
+
   async function loadFinance(showSkeleton = false) {
     isLoading = true;
     hasError = false;
@@ -447,113 +752,130 @@ window.APP_MODULES.finance = async function(container) {
         </div>
       </div>
 
-      <!-- Consolidated 5-Engine P&L Financial Waterfall Card -->
-      <div id="pnlWaterfallCard" class="card-glass" style="margin-bottom:1.75rem; border:1.5px solid rgba(0,223,137,0.35); background:linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(6,182,212,0.06) 100%); padding:1.5rem; border-radius:18px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem;">
-          <div>
-            <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--accent-mint);">Institutional Unit Economics</div>
-            <h2 style="font-size:1.3rem; font-weight:900; margin:0.15rem 0 0 0; color:#fff; font-family:var(--font-heading);">
-              Consolidated 5-Engine P&L Financial Waterfall
-            </h2>
-            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">
-              Trailing 30-day cross-engine inflows, direct cloud & contractor COGS, and net operating income.
+      <!-- Consolidated 5-Engine P&L Financial Waterfall Card (Collapsible Accordion) -->
+      <div id="pnlWaterfallCard" class="card-glass" style="margin-bottom:1.5rem; border:1.5px solid rgba(0,223,137,0.35); background:linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(6,182,212,0.06) 100%); padding:1.1rem 1.4rem; border-radius:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; cursor:pointer;" onclick="window.FINANCE_MODULE.toggleWaterfall()">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span id="waterfallChevron" style="display:inline-block; transition:transform 0.2s ease; transform:${isWaterfallExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}; color:var(--accent-mint); font-size:1rem;">▼</span>
+            <div>
+              <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--accent-mint);">Institutional Unit Economics</div>
+              <h2 style="font-size:1.15rem; font-weight:900; margin:0.1rem 0 0 0; color:#fff; font-family:var(--font-heading);">
+                Consolidated 5-Engine P&L Financial Waterfall
+              </h2>
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:0.6rem;">
-            <span class="badge ${wf.marginValue >= 70 ? 'badge-emerald' : 'badge-amber'}" id="pnlWaterfallMarginBadge" style="font-size:0.82rem; font-weight:800; padding:0.4rem 0.85rem;">
+            <span class="badge ${wf.marginValue >= 70 ? 'badge-emerald' : 'badge-amber'}" id="pnlWaterfallMarginBadge" style="font-size:0.78rem; font-weight:800; padding:0.35rem 0.75rem;">
               ${wf.marginValue >= 70 ? `✅ Gross Margin: ${wf.grossMarginPercent} (≥70% Benchmark)` : `⚠️ Gross Margin: ${wf.grossMarginPercent} (<70%)`}
+            </span>
+            <span id="waterfallToggleBadge" class="btn-ghost btn-sm" style="font-size:0.75rem; padding:0.25rem 0.6rem; color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:6px;">
+              ${isWaterfallExpanded ? 'Hide Details ▲' : 'Show Details ▼'}
             </span>
           </div>
         </div>
 
-        <!-- Financial Metrics Tiles -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-          <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
-            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">1. Total Gross Inflow</div>
-            <div style="font-size:1.3rem; font-weight:900; color:#fff; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlGrossInflow">
-              ${isUSD ? `$${wf.grossInflowUSD.toLocaleString()}` : `৳${wf.grossInflowBDT.toLocaleString()}`}
+        <div id="waterfallDetails" style="display:${isWaterfallExpanded ? 'block' : 'none'}; margin-top:1.25rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1.25rem;">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.2rem;">
+            Trailing 30-day cross-engine inflows, direct cloud & contractor COGS, and net operating income.
+          </div>
+
+          <!-- Financial Metrics Tiles -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">1. Total Gross Inflow</div>
+              <div style="font-size:1.3rem; font-weight:900; color:#fff; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlGrossInflow">
+                ${isUSD ? `$${wf.grossInflowUSD.toLocaleString()}` : `৳${wf.grossInflowBDT.toLocaleString()}`}
+              </div>
+              <div style="font-size:0.72rem; color:var(--accent-cyan);">Aggregated 5 Engines</div>
             </div>
-            <div style="font-size:0.72rem; color:var(--accent-cyan);">Aggregated 5 Engines</div>
-          </div>
 
-          <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
-            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">2. Direct COGS</div>
-            <div style="font-size:1.3rem; font-weight:900; color:#f87171; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlTotalCOGS">
-              -${isUSD ? `$${wf.cogs.totalCOGS_USD.toLocaleString()}` : `৳${wf.cogs.totalCOGS_BDT.toLocaleString()}`}
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">2. Direct COGS</div>
+              <div style="font-size:1.3rem; font-weight:900; color:#f87171; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlTotalCOGS">
+                -${isUSD ? `$${wf.cogs.totalCOGS_USD.toLocaleString()}` : `৳${wf.cogs.totalCOGS_BDT.toLocaleString()}`}
+              </div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">Compute & Contractor</div>
             </div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">Compute & Contractor</div>
-          </div>
 
-          <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
-            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">3. Gross Profit</div>
-            <div style="font-size:1.3rem; font-weight:900; color:var(--accent-mint); font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlGrossProfit">
-              ${isUSD ? `$${wf.grossProfitUSD.toLocaleString()}` : `৳${wf.grossProfitBDT.toLocaleString()}`}
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">3. Gross Profit</div>
+              <div style="font-size:1.3rem; font-weight:900; color:var(--accent-mint); font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlGrossProfit">
+                ${isUSD ? `$${wf.grossProfitUSD.toLocaleString()}` : `৳${wf.grossProfitBDT.toLocaleString()}`}
+              </div>
+              <div style="font-size:0.72rem; color:var(--accent-mint); font-weight:700;">Margin: ${wf.grossMarginPercent}</div>
             </div>
-            <div style="font-size:0.72rem; color:var(--accent-mint); font-weight:700;">Margin: ${wf.grossMarginPercent}</div>
-          </div>
 
-          <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
-            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">4. Operating Overhead</div>
-            <div style="font-size:1.3rem; font-weight:900; color:#fbbf24; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlFixedOverhead">
-              -${isUSD ? `$${wf.operatingExpensesUSD.toLocaleString()}` : `৳${(wf.operatingExpensesUSD * 120).toLocaleString()}`}
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">4. Operating Overhead</div>
+              <div style="font-size:1.3rem; font-weight:900; color:#fbbf24; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlFixedOverhead">
+                -${isUSD ? `$${wf.operatingExpensesUSD.toLocaleString()}` : `৳${(wf.operatingExpensesUSD * 120).toLocaleString()}`}
+              </div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">Cloud Hosting, Tools & Ops</div>
             </div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">Cloud Hosting, Tools & Ops</div>
-          </div>
 
-          <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
-            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">5. Net Operating Income</div>
-            <div style="font-size:1.3rem; font-weight:900; color:#a855f7; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlNOI">
-              ${isUSD ? `$${wf.netOperatingIncomeUSD.toLocaleString()}` : `৳${wf.netOperatingIncomeBDT.toLocaleString()}`}
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">5. Net Operating Income</div>
+              <div style="font-size:1.3rem; font-weight:900; color:#a855f7; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlNOI">
+                ${isUSD ? `$${wf.netOperatingIncomeUSD.toLocaleString()}` : `৳${wf.netOperatingIncomeBDT.toLocaleString()}`}
+              </div>
+              <div style="font-size:0.72rem; color:#c084fc; font-weight:700;">Net Margin: ${wf.netMarginPercent}</div>
             </div>
-            <div style="font-size:0.72rem; color:#c084fc; font-weight:700;">Net Margin: ${wf.netMarginPercent}</div>
-          </div>
 
-          <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
-            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">6. Cash Runway</div>
-            <div style="font-size:1.3rem; font-weight:900; color:#38bdf8; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlRunway">
-              ${wf.runwayMonths} Months
+            <div style="background:rgba(10,15,28,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem;">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">6. Cash Runway</div>
+              <div style="font-size:1.3rem; font-weight:900; color:#38bdf8; font-family:var(--font-mono); margin:0.25rem 0 0.1rem;" id="pnlRunway">
+                ${wf.runwayMonths} Months
+              </div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">Operations Self-Sustaining</div>
             </div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">Operations Self-Sustaining</div>
           </div>
-        </div>
 
-        <!-- Segmented Waterfall Bar -->
-        <div style="margin-bottom:1rem;" id="pnlWaterfallBar">
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.76rem; color:var(--text-muted); margin-bottom:0.4rem;">
-            <span>Engine Inflow Breakdown (% Share of Gross Revenue)</span>
-            <span>100% Consolidated</span>
+          <!-- Segmented Waterfall Bar -->
+          <div style="margin-bottom:1rem;" id="pnlWaterfallBar">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.76rem; color:var(--text-muted); margin-bottom:0.4rem;">
+              <span>Engine Inflow Breakdown (% Share of Gross Revenue)</span>
+              <span>100% Consolidated</span>
+            </div>
+            <div style="display:flex; height:12px; border-radius:8px; overflow:hidden; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);">
+              <div style="width:${wf.engineBreakdown.engine1_saas.share}; background:#8b5cf6;" title="Engine 1 (SaaS): $${wf.engineBreakdown.engine1_saas.revenueUSD}"></div>
+              <div style="width:${wf.engineBreakdown.engine2_sprints.share}; background:#00df89;" title="Engine 2 (Sprints): $${wf.engineBreakdown.engine2_sprints.revenueUSD}"></div>
+              <div style="width:${wf.engineBreakdown.engine3_commerce.share}; background:#f59e0b;" title="Engine 3 (Commerce): $${wf.engineBreakdown.engine3_commerce.revenueUSD}"></div>
+              <div style="width:${wf.engineBreakdown.engine4_retainers.share}; background:#06b6d4;" title="Engine 4 (Retainers): $${wf.engineBreakdown.engine4_retainers.revenueUSD}"></div>
+              <div style="width:${wf.engineBreakdown.engine5_media.share}; background:#ec4899;" title="Engine 5 (Media): $${wf.engineBreakdown.engine5_media.revenueUSD}"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; font-size:0.72rem; color:var(--text-muted); margin-top:0.45rem;">
+              <span><span style="color:#8b5cf6;">●</span> E1 SaaS: $${wf.engineBreakdown.engine1_saas.revenueUSD} (${wf.engineBreakdown.engine1_saas.share})</span>
+              <span><span style="color:#00df89;">●</span> E2 Sprints: $${wf.engineBreakdown.engine2_sprints.revenueUSD} (${wf.engineBreakdown.engine2_sprints.share})</span>
+              <span><span style="color:#f59e0b;">●</span> E3 Commerce: $${wf.engineBreakdown.engine3_commerce.revenueUSD} (${wf.engineBreakdown.engine3_commerce.share})</span>
+              <span><span style="color:#06b6d4;">●</span> E4 Retainers: $${wf.engineBreakdown.engine4_retainers.revenueUSD} (${wf.engineBreakdown.engine4_retainers.share})</span>
+              <span><span style="color:#ec4899;">●</span> E5 Media: $${wf.engineBreakdown.engine5_media.revenueUSD} (${wf.engineBreakdown.engine5_media.share})</span>
+            </div>
           </div>
-          <div style="display:flex; height:12px; border-radius:8px; overflow:hidden; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);">
-            <div style="width:${wf.engineBreakdown.engine1_saas.share}; background:#8b5cf6;" title="Engine 1 (SaaS): $${wf.engineBreakdown.engine1_saas.revenueUSD}"></div>
-            <div style="width:${wf.engineBreakdown.engine2_sprints.share}; background:#00df89;" title="Engine 2 (Sprints): $${wf.engineBreakdown.engine2_sprints.revenueUSD}"></div>
-            <div style="width:${wf.engineBreakdown.engine3_commerce.share}; background:#f59e0b;" title="Engine 3 (Commerce): $${wf.engineBreakdown.engine3_commerce.revenueUSD}"></div>
-            <div style="width:${wf.engineBreakdown.engine4_retainers.share}; background:#06b6d4;" title="Engine 4 (Retainers): $${wf.engineBreakdown.engine4_retainers.revenueUSD}"></div>
-            <div style="width:${wf.engineBreakdown.engine5_media.share}; background:#ec4899;" title="Engine 5 (Media): $${wf.engineBreakdown.engine5_media.revenueUSD}"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; font-size:0.72rem; color:var(--text-muted); margin-top:0.45rem;">
-            <span><span style="color:#8b5cf6;">●</span> E1 SaaS: $${wf.engineBreakdown.engine1_saas.revenueUSD} (${wf.engineBreakdown.engine1_saas.share})</span>
-            <span><span style="color:#00df89;">●</span> E2 Sprints: $${wf.engineBreakdown.engine2_sprints.revenueUSD} (${wf.engineBreakdown.engine2_sprints.share})</span>
-            <span><span style="color:#f59e0b;">●</span> E3 Commerce: $${wf.engineBreakdown.engine3_commerce.revenueUSD} (${wf.engineBreakdown.engine3_commerce.share})</span>
-            <span><span style="color:#06b6d4;">●</span> E4 Retainers: $${wf.engineBreakdown.engine4_retainers.revenueUSD} (${wf.engineBreakdown.engine4_retainers.share})</span>
-            <span><span style="color:#ec4899;">●</span> E5 Media: $${wf.engineBreakdown.engine5_media.revenueUSD} (${wf.engineBreakdown.engine5_media.share})</span>
-          </div>
-        </div>
 
-        <!-- Settlement Rail Footer -->
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem 1rem; font-size:0.8rem;">
-          <div style="color:var(--text-secondary);">
-            🏛️ <strong>Corporate Settlement Rail:</strong> ${wf.settlementRail || 'BRAC Bank Limited (Neoncore Tech Solution / 2081636480001)'}
-          </div>
-          <div style="font-family:var(--font-mono); font-size:0.74rem; color:var(--accent-mint);">
-            ✓ Institutional Audit Verified
+          <!-- Settlement Rail Footer -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem 1rem; font-size:0.8rem;">
+            <div style="color:var(--text-secondary);">
+              🏛️ <strong>Corporate Settlement Rail:</strong> ${wf.settlementRail || 'BRAC Bank Limited (Neoncore Tech Solution / 2081636480001)'}
+            </div>
+            <div style="font-family:var(--font-mono); font-size:0.74rem; color:var(--accent-mint);">
+              ✓ Institutional Audit Verified
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Profit & Loss Chart -->
-      <div style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
-        <h3 style="margin:0 0 1rem; color:#fff; font-size:1.1rem;">Monthly P&L Summary (Last 6 Months)</h3>
-        <div style="position:relative; height:230px; width:100%;">
+      <!-- Profit & Loss Chart (Collapsible Accordion) -->
+      <div style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:14px; padding:1.1rem 1.4rem; margin-bottom:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="window.FINANCE_MODULE.togglePnlChart()">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span id="chartChevron" style="display:inline-block; transition:transform 0.2s ease; transform:${isChartExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}; color:#94a3b8; font-size:1rem;">▼</span>
+            <h3 style="margin:0; color:#fff; font-size:1.05rem; font-family:var(--font-heading);">Monthly P&L Summary (Last 6 Months)</h3>
+          </div>
+          <span id="chartToggleBadge" class="btn-ghost btn-sm" style="font-size:0.75rem; padding:0.25rem 0.6rem; color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:6px;">
+            ${isChartExpanded ? 'Hide Chart ▲' : 'Show Chart ▼'}
+          </span>
+        </div>
+        <div id="pnlChartContainer" style="display:${isChartExpanded ? 'block' : 'none'}; position:relative; height:230px; width:100%; margin-top:1.25rem; border-top:1px solid rgba(255,255,255,0.06); padding-top:1rem;">
           <canvas id="pnlChart"></canvas>
         </div>
       </div>
@@ -785,9 +1107,11 @@ window.APP_MODULES.finance = async function(container) {
 
     populateClientDropdowns();
 
-    setTimeout(() => {
-      if (window.renderPnLChart) window.renderPnLChart(invoicesData, expensesData);
-    }, 50);
+    if (isChartExpanded && window.renderPnLChart) {
+      setTimeout(() => {
+        if (window.renderPnLChart) window.renderPnLChart(invoicesData, expensesData);
+      }, 50);
+    }
   }
 
   function populateClientDropdowns() {
@@ -1169,6 +1493,29 @@ window.APP_MODULES.finance = async function(container) {
   }
 
   window.FINANCE_MODULE = {
+    toggleWaterfall() {
+      isWaterfallExpanded = !isWaterfallExpanded;
+      const el = document.getElementById('waterfallDetails');
+      const ch = document.getElementById('waterfallChevron');
+      const bd = document.getElementById('waterfallToggleBadge');
+      if (el) el.style.display = isWaterfallExpanded ? 'block' : 'none';
+      if (ch) ch.style.transform = isWaterfallExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+      if (bd) bd.textContent = isWaterfallExpanded ? 'Hide Details ▲' : 'Show Details ▼';
+    },
+    togglePnlChart() {
+      isChartExpanded = !isChartExpanded;
+      const el = document.getElementById('pnlChartContainer');
+      const ch = document.getElementById('chartChevron');
+      const bd = document.getElementById('chartToggleBadge');
+      if (el) el.style.display = isChartExpanded ? 'block' : 'none';
+      if (ch) ch.style.transform = isChartExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+      if (bd) bd.textContent = isChartExpanded ? 'Hide Chart ▲' : 'Show Chart ▼';
+      if (isChartExpanded && window.renderPnLChart) {
+        setTimeout(() => {
+          if (window.renderPnLChart) window.renderPnLChart(invoicesData, expensesData);
+        }, 50);
+      }
+    },
     reload() {
       loadFinance();
     },

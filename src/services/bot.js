@@ -16,8 +16,24 @@ let clientBot = null;
 function getTeamBot() { return teamBot; }
 function getClientBot() { return clientBot; }
 
+async function stopBot() {
+  if (teamBot && typeof teamBot.stopPolling === 'function') {
+    try {
+      if (teamBot.isPolling()) await teamBot.stopPolling();
+    } catch (_) {}
+  }
+  if (clientBot && typeof clientBot.stopPolling === 'function') {
+    try {
+      if (clientBot.isPolling()) await clientBot.stopPolling();
+    } catch (_) {}
+  }
+  teamBot = null;
+  clientBot = null;
+}
+
 module.exports = {
   initBot,
+  stopBot,
   getTeamBot,
   getClientBot,
   sendTelegramNotification,
@@ -138,7 +154,7 @@ async function sendAgreementNotification(stage, emp, dbData) {
           `1. 📍 Tap *Clock-In GPS* to go Online\n` +
           `2. 🛍️ Tap *My Brands & Products* to inspect your catalog\n` +
           `3. 💳 Tap *Bank & bKash* to verify payout accounts\n` +
-          `4. 🌐 Open your dashboard: https://gro10x-ai.vercel.app/app#brands\n\n` +
+          `4. 🌐 Open your dashboard: https://gro10x.ai/app#brands\n\n` +
           `Let's build this empire together! 💜⚡`;
       } else {
         activationMsg =
@@ -223,7 +239,7 @@ async function handleTeamContact(msg) {
     // 2. Generate or retrieve existing PIN
     const pinRecord = await createTempPin(emp.phone, emp.emp_code || emp.id, 'team', emp.email);
 
-    const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+    const baseUrl = process.env.APP_URL || process.env.BASE_URL || 'https://gro10x.ai';
     // 3. Send welcome message with credentials and keyboard
     const welcomeMsg = `✅ <b>Identity Verified — Welcome, ${emp.name}!</b>\n\n` +
       `• Designation: <b>${emp.role}</b>\n` +
@@ -284,7 +300,7 @@ async function handleTeamViewPin(msg) {
       });
     }
     const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
-    await teamBot.sendMessage(chatId, `🔑 <b>Your Desktop Web PIN:</b> <code>${pinRecord.pin}</code>\n\nGo to https://gro10x-ai.vercel.app/crew to log in.`, { parse_mode: 'HTML' });
+    await teamBot.sendMessage(chatId, `🔑 <b>Your Desktop Web PIN:</b> <code>${pinRecord.pin}</code>\n\nGo to https://gro10x.ai/crew to log in.`, { parse_mode: 'HTML' });
   } catch (e) {}
 }
 
@@ -378,7 +394,7 @@ function initBot() {
   const rawClient = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
   const teamToken = rawTeam ? rawTeam.trim() : null;
   const clientToken = rawClient ? rawClient.trim() : null;
-  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+  const baseUrl = process.env.APP_URL || process.env.BASE_URL || 'https://gro10x.ai';
 
   // 1. Initialize Team Bot (Purple Man)
   if (teamToken && teamToken !== '' && !teamToken.includes('your_token')) {
@@ -454,7 +470,7 @@ function initBot() {
                 `*Priority:* ${t.priority || 'Normal'}\n` +
                 `*Assignee:* ${t.assignee || 'Unassigned'}\n` +
                 `*Due Date:* ${t.due_date || t.dueDate || 'N/A'}\n\n` +
-                `🌐 [Open Team Portal](https://gro10x-ai.vercel.app/team)`,
+                `🌐 [Open Team Portal](https://gro10x.ai/team)`,
               parse_mode: 'Markdown'
             }
           }));
@@ -494,7 +510,7 @@ function initBot() {
             `• Department: *${emp.department}*\n` +
             `• Access Level: *${emp.accessLevel}*\n\n` +
             `🔑 *Desktop Web PIN:* \`${pinRecord.pin}\`\n` +
-            `🌐 Crew Portal: https://gro10x-ai.vercel.app/crew\n\n` +
+            `🌐 Crew Portal: https://gro10x.ai/crew\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n` +
             `🚀 *Your full dashboard is now unlocked!*\n` +
             `Use the menu below or tap *Open App* for the full portal.`;
@@ -710,7 +726,7 @@ function initBot() {
         teamBot.sendMessage(msg.chat.id,
           `📅 *Content Planning & Dispatch Hub*\n\n` +
           `Manage your campaigns, editorial calendars, and dispatch queues directly on the web portal:\n` +
-          `👉 https://gro10x-ai.vercel.app/crew#calendar`,
+          `👉 https://gro10x.ai/crew#calendar`,
           { parse_mode: 'Markdown' }
         );
       });
@@ -718,7 +734,7 @@ function initBot() {
         teamBot.sendMessage(msg.chat.id,
           `📜 *Script & Copy Studio*\n\n` +
           `Access AI brief summarization, copy templates, and script QC feeds:\n` +
-          `👉 https://gro10x-ai.vercel.app/crew#tasks`,
+          `👉 https://gro10x.ai/crew#tasks`,
           { parse_mode: 'Markdown' }
         );
       });
@@ -808,7 +824,7 @@ function initBot() {
           }
 
           const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
-          teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://gro10x-ai.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
+          teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://gro10x.ai/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
         } catch (err) {
           console.error('[Bot Error: resetpin]', err.message);
           teamBot.sendMessage(chatId, '❌ Could not generate login PIN. Please try again later.').catch(() => {});
@@ -839,7 +855,7 @@ function initBot() {
             `• Current Rank: *${emp.badge || '🌱 Recruit'}*\n` +
             `• Earned XP: *${emp.xp || 0} XP*\n\n` +
             `📋 *Onboarding Checklist:*\n${taskText}\n\n` +
-            `🌐 Open Onboarding Web Portal: https://gro10x-ai.vercel.app/onboarding`;
+            `🌐 Open Onboarding Web Portal: https://gro10x.ai/onboarding`;
 
           teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
         } catch (err) {
@@ -867,7 +883,7 @@ function initBot() {
       // ── Unified Multi-Engine Web Workspace Bridge ──
       teamBot.onText(/\/workspace|🚀 Web Workspace/, async (msg) => {
         const chatId = msg.chat.id;
-        const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+        const baseUrl = process.env.APP_URL || process.env.BASE_URL || 'https://gro10x.ai';
         const workspaceUrl = `${baseUrl}/workspace`;
         return teamBot.sendMessage(chatId,
           `🚀 *UNIFIED MULTI-ENGINE WEB WORKSPACE*\n\n` +
@@ -941,7 +957,7 @@ function initBot() {
                 `*Amount:* BDT ${(Number(inv.amount) || 0).toLocaleString()}\n` +
                 `*Status:* ${inv.status || 'Pending'}\n` +
                 `*Due Date:* ${inv.due_date || inv.dueDate || 'N/A'}\n\n` +
-                `🌐 [Open Partner Portal](https://gro10x-ai.vercel.app/partners)`,
+                `🌐 [Open Partner Portal](https://gro10x.ai/partners)`,
               parse_mode: 'Markdown'
             }
           }));
@@ -1083,7 +1099,7 @@ function initBot() {
           `• Timeline: *${timeline}*\n\n` +
           `Our Account Director will review your requirements and reach out via WhatsApp at \`${cleanPhone}\` within 2 business hours with a custom proposal! 🚀\n\n` +
           `📞 *Direct Priority Line:* \`+880 1711-019550\`\n` +
-          `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://gro10x-ai.vercel.app'}`;
+          `🌐 *Agency Website:* ${process.env.APP_URL || process.env.BASE_URL || process.env.PUBLIC_URL || 'https://gro10x.ai'}`;
 
         clientBot.sendMessage(chatId, successMsg, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
       }
@@ -1414,7 +1430,7 @@ function initBot() {
 
         try {
           const chatId = query.message?.chat?.id || query.from?.id;
-          const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+          const baseUrl = process.env.APP_URL || process.env.BASE_URL || 'https://gro10x.ai';
 
           if (data.startsWith('open_portal')) {
             await clientBot.answerCallbackQuery(queryId, { text: '🌐 Launching Client Portal...' });

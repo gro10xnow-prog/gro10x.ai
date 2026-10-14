@@ -911,7 +911,7 @@ window.APP_MODULES.brands = async function(container) {
           </div>
           <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.78rem;">
             <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
-              <span>🏢 Agency OS (PurpleOS)</span>
+              <span>🏢 Agency OS (GRO10X OS)</span>
               <span style="color:#f59e0b; font-weight:700;">Proposal Out (৳35k)</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">

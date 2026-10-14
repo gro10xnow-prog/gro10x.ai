@@ -105,9 +105,9 @@ const STRINGS = {
     screenshotReceived: '✅ *Payment Proof Received!*\n\nOur team is verifying your payment. Your credentials or activation link will be delivered *right here in this chat* within 15–30 minutes.\n\nTrack anytime with `/myorder %ORDER%`',
     trackPrompt: '🔍 To track your order, send `/myorder DIGI-XXXXXX`',
     orderNotFound: '❌ Order not found. Please check your order reference number.',
-    contactText: '📞 *Customer Support:*\nWhatsApp: `%PHONE%`\nWeb: https://gro10x-ai.vercel.app/digivault',
+    contactText: '📞 *Customer Support:*\nWhatsApp: `%PHONE%`\nWeb: https://gro10x.ai/digivault',
     credentialsDelivered: '🎉 *Your DigiVault Order is Ready!*\n\n📦 *Product:* %PRODUCT%\n⏱️ *Duration:* %DURATION%\n\n🔑 *Access Details:*\n%CREDS%\n\n⏳ *Expiry Date:* `%EXPIRY%`\n\nThank you for choosing DigiVault! Please confirm once verified below:',
-    orderConfirmed: '🎉 *Awesome! Your activation confirmation is recorded.*\n\nThank you for choosing DigiVault! 🙏\n👉 Share with friends: https://gro10x-ai.vercel.app/digivault',
+    orderConfirmed: '🎉 *Awesome! Your activation confirmation is recorded.*\n\nThank you for choosing DigiVault! 🙏\n👉 Share with friends: https://gro10x.ai/digivault',
     orderReviewPrompt: '📋 *Order Review (Please Verify):*\n\n📦 *Product:* %PRODUCT% (%DURATION%)\n💰 *Amount Due:* ৳%PRICE% BDT\n👤 *Name:* %NAME%\n📱 *Mobile:* %PHONE%\n💬 *WhatsApp:* %WHATSAPP%\n\nIf all details are correct, tap *Confirm Order* below:',
     btnConfirmCheckout: '✅ Confirm & Place Order',
     btnEditCheckout: '✏️ Edit / Restart',
@@ -136,9 +136,9 @@ const STRINGS = {
     screenshotReceived: '✅ *পেমেন্ট স্ক্রিনশট পাওয়া গেছে!*\n\nআমাদের টিম পেমেন্ট ভেরিফাই করছে। পরবর্তী ১৫-৩০ মিনিটের মধ্যে আপনার অ্যাক্টিভেশন লিংক বা লগইন ডিটেইলস *সরাসরি এই চ্যাটে* দেওয়া হবে।\n\nঅর্ডার চেক করতে লিখুন: `/myorder %ORDER%`',
     trackPrompt: '🔍 আপনার অর্ডার চেক করতে লিখুন: `/myorder DIGI-XXXXXX`',
     orderNotFound: '❌ অর্ডার খুঁজে পাওয়া যায়নি। অনুগ্রহ করে সঠিক রেফারেন্স নম্বর দিন।',
-    contactText: '📞 *কাস্টমার সাপোর্ট:*\nWhatsApp: `%PHONE%`\nWeb: https://gro10x-ai.vercel.app/digivault',
+    contactText: '📞 *কাস্টমার সাপোর্ট:*\nWhatsApp: `%PHONE%`\nWeb: https://gro10x.ai/digivault',
     credentialsDelivered: '🎉 *আপনার ডিজিভল্ট অর্ডার সম্পন্ন হয়েছে!*\n\n📦 *প্রোডাক্ট:* %PRODUCT%\n⏱️ *মেয়াদ:* %DURATION%\n\n🔑 *লগইন ডিটেইলস:*\n%CREDS%\n\n⏳ *মেয়াদ শেষ:* `%EXPIRY%`\n\nডিজিভল্ট ব্যবহারের জন্য ধন্যবাদ! একাউন্ট চেক করে নিচে কনফার্ম করুন:',
-    orderConfirmed: '🎉 *দারুণ! আপনার অ্যাক্টিভেশন সফলভাবে কনফার্ম হয়েছে।*\n\nআমাদের সাথে থাকার জন্য অনেক ধন্যবাদ! 🙏\n👉 বন্ধুদের সাথে শেয়ার করতে পারেন: https://gro10x-ai.vercel.app/digivault',
+    orderConfirmed: '🎉 *দারুণ! আপনার অ্যাক্টিভেশন সফলভাবে কনফার্ম হয়েছে।*\n\nআমাদের সাথে থাকার জন্য অনেক ধন্যবাদ! 🙏\n👉 বন্ধুদের সাথে শেয়ার করতে পারেন: https://gro10x.ai/digivault',
     orderReviewPrompt: '📋 *অর্ডার তথ্য যাচাই (Order Review):*\n\n📦 *প্রোডাক্ট:* %PRODUCT% (%DURATION%)\n💰 *প্রদেয় মূল্য:* ৳%PRICE% টাকা\n👤 *নাম:* %NAME%\n📱 *মোবাইল:* %PHONE%\n💬 *WhatsApp:* %WHATSAPP%\n\nসব তথ্য সঠিক থাকলে নিচে *অর্ডার কনফার্ম করুন* বাটনে চাপুন:',
     btnConfirmCheckout: '✅ অর্ডার কনফার্ম করুন',
     btnEditCheckout: '✏️ তথ্য পরিবর্তন / রিস্টার্ট',
@@ -1079,9 +1079,19 @@ async function processDigiVaultWebhook(update) {
   bot.processUpdate(update);
 }
 
+async function stopDigiVaultBot() {
+  if (digivaultBot && typeof digivaultBot.stopPolling === 'function') {
+    try {
+      if (digivaultBot.isPolling()) await digivaultBot.stopPolling();
+    } catch (_) {}
+  }
+  digivaultBot = null;
+}
+
 module.exports = {
   initDigiVaultBot,
   getDigiVaultBot,
+  stopDigiVaultBot,
   getSession,
   saveSession,
   clearSession,

@@ -15,15 +15,16 @@ let app;
 let adminToken;
 
 beforeAll(() => {
-  // Generate admin authorization token
+  // Load server instance first to ensure env initialization
+  app = require('../server');
+  // Generate admin authorization token with Tier 3 seniority
   adminToken = signToken({
     id: 'emp_admin_001',
     name: 'Firoz Ahmed',
-    role: 'Owner',
-    accessLevel: 'Owner / Founder'
+    role: 'Managing Director',
+    accessLevel: 'Owner / Admin',
+    emp_code: 'GRO-001'
   });
-  // Load server instance
-  app = require('../server');
 });
 
 describe('🤖 Engine 1 Desk: Comprehensive Backend & Cockpit Integration', () => {
@@ -174,52 +175,31 @@ describe('🤖 Engine 1 Desk: Comprehensive Backend & Cockpit Integration', () =
     });
   });
 
-  describe('5. Vector Knowledge Base & 5 Verticals Studio Endpoints', () => {
-    test('GET /api/ai/assistants returns exactly 5 vertical profiles', async () => {
+  describe('5. Standalone Engine 1 Satellite Bridge & Telemetry', () => {
+    test('GET /api/engines/engine1/bridge returns satellite status and telemetry', async () => {
       const res = await request(app)
-        .get('/api/ai/assistants')
+        .get('/api/engines/engine1/bridge')
+        .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(Array.isArray(res.body.assistants)).toBe(true);
-      expect(res.body.assistants.length).toBe(5);
-
-      const verticalIds = res.body.assistants.map(a => a.id);
-      expect(verticalIds).toContain('group-academy');
-      expect(verticalIds).toContain('grocash-finledger');
-      expect(verticalIds).toContain('soloops-hub');
-      expect(verticalIds).toContain('edagent-labs');
-      expect(verticalIds).toContain('tasksync-founder');
+      expect(res.body.engineId).toBe('engine1');
+      expect(res.body.data).toBeDefined();
+      expect(['CONNECTED', 'STANDALONE_OFFLINE']).toContain(res.body.data.status);
+      expect(typeof res.body.data.benchCount).toBe('number');
     });
 
-    test('POST /api/ai/knowledge/url ingests website into RAG index', async () => {
+    test('GET /api/engines/summary enriches engine1 with live satellite telemetry', async () => {
       const res = await request(app)
-        .post('/api/ai/knowledge/url')
-        .send({
-          url: 'https://gro10x.ai/services',
-          agentId: 'soloops-hub',
-          projectId: 'proj-purplebot-01'
-        })
+        .get('/api/engines/summary')
+        .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.document.sourceType).toBe('url');
-      expect(res.body.document.tokenCount).toBeGreaterThan(0);
-    });
-
-    test('POST /api/ai/knowledge/faq ingests structured Q&A pair', async () => {
-      const res = await request(app)
-        .post('/api/ai/knowledge/faq')
-        .send({
-          question: 'What is the standard payment rail?',
-          answer: 'BRAC Bank PLC Mohakhali branch account 2081636480001.',
-          agentId: 'grocash-finledger',
-          projectId: 'proj-general'
-        })
-        .expect(200);
-
-      expect(res.body.success).toBe(true);
-      expect(res.body.document.sourceType).toBe('faq');
+      expect(res.body.engines).toBeDefined();
+      expect(res.body.engines.engine1).toBeDefined();
+      expect(res.body.engines.engine1.satellite).toBeDefined();
+      expect(['CONNECTED', 'STANDALONE_OFFLINE']).toContain(res.body.engines.engine1.satellite.status);
     });
   });
 });

@@ -10,23 +10,29 @@ dist/
 Thumbs.db
 
 # Backup files
-data/db.backup.json
+data/db.backup*.json
 data/*_test.json
 
 # Test outputs and screenshots
 tests/screenshots/
 tmp_test_assets/
+temp_media/
+scripts/e2e/reports/run-*/
 
-# Large assets not needed in repo
+# Large media & loose assets not needed in repo
+docs/archive/
+archive/
 *.pdf
 !public/assets/**/*.pdf
 Screenshot*.png
 /image_*.png
 /*.wav
+/*.jpg
+/*.png
+/*.pptx
 scratch/
 .chrome-test-profile/
 __pycache__/
 *.pyc
-scripts/e2e/reports/run-*/
 *.mp4
 *.wmv

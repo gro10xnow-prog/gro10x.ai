@@ -1,14 +1,14 @@
 /**
  * public/js/shell.js
  * ─────────────────────────────────────────────────────────────────────────────
- * PurpleOS Shared Navigation & Page Shell Manager v2.0
+ * GRO10X OS Shared Navigation & Page Shell Manager v3.0
  * Injects top header bar, sidebar navigation, mobile bottom nav, theme engine.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-(function initPurpleShell() {
+(function initGRO10XShell() {
   // 1. Theme Engine Initialization
-  const savedTheme = localStorage.getItem('purple_theme') || 'dark';
+  const savedTheme = localStorage.getItem('gro10x_theme') || localStorage.getItem('purple_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
 
   // 2. IIFE Auth Guard
@@ -43,6 +43,7 @@ function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('gro10x_theme', newTheme);
   localStorage.setItem('purple_theme', newTheme);
   
   const themeBtn = document.getElementById('themeToggleBtn');
@@ -52,16 +53,27 @@ function toggleTheme() {
   }
 }
 
+// Global safe command center invoker
+window.toggleCommandCenter = window.toggleCommandCenter || function() {
+  if (typeof openCommandPalette === 'function') {
+    openCommandPalette();
+  } else if (typeof toggleCommandCenterModal === 'function') {
+    toggleCommandCenterModal();
+  } else {
+    window.location.href = '/app#dashboard';
+  }
+};
+
 function renderHeader() {
   const headerContainer = document.getElementById('app-header');
   if (!headerContainer) return;
 
-  const currentTheme = localStorage.getItem('purple_theme') || 'dark';
+  const currentTheme = localStorage.getItem('gro10x_theme') || localStorage.getItem('purple_theme') || 'dark';
 
   headerContainer.className = 'top-header';
   headerContainer.innerHTML = `
     <div style="display: flex; align-items: center; gap: 0.8rem;">
-      <a href="/pages/dashboard.html" class="brand-container" style="display:flex; align-items:center; gap:0.6rem; text-decoration:none;">
+      <a href="/app#dashboard" class="brand-container" style="display:flex; align-items:center; gap:0.6rem; text-decoration:none;">
         <div class="brand-logo" style="background:var(--brand-primary, #00df89); color:#070b12; font-weight:900; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;">⚡</div>
         <div>
           <div class="brand-title" style="font-family:var(--font-heading); font-weight:900; font-size:1.1rem; color:var(--text-primary, #f8fafc); line-height:1;">GRO10X</div>
@@ -82,8 +94,8 @@ function renderHeader() {
         ${currentTheme === 'dark' ? '🌙' : '☀️'}
       </button>
 
-      <!-- User Profile Badge (Clickable link to profile page) -->
-      <a href="/pages/profile.html" class="user-profile-badge" title="Manage Profile & PIN">
+      <!-- User Profile Badge (Clickable link to Settings) -->
+      <a href="/app#settings" class="user-profile-badge" title="Manage Settings">
         <div class="user-avatar" id="userAvatar" style="background:var(--brand-primary, #00df89); color:#070b12; font-weight:800;">GX</div>
         <div class="user-info">
           <span class="user-name" id="userName">Admin</span>
@@ -91,7 +103,7 @@ function renderHeader() {
         </div>
       </a>
 
-      <button onclick="adminSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.45rem 0.75rem; cursor: pointer; transition: all 0.2s;">🔓</button>
+      <button onclick="adminSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.45rem 0.75rem; cursor: pointer; transition: all 0.2s;" title="Sign Out">🔓</button>
     </div>
   `;
 }
@@ -101,30 +113,31 @@ function renderSidebar() {
   if (!sidebarContainer) return;
 
   const currentPath = window.location.pathname;
+  const currentHash = window.location.hash;
 
   const navGroups = [
     {
       category: 'Core Operations',
       items: [
-        { label: 'Dashboard Overview', icon: '📊', path: '/pages/dashboard.html' },
-        { label: 'Project Hub', icon: '📋', path: '/pages/projects.html' },
-        { label: 'Client CRM', icon: '👥', path: '/pages/clients.html' }
+        { label: 'Dashboard Overview', icon: '📊', path: '/app#dashboard' },
+        { label: 'Project Pipeline Hub', icon: '📋', path: '/app#kanban' },
+        { label: 'Client CRM', icon: '👥', path: '/app#crm' }
       ]
     },
     {
       category: 'Content Pipeline',
       items: [
-        { label: 'Social Planner', icon: '📱', path: '/pages/social.html' },
-        { label: 'Review Room V2', icon: '🎥', path: '/pages/reviewroom.html' },
-        { label: 'Team & Attendance', icon: '👨‍💼', path: '/pages/team-admin.html' }
+        { label: 'Social Planner', icon: '📱', path: '/app#social' },
+        { label: 'Review Room V2', icon: '🎥', path: '/reviewroom.html' },
+        { label: 'Team & Attendance', icon: '👨‍💼', path: '/app#hr' }
       ]
     },
     {
       category: 'Finance & Analytics',
       items: [
-        { label: 'Agency Analytics', icon: '📈', path: '/pages/analytics.html' },
-        { label: 'Financials & Expenses', icon: '💰', path: '/pages/finance.html' },
-        { label: 'System Settings', icon: '⚙️', path: '/pages/settings.html' }
+        { label: 'Agency Analytics', icon: '📈', path: '/app#analytics' },
+        { label: 'Financials & Expenses', icon: '💰', path: '/app#finance' },
+        { label: 'System Settings', icon: '⚙️', path: '/app#settings' }
       ]
     }
   ];
@@ -134,7 +147,8 @@ function renderSidebar() {
   navGroups.forEach(group => {
     html += `<div class="nav-category">${group.category}</div>`;
     group.items.forEach(item => {
-      const isActive = currentPath.includes(item.path) || (item.path.includes('dashboard') && currentPath === '/admin');
+      const isActive = (item.path === '/reviewroom.html' && currentPath.includes('reviewroom')) ||
+                       (currentPath.includes('/app') && currentHash && item.path.includes(currentHash));
       html += `
         <a href="${item.path}" class="nav-item ${isActive ? 'active' : ''}">
           <span class="icon">${item.icon}</span>
@@ -158,17 +172,19 @@ function renderMobileBottomNav() {
   }
 
   const currentPath = window.location.pathname;
+  const currentHash = window.location.hash;
 
   const mobileTabs = [
-    { label: 'Home', icon: '📊', path: '/pages/dashboard.html' },
-    { label: 'Projects', icon: '📋', path: '/pages/projects.html' },
-    { label: 'Social', icon: '📱', path: '/pages/social.html' },
-    { label: 'Finance', icon: '💰', path: '/pages/finance.html' },
-    { label: 'Profile', icon: '🪪', path: '/pages/profile.html' }
+    { label: 'Home', icon: '📊', path: '/app#dashboard' },
+    { label: 'Projects', icon: '📋', path: '/app#kanban' },
+    { label: 'Review', icon: '🎬', path: '/reviewroom.html' },
+    { label: 'Social', icon: '📱', path: '/app#social' },
+    { label: 'Finance', icon: '💰', path: '/app#finance' }
   ];
 
   navEl.innerHTML = mobileTabs.map(tab => {
-    const isActive = currentPath.includes(tab.path) || (tab.path.includes('dashboard') && currentPath === '/admin');
+    const isActive = (tab.path === '/reviewroom.html' && currentPath.includes('reviewroom')) ||
+                     (currentPath.includes('/app') && currentHash && tab.path.includes(currentHash));
     return `
       <a href="${tab.path}" class="mobile-nav-btn ${isActive ? 'active' : ''}">
         <span class="nav-icon">${tab.icon}</span>
@@ -182,10 +198,10 @@ function hydrateUserInfo() {
   try {
     let name = '';
     let role = '';
-    let phone = localStorage.getItem('purple_user_phone') || '';
+    let phone = localStorage.getItem('gro10x_user_phone') || localStorage.getItem('purple_user_phone') || '';
 
-    // 1. Try parsed purple_user object
-    const rawUser = localStorage.getItem('purple_user');
+    // 1. Try parsed gro10x_user or purple_user object
+    const rawUser = localStorage.getItem('gro10x_user') || localStorage.getItem('purple_user');
     if (rawUser) {
       try {
         const u = JSON.parse(rawUser);
@@ -196,8 +212,8 @@ function hydrateUserInfo() {
     }
 
     // 2. Fall back to individual keys
-    if (!name) name = localStorage.getItem('purple_user_name');
-    if (!role) role = localStorage.getItem('purple_user_role') || localStorage.getItem('purple_user_access');
+    if (!name) name = localStorage.getItem('gro10x_user_name') || localStorage.getItem('purple_user_name');
+    if (!role) role = localStorage.getItem('gro10x_user_role') || localStorage.getItem('purple_user_role') || localStorage.getItem('purple_user_access');
 
     // 3. Fall back for Executive / Owner phone numbers (e.g. 01708459008)
     const cleanPhone = phone.replace(/[^0-9]/g, '');
@@ -207,12 +223,12 @@ function hydrateUserInfo() {
     }
 
     // Default fallbacks
-    if (!name) name = 'Staff User';
-    if (!role) role = 'Team Member';
+    if (!name) name = 'Admin User';
+    if (!role) role = 'Owner';
 
     // Store normalized user object back to localStorage
-    const userObj = { name, role, phone: cleanPhone, email: localStorage.getItem('purple_user_email') || 'gro10xnow@gmail.com' };
-    localStorage.setItem('purple_user', JSON.stringify(userObj));
+    const userObj = { name, role, phone: cleanPhone, email: localStorage.getItem('gro10x_user_email') || localStorage.getItem('purple_user_email') || 'gro10xnow@gmail.com' };
+    localStorage.setItem('gro10x_user', JSON.stringify(userObj));
 
     // Hydrate UI elements
     const nameEl = document.getElementById('userName');
@@ -224,7 +240,7 @@ function hydrateUserInfo() {
     if (avatarEl) avatarEl.textContent = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'GX';
 
   } catch (e) {
-    console.warn('[PurpleOS Shell] User hydration error:', e);
+    console.warn('[GRO10X Shell] User hydration error:', e);
   }
 }
 
@@ -288,4 +304,3 @@ document.addEventListener('click', (e) => {
     e.target.setAttribute('aria-hidden', 'true');
   }
 });
-

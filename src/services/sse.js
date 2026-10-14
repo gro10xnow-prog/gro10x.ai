@@ -44,6 +44,7 @@ function sseHandler(req, res) {
       clearInterval(heartbeat);
     }
   }, 25000);
+  if (heartbeat.unref) heartbeat.unref();
 
   // Clean up on disconnect
   req.on('close', () => {
@@ -53,7 +54,7 @@ function sseHandler(req, res) {
 }
 
 function initRealtimePubSub() {
-  if (!supabase || isRealtimeSubscribed || realtimeChannel) return;
+  if (process.env.NODE_ENV === 'test' || !supabase || isRealtimeSubscribed || realtimeChannel) return;
   try {
     realtimeChannel = supabase.channel('purpleos_system_events', {
       config: { broadcast: { self: false } }
@@ -81,6 +82,7 @@ function initRealtimePubSub() {
           reconnectAttempts++;
           clearTimeout(reconnectTimer);
           reconnectTimer = setTimeout(() => initRealtimePubSub(), delay);
+          if (reconnectTimer.unref) reconnectTimer.unref();
         }
       });
   } catch (err) {
@@ -118,7 +120,7 @@ function publishToRealtime(eventType, data, filterType = 'all', filterArgs = nul
   }
 
   // 2. Supabase Realtime pub/sub broadcast (cross-pod / multi-server fallback)
-  if (!realtimeChannel || !isRealtimeSubscribed) return;
+  if (process.env.NODE_ENV === 'test' || !realtimeChannel || !isRealtimeSubscribed) return;
   try {
     realtimeChannel.send({
       type: 'broadcast',
@@ -229,6 +231,20 @@ function broadcastCatalogUpdate(productCode) {
   broadcast('catalog_update', { productCode: productCode || 'all', timestamp: new Date().toISOString() });
 }
 
+function stopRealtimePubSub() {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+  if (realtimeChannel && supabase) {
+    try {
+      supabase.removeChannel(realtimeChannel);
+    } catch (_) {}
+    realtimeChannel = null;
+    isRealtimeSubscribed = false;
+  }
+}
+
 module.exports = {
   sseHandler,
   broadcast,
@@ -237,5 +253,6 @@ module.exports = {
   broadcastToClient,
   broadcastCatalogUpdate,
   getActiveClientsCount,
-  initRealtimePubSub
+  initRealtimePubSub,
+  stopRealtimePubSub
 };

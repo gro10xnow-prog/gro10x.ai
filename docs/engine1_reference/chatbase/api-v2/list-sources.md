@@ -1,0 +1,343 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://chatbase.co/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# List sources
+
+> Returns a paginated list of sources for an agent. Ticket sources are excluded. For link sources only individual or sitemap/crawl parent links are returned with aggregated children metadata.
+
+
+
+## OpenAPI
+
+````yaml /api-v2-openapi.json get /agents/{agentId}/sources
+openapi: 3.1.0
+info:
+  title: Chatbase API v2
+  version: 2.0.0
+  description: >-
+    Chatbase API v2 - A robust, structured API for managing agents,
+    conversations, and the helpdesk.
+servers:
+  - url: https://www.chatbase.co/api/v2
+    description: Chatbase API v2
+security: []
+paths:
+  /agents/{agentId}/sources:
+    get:
+      tags:
+        - Sources
+      summary: List sources
+      description: >-
+        Returns a paginated list of sources for an agent. Ticket sources are
+        excluded. For link sources only individual or sitemap/crawl parent links
+        are returned with aggregated children metadata.
+      operationId: listSources
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: The agent ID
+            example: 5QHA6VB-DIAbBhxwqxfdi
+          required: true
+          description: The agent ID
+          name: agentId
+          in: path
+        - schema:
+            type: string
+            description: Opaque cursor from a previous response to fetch the next page
+            example: eyJ0IjoiMjAyNC0wMS0xNVQxMDozMDowMC4wMDBaIiwiaWQiOiJhYmMxMjMifQ==
+          required: false
+          description: Opaque cursor from a previous response to fetch the next page
+          name: cursor
+          in: query
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+            description: Number of items per page (1 to 100, default 20)
+            example: 20
+          required: false
+          description: Number of items per page (1 to 100, default 20)
+          name: limit
+          in: query
+        - schema:
+            type: string
+            description: >-
+              Comma-separated source types to filter by. Allowed values: link,
+              file, qna, notionPage, text
+            example: file,qna
+          required: false
+          description: >-
+            Comma-separated source types to filter by. Allowed values: link,
+            file, qna, notionPage, text
+          name: type
+          in: query
+        - schema:
+            type: string
+            description: Partial (case-insensitive) name match
+            example: handbook
+          required: false
+          description: Partial (case-insensitive) name match
+          name: name
+          in: query
+      responses:
+        '200':
+          description: Paginated list of sources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSourcesResponse'
+        '400':
+          description: >-
+            The request body failed schema validation. Inspect the `details`
+            object in the error response for field-level errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: VALIDATION_INVALID_BODY
+                  message: Invalid request
+        '401':
+          description: >-
+            No Authorization header present. Provide a valid API key as a Bearer
+            token in the Authorization header: `Authorization: Bearer
+            <api-key>`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: AUTH_MISSING_API_KEY
+                  message: Authentication required
+        '403':
+          description: >-
+            Your current plan does not include API access. Upgrade to the
+            Standard plan or higher to use the API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: SUBSCRIPTION_API_RESTRICTED_PLAN
+                  message: A Standard plan or higher is required to access the API
+        '429':
+          description: >-
+            Rate limit exceeded. Check the `X-RateLimit-Reset` response header
+            for the Unix epoch seconds when the limit resets.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: RATE_LIMIT_TOO_MANY_REQUESTS
+                  message: Too many requests, please try again later
+        '500':
+          description: >-
+            An unhandled server error occurred. If the issue persists, contact
+            support with the `x-request-id` response header value for debugging.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: INTERNAL_SERVER_ERROR
+                  message: Something went wrong, please try again
+        '503':
+          description: >-
+            Chatbase is undergoing scheduled maintenance and the API is
+            temporarily rejecting requests. This is transient; retry after a
+            short delay. Requests are rejected before any data is read or
+            written, so no partial changes are applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: SERVICE_UNDER_MAINTENANCE
+                  message: >-
+                    The API is temporarily unavailable for scheduled
+                    maintenance, please try again later
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+    ListSourcesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceListItem'
+        pagination:
+          type: object
+          properties:
+            cursor:
+              type:
+                - string
+                - 'null'
+              description: Cursor for the next page, or null if no more pages
+            hasMore:
+              type: boolean
+              description: Whether more results are available
+            total:
+              type: number
+              description: Total number of items matching the query
+          required:
+            - cursor
+            - hasMore
+            - total
+      required:
+        - data
+        - pagination
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              type: object
+              additionalProperties:
+                type: string
+              description: Field-level validation errors
+          required:
+            - code
+            - message
+      required:
+        - error
+    SourceListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Source ID
+        type:
+          type: string
+          enum:
+            - link
+            - file
+            - qna
+            - notionPage
+            - text
+          description: Source type
+        name:
+          type:
+            - string
+            - 'null'
+          description: Source name or URL
+        size:
+          type: number
+          description: Source size in bytes
+        createdAt:
+          type: string
+          description: ISO 8601 creation timestamp
+        status:
+          type: string
+          enum:
+            - untrained
+            - trained
+            - toBeDeleted
+            - updated
+            - failed
+          description: >-
+            Training status of the source. `failed` means the last training run
+            did not land; an earlier trained version, if any, stays live.
+        metadata:
+          $ref: '#/components/schemas/LinkMetadata'
+      required:
+        - id
+        - type
+        - name
+        - size
+        - createdAt
+        - status
+        - metadata
+    LinkMetadata:
+      anyOf:
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - individual
+          required:
+            - type
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - crawl
+                - sitemap
+            excludePaths:
+              type: array
+              items:
+                type: string
+              description: Regex patterns for excluded URL paths
+            includeOnlyPaths:
+              type: array
+              items:
+                type: string
+              description: Regex patterns for included URL paths
+            slowScraping:
+              type: boolean
+              description: Whether slow scraping mode is enabled
+            crawlStatus:
+              type: string
+              enum:
+                - fetching
+                - fetched
+                - failed
+              description: Crawl progress status.
+            children:
+              $ref: '#/components/schemas/LinkChildren'
+          required:
+            - type
+            - excludePaths
+            - includeOnlyPaths
+            - slowScraping
+            - crawlStatus
+            - children
+        - type: 'null'
+      description: Link-specific metadata. Present only for type="link".
+    LinkChildren:
+      type: object
+      properties:
+        included:
+          type: number
+          description: Non-excluded, non-failed links
+        excluded:
+          type: number
+          description: Explicitly excluded links
+        failed:
+          type: number
+          description: Failed or discarded links
+      required:
+        - included
+        - excluded
+        - failed
+      description: Child link counts
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key from your account settings
+
+````
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

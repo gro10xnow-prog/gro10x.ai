@@ -472,14 +472,14 @@ app.get(['/delivery', '/delivery/'], (req, res) => {
 });
 app.use('/delivery', express.static(path.join(__dirname, 'public/delivery')));
 
-// Interactive 3D Multi-Angle Spatial Engine & Product Lab
+// Interactive 3D Multi-Angle Spatial Engine & Product Lab (Redirects to Showroom)
 app.get(['/3d-viewer', '/3d-viewer/'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/3d-viewer/index.html'));
+  res.redirect(302, '/prototypes/3d-spatial-viewer/');
 });
-app.use('/3d-viewer', express.static(path.join(__dirname, 'public/3d-viewer')));
 app.get(['/real3d', '/real3d/', '/kids-3d', '/kids-3d/', '/3d-viewer/kids'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/3d-viewer/real3d.html'));
+  res.redirect(302, '/prototypes/3d-spatial-viewer/real3d.html');
 });
+app.use('/3d-viewer', express.static(path.join(__dirname, 'public/prototypes/3d-spatial-viewer')));
 
 // DigiVault BD Storefront — Premium Digital Subscriptions (Bangla market)
 app.get(['/digivault', '/digivault/'], (req, res) => {
@@ -550,6 +550,17 @@ app.get(['/dce/growth', '/dce-growth'], (req, res) => {
 app.get(['/dce/digivault', '/dce-digivault'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/dce/digivault.html'));
 });
+
+// Central Prototype Showroom & Staged Client Prototypes
+app.get(['/prototypes', '/prototypes/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/index.html'));
+});
+
+// National Housing Finance Backwards Compatibility & Canonical Routing
+app.get(['/nhf', '/nhf/'], (req, res) => {
+  res.redirect(302, '/prototypes/nhf-portal/');
+});
+
 
 app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, filePath) => {
@@ -700,10 +711,6 @@ app.get(['/sprint', '/sprint.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/sprint.html'));
 });
 
-// National Housing Finance Interactive Prototype
-app.get(['/nhf', '/nhf/'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/nhf/index.html'));
-});
 
 // Engine 2 Inbound AI Readiness Diagnostic Scorecard
 app.get(['/ai-audit', '/ai-audit.html', '/audit'], (req, res) => {

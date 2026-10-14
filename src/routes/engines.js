@@ -16,6 +16,10 @@ const { readDB } = require('../services/db');
 const { broadcast } = require('../services/sse');
 const dceOrdersRouter = require('./dce-orders');
 const digistoreRouter = require('./digistore');
+const engine1Bridge = require('../services/engine1-bridge');
+const commerce10xBridge = require('../services/commerce10x-bridge');
+const toffeeconBridge = require('../services/toffeecon-bridge');
+const purplebotBridge = require('../services/purplebot-bridge');
 
 // Engine Targets definition ($100k ARR target breakdown)
 const ENGINE_TARGETS = {
@@ -151,6 +155,13 @@ router.get('/summary', requireAuth, async (req, res) => {
     const netMarginUSD = totalPaidRevenueUSD - totalExpensesUSD;
     const netMarginPercent = totalPaidRevenueUSD > 0 ? Math.round((netMarginUSD / totalPaidRevenueUSD) * 100) : 0;
 
+    const [engine1Satellite, commerce10xSatellite, toffeeconSatellite, purplebotSatellite] = await Promise.all([
+      engine1Bridge.getEngine1Summary(),
+      commerce10xBridge.getCommerce10xSummary(),
+      toffeeconBridge.getToffeeconSummary(),
+      purplebotBridge.getPurplebotSummary()
+    ]);
+
     const responseData = {
       success: true,
       masterARR: {
@@ -165,7 +176,8 @@ router.get('/summary', requireAuth, async (req, res) => {
         engine1: {
           ...ENGINE_TARGETS.engine1,
           current: Math.round(engineTotals.engine1),
-          percent: Math.min(100, Math.round((engineTotals.engine1 / ENGINE_TARGETS.engine1.target) * 100))
+          percent: Math.min(100, Math.round((engineTotals.engine1 / ENGINE_TARGETS.engine1.target) * 100)),
+          satellite: engine1Satellite
         },
         engine2: {
           ...ENGINE_TARGETS.engine2,
@@ -175,12 +187,50 @@ router.get('/summary', requireAuth, async (req, res) => {
         engine3: {
           ...ENGINE_TARGETS.engine3,
           current: Math.round(engineTotals.engine3),
-          percent: Math.min(100, Math.round((engineTotals.engine3 / ENGINE_TARGETS.engine3.target) * 100))
+          percent: Math.min(100, Math.round((engineTotals.engine3 / ENGINE_TARGETS.engine3.target) * 100)),
+          satellite: commerce10xSatellite,
+          liveMetrics: {
+            products: commerce10xSatellite.productsCount || commerce10xSatellite.catalog?.total_products || 0,
+            brands: commerce10xSatellite.brandsCount || commerce10xSatellite.catalog?.total_brands || 0,
+            gmvUSD: commerce10xSatellite.gmvUSD || commerce10xSatellite.sales?.gross_gmv_usd || 0,
+            arrUSD: commerce10xSatellite.arrRunRateUSD || Math.round((commerce10xSatellite.gmvUSD || 0) * 12),
+            orders: commerce10xSatellite.ordersCount || commerce10xSatellite.sales?.total_orders || 0,
+            status: commerce10xSatellite.status
+          }
         },
         engine4: {
           ...ENGINE_TARGETS.engine4,
           current: Math.round(engineTotals.engine4),
-          percent: Math.min(100, Math.round((engineTotals.engine4 / ENGINE_TARGETS.engine4.target) * 100))
+          percent: Math.min(100, Math.round((engineTotals.engine4 / ENGINE_TARGETS.engine4.target) * 100)),
+          status: 'ACTIVE_FOUNDRY',
+          ventureCount: 2,
+          products: [
+            {
+              name: 'ToffeeCon 2026 Experience OS',
+              slug: 'toffeecon',
+              client: 'Toffee / Banglalink',
+              satellite: toffeeconSatellite,
+              liveMetrics: {
+                uptimeSeconds: toffeeconSatellite.uptimeSeconds || 0,
+                connectedClients: toffeeconSatellite.connectedClients || 0,
+                currentStageMode: toffeeconSatellite.currentStageMode || 'STANDBY',
+                status: toffeeconSatellite.status
+              }
+            },
+            {
+              name: 'PurpleBot Digital Core OS',
+              slug: 'purplebot',
+              client: 'Purplebot Digital Limited',
+              satellite: purplebotSatellite,
+              liveMetrics: {
+                uptimeSeconds: purplebotSatellite.uptimeSeconds || 0,
+                staffCount: purplebotSatellite.agencyTelemetry?.totalStaff || 0,
+                openTasks: purplebotSatellite.agencyTelemetry?.openTasks || 0,
+                dbConnection: purplebotSatellite.database || 'Disconnected',
+                status: purplebotSatellite.status
+              }
+            }
+          ]
         },
         engine5: {
           ...ENGINE_TARGETS.engine5,
@@ -631,7 +681,60 @@ router.get('/pnl-waterfall', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/engines/engine1/bridge
+ * Returns live satellite telemetry from standalone Agent 10X platform
+ */
+router.get('/engine1/bridge', requireAuth, async (req, res) => {
+  try {
+    const summary = await engine1Bridge.getEngine1Summary();
+    res.json({ success: true, engineId: 'engine1', data: summary });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/engines/commerce10x/bridge
+ * Returns live satellite telemetry from standalone Commerce 10X platform (Port 4000)
+ */
+router.get('/commerce10x/bridge', requireAuth, async (req, res) => {
+  try {
+    const summary = await commerce10xBridge.getCommerce10xSummary();
+    res.json({ success: true, engineId: 'engine3', venture: 'COMMERCE_10X', data: summary });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/engines/toffeecon/bridge
+ * Returns live satellite telemetry from standalone ToffeeCon 2026 platform (Port 5000)
+ */
+router.get('/toffeecon/bridge', requireAuth, async (req, res) => {
+  try {
+    const summary = await toffeeconBridge.getToffeeconSummary();
+    res.json({ success: true, engineId: 'engine4', venture: 'TOFFEECON_2026', data: summary });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/engines/purplebot/bridge
+ * Returns live satellite telemetry from standalone PurpleBot Digital Core OS platform (Port 6000)
+ */
+router.get('/purplebot/bridge', requireAuth, async (req, res) => {
+  try {
+    const summary = await purplebotBridge.getPurplebotSummary();
+    res.json({ success: true, engineId: 'engine4', venture: 'PURPLEBOT_CORE', data: summary });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.compileEngine2FlashReport = compileEngine2FlashReport;
 module.exports = router;
+
 
 
