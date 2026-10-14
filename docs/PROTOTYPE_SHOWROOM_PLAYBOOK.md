@@ -25,7 +25,7 @@ All pre-sales prototypes live inside **Mother OS (`gro10x.ai`)** within the **Ce
 │ STAGE 1: PRE-SALES INCUBATION (Mother OS Showroom)                     │
 │ • Client: Prospect / Lead in Mother OS CRM                             │
 │ • Location: public/prototypes/<slug>/                                  │
-│ • Link: https://gro10x.ai/prototypes/<slug>/                          │
+│ • Link: https://gro10x-ai.vercel.app/prototypes/<slug>/                  │
 │ • Workforce: Handled by "Foundry Lab & Rapid Prototyper" in 1 Chat     │
 │ • Database: Zero dummy database records created                        │
 └──────────────────────────────────┬─────────────────────────────────────┘
@@ -57,7 +57,7 @@ To manage this pipeline without polluting satellite engineering squads, we estab
   1. Ingest prototype code from Gemini Chat, Claude, Figma, or raw HTML/JS scripts.
   2. Normalize and package prototypes into `public/prototypes/<slug>/index.html`.
   3. Ensure zero-dependency, CDN-backed, highly responsive WebGL/Tailwind/CSS execution.
-  4. Generate shareable, client-ready URLs on `gro10x.ai` with QR codes and social share hooks.
+  4. Generate shareable, client-ready URLs on `https://gro10x-ai.vercel.app` with QR codes and social share hooks.
   5. Coordinate with B2B Deal Officer to link the prototype to the CRM Opportunity.
 
 ---
