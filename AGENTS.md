@@ -53,3 +53,14 @@ Whenever a new functional need, venture, or prototype arises:
   2. Central CoS isolates the root cause (e.g., cloud provider cold starts, port binding, missing crons, deployment drift).
   3. Central CoS formulates the architectural remediation plan and provides the Founder with the prompt to dispatch to that venture's dedicated conversation/squad.
 
+---
+
+### 6. Pre-Sales Prototyping Standards & Rapid Prototyper Delegation
+When creating or refining pre-sales prototypes in `public/prototypes/<slug>/`:
+1. **Strict Delegation**: Central CoS designs the functional brief and dispatches the task to the `Foundry Lab Director & Rapid Prototyper` in their dedicated conversation. Central CoS never writes prototype frontend code directly.
+2. **Realistic Scale & Room Dimensions**: 3D spatial tools must provide realistic architectural dimensions or size toggles (e.g. Studio 4.2×4.8m vs Master 6×6m vs Hall 8.5×8.5m) rather than oversized empty cubes.
+3. **Authentic Localized Pricing**: For Bangladesh market ventures, all prices must reflect authentic local retail tiers (BDT) rather than arbitrary or hyper-inflated numbers.
+4. **Bilingual Invariant (EN + BN)**: Client-facing consumer prototypes must provide a seamless English/Bangla toggle for viral shareability and local stakeholder demos.
+5. **Robust Canvas Exports**: Downloadable share cards must implement word-wrapping, dynamic QR links to exact 3D URL state, synchronized room metadata, and high-resolution mobile story proportions.
+
+
