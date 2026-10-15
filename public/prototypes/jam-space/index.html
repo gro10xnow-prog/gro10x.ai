@@ -4,11 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JAM SPACE — Dream Room Reality Check & 3D Studio</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
     :root {
       --jam-pink: #EF2670;
       --jam-gold: #F8C144;
@@ -16,7 +21,7 @@
       --jam-charcoal: #383635;
     }
     body {
-      font-family: 'Space Grotesk', sans-serif;
+      font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif;
       overflow: hidden;
       user-select: none;
       background: #0d0e12;
@@ -24,6 +29,7 @@
       outline: none;
     }
     .mono { font-family: 'Space Mono', monospace; }
+    .bangla { font-family: 'Hind Siliguri', sans-serif; }
     .jam-gradient-btn {
       background: linear-gradient(135deg, #EF2670 0%, #F8C144 52%, #26C4A5 100%);
     }
@@ -43,35 +49,45 @@
   <div id="canvas-container" class="absolute inset-0 z-0"></div>
 
   <!-- ========================================================= -->
-  <!-- TOP GAMIFIED PROGRESS BAR (Visible across steps)          -->
+  <!-- TOP GAMIFIED PROGRESS BAR & LANGUAGE TOGGLE               -->
   <!-- ========================================================= -->
-  <div class="absolute top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-    <div class="bg-[#14151c]/90 backdrop-blur-md border border-white/10 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-2xl">
+  <div class="absolute top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex items-center gap-2 max-w-[96vw]">
+    <div class="bg-[#14151c]/90 backdrop-blur-md border border-white/10 px-3 sm:px-4 py-2 rounded-2xl flex items-center gap-2 sm:gap-3 shadow-2xl overflow-x-auto">
       <!-- Mini JAM Logo -->
-      <div class="flex items-center gap-2 pr-2 border-r border-white/10">
-        <svg viewBox="0 0 120 42" class="h-6 w-auto" fill="none">
+      <div class="flex items-center gap-2 pr-2 border-r border-white/10 shrink-0">
+        <svg viewBox="0 0 120 42" class="h-5 sm:h-6 w-auto" fill="none">
           <path d="M0 18 H18 V0 H36 V38 H0 Z" fill="#EF2670"/>
           <polygon points="60,0 40,38 80,38" fill="#F8C144"/>
           <polygon points="84,0 84,38 120,38 120,0 102,20" fill="#26C4A5"/>
         </svg>
-        <span class="text-[11px] font-bold tracking-[0.28em] text-gray-200">SPACE</span>
+        <span class="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-gray-200">SPACE</span>
       </div>
 
       <!-- Step Indicators -->
-      <button onclick="goToStep(1)" id="step-pill-1" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-[#EF2670] text-white transition">
-        <span>1</span><span class="hidden sm:inline">Profile</span>
+      <button onclick="goToStep(1)" id="step-pill-1" class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-bold bg-[#EF2670] text-white transition shrink-0">
+        <span>1</span><span class="hidden sm:inline" data-i18n="step1">Profile</span>
       </button>
-      <span class="text-gray-600 text-xs">›</span>
-      <button onclick="tryGoToStep(2)" id="step-pill-2" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition">
-        <span>2</span><span class="hidden sm:inline">Select Portal</span>
+      <span class="text-gray-600 text-xs shrink-0">›</span>
+      <button onclick="tryGoToStep(2)" id="step-pill-2" class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition shrink-0">
+        <span>2</span><span class="hidden sm:inline" data-i18n="step2">Select Portal</span>
       </button>
-      <span class="text-gray-600 text-xs">›</span>
-      <button onclick="tryGoToStep(3)" id="step-pill-3" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition">
-        <span>3</span><span class="hidden sm:inline">3D Studio</span>
+      <span class="text-gray-600 text-xs shrink-0">›</span>
+      <button onclick="tryGoToStep(3)" id="step-pill-3" class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition shrink-0">
+        <span>3</span><span class="hidden sm:inline" data-i18n="step3">3D Studio</span>
       </button>
-      <span class="text-gray-600 text-xs">›</span>
-      <button onclick="tryGoToStep(4)" id="step-pill-4" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition">
-        <span>4</span><span class="hidden sm:inline">Reality Receipt</span>
+      <span class="text-gray-600 text-xs shrink-0">›</span>
+      <button onclick="tryGoToStep(4)" id="step-pill-4" class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition shrink-0">
+        <span>4</span><span class="hidden sm:inline" data-i18n="step4">Reality Receipt</span>
+      </button>
+    </div>
+
+    <!-- Persistent Bilingual Toggle [🇧🇩 বাংলা | 🇬🇧 EN] -->
+    <div class="bg-[#14151c]/90 backdrop-blur-md border border-white/10 p-1 rounded-2xl flex items-center shadow-2xl shrink-0">
+      <button onclick="setLanguage('bn')" id="lang-btn-bn" class="px-2.5 py-1 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition">
+        🇧🇩 বাংলা
+      </button>
+      <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2.5 py-1 rounded-xl text-xs font-bold bg-[#26C4A5] text-gray-950 transition">
+        🇬🇧 EN
       </button>
     </div>
   </div>
@@ -86,36 +102,33 @@
       <div class="flex flex-col items-center text-center mb-6">
         <div class="bg-white px-6 py-4 rounded-2xl shadow-lg mb-4 inline-flex flex-col items-center">
           <svg viewBox="0 0 180 65" class="w-36 h-auto" fill="none">
-            <!-- Pink Step-J -->
             <path d="M5 28 H30 V4 H55 V58 H5 Z" fill="#EF2670"/>
-            <!-- Yellow Triangle-A -->
             <polygon points="90,4 63,58 117,58" fill="#F8C144"/>
-            <!-- Teal Crown-M -->
             <polygon points="125,4 125,58 175,58 175,4 150,32" fill="#26C4A5"/>
           </svg>
           <div class="text-[#383635] font-bold tracking-[0.42em] text-sm mt-1.5 pl-1.5">SPACE</div>
         </div>
 
-        <span class="px-3 py-1 rounded-full bg-[#EF2670]/15 border border-[#EF2670]/40 text-[#EF2670] text-[11px] font-bold uppercase tracking-widest">
+        <span class="px-3 py-1 rounded-full bg-[#EF2670]/15 border border-[#EF2670]/40 text-[#EF2670] text-[11px] font-bold uppercase tracking-widest" data-i18n="tagline">
           Viral 3D Interior Cost Simulator
         </span>
-        <h1 class="text-2xl sm:text-3xl font-bold mt-2 tracking-tight text-white">
+        <h1 class="text-2xl sm:text-3xl font-bold mt-2 tracking-tight text-white" data-i18n="heroTitle">
           Can You Afford Your Dream Room?
         </h1>
-        <p class="text-xs sm:text-sm text-gray-400 mt-1 max-w-md">
+        <p class="text-xs sm:text-sm text-gray-400 mt-1 max-w-md" data-i18n="heroSub">
           Step into our 3D portal, decorate your dream room with zero limits, and generate your brutal <b class="text-[#F8C144]">Reality Check Receipt</b>.
         </p>
       </div>
 
       <!-- Shared Room Notice (Appears if opened via friend's QR/Link) -->
       <div id="shared-welcome-alert" class="hidden mb-4 bg-[#26C4A5]/15 border border-[#26C4A5]/50 rounded-2xl p-3 text-xs text-[#26C4A5] flex items-center justify-between gap-2">
-        <span>🔗 <b>Friend's 3D Room Loaded!</b> Enter your details to walk inside or remix it.</span>
+        <span data-i18n="sharedNotice">🔗 <b>Friend's 3D Room Loaded!</b> Enter your details to walk inside or remix it.</span>
       </div>
 
       <!-- Lead Collection Form -->
       <form onsubmit="submitLeadForm(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5" data-i18n="labelName">
             👤 Your Name (Printed on Receipt) *
           </label>
           <input
@@ -128,7 +141,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5" data-i18n="labelPhone">
             📱 Phone / WhatsApp Number (To Save & Unlock 3D Quote) *
           </label>
           <input
@@ -138,13 +151,13 @@
             placeholder="e.g., 017XXXXXXXX"
             class="w-full bg-[#0d0e12] border border-gray-700 focus:border-[#EF2670] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 mono focus:outline-none transition"
           />
-          <p id="phone-error" class="hidden text-[11px] text-[#EF2670] mt-1 font-semibold">
+          <p id="phone-error" class="hidden text-[11px] text-[#EF2670] mt-1 font-semibold" data-i18n="phoneError">
             Please enter a valid phone number (at least 8 digits).
           </p>
         </div>
 
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5" data-i18n="labelVibe">
             ✨ Your Interior Aesthetic Vibe
           </label>
           <select
@@ -163,11 +176,11 @@
           class="w-full py-4 rounded-2xl font-bold text-base text-gray-950 shadow-xl transition transform active:scale-95 hover:brightness-110 flex items-center justify-center gap-2"
           style="background: linear-gradient(90deg, #EF2670 0%, #F8C144 50%, #26C4A5 100%);"
         >
-          <span>🚀 START BUILDING MY DREAM ROOM</span>
+          <span data-i18n="btnStart">🚀 START BUILDING MY DREAM ROOM</span>
         </button>
 
         <div class="flex justify-between items-center text-[11px] text-gray-500 pt-1">
-          <span>🔒 Instant 3D access • No spam</span>
+          <span data-i18n="safeNotice">🔒 Instant 3D access • Zero spam</span>
           <span id="lead-count-badge" class="mono text-gray-400">Leads Captured: 0</span>
         </div>
       </form>
@@ -181,12 +194,12 @@
     <div class="bg-[#14151c] border border-white/15 w-full max-w-4xl rounded-3xl p-6 sm:p-8 shadow-2xl my-auto">
       <div class="flex flex-wrap justify-between items-end gap-4 mb-6">
         <div>
-          <span class="text-xs font-bold uppercase tracking-widest text-[#26C4A5]">Step 2 of 4 • Choose Your Portal</span>
+          <span class="text-xs font-bold uppercase tracking-widest text-[#26C4A5]" data-i18n="step2Header">Step 2 of 4 • Choose Your Portal</span>
           <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">
-            Welcome, <span id="portal-user-name" class="text-[#F8C144]">Architect</span>! Pick a Room to Decorate
+            <span data-i18n="welcome">Welcome,</span> <span id="portal-user-name" class="text-[#F8C144]">Architect</span>! <span data-i18n="pickRoom">Pick a Room to Decorate</span>
           </h2>
         </div>
-        <button onclick="goToStep(1)" class="text-xs text-gray-400 hover:text-white border border-gray-700 px-3 py-1.5 rounded-xl">
+        <button onclick="goToStep(1)" class="text-xs text-gray-400 hover:text-white border border-gray-700 px-3 py-1.5 rounded-xl" data-i18n="btnBackProfile">
           ← Edit Name / Phone
         </button>
       </div>
@@ -198,14 +211,14 @@
           <div>
             <div class="flex justify-between items-center mb-3">
               <span class="text-4xl">🛏️</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#EF2670]/20 text-[#EF2670]">Most Popular</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#EF2670]/20 text-[#EF2670]" data-i18n="badgePopular">Most Popular</span>
             </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-[#EF2670] transition">Master Bedroom</h3>
-            <p class="text-xs text-gray-400 mt-1">Italian Cloud Beds, Walk-In Glass Wardrobes & Hollywood LED Vanities.</p>
+            <h3 class="text-lg font-bold text-white group-hover:text-[#EF2670] transition" data-i18n="roomBedroom">Master Bedroom</h3>
+            <p class="text-xs text-gray-400 mt-1" data-i18n="descBedroom">Italian King Beds, 4-Door Glass Wardrobes, Study Desks & Hollywood Vanities.</p>
           </div>
           <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-            <span class="text-gray-400 mono">Avg: ৳ 6.5 Lakh</span>
-            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition">Enter Portal →</span>
+            <span class="text-gray-400 mono">Avg: ৳ 2.2 Lakh</span>
+            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition" data-i18n="btnEnter">Enter Portal →</span>
           </div>
         </div>
 
@@ -214,14 +227,14 @@
           <div>
             <div class="flex justify-between items-center mb-3">
               <span class="text-4xl">🎮</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#F8C144]/20 text-[#F8C144]">High Viral Shock</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#F8C144]/20 text-[#F8C144]" data-i18n="badgeViral">High Viral Shock</span>
             </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-[#F8C144] transition">Pro Game Room</h3>
-            <p class="text-xs text-gray-400 mt-1">Dual-RTX 5090 Liquid PCs, Full-Motion Racing Sims & Neon Arcade Cabs.</p>
+            <h3 class="text-lg font-bold text-white group-hover:text-[#F8C144] transition" data-i18n="roomGame">Pro Game Room</h3>
+            <p class="text-xs text-gray-400 mt-1" data-i18n="descGame">Dual-RTX Liquid PCs, Full-Motion Racing Simulators & Neon Arcade Cabinets.</p>
           </div>
           <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-            <span class="text-gray-400 mono">Avg: ৳ 12.1 Lakh</span>
-            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition">Enter Portal →</span>
+            <span class="text-gray-400 mono">Avg: ৳ 5.8 Lakh</span>
+            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition" data-i18n="btnEnter">Enter Portal →</span>
           </div>
         </div>
 
@@ -230,14 +243,14 @@
           <div>
             <div class="flex justify-between items-center mb-3">
               <span class="text-4xl">🛋️</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#26C4A5]/20 text-[#26C4A5]">Luxury Flex</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#26C4A5]/20 text-[#26C4A5]" data-i18n="badgeLuxury">Luxury Flex</span>
             </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-[#26C4A5] transition">Drawing & Lounge</h3>
-            <p class="text-xs text-gray-400 mt-1">Velvet L-Lounges, 98" 8K OLED Media Walls & Swarovski Chandeliers.</p>
+            <h3 class="text-lg font-bold text-white group-hover:text-[#26C4A5] transition" data-i18n="roomDrawing">Drawing & Lounge</h3>
+            <p class="text-xs text-gray-400 mt-1" data-i18n="descDrawing">Velvet L-Lounges, 98" 8K OLED Media Walls & Imported Crystal Chandeliers.</p>
           </div>
           <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-            <span class="text-gray-400 mono">Avg: ৳ 11.5 Lakh</span>
-            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition">Enter Portal →</span>
+            <span class="text-gray-400 mono">Avg: ৳ 3.2 Lakh</span>
+            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition" data-i18n="btnEnter">Enter Portal →</span>
           </div>
         </div>
 
@@ -246,14 +259,14 @@
           <div>
             <div class="flex justify-between items-center mb-3">
               <span class="text-4xl">🍳</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/10 text-gray-300">Culinary</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/10 text-gray-300" data-i18n="badgeCulinary">Culinary</span>
             </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-[#EF2670] transition">Designer Kitchen</h3>
-            <p class="text-xs text-gray-400 mt-1">Italian Marble Islands, Smart Touchscreen Fridges & La Marzocco Bars.</p>
+            <h3 class="text-lg font-bold text-white group-hover:text-[#EF2670] transition" data-i18n="roomKitchen">Designer Kitchen</h3>
+            <p class="text-xs text-gray-400 mt-1" data-i18n="descKitchen">Italian Marble Islands, Smart French-Door Fridges & Espresso Bars.</p>
           </div>
           <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-            <span class="text-gray-400 mono">Avg: ৳ 9.6 Lakh</span>
-            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition">Enter Portal →</span>
+            <span class="text-gray-400 mono">Avg: ৳ 2.8 Lakh</span>
+            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition" data-i18n="btnEnter">Enter Portal →</span>
           </div>
         </div>
 
@@ -262,22 +275,22 @@
           <div>
             <div class="flex justify-between items-center mb-3">
               <span class="text-4xl">🛁</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#F8C144]/20 text-[#F8C144]">24K Gold</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#F8C144]/20 text-[#F8C144]" data-i18n="badgeGold">Spa Luxury</span>
             </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-[#F8C144] transition">Spa Washroom</h3>
-            <p class="text-xs text-gray-400 mt-1">Hydro-Massage Jacuzzis, 24K Gold Smart Bidets & Cedarwood Saunas.</p>
+            <h3 class="text-lg font-bold text-white group-hover:text-[#F8C144] transition" data-i18n="roomWashroom">Spa Washroom</h3>
+            <p class="text-xs text-gray-400 mt-1" data-i18n="descWashroom">Hydro-Massage Jacuzzis, Smart Warm Bidets & Cedarwood Saunas.</p>
           </div>
           <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-            <span class="text-gray-400 mono">Avg: ৳ 13.5 Lakh</span>
-            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition">Enter Portal →</span>
+            <span class="text-gray-400 mono">Avg: ৳ 3.4 Lakh</span>
+            <span class="font-bold text-[#26C4A5] group-hover:translate-x-1 transition" data-i18n="btnEnter">Enter Portal →</span>
           </div>
         </div>
 
         <!-- Jump straight into current room -->
         <div onclick="goToStep(3)" class="cursor-pointer bg-gradient-to-br from-[#EF2670]/20 via-[#F8C144]/15 to-[#26C4A5]/20 border-2 border-dashed border-[#26C4A5]/60 rounded-2xl p-5 transition flex flex-col justify-center items-center text-center">
           <span class="text-3xl mb-2">⚡</span>
-          <h3 class="text-base font-bold text-white">Continue Current Layout</h3>
-          <p class="text-xs text-gray-300 mt-1">Jump directly into the 3D Studio with your existing furniture.</p>
+          <h3 class="text-base font-bold text-white" data-i18n="continueLayout">Continue Current Layout</h3>
+          <p class="text-xs text-gray-300 mt-1" data-i18n="continueLayoutDesc">Jump directly into the 3D Studio with your existing furniture.</p>
         </div>
       </div>
     </div>
@@ -288,22 +301,36 @@
   <!-- ========================================================= -->
   <div id="step-3-hud" class="hidden">
 
-    <!-- Top-Left & Top-Right Studio Controls -->
+    <!-- Top Studio Controls -->
     <div class="absolute top-16 left-4 right-4 z-10 flex flex-wrap justify-between items-center gap-3 pointer-events-none">
       
-      <!-- Left: Quick Portal Switcher & Camera Mode -->
+      <!-- Left: Room Switcher, Camera Mode & 3-Tier Room Size Selector -->
       <div class="flex flex-wrap items-center gap-2 pointer-events-auto">
         <button onclick="goToStep(2)" class="bg-[#14151c]/95 hover:bg-gray-800 border border-white/15 px-3 py-2 rounded-xl text-xs font-bold text-[#F8C144] flex items-center gap-1.5 shadow-xl transition">
-          <span>🚪 Change Room:</span>
+          <span data-i18n="changeRoomLabel">🚪 Room:</span>
           <span id="active-room-badge" class="text-white">Bedroom</span>
         </button>
 
+        <!-- 3-Tier Room Size Selector -->
+        <div class="bg-[#14151c]/95 border border-white/15 p-1 rounded-xl flex items-center gap-1 shadow-xl">
+          <button id="size-btn-compact" onclick="setRoomSize('compact')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-[#EF2670] text-white transition" title="4.2m x 4.8m">
+            🏠 <span data-i18n="sizeCompact">Compact (4.2×4.8m)</span>
+          </button>
+          <button id="size-btn-standard" onclick="setRoomSize('standard')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-gray-300 hover:bg-gray-800 transition" title="6.0m x 6.0m">
+            🏢 <span data-i18n="sizeStandard">Standard (6×6m)</span>
+          </button>
+          <button id="size-btn-grand" onclick="setRoomSize('grand')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-gray-300 hover:bg-gray-800 transition" title="8.5m x 8.5m">
+            🏰 <span data-i18n="sizeGrand">Grand (8.5×8.5m)</span>
+          </button>
+        </div>
+
+        <!-- Camera Controls -->
         <div class="bg-[#14151c]/95 border border-[#26C4A5]/40 p-1 rounded-xl flex items-center gap-1 shadow-xl">
-          <button id="mode-orbit-btn" onclick="setCameraMode('orbit')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#26C4A5] text-gray-950 transition">
+          <button id="mode-orbit-btn" onclick="setCameraMode('orbit')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#26C4A5] text-gray-950 transition" data-i18n="btnOrbit">
             🎥 Orbit & Drag
           </button>
-          <button id="mode-walk-btn" onclick="setCameraMode('walk')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-300 hover:bg-gray-800 transition">
-            🚶 Walk Inside (WASD)
+          <button id="mode-walk-btn" onclick="setCameraMode('walk')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-300 hover:bg-gray-800 transition" data-i18n="btnWalk">
+            🚶 Walk (WASD)
           </button>
         </div>
       </div>
@@ -311,15 +338,15 @@
       <!-- Right: Live Damage Counter & Finish Step Button -->
       <div class="bg-[#14151c]/95 backdrop-blur-md border border-[#EF2670]/50 px-4 py-2 rounded-2xl pointer-events-auto flex items-center gap-4 shadow-2xl">
         <div>
-          <div class="text-[10px] uppercase tracking-widest text-gray-400">Dream Room Bill</div>
+          <div class="text-[10px] uppercase tracking-widest text-gray-400" data-i18n="hudBillLabel">Dream Room Bill</div>
           <div id="hud-cost" class="text-xl font-bold text-[#EF2670] mono">৳ 0</div>
         </div>
         <div class="h-7 w-[1px] bg-gray-700 hidden sm:block"></div>
         <div class="hidden sm:block">
-          <div class="text-[10px] uppercase tracking-widest text-gray-400">Sanity Status</div>
+          <div class="text-[10px] uppercase tracking-widest text-gray-400" data-i18n="hudSanityLabel">Sanity Status</div>
           <div id="hud-roast" class="text-xs font-semibold text-[#F8C144]">Empty & Broke</div>
         </div>
-        <button onclick="goToStep(4)" class="bg-gradient-to-r from-[#EF2670] to-[#F8C144] hover:brightness-110 text-gray-950 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg transition transform active:scale-95">
+        <button onclick="goToStep(4)" class="bg-gradient-to-r from-[#EF2670] to-[#F8C144] hover:brightness-110 text-gray-950 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg transition transform active:scale-95" data-i18n="btnFinishReceipt">
           🧾 Finish & Generate Receipt →
         </button>
       </div>
@@ -330,9 +357,9 @@
       
       <!-- Architectural Finish Customizer -->
       <div class="bg-[#14151c]/90 backdrop-blur-md border border-white/10 p-3 rounded-2xl pointer-events-auto shadow-xl space-y-2">
-        <div class="text-[10px] font-bold uppercase tracking-widest text-[#26C4A5]">🎨 JAM Studio Finishes</div>
+        <div class="text-[10px] font-bold uppercase tracking-widest text-[#26C4A5]" data-i18n="studioFinishes">🎨 Studio Finishes</div>
         <div class="flex items-center justify-between text-xs">
-          <span class="text-gray-400">Walls:</span>
+          <span class="text-gray-400" data-i18n="wallsLabel">Walls:</span>
           <div class="flex gap-1.5">
             <button onclick="setWallColor(0x1e293b)" class="w-5 h-5 rounded-full bg-slate-800 border border-white/40" title="Midnight Slate"></button>
             <button onclick="setWallColor(0x383635)" class="w-5 h-5 rounded-full bg-[#383635] border border-white/40" title="Jam Charcoal"></button>
@@ -341,15 +368,15 @@
           </div>
         </div>
         <div class="flex items-center justify-between text-xs">
-          <span class="text-gray-400">Floor:</span>
+          <span class="text-gray-400" data-i18n="floorLabel">Floor:</span>
           <div class="flex gap-1.5">
             <button onclick="setFloorColor(0x334155)" class="w-5 h-5 rounded-full bg-slate-700 border border-white/40" title="Dark Concrete"></button>
             <button onclick="setFloorColor(0x78350f)" class="w-5 h-5 rounded-full bg-amber-900 border border-white/40" title="Warm Walnut"></button>
             <button onclick="setFloorColor(0xe2e8f0)" class="w-5 h-5 rounded-full bg-slate-200 border border-gray-500" title="Italian Marble"></button>
           </div>
         </div>
-        <p class="text-[11px] text-gray-400 pt-1 border-t border-white/10">
-          💡 <b>Drag any item</b> directly across the floor, or click it to rotate/refund.
+        <p class="text-[11px] text-gray-400 pt-1 border-t border-white/10" data-i18n="studioDragTip">
+          💡 <b>Drag any item</b> across floor, click to rotate/delete.
         </p>
       </div>
 
@@ -360,8 +387,8 @@
           <span id="insp-price" class="mono text-xs text-[#EF2670] font-bold">৳ 0</span>
         </div>
         <div class="grid grid-cols-2 gap-1.5 mb-2 text-xs font-bold">
-          <button onclick="rotateItem()" class="bg-[#26C4A5] hover:brightness-110 text-gray-950 py-1.5 rounded-lg">🔄 Rotate 90°</button>
-          <button onclick="deleteSelectedItem()" class="bg-[#EF2670]/20 hover:bg-[#EF2670]/40 border border-[#EF2670]/50 text-[#EF2670] py-1.5 rounded-lg">🗑️ Refund</button>
+          <button onclick="rotateItem()" class="bg-[#26C4A5] hover:brightness-110 text-gray-950 py-1.5 rounded-lg" data-i18n="btnRotate">🔄 Rotate 90°</button>
+          <button onclick="deleteSelectedItem()" class="bg-[#EF2670]/20 hover:bg-[#EF2670]/40 border border-[#EF2670]/50 text-[#EF2670] py-1.5 rounded-lg" data-i18n="btnDelete">🗑️ Refund</button>
         </div>
       </div>
     </div>
@@ -370,8 +397,8 @@
     <div id="shop-dock" class="absolute bottom-4 left-4 right-4 z-10 pointer-events-none flex justify-center">
       <div class="bg-[#14151c]/95 backdrop-blur-md border border-white/15 p-3 rounded-2xl pointer-events-auto w-full max-w-5xl shadow-2xl">
         <div class="flex justify-between items-center mb-2 px-1">
-          <span class="text-xs font-bold uppercase tracking-wider text-[#26C4A5]">🛒 Click to Drop Furniture Into Room (Drag to Move)</span>
-          <button onclick="clearRoom()" class="text-xs text-gray-400 hover:text-[#EF2670] transition">Reset Room</button>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#26C4A5]" data-i18n="shopTitle">🛒 Click Furniture to Place in Room (Drag to Position)</span>
+          <button onclick="clearRoom()" class="text-xs text-gray-400 hover:text-[#EF2670] transition" data-i18n="btnResetRoom">Reset Room</button>
         </div>
         <div id="shop-items" class="flex gap-3 overflow-x-auto pb-1"></div>
       </div>
@@ -398,11 +425,11 @@
       </div>
 
       <div class="absolute bottom-8 bg-[#14151c]/95 border border-white/15 px-5 py-2.5 rounded-2xl text-xs text-gray-200 flex items-center gap-4 shadow-2xl pointer-events-auto">
-        <span>🕹️ <b>WASD / Walk Pad:</b> Move</span>
+        <span data-i18n="walkHelpMove">🕹️ <b>WASD / Walk Pad:</b> Move</span>
         <span class="text-gray-600">|</span>
-        <span>🖱️ <b>Drag Mouse:</b> Look Around</span>
+        <span data-i18n="walkHelpLook">🖱️ <b>Drag Mouse:</b> Look Around</span>
         <span class="text-gray-600">|</span>
-        <button onclick="setCameraMode('orbit')" class="bg-[#26C4A5] hover:brightness-110 text-gray-950 font-bold px-3.5 py-1.5 rounded-lg transition">
+        <button onclick="setCameraMode('orbit')" class="bg-[#26C4A5] hover:brightness-110 text-gray-950 font-bold px-3.5 py-1.5 rounded-lg transition" data-i18n="btnExitWalk">
           🚪 Exit Walk Mode
         </button>
       </div>
@@ -428,7 +455,7 @@
             <h2 class="text-base font-bold tracking-tight" id="rc-title">DREAM BEDROOM RECEIPT</h2>
           </div>
         </div>
-        <button onclick="goToStep(3)" class="text-xs bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg font-semibold">
+        <button onclick="goToStep(3)" class="text-xs bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg font-semibold" data-i18n="btnKeepEditing">
           ← Keep Editing
         </button>
       </div>
@@ -455,21 +482,21 @@
 
         <!-- Grand Total -->
         <div class="border-t-2 border-b-2 border-gray-900 py-2.5 flex justify-between items-baseline">
-          <span class="font-bold text-sm uppercase">Total Dream Damage:</span>
+          <span class="font-bold text-sm uppercase" data-i18n="rcTotalLabel">Total Dream Damage:</span>
           <span id="rc-total" class="text-2xl font-black mono text-[#EF2670]">৳ 0</span>
         </div>
 
         <!-- Brutal Reality Check Metrics -->
         <div class="bg-pink-50 border border-pink-200 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold uppercase tracking-wider text-[#EF2670]">💀 Existential Damage Breakdown</div>
+          <div class="text-[11px] font-bold uppercase tracking-wider text-[#EF2670]" data-i18n="rcRoastTitle">💀 Existential Damage Breakdown</div>
           <p id="rc-verdict" class="text-xs text-gray-800 leading-relaxed font-medium"></p>
           <div class="grid grid-cols-2 gap-2 pt-1 text-center">
             <div class="bg-white p-2 rounded-lg border border-pink-100">
-              <div class="text-[10px] text-gray-500 uppercase">Kacchi Biryanis Lost</div>
+              <div class="text-[10px] text-gray-500 uppercase" data-i18n="rcBiryaniLabel">Kacchi Biryanis Lost</div>
               <div id="rc-biryani" class="font-bold text-sm text-gray-900 mono">0 Plates</div>
             </div>
             <div class="bg-white p-2 rounded-lg border border-pink-100">
-              <div class="text-[10px] text-gray-500 uppercase">Kidney Equivalent</div>
+              <div class="text-[10px] text-gray-500 uppercase" data-i18n="rcKidneyLabel">Kidney Equivalent</div>
               <div id="rc-kidney" class="font-bold text-sm text-gray-900 mono">0.00 Kidneys</div>
             </div>
           </div>
@@ -479,8 +506,8 @@
         <div class="flex items-center gap-3 bg-gray-100 p-2.5 rounded-xl">
           <img id="rc-qr" src="" alt="QR Code" class="w-16 h-16 rounded-lg border border-gray-300 bg-white p-1" />
           <div class="text-xs">
-            <div class="font-bold text-gray-900">Scan to Walk Inside This Room</div>
-            <p class="text-gray-600 text-[11px]">Friends scanning this QR will spawn inside your exact 3D furniture layout.</p>
+            <div class="font-bold text-gray-900" data-i18n="qrScanTitle">Scan to Walk Inside This Room</div>
+            <p class="text-gray-600 text-[11px]" data-i18n="qrScanSub">Friends scanning this QR will spawn inside your exact 3D furniture layout.</p>
           </div>
         </div>
 
@@ -488,10 +515,10 @@
 
         <!-- Action Buttons: Download PNG Poster + Copy FB Status -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-          <button onclick="downloadViralPoster()" class="bg-[#14151c] hover:bg-gray-800 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow transition flex items-center justify-center gap-1.5">
+          <button onclick="downloadViralPoster()" class="bg-[#14151c] hover:bg-gray-800 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow transition flex items-center justify-center gap-1.5" data-i18n="btnDownloadPoster">
             📸 Download Story Poster (PNG)
           </button>
-          <button onclick="copyViralPost()" id="copy-btn" class="bg-[#EF2670] hover:brightness-110 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow transition flex items-center justify-center gap-1.5">
+          <button onclick="copyViralPost()" id="copy-btn" class="bg-[#EF2670] hover:brightness-110 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow transition flex items-center justify-center gap-1.5" data-i18n="btnCopyStatus">
             📋 Copy Facebook Rant + Link
           </button>
         </div>
@@ -501,7 +528,172 @@
 
 <script>
 // =========================================================
-// 1. LEAD COLLECTION & GAMIFIED STEP STATE MACHINE
+// 1. BILINGUAL DICTIONARY & LANGUAGE STATE
+// =========================================================
+let currentLang = 'en';
+
+const I18N = {
+  en: {
+    step1: '1. Profile',
+    step2: '2. Select Portal',
+    step3: '3. 3D Studio',
+    step4: '4. Reality Receipt',
+    tagline: 'Viral 3D Interior Cost Simulator',
+    heroTitle: 'Can You Afford Your Dream Room?',
+    heroSub: 'Step into our 3D portal, decorate your dream room with zero limits, and generate your brutal Reality Check Receipt.',
+    sharedNotice: '🔗 Friend\'s 3D Room Loaded! Enter your details to walk inside or remix it.',
+    labelName: '👤 Your Name (Printed on Receipt) *',
+    labelPhone: '📱 Phone / WhatsApp Number (To Save & Unlock 3D Quote) *',
+    phoneError: 'Please enter a valid phone number (at least 8 digits).',
+    labelVibe: '✨ Your Interior Aesthetic Vibe',
+    btnStart: '🚀 START BUILDING MY DREAM ROOM',
+    safeNotice: '🔒 Instant 3D access • Zero spam',
+    step2Header: 'Step 2 of 4 • Choose Your Portal',
+    welcome: 'Welcome,',
+    pickRoom: 'Pick a Room to Decorate',
+    btnBackProfile: '← Edit Name / Phone',
+    badgePopular: 'Most Popular',
+    badgeViral: 'High Viral Shock',
+    badgeLuxury: 'Luxury Flex',
+    badgeCulinary: 'Culinary',
+    badgeGold: 'Spa Luxury',
+    roomBedroom: 'Master Bedroom',
+    descBedroom: 'Italian King Beds, 4-Door Glass Wardrobes, Study Desks & Hollywood Vanities.',
+    roomGame: 'Pro Game Room',
+    descGame: 'Dual-RTX Liquid PCs, Full-Motion Racing Simulators & Neon Arcade Cabinets.',
+    roomDrawing: 'Drawing & Lounge',
+    descDrawing: 'Velvet L-Lounges, 98" 8K OLED Media Walls & Imported Crystal Chandeliers.',
+    roomKitchen: 'Designer Kitchen',
+    descKitchen: 'Italian Marble Islands, Smart French-Door Fridges & Espresso Bars.',
+    roomWashroom: 'Spa Washroom',
+    descWashroom: 'Hydro-Massage Jacuzzis, Smart Warm Bidets & Cedarwood Saunas.',
+    continueLayout: 'Continue Current Layout',
+    continueLayoutDesc: 'Jump directly into the 3D Studio with your existing furniture.',
+    btnEnter: 'Enter Portal →',
+    changeRoomLabel: '🚪 Room:',
+    sizeCompact: 'Compact (4.2×4.8m)',
+    sizeStandard: 'Standard (6×6m)',
+    sizeGrand: 'Grand (8.5×8.5m)',
+    btnOrbit: '🎥 Orbit & Drag',
+    btnWalk: '🚶 Walk (WASD)',
+    hudBillLabel: 'Dream Room Bill',
+    hudSanityLabel: 'Sanity Status',
+    btnFinishReceipt: '🧾 Finish & Generate Receipt →',
+    studioFinishes: '🎨 Studio Finishes',
+    wallsLabel: 'Walls:',
+    floorLabel: 'Floor:',
+    studioDragTip: '💡 Drag any item across floor, click to rotate/delete.',
+    btnRotate: '🔄 Rotate 90°',
+    btnDelete: '🗑️ Refund',
+    shopTitle: '🛒 Click Furniture to Place in Room (Drag to Position)',
+    btnResetRoom: 'Reset Room',
+    walkHelpMove: '🕹️ WASD / Walk Pad: Move',
+    walkHelpLook: '🖱️ Drag Mouse: Look Around',
+    btnExitWalk: '🚪 Exit Walk Mode',
+    btnKeepEditing: '← Keep Editing',
+    rcTotalLabel: 'Total Dream Damage:',
+    rcRoastTitle: '💀 Existential Damage Breakdown',
+    rcBiryaniLabel: 'Kacchi Biryanis Lost',
+    rcKidneyLabel: 'Kidney Equivalent',
+    qrScanTitle: 'Scan to Walk Inside This Room',
+    qrScanSub: 'Friends scanning this QR will spawn inside your exact 3D furniture layout.',
+    btnDownloadPoster: '📸 Download Story Poster (PNG)',
+    btnCopyStatus: '📋 Copy Facebook Rant + Link'
+  },
+  bn: {
+    step1: '১. প্রোফাইল',
+    step2: '২. রুম নির্বাচন',
+    step3: '৩. ৩ডি স্টুডিও',
+    step4: '৪. রিয়ালিটি চেক',
+    tagline: 'ভাইরাল ৩ডি ইন্টেরিয়র কস্ট সিমুলেটর',
+    heroTitle: 'স্বপ্নের রুম বানানোর সাধ্য আছে তো?',
+    heroSub: 'আমাদের ৩ডি স্টুডিওতে পা রাখুন, বাজেট ছাড়া মনের মতো রুম সাজান আর দেখুন নিজের নির্মম রিয়ালিটি চেক রসিদ।',
+    sharedNotice: '🔗 বন্ধুর ৩ডি রুম লোড হয়েছে! ভেতরে প্রবেশ করতে নিজের নাম ও ফোন নম্বর দিন।',
+    labelName: '👤 আপনার নাম (রসিদে ছাপা হবে) *',
+    labelPhone: '📱 ফোন / হোয়াটসঅ্যাপ নম্বর (রুম সেভ ও কোট আনলক করতে) *',
+    phoneError: 'সঠিক মোবাইল নম্বর দিন (কমপক্ষে ৮ ডিজিট)।',
+    labelVibe: '✨ আপনার ইন্টেরিয়র ভাইব ও পছন্দ',
+    btnStart: '🚀 স্বপ্নের রুম বানানো শুরু করুন',
+    safeNotice: '🔒 ইনস্ট্যান্ট ৩ডি এক্সেস • কোনো স্প্যাম নেই',
+    step2Header: 'ধাপ ২/৪ • আপনার কাঙ্ক্ষিত রুম বেছে নিন',
+    welcome: 'স্বাগতম,',
+    pickRoom: 'কোন রুমটি সাজাতে চান?',
+    btnBackProfile: '← নাম/ফোন পরিবর্তন',
+    badgePopular: 'জনপ্রিয় চয়েস',
+    badgeViral: 'ভাইরাল শক',
+    badgeLuxury: 'লাক্সারি ভাইব',
+    badgeCulinary: 'শেফ স্পেশাল',
+    badgeGold: 'স্পা লাক্সারি',
+    roomBedroom: 'মাস্টার বেডরুম',
+    descBedroom: 'ইতালিয়ান কিং বেড, ৪-পাল্লা গ্লাস আলমারি, স্টাডি ডেস্ক ও হলিউড ভ্যানিটি।',
+    roomGame: 'প্রো গেম রুম',
+    descGame: 'ডুয়েল-RTX লিকুইড পিসি, ফুল-মোশন রেসিং সিম ও রেট্রো নিয়ন আর্কেড।',
+    roomDrawing: 'ড্রয়িং ও লাউঞ্জ',
+    descDrawing: 'ভেলভেট এল-সোফা, ৯৮ ইঞ্চি ৮K ওলেড টিভি ওয়াল ও ক্রিস্টাল ঝাড়বাতি।',
+    roomKitchen: 'ডিজাইনার কিচেন',
+    descKitchen: 'ইতালিয়ান মার্বেল আইল্যান্ড, স্মার্ট টাচস্ক্রিন ফ্রিজ ও এসপ্রেসো বার।',
+    roomWashroom: 'স্পা ওয়াশরুম',
+    descWashroom: 'হাইড্রো-ম্যাসাজ জাকুজি, স্মার্ট ওয়ার্ম কমোড ও সিডারউড সনা।',
+    continueLayout: 'বর্তমান লেআউট বহাল রাখুন',
+    continueLayoutDesc: 'পূর্বের সাজানো আসবাবপত্র নিয়ে সরাসরি ৩ডি স্টুডিওতে যান।',
+    btnEnter: 'প্রবেশ করুন →',
+    changeRoomLabel: '🚪 রুম পরিবর্তন:',
+    sizeCompact: 'কমপ্যাক্ট (৪.২×৪.৮মি)',
+    sizeStandard: 'স্ট্যান্ডার্ড (৬×৬মি)',
+    sizeGrand: 'গ্র্যান্ড লাক্সারি (৮.৫×৮.৫মি)',
+    btnOrbit: '🎥 ঘুরিয়ে দেখুন ও ড্র্যাগ',
+    btnWalk: '🚶 ভেতরে হাঁটুন (WASD)',
+    hudBillLabel: 'মোট খরচের হিসাব',
+    hudSanityLabel: 'বাস্তবতার স্ট্যাটাস',
+    btnFinishReceipt: '🧾 রসিদ ও রিয়ালিটি চেক →',
+    studioFinishes: '🎨 ফ্লোর ও দেয়ালের রং',
+    wallsLabel: 'দেয়াল:',
+    floorLabel: 'ফ্লোর:',
+    studioDragTip: '💡 মেঝেতে যেকোনো আসবাব ড্র্যাগ করুন, ক্লিক করে ঘোরান বা মুছুন।',
+    btnRotate: '🔄 ৯০° ঘোরান',
+    btnDelete: '🗑️ রিফান্ড / মুছুন',
+    shopTitle: '🛒 আসবাবে ক্লিক করে রুমে বসান (ড্র্যাগ করে পজিশন করুন)',
+    btnResetRoom: 'রুম খালি করুন',
+    walkHelpMove: '🕹️ WASD / প্যাড: হাঁটাচলা',
+    walkHelpLook: '🖱️ মাউস ড্র্যাগ: চারপাশ দেখুন',
+    btnExitWalk: '🚪 হাঁটা মোড বন্ধ',
+    btnKeepEditing: '← সাজানো চালিয়ে যান',
+    rcTotalLabel: 'স্বপ্নের মোট বাজেট ক্ষতি:',
+    rcRoastTitle: '💀 অস্তিত্ব সংকটের হিসাব-নিকাশ',
+    rcBiryaniLabel: 'কাচ্চি বিরিয়ানি বিসর্জন',
+    rcKidneyLabel: 'কিডনি সমতুল্য',
+    qrScanTitle: 'এই ৩ডি রুমে ঢুকতে QR স্ক্যান করুন',
+    qrScanSub: 'বন্ধুরা এই কোড স্ক্যান করলে সরাসরি আপনার সাজানো ৩ডি রুমে স্পন হবে।',
+    btnDownloadPoster: '📸 স্টোরি পোস্টার ডাউনলোড (PNG)',
+    btnCopyStatus: '📋 ফেসবুক স্ট্যাটাস ও লিঙ্ক কপি'
+  }
+};
+
+function setLanguage(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('jamspace_lang', lang); } catch (e) {}
+
+  document.getElementById('lang-btn-bn').className = lang === 'bn' 
+    ? 'px-2.5 py-1 rounded-xl text-xs font-bold bg-[#26C4A5] text-gray-950 transition' 
+    : 'px-2.5 py-1 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition';
+  document.getElementById('lang-btn-en').className = lang === 'en' 
+    ? 'px-2.5 py-1 rounded-xl text-xs font-bold bg-[#26C4A5] text-gray-950 transition' 
+    : 'px-2.5 py-1 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition';
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (I18N[lang] && I18N[lang][key]) {
+      el.textContent = I18N[lang][key];
+    }
+  });
+
+  renderShop();
+  updateHUD();
+  if (currentStep === 4) populateReportCard();
+}
+
+// =========================================================
+// 2. LEAD COLLECTION & GAMIFIED STEP STATE MACHINE
 // =========================================================
 let currentStep = 1;
 let currentLead = {
@@ -522,6 +714,11 @@ function loadSavedLead() {
     }
     const allLeads = JSON.parse(localStorage.getItem('jamspace_leads') || '[]');
     document.getElementById('lead-count-badge').textContent = `Leads Captured: ${allLeads.length}`;
+    
+    const savedLang = localStorage.getItem('jamspace_lang');
+    if (savedLang === 'bn' || savedLang === 'en') {
+      setLanguage(savedLang);
+    }
   } catch (e) {}
 }
 
@@ -586,11 +783,11 @@ function goToStep(stepNumber) {
   for (let i = 1; i <= 4; i++) {
     const pill = document.getElementById(`step-pill-${i}`);
     if (i === stepNumber) {
-      pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-[#EF2670] text-white transition';
+      pill.className = 'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-bold bg-[#EF2670] text-white transition shrink-0';
     } else if (i < stepNumber) {
-      pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-[#26C4A5]/20 text-[#26C4A5] transition';
+      pill.className = 'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-semibold bg-[#26C4A5]/20 text-[#26C4A5] transition shrink-0';
     } else {
-      pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition';
+      pill.className = 'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition shrink-0';
     }
   }
 
@@ -605,51 +802,75 @@ function chooseRoomAndEnterStudio(roomName) {
 }
 
 // =========================================================
-// 2. CATALOG & ROOM CONFIGURATION
+// 3. CATALOG & REALISTIC BANGLADESHI PRICING (BDT)
 // =========================================================
 const ROOM_THEMES = {
-  'Bedroom':      { wall: 0x1e293b, floor: 0x334155, accent: 0xEF2670 },
-  'Game Room':    { wall: 0x0f0720, floor: 0x1a103c, accent: 0x26C4A5 },
-  'Drawing Room': { wall: 0x27251f, floor: 0x44403c, accent: 0xF8C144 },
-  'Kitchen':      { wall: 0x182226, floor: 0x263238, accent: 0x26C4A5 },
-  'Washroom':     { wall: 0x132a2e, floor: 0x1d3b40, accent: 0xEF2670 }
+  'Bedroom':      { wall: 0x1e293b, floor: 0x334155, accent: 0xEF2670, defaultSize: 'compact' },
+  'Game Room':    { wall: 0x0f0720, floor: 0x1a103c, accent: 0x26C4A5, defaultSize: 'grand' },
+  'Drawing Room': { wall: 0x27251f, floor: 0x44403c, accent: 0xF8C144, defaultSize: 'standard' },
+  'Kitchen':      { wall: 0x182226, floor: 0x263238, accent: 0x26C4A5, defaultSize: 'standard' },
+  'Washroom':     { wall: 0x132a2e, floor: 0x1d3b40, accent: 0xEF2670, defaultSize: 'compact' }
 };
 
-const CATALOG = [
-  { id: 'bed_king',    room: 'Bedroom',      name: 'Italian King Cloud Bed',      price: 320000, icon: '🛏️', color: 0xe2e8f0, w: 2.6, h: 1.1, d: 2.8 },
-  { id: 'wardrobe',    room: 'Bedroom',      name: 'Walk-In Glass Wardrobe',      price: 210000, icon: '🚪', color: 0x94a3b8, w: 2.2, h: 2.4, d: 0.8 },
-  { id: 'vanity',      room: 'Bedroom',      name: 'Hollywood LED Vanity',        price: 85000,  icon: '🪞', color: 0xF8C144, w: 1.4, h: 1.6, d: 0.6 },
-  { id: 'rtx_rig',     room: 'Game Room',    name: 'Dual-RTX 5090 Liquid Rig',    price: 650000, icon: '🖥️', color: 0xEF2670, w: 2.2, h: 1.5, d: 0.9 },
-  { id: 'sim_rig',     room: 'Game Room',    name: 'Full-Motion Racing Sim',      price: 420000, icon: '🏎️', color: 0xEF2670, w: 1.2, h: 1.3, d: 2.2 },
-  { id: 'arcade',      room: 'Game Room',    name: 'Retro Neon Arcade Cab',       price: 140000, icon: '🕹️', color: 0x26C4A5, w: 0.9, h: 2.0, d: 0.9 },
-  { id: 'sofa_l',      room: 'Drawing Room', name: 'Velvet L-Lounge Sofa',        price: 380000, icon: '🛋️', color: 0xF8C144, w: 3.0, h: 0.9, d: 1.8 },
-  { id: 'tv_85',       room: 'Drawing Room', name: '98" 8K OLED Media Unit',      price: 540000, icon: '📺', color: 0x26C4A5, w: 2.8, h: 1.7, d: 0.6 },
-  { id: 'chandelier',  room: 'Drawing Room', name: 'Swarovski Crystal Chandelier',price: 290000, icon: '✨', color: 0xF8C144, w: 1.1, h: 2.2, d: 1.1 },
-  { id: 'island',      room: 'Kitchen',      name: 'Italian Marble Island',       price: 410000, icon: '🪨', color: 0xf8fafc, w: 2.6, h: 1.0, d: 1.4 },
-  { id: 'fridge',      room: 'Kitchen',      name: 'Smart Touchscreen Fridge',    price: 310000, icon: '🧊', color: 0x64748b, w: 1.3, h: 2.2, d: 1.0 },
-  { id: 'espresso',    room: 'Kitchen',      name: 'Commercial La Marzocco Bar',  price: 240000, icon: '☕', color: 0xEF2670, w: 1.1, h: 1.3, d: 0.8 },
-  { id: 'jacuzzi',     room: 'Washroom',     name: 'Hydro-Massage Jacuzzi Tub',   price: 480000, icon: '🛁', color: 0x26C4A5, w: 2.2, h: 0.85, d: 1.8 },
-  { id: 'toilet_gold', room: 'Washroom',     name: '24K Gold Smart Bidet Throne', price: 350000, icon: '🚽', color: 0xF8C144, w: 0.8, h: 1.1, d: 1.0 },
-  { id: 'sauna',       room: 'Washroom',     name: 'Cedarwood Glass Sauna',       price: 520000, icon: '🧖', color: 0xd97706, w: 2.0, h: 2.3, d: 1.8 },
-  { id: 'persian',     room: 'ALL',          name: 'Silk Persian Rug',            price: 160000, icon: '🧶', color: 0xEF2670, w: 3.4, h: 0.05, d: 2.4 },
-  { id: 'ac_split',    room: 'ALL',          name: 'Tower Inverter Purifier AC',  price: 115000, icon: '❄️', color: 0xe2e8f0, w: 0.6, h: 1.8, d: 0.6 },
-  { id: 'monstera',    room: 'ALL',          name: 'Rare Albino Monstera Tree',   price: 45000,  icon: '🪴', color: 0x26C4A5, w: 0.8, h: 1.6, d: 0.8 }
-];
+const ROOM_SIZES = {
+  'compact':  { w: 4.2, d: 4.8, h: 3.6 },
+  'standard': { w: 6.0, d: 6.0, h: 3.8 },
+  'grand':    { w: 8.5, d: 8.5, h: 4.2 }
+};
 
 let currentRoom = 'Bedroom';
+let currentSizeKey = 'compact';
+
+const CATALOG = [
+  // Bedroom Essentials
+  { id: 'bed_king',     room: 'Bedroom',      name: 'Italian King Bed',            nameBn: 'ইতালিয়ান কিং বেড',          price: 62000,  icon: '🛏️', color: 0xe2e8f0, w: 2.2, h: 1.0, d: 2.3 },
+  { id: 'bedside_pair', room: 'Bedroom',      name: 'Bedside Table Pair + Lamps',  nameBn: 'বেডসাইড টেবিল পেয়ার + ল্যাম্প',price: 12500, icon: '💡', color: 0x78350f, w: 2.8, h: 0.9, d: 0.6 },
+  { id: 'wardrobe',     room: 'Bedroom',      name: '4-Door Glass Wardrobe',       nameBn: '৪-পাল্লা গ্লাস আলমারি',      price: 54000,  icon: '🚪', color: 0x94a3b8, w: 2.0, h: 2.2, d: 0.7 },
+  { id: 'vanity',       room: 'Bedroom',      name: 'Hollywood LED Vanity',        nameBn: 'হলিউড LED ভ্যানিটি ড্রেসার', price: 22000,  icon: '🪞', color: 0xF8C144, w: 1.3, h: 1.5, d: 0.5 },
+  { id: 'study_desk',   room: 'Bedroom',      name: 'Study Desk + Ergonomic Chair',nameBn: 'স্টাডি ডেস্ক + রিভলভিং চেয়ার',price: 28000, icon: '🖥️', color: 0x1e293b, w: 1.6, h: 1.2, d: 0.8 },
+  { id: 'armchair',     room: 'Bedroom',      name: 'Cozy Accent Armchair',        nameBn: 'আরামদায়ক অ্যাকসেন্ট চেয়ার',  price: 16000,  icon: '🪑', color: 0x26C4A5, w: 1.0, h: 0.9, d: 1.0 },
+  { id: 'bookshelf',    room: 'Bedroom',      name: 'Modern Display Bookshelf',    nameBn: 'মডার্ন বুকশেলফ র্যাক',       price: 18500,  icon: '📚', color: 0x78350f, w: 1.2, h: 2.0, d: 0.4 },
+  { id: 'ceiling_fan',  room: 'ALL',          name: 'Designer Ceiling Fan Lamp',   nameBn: 'ডিজাইনার সিলিং ফ্যান + লাইট', price: 8500,   icon: '🌀', color: 0x383635, w: 1.2, h: 0.6, d: 1.2 },
+
+  // Game Room
+  { id: 'rtx_rig',      room: 'Game Room',    name: 'Dual-RTX Liquid Battle Rig',  nameBn: 'ডুয়েল-RTX লিকুইড গেমিং পিসি',price: 380000, icon: '🖥️', color: 0xEF2670, w: 2.0, h: 1.4, d: 0.9 },
+  { id: 'sim_rig',      room: 'Game Room',    name: 'Full-Motion Racing Sim',      nameBn: 'ফুল-মোশন রেসিং সিমুলেটর',   price: 160000, icon: '🏎️', color: 0xEF2670, w: 1.2, h: 1.3, d: 2.0 },
+  { id: 'arcade',       room: 'Game Room',    name: 'Retro Neon Arcade Cabinet',   nameBn: 'রেট্রো নিয়ন আর্কেড ক্যাবিনেট',price: 48000, icon: '🕹️', color: 0x26C4A5, w: 0.8, h: 1.9, d: 0.8 },
+
+  // Drawing Room
+  { id: 'sofa_l',       room: 'Drawing Room', name: 'Velvet L-Lounge Sofa',        nameBn: 'ভেলভেট এল-লাউঞ্জ সোফা',     price: 78000,  icon: '🛋️', color: 0xF8C144, w: 2.8, h: 0.85, d: 1.7 },
+  { id: 'tv_85',        room: 'Drawing Room', name: '98" 8K OLED Media Console',   nameBn: '৯৮ ইঞ্চি ওলেড টিভি কনসোল',  price: 185000, icon: '📺', color: 0x26C4A5, w: 2.5, h: 1.6, d: 0.5 },
+  { id: 'chandelier',   room: 'Drawing Room', name: 'Crystal Chandelier Lamp',     nameBn: 'ক্রিস্টাল লাক্সারি ঝাড়বাতি', price: 42000,  icon: '✨', color: 0xF8C144, w: 1.0, h: 1.8, d: 1.0 },
+
+  // Kitchen
+  { id: 'island',       room: 'Kitchen',      name: 'Italian Marble Kitchen Island',nameBn: 'ইতালিয়ান মার্বেল আইল্যান্ড',price: 68000, icon: '🪨', color: 0xf8fafc, w: 2.3, h: 0.95, d: 1.2 },
+  { id: 'fridge',       room: 'Kitchen',      name: 'Smart French-Door Fridge',    nameBn: 'স্মার্ট ফ্রেঞ্চ-ডোর ফ্রিজ', price: 125000, icon: '🧊', color: 0x64748b, w: 1.2, h: 2.0, d: 0.9 },
+  { id: 'espresso',     room: 'Kitchen',      name: 'Artisan Espresso Coffee Bar', nameBn: 'আর্টিসান কফি মেশিন বার',    price: 85000,  icon: '☕', color: 0xEF2670, w: 1.0, h: 1.2, d: 0.7 },
+
+  // Washroom
+  { id: 'jacuzzi',      room: 'Washroom',     name: 'Hydro-Massage Jacuzzi Tub',   nameBn: 'হাইড্রো-ম্যাসাজ জাকুজি টাব', price: 110000, icon: '🛁', color: 0x26C4A5, w: 2.0, h: 0.8, d: 1.6 },
+  { id: 'toilet_gold',  room: 'Washroom',     name: 'Luxury Smart Heated Bidet',   nameBn: 'লাক্সারি স্মার্ট হিটেড কমোড', price: 65000,  icon: '🚽', color: 0xF8C144, w: 0.7, h: 1.0, d: 0.9 },
+  { id: 'sauna',        room: 'Washroom',     name: 'Cedarwood Glass Home Sauna',  nameBn: 'সিডারউড গ্লাস হোম সনা',     price: 145000, icon: '🧖', color: 0xd97706, w: 1.8, h: 2.1, d: 1.6 },
+
+  // Universal
+  { id: 'persian',      room: 'ALL',          name: 'Premium Area Silk Rug',       nameBn: 'প্রিমিয়াম সিল্ক এরিয়া রাগ', price: 9500,   icon: '🧶', color: 0xEF2670, w: 3.0, h: 0.04, d: 2.0 },
+  { id: 'ac_split',     room: 'ALL',          name: '1.5-Ton Inverter Split AC',   nameBn: 'দেড় টন ইনভার্টার স্প্লিট এসি',price: 74000, icon: '❄️', color: 0xe2e8f0, w: 0.5, h: 1.6, d: 0.5 },
+  { id: 'monstera',     room: 'ALL',          name: 'Indoor Monstera Plant Pot',   nameBn: 'ইনডোর মনস্টেরা প্ল্যান্ট টব', price: 2200,   icon: '🪴', color: 0x26C4A5, w: 0.7, h: 1.4, d: 0.7 }
+];
+
 let placedItems = [];
 let selectedObject = null;
 let selectionBox = null;
 
 // =========================================================
-// 3. THREE.JS SCENE & JAM SPACE ARCHITECTURAL SHELL
+// 4. THREE.JS SCENE & ROOM SCALE BALANCING
 // =========================================================
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0d0e12);
 
 const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(8.5, 7.2, 8.5);
+camera.position.set(6.8, 5.8, 6.8);
 camera.rotation.order = 'YXZ';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -662,21 +883,21 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
 controls.maxPolarAngle = Math.PI / 2 - 0.03;
-controls.minDistance = 3.5;
+controls.minDistance = 2.8;
 controls.maxDistance = 18;
-controls.target.set(0, 1, 0);
+controls.target.set(0, 0.9, 0);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
 dirLight.position.set(6, 12, 8);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.width = 2048;
 dirLight.shadow.mapSize.height = 2048;
 scene.add(dirLight);
 
-const pointLight = new THREE.PointLight(0xEF2670, 0.65, 16);
-pointLight.position.set(0, 3.6, 0);
+const pointLight = new THREE.PointLight(0xEF2670, 0.7, 16);
+pointLight.position.set(0, 3.2, 0);
 scene.add(pointLight);
 
 const roomGroup = new THREE.Group();
@@ -687,22 +908,42 @@ scene.add(enclosureGroup);
 let floorMesh, backWallMesh, leftWallMesh, frontWallMesh, rightWallMesh, gridHelper;
 let cameraMode = 'orbit';
 
+function getActiveRoomBounds() {
+  const size = ROOM_SIZES[currentSizeKey] || ROOM_SIZES.compact;
+  return {
+    w: size.w,
+    d: size.d,
+    h: size.h,
+    halfW: size.w / 2,
+    halfD: size.d / 2
+  };
+}
+
 function buildRoomShell() {
   while (roomGroup.children.length) roomGroup.remove(roomGroup.children[0]);
   while (enclosureGroup.children.length) enclosureGroup.remove(enclosureGroup.children[0]);
 
-  const theme = ROOM_THEMES[currentRoom];
+  const theme = ROOM_THEMES[currentRoom] || ROOM_THEMES.Bedroom;
   pointLight.color.setHex(theme.accent);
 
+  const bounds = getActiveRoomBounds();
+  const W = bounds.w;
+  const D = bounds.d;
+  const H = bounds.h;
+  const hw = bounds.halfW;
+  const hd = bounds.halfD;
+
+  // Floor
   floorMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(9, 0.2, 9),
+    new THREE.BoxGeometry(W, 0.2, D),
     new THREE.MeshStandardMaterial({ color: theme.floor, roughness: 0.6 })
   );
   floorMesh.position.y = -0.1;
   floorMesh.receiveShadow = true;
   roomGroup.add(floorMesh);
 
-  gridHelper = new THREE.GridHelper(8.8, 16, theme.accent, 0x383635);
+  // Responsive Grid
+  gridHelper = new THREE.GridHelper(Math.max(W, D), 12, theme.accent, 0x383635);
   gridHelper.position.y = 0.01;
   gridHelper.material.opacity = 0.25;
   gridHelper.material.transparent = true;
@@ -711,51 +952,87 @@ function buildRoomShell() {
 
   const wallMat = new THREE.MeshStandardMaterial({ color: theme.wall, roughness: 0.85 });
 
-  backWallMesh = new THREE.Mesh(new THREE.BoxGeometry(9, 4.2, 0.2), wallMat);
-  backWallMesh.position.set(0, 2.0, -4.4);
+  // Back Wall
+  backWallMesh = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.2), wallMat);
+  backWallMesh.position.set(0, H / 2, -hd - 0.1);
   backWallMesh.receiveShadow = true;
   roomGroup.add(backWallMesh);
 
-  leftWallMesh = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.2, 9), wallMat);
-  leftWallMesh.position.set(-4.4, 2.0, 0);
+  // Left Wall
+  leftWallMesh = new THREE.Mesh(new THREE.BoxGeometry(0.2, H, D), wallMat);
+  leftWallMesh.position.set(-hw - 0.1, H / 2, 0);
   leftWallMesh.receiveShadow = true;
   roomGroup.add(leftWallMesh);
 
-  // 3D Geometric JAM Logo Wall Art on Back Wall
+  // Geometric JAM Logo Wall Art
   const jMat = new THREE.MeshBasicMaterial({ color: 0xEF2670 });
   const aMat = new THREE.MeshBasicMaterial({ color: 0xF8C144 });
   const mMat = new THREE.MeshBasicMaterial({ color: 0x26C4A5 });
 
-  const jBlock = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.06), jMat);
-  jBlock.position.set(-0.75, 2.85, -4.27);
+  const jBlock = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.06), jMat);
+  jBlock.position.set(-0.6, H * 0.72, -hd + 0.02);
   roomGroup.add(jBlock);
 
-  const aCone = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.6, 3), aMat);
+  const aCone = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.5, 3), aMat);
   aCone.rotation.y = Math.PI / 6;
-  aCone.position.set(0, 2.85, -4.27);
+  aCone.position.set(0, H * 0.72, -hd + 0.02);
   roomGroup.add(aCone);
 
-  const mBlock = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.06), mMat);
-  mBlock.position.set(0.75, 2.85, -4.27);
+  const mBlock = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.06), mMat);
+  mBlock.position.set(0.6, H * 0.72, -hd + 0.02);
   roomGroup.add(mBlock);
 
-  frontWallMesh = new THREE.Mesh(new THREE.BoxGeometry(9, 4.2, 0.2), wallMat);
-  frontWallMesh.position.set(0, 2.0, 4.4);
+  // Enclosure Walls (Visible in First-Person Walk)
+  frontWallMesh = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.2), wallMat);
+  frontWallMesh.position.set(0, H / 2, hd + 0.1);
   enclosureGroup.add(frontWallMesh);
 
-  rightWallMesh = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.2, 9), wallMat);
-  rightWallMesh.position.set(4.4, 2.0, 0);
+  rightWallMesh = new THREE.Mesh(new THREE.BoxGeometry(0.2, H, D), wallMat);
+  rightWallMesh.position.set(hw + 0.1, H / 2, 0);
   enclosureGroup.add(rightWallMesh);
 
-  const ceiling = new THREE.Mesh(new THREE.BoxGeometry(9, 0.2, 9), wallMat);
-  ceiling.position.set(0, 4.15, 0);
+  const ceiling = new THREE.Mesh(new THREE.BoxGeometry(W, 0.2, D), wallMat);
+  ceiling.position.set(0, H + 0.1, 0);
   enclosureGroup.add(ceiling);
 
   const stripMat = new THREE.MeshBasicMaterial({ color: theme.accent });
-  const s1 = new THREE.Mesh(new THREE.BoxGeometry(8.8, 0.08, 0.08), stripMat); s1.position.set(0, 3.9, -4.28); roomGroup.add(s1);
-  const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 8.8), stripMat); s2.position.set(-4.28, 3.9, 0); roomGroup.add(s2);
+  const s1 = new THREE.Mesh(new THREE.BoxGeometry(W, 0.06, 0.06), stripMat); s1.position.set(0, H - 0.2, -hd + 0.02); roomGroup.add(s1);
+  const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, D), stripMat); s2.position.set(-hw + 0.02, H - 0.2, 0); roomGroup.add(s2);
 
   enclosureGroup.visible = (cameraMode === 'walk');
+
+  // Clamp any furniture that overflows new room bounds
+  clampAllFurnitureToBounds();
+}
+
+function setRoomSize(sizeKey) {
+  if (!ROOM_SIZES[sizeKey]) return;
+  currentSizeKey = sizeKey;
+
+  ['compact', 'standard', 'grand'].forEach(k => {
+    const btn = document.getElementById(`size-btn-${k}`);
+    if (!btn) return;
+    if (k === sizeKey) {
+      btn.className = 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-[#EF2670] text-white transition';
+    } else {
+      btn.className = 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-gray-300 hover:bg-gray-800 transition';
+    }
+  });
+
+  buildRoomShell();
+  syncUrlState();
+}
+
+function clampAllFurnitureToBounds() {
+  const bounds = getActiveRoomBounds();
+  const maxLimitX = bounds.halfW - 0.5;
+  const maxLimitZ = bounds.halfD - 0.5;
+
+  placedItems.forEach(mesh => {
+    mesh.position.x = Math.max(-maxLimitX, Math.min(maxLimitX, mesh.position.x));
+    mesh.position.z = Math.max(-maxLimitZ, Math.min(maxLimitZ, mesh.position.z));
+  });
+  if (selectionBox) selectionBox.update();
 }
 
 function setWallColor(hex) {
@@ -770,7 +1047,7 @@ function setFloorColor(hex) {
 }
 
 // =========================================================
-// 4. DETAILED MULTI-PART 3D FURNITURE GENERATOR
+// 5. DETAILED MULTI-PART 3D FURNITURE GENERATOR
 // =========================================================
 function addPart(group, geo, mat, x, y, z, rx = 0, ry = 0, rz = 0) {
   const m = new THREE.Mesh(geo, mat);
@@ -795,142 +1072,185 @@ function createFurnitureMesh(item) {
 
   switch (item.id) {
     case 'bed_king':
-      addPart(g, new THREE.BoxGeometry(2.6, 0.28, 2.8), woodMat, 0, 0.2, 0);
-      addPart(g, new THREE.BoxGeometry(2.4, 0.32, 2.6), whiteMat, 0, 0.5, 0.05);
-      addPart(g, new THREE.BoxGeometry(2.42, 0.34, 1.7), mainMat, 0, 0.51, 0.48);
-      addPart(g, new THREE.BoxGeometry(2.6, 1.35, 0.2), darkMat, 0, 0.675, -1.3);
-      for (let i = -0.8; i <= 0.8; i += 0.8) {
-        addPart(g, new THREE.BoxGeometry(0.7, 0.35, 0.45), whiteMat, i * 0.85, 0.74, -0.9, 0.15, 0, 0);
-      }
+      addPart(g, new THREE.BoxGeometry(2.1, 0.25, 2.3), woodMat, 0, 0.15, 0);
+      addPart(g, new THREE.BoxGeometry(1.95, 0.28, 2.15), whiteMat, 0, 0.4, 0.05);
+      addPart(g, new THREE.BoxGeometry(1.98, 0.3, 1.4), mainMat, 0, 0.41, 0.4);
+      addPart(g, new THREE.BoxGeometry(2.1, 1.15, 0.18), darkMat, 0, 0.6, -1.1);
+      [-0.55, 0.55].forEach(x => {
+        addPart(g, new THREE.BoxGeometry(0.6, 0.28, 0.4), whiteMat, x, 0.6, -0.75, 0.15, 0, 0);
+      });
       break;
+
+    case 'bedside_pair':
+      [-1.2, 1.2].forEach(x => {
+        addPart(g, new THREE.BoxGeometry(0.5, 0.5, 0.45), woodMat, x, 0.25, 0);
+        addPart(g, new THREE.CylinderGeometry(0.04, 0.06, 0.3), goldMat, x, 0.65, 0);
+        addPart(g, new THREE.CylinderGeometry(0.12, 0.18, 0.22, 16), new THREE.MeshBasicMaterial({ color: 0xF8C144 }), x, 0.82, 0);
+      });
+      break;
+
     case 'wardrobe':
-      addPart(g, new THREE.BoxGeometry(2.2, 2.4, 0.75), darkMat, 0, 1.2, 0);
-      addPart(g, new THREE.BoxGeometry(2.05, 2.25, 0.72), woodMat, 0, 1.2, 0.03);
-      addPart(g, new THREE.BoxGeometry(1.0, 2.25, 0.04), glassMat, -0.52, 1.2, 0.4);
-      addPart(g, new THREE.BoxGeometry(1.0, 2.25, 0.04), glassMat, 0.52, 1.2, 0.4);
-      addPart(g, new THREE.CylinderGeometry(0.02, 0.02, 0.6), chromeMat, -0.08, 1.2, 0.44);
-      addPart(g, new THREE.CylinderGeometry(0.02, 0.02, 0.6), chromeMat, 0.08, 1.2, 0.44);
+      addPart(g, new THREE.BoxGeometry(2.0, 2.2, 0.68), darkMat, 0, 1.1, 0);
+      addPart(g, new THREE.BoxGeometry(1.85, 2.05, 0.65), woodMat, 0, 1.1, 0.02);
+      addPart(g, new THREE.BoxGeometry(0.9, 2.05, 0.04), glassMat, -0.46, 1.1, 0.36);
+      addPart(g, new THREE.BoxGeometry(0.9, 2.05, 0.04), glassMat, 0.46, 1.1, 0.36);
+      addPart(g, new THREE.CylinderGeometry(0.02, 0.02, 0.5), goldMat, -0.06, 1.1, 0.4);
+      addPart(g, new THREE.CylinderGeometry(0.02, 0.02, 0.5), goldMat, 0.06, 1.1, 0.4);
       break;
+
     case 'vanity':
-      addPart(g, new THREE.BoxGeometry(1.4, 0.12, 0.6), whiteMat, 0, 0.78, 0);
-      [[-0.62, -0.22], [0.62, -0.22], [-0.62, 0.22], [0.62, 0.22]].forEach(([x, z]) => {
-        addPart(g, new THREE.CylinderGeometry(0.03, 0.02, 0.78), goldMat, x, 0.39, z);
+      addPart(g, new THREE.BoxGeometry(1.3, 0.1, 0.5), whiteMat, 0, 0.75, 0);
+      [[-0.55, -0.18], [0.55, -0.18], [-0.55, 0.18], [0.55, 0.18]].forEach(([x, z]) => {
+        addPart(g, new THREE.CylinderGeometry(0.025, 0.02, 0.75), goldMat, x, 0.375, z);
       });
-      addPart(g, new THREE.BoxGeometry(0.95, 0.8, 0.06), whiteMat, 0, 1.24, -0.22);
-      addPart(g, new THREE.BoxGeometry(0.82, 0.68, 0.07), glassMat, 0, 1.24, -0.21);
-      for (let x = -0.42; x <= 0.42; x += 0.28) {
-        addPart(g, new THREE.SphereGeometry(0.04, 10, 10), glowMat, x, 1.6, -0.17);
-        addPart(g, new THREE.SphereGeometry(0.04, 10, 10), glowMat, x, 0.88, -0.17);
+      addPart(g, new THREE.BoxGeometry(0.85, 0.72, 0.05), whiteMat, 0, 1.18, -0.18);
+      addPart(g, new THREE.BoxGeometry(0.74, 0.62, 0.06), glassMat, 0, 1.18, -0.17);
+      for (let x = -0.36; x <= 0.36; x += 0.24) {
+        addPart(g, new THREE.SphereGeometry(0.035, 10, 10), glowMat, x, 1.5, -0.14);
       }
-      addPart(g, new THREE.CylinderGeometry(0.24, 0.24, 0.1, 16), mainMat, 0, 0.45, 0.45);
-      addPart(g, new THREE.CylinderGeometry(0.04, 0.18, 0.42, 12), goldMat, 0, 0.21, 0.45);
+      addPart(g, new THREE.CylinderGeometry(0.22, 0.22, 0.08, 16), mainMat, 0, 0.42, 0.38);
       break;
+
+    case 'study_desk':
+      addPart(g, new THREE.BoxGeometry(1.6, 0.06, 0.75), woodMat, 0, 0.75, 0);
+      [[-0.7, -0.3], [0.7, -0.3], [-0.7, 0.3], [0.7, 0.3]].forEach(([x, z]) => {
+        addPart(g, new THREE.BoxGeometry(0.05, 0.75, 0.05), darkMat, x, 0.375, z);
+      });
+      // Monitor & Chair
+      addPart(g, new THREE.BoxGeometry(0.8, 0.45, 0.04), darkMat, 0, 1.05, -0.2);
+      addPart(g, new THREE.BoxGeometry(0.75, 0.4, 0.05), glowMat, 0, 1.05, -0.19);
+      addPart(g, new THREE.BoxGeometry(0.5, 0.08, 0.5), darkMat, 0, 0.45, 0.4);
+      addPart(g, new THREE.BoxGeometry(0.48, 0.55, 0.08), darkMat, 0, 0.75, 0.62);
+      break;
+
+    case 'armchair':
+      addPart(g, new THREE.BoxGeometry(0.95, 0.35, 0.9), mainMat, 0, 0.25, 0);
+      addPart(g, new THREE.BoxGeometry(0.95, 0.55, 0.22), mainMat, 0, 0.62, -0.34);
+      addPart(g, new THREE.BoxGeometry(0.2, 0.45, 0.9), mainMat, -0.42, 0.42, 0);
+      addPart(g, new THREE.BoxGeometry(0.2, 0.45, 0.9), mainMat, 0.42, 0.42, 0);
+      addPart(g, new THREE.BoxGeometry(0.35, 0.35, 0.12), whiteMat, 0, 0.5, -0.18, 0.1, 0, 0);
+      break;
+
+    case 'bookshelf':
+      addPart(g, new THREE.BoxGeometry(1.2, 2.0, 0.38), woodMat, 0, 1.0, 0);
+      for (let y = 0.45; y <= 1.7; y += 0.42) {
+        addPart(g, new THREE.BoxGeometry(1.12, 0.04, 0.36), darkMat, 0, y, 0);
+        addPart(g, new THREE.BoxGeometry(0.25, 0.24, 0.28), glowMat, -0.35, y + 0.14, 0);
+        addPart(g, new THREE.BoxGeometry(0.35, 0.28, 0.28), goldMat, 0.25, y + 0.16, 0);
+      }
+      break;
+
+    case 'ceiling_fan':
+      addPart(g, new THREE.CylinderGeometry(0.03, 0.03, 0.5), darkMat, 0, 2.2, 0);
+      addPart(g, new THREE.CylinderGeometry(0.18, 0.18, 0.12, 16), darkMat, 0, 1.9, 0);
+      [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3].forEach(ang => {
+        addPart(g, new THREE.BoxGeometry(0.55, 0.02, 0.12), woodMat, Math.cos(ang) * 0.35, 1.9, Math.sin(ang) * 0.35, 0, -ang, 0.1);
+      });
+      addPart(g, new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshBasicMaterial({ color: 0xF8C144 }), 0, 1.82, 0);
+      break;
+
     case 'rtx_rig':
-      addPart(g, new THREE.BoxGeometry(2.2, 0.07, 0.9), darkMat, 0, 0.75, 0);
-      addPart(g, new THREE.BoxGeometry(2.22, 0.02, 0.92), glowMat, 0, 0.75, 0);
-      addPart(g, new THREE.BoxGeometry(0.12, 0.75, 0.75), darkMat, -0.95, 0.375, 0);
-      addPart(g, new THREE.BoxGeometry(0.12, 0.75, 0.75), darkMat, 0.95, 0.375, 0);
-      addPart(g, new THREE.BoxGeometry(0.85, 0.48, 0.04), darkMat, -0.42, 1.12, -0.22, 0, 0.15, 0);
-      addPart(g, new THREE.BoxGeometry(0.8, 0.43, 0.05), glowMat, -0.42, 1.12, -0.21, 0, 0.15, 0);
-      addPart(g, new THREE.BoxGeometry(0.85, 0.48, 0.04), darkMat, 0.42, 1.12, -0.22, 0, -0.15, 0);
-      addPart(g, new THREE.BoxGeometry(0.8, 0.43, 0.05), new THREE.MeshBasicMaterial({ color: 0x26C4A5 }), 0.42, 1.12, -0.21, 0, -0.15, 0);
-      addPart(g, new THREE.BoxGeometry(0.28, 0.54, 0.52), darkMat, 0.88, 1.05, 0);
-      addPart(g, new THREE.BoxGeometry(0.29, 0.46, 0.44), glowMat, 0.88, 1.05, 0);
-      addPart(g, new THREE.BoxGeometry(0.55, 0.1, 0.55), darkMat, 0, 0.48, 0.65);
-      addPart(g, new THREE.BoxGeometry(0.52, 0.85, 0.1), mainMat, 0, 0.92, 0.9);
-      addPart(g, new THREE.CylinderGeometry(0.05, 0.28, 0.45, 10), chromeMat, 0, 0.22, 0.65);
+      addPart(g, new THREE.BoxGeometry(1.8, 0.07, 0.8), darkMat, 0, 0.75, 0);
+      addPart(g, new THREE.BoxGeometry(0.1, 0.75, 0.7), darkMat, -0.8, 0.375, 0);
+      addPart(g, new THREE.BoxGeometry(0.1, 0.75, 0.7), darkMat, 0.8, 0.375, 0);
+      addPart(g, new THREE.BoxGeometry(0.8, 0.45, 0.04), darkMat, -0.35, 1.05, -0.2, 0, 0.12, 0);
+      addPart(g, new THREE.BoxGeometry(0.75, 0.4, 0.05), glowMat, -0.35, 1.05, -0.19, 0, 0.12, 0);
+      addPart(g, new THREE.BoxGeometry(0.8, 0.45, 0.04), darkMat, 0.35, 1.05, -0.2, 0, -0.12, 0);
+      addPart(g, new THREE.BoxGeometry(0.75, 0.4, 0.05), new THREE.MeshBasicMaterial({ color: 0x26C4A5 }), 0.35, 1.05, -0.19, 0, -0.12, 0);
+      addPart(g, new THREE.BoxGeometry(0.24, 0.48, 0.45), darkMat, 0.75, 1.0, 0);
+      addPart(g, new THREE.BoxGeometry(0.25, 0.4, 0.38), glowMat, 0.75, 1.0, 0);
       break;
+
     case 'sim_rig':
-      addPart(g, new THREE.BoxGeometry(1.0, 0.12, 2.1), darkMat, 0, 0.06, 0);
-      addPart(g, new THREE.BoxGeometry(0.65, 0.12, 0.6), mainMat, 0, 0.35, 0.55);
-      addPart(g, new THREE.BoxGeometry(0.65, 0.85, 0.12), mainMat, 0, 0.75, 0.82, -0.2, 0, 0);
-      addPart(g, new THREE.BoxGeometry(0.7, 0.65, 0.15), darkMat, 0, 0.45, -0.25);
-      addPart(g, new THREE.TorusGeometry(0.16, 0.03, 10, 20), darkMat, 0, 0.82, -0.1, 0.3, 0, 0);
-      addPart(g, new THREE.BoxGeometry(1.35, 0.55, 0.06), new THREE.MeshBasicMaterial({ color: 0x26C4A5 }), 0, 1.05, -0.65);
+      addPart(g, new THREE.BoxGeometry(0.9, 0.12, 1.9), darkMat, 0, 0.06, 0);
+      addPart(g, new THREE.BoxGeometry(0.6, 0.12, 0.55), mainMat, 0, 0.32, 0.5);
+      addPart(g, new THREE.BoxGeometry(0.6, 0.8, 0.12), mainMat, 0, 0.7, 0.75, -0.2, 0, 0);
+      addPart(g, new THREE.TorusGeometry(0.14, 0.025, 10, 20), darkMat, 0, 0.78, -0.1, 0.3, 0, 0);
+      addPart(g, new THREE.BoxGeometry(1.2, 0.5, 0.05), new THREE.MeshBasicMaterial({ color: 0x26C4A5 }), 0, 1.0, -0.55);
       break;
+
     case 'arcade':
-      addPart(g, new THREE.BoxGeometry(0.85, 1.2, 0.8), darkMat, 0, 0.6, 0);
-      addPart(g, new THREE.BoxGeometry(0.85, 0.75, 0.55), darkMat, 0, 1.55, -0.12);
-      addPart(g, new THREE.BoxGeometry(0.82, 0.22, 0.62), glowMat, 0, 1.85, -0.05);
-      addPart(g, new THREE.BoxGeometry(0.72, 0.55, 0.08), new THREE.MeshBasicMaterial({ color: 0xEF2670 }), 0, 1.42, 0.12, -0.25, 0, 0);
-      addPart(g, new THREE.BoxGeometry(0.86, 0.12, 0.45), mainMat, 0, 1.12, 0.22, 0.15, 0, 0);
+      addPart(g, new THREE.BoxGeometry(0.8, 1.1, 0.75), darkMat, 0, 0.55, 0);
+      addPart(g, new THREE.BoxGeometry(0.8, 0.7, 0.5), darkMat, 0, 1.45, -0.12);
+      addPart(g, new THREE.BoxGeometry(0.76, 0.2, 0.55), glowMat, 0, 1.75, -0.05);
+      addPart(g, new THREE.BoxGeometry(0.68, 0.5, 0.07), new THREE.MeshBasicMaterial({ color: 0xEF2670 }), 0, 1.35, 0.1, -0.25, 0, 0);
       break;
+
     case 'sofa_l':
-      addPart(g, new THREE.BoxGeometry(3.0, 0.32, 1.05), mainMat, 0, 0.26, -0.35);
-      addPart(g, new THREE.BoxGeometry(3.0, 0.55, 0.28), mainMat, 0, 0.65, -0.74);
-      addPart(g, new THREE.BoxGeometry(1.05, 0.32, 1.85), mainMat, 0.975, 0.26, 0.05);
-      addPart(g, new THREE.BoxGeometry(0.24, 0.52, 1.05), mainMat, -1.42, 0.42, -0.35);
-      addPart(g, new THREE.BoxGeometry(0.24, 0.52, 1.85), mainMat, 1.42, 0.42, 0.05);
-      for (let x = -1.0; x <= 0.8; x += 0.6) {
-        addPart(g, new THREE.BoxGeometry(0.38, 0.35, 0.15), whiteMat, x, 0.58, -0.52, -0.15, 0.1, 0);
-      }
+      addPart(g, new THREE.BoxGeometry(2.6, 0.3, 0.95), mainMat, 0, 0.24, -0.3);
+      addPart(g, new THREE.BoxGeometry(2.6, 0.5, 0.25), mainMat, 0, 0.6, -0.65);
+      addPart(g, new THREE.BoxGeometry(0.95, 0.3, 1.6), mainMat, 0.825, 0.24, 0.05);
+      addPart(g, new THREE.BoxGeometry(0.2, 0.48, 0.95), mainMat, -1.25, 0.38, -0.3);
+      addPart(g, new THREE.BoxGeometry(0.2, 0.48, 1.6), mainMat, 1.25, 0.38, 0.05);
       break;
+
     case 'tv_85':
-      addPart(g, new THREE.BoxGeometry(2.8, 0.42, 0.55), woodMat, 0, 0.21, 0);
-      addPart(g, new THREE.BoxGeometry(2.6, 1.45, 0.06), darkMat, 0, 1.35, -0.1);
-      addPart(g, new THREE.BoxGeometry(2.52, 1.37, 0.07), glowMat, 0, 1.35, -0.09);
-      addPart(g, new THREE.BoxGeometry(1.4, 0.08, 0.12), darkMat, 0, 0.48, 0.1);
+      addPart(g, new THREE.BoxGeometry(2.4, 0.38, 0.5), woodMat, 0, 0.19, 0);
+      addPart(g, new THREE.BoxGeometry(2.2, 1.3, 0.05), darkMat, 0, 1.25, -0.08);
+      addPart(g, new THREE.BoxGeometry(2.14, 1.24, 0.06), glowMat, 0, 1.25, -0.07);
       break;
+
     case 'chandelier':
-      addPart(g, new THREE.CylinderGeometry(0.45, 0.45, 0.08, 24), goldMat, 0, 2.2, 0);
-      addPart(g, new THREE.TorusGeometry(0.48, 0.04, 12, 32), glowMat, 0, 1.9, 0, Math.PI / 2, 0, 0);
-      addPart(g, new THREE.TorusGeometry(0.34, 0.04, 12, 32), glowMat, 0, 1.6, 0, Math.PI / 2, 0, 0);
-      addPart(g, new THREE.SphereGeometry(0.12, 16, 16), glowMat, 0, 1.2, 0);
-      addPart(g, new THREE.CylinderGeometry(0.02, 0.02, 2.2), goldMat, 0, 1.1, 0);
-      addPart(g, new THREE.CylinderGeometry(0.35, 0.35, 0.05, 16), goldMat, 0, 0.025, 0);
+      addPart(g, new THREE.CylinderGeometry(0.4, 0.4, 0.08, 24), goldMat, 0, 2.0, 0);
+      addPart(g, new THREE.TorusGeometry(0.42, 0.035, 12, 32), glowMat, 0, 1.7, 0, Math.PI / 2, 0, 0);
+      addPart(g, new THREE.SphereGeometry(0.1, 16, 16), glowMat, 0, 1.1, 0);
+      addPart(g, new THREE.CylinderGeometry(0.02, 0.02, 1.9), goldMat, 0, 1.05, 0);
       break;
+
     case 'island':
-      addPart(g, new THREE.BoxGeometry(2.3, 0.88, 0.95), darkMat, 0, 0.44, -0.1);
-      addPart(g, new THREE.BoxGeometry(2.6, 0.08, 1.35), whiteMat, 0, 0.92, 0);
-      addPart(g, new THREE.CylinderGeometry(0.025, 0.025, 0.35), goldMat, -0.5, 1.12, -0.2);
-      [-0.75, 0, 0.75].forEach(x => {
-        addPart(g, new THREE.CylinderGeometry(0.2, 0.2, 0.08, 16), woodMat, x, 0.65, 0.58);
-        addPart(g, new THREE.CylinderGeometry(0.03, 0.16, 0.65, 12), chromeMat, x, 0.325, 0.58);
+      addPart(g, new THREE.BoxGeometry(2.0, 0.82, 0.85), darkMat, 0, 0.41, -0.08);
+      addPart(g, new THREE.BoxGeometry(2.3, 0.08, 1.2), whiteMat, 0, 0.86, 0);
+      [-0.6, 0.6].forEach(x => {
+        addPart(g, new THREE.CylinderGeometry(0.18, 0.18, 0.07, 16), woodMat, x, 0.6, 0.5);
+        addPart(g, new THREE.CylinderGeometry(0.025, 0.14, 0.6, 12), chromeMat, x, 0.3, 0.5);
       });
       break;
+
     case 'fridge':
-      addPart(g, new THREE.BoxGeometry(1.25, 2.15, 0.9), mainMat, 0, 1.075, 0);
-      addPart(g, new THREE.BoxGeometry(0.6, 2.1, 0.05), chromeMat, -0.31, 1.075, 0.45);
-      addPart(g, new THREE.BoxGeometry(0.6, 2.1, 0.05), chromeMat, 0.31, 1.075, 0.45);
-      addPart(g, new THREE.BoxGeometry(0.38, 0.65, 0.06), new THREE.MeshBasicMaterial({ color: 0x26C4A5 }), 0.31, 1.35, 0.46);
+      addPart(g, new THREE.BoxGeometry(1.15, 2.0, 0.85), mainMat, 0, 1.0, 0);
+      addPart(g, new THREE.BoxGeometry(0.55, 1.95, 0.05), chromeMat, -0.28, 1.0, 0.43);
+      addPart(g, new THREE.BoxGeometry(0.55, 1.95, 0.05), chromeMat, 0.28, 1.0, 0.43);
       break;
+
     case 'espresso':
-      addPart(g, new THREE.BoxGeometry(1.1, 0.85, 0.75), woodMat, 0, 0.425, 0);
-      addPart(g, new THREE.BoxGeometry(1.14, 0.05, 0.78), whiteMat, 0, 0.875, 0);
-      addPart(g, new THREE.BoxGeometry(0.65, 0.38, 0.45), mainMat, -0.1, 1.08, 0);
-      addPart(g, new THREE.BoxGeometry(0.62, 0.06, 0.42), chromeMat, -0.1, 1.29, 0);
+      addPart(g, new THREE.BoxGeometry(1.0, 0.8, 0.7), woodMat, 0, 0.4, 0);
+      addPart(g, new THREE.BoxGeometry(1.05, 0.05, 0.72), whiteMat, 0, 0.825, 0);
+      addPart(g, new THREE.BoxGeometry(0.58, 0.35, 0.4), mainMat, -0.08, 1.02, 0);
       break;
+
     case 'jacuzzi':
-      addPart(g, new THREE.BoxGeometry(2.2, 0.75, 1.8), whiteMat, 0, 0.375, 0);
-      addPart(g, new THREE.BoxGeometry(1.9, 0.08, 1.5), glowMat, 0, 0.73, 0);
-      addPart(g, new THREE.BoxGeometry(1.2, 0.25, 0.35), woodMat, 0, 0.125, 1.05);
+      addPart(g, new THREE.BoxGeometry(2.0, 0.7, 1.6), whiteMat, 0, 0.35, 0);
+      addPart(g, new THREE.BoxGeometry(1.7, 0.07, 1.3), glowMat, 0, 0.68, 0);
       break;
+
     case 'toilet_gold':
-      addPart(g, new THREE.CylinderGeometry(0.28, 0.22, 0.45, 18), goldMat, 0, 0.225, 0.1);
-      addPart(g, new THREE.CylinderGeometry(0.32, 0.28, 0.12, 18), goldMat, 0, 0.48, 0.1);
-      addPart(g, new THREE.BoxGeometry(0.52, 0.55, 0.26), goldMat, 0, 0.68, -0.22);
+      addPart(g, new THREE.CylinderGeometry(0.25, 0.2, 0.42, 18), goldMat, 0, 0.21, 0.08);
+      addPart(g, new THREE.CylinderGeometry(0.28, 0.25, 0.1, 18), goldMat, 0, 0.45, 0.08);
+      addPart(g, new THREE.BoxGeometry(0.48, 0.5, 0.24), goldMat, 0, 0.64, -0.2);
       break;
+
     case 'sauna':
-      addPart(g, new THREE.BoxGeometry(2.0, 2.25, 1.8), woodMat, 0, 1.125, 0);
-      addPart(g, new THREE.BoxGeometry(1.75, 2.05, 0.08), glassMat, 0, 1.08, 0.88);
-      addPart(g, new THREE.BoxGeometry(0.35, 0.55, 0.35), new THREE.MeshBasicMaterial({ color: 0xf97316 }), -0.6, 0.35, 0.3);
+      addPart(g, new THREE.BoxGeometry(1.8, 2.1, 1.6), woodMat, 0, 1.05, 0);
+      addPart(g, new THREE.BoxGeometry(1.55, 1.9, 0.07), glassMat, 0, 1.0, 0.78);
       break;
+
     case 'persian':
-      addPart(g, new THREE.BoxGeometry(3.4, 0.03, 2.4), goldMat, 0, 0.015, 0);
-      addPart(g, new THREE.BoxGeometry(3.25, 0.04, 2.25), mainMat, 0, 0.02, 0);
-      addPart(g, new THREE.BoxGeometry(2.6, 0.045, 1.6), darkMat, 0, 0.023, 0);
+      addPart(g, new THREE.BoxGeometry(3.0, 0.02, 2.0), goldMat, 0, 0.01, 0);
+      addPart(g, new THREE.BoxGeometry(2.85, 0.03, 1.85), mainMat, 0, 0.015, 0);
       break;
+
     case 'ac_split':
-      addPart(g, new THREE.CylinderGeometry(0.26, 0.3, 1.75, 24), whiteMat, 0, 0.875, 0);
-      addPart(g, new THREE.BoxGeometry(0.12, 1.1, 0.06), new THREE.MeshBasicMaterial({ color: 0x26C4A5 }), 0, 1.05, 0.25);
+      addPart(g, new THREE.CylinderGeometry(0.22, 0.26, 1.6, 24), whiteMat, 0, 0.8, 0);
+      addPart(g, new THREE.BoxGeometry(0.1, 1.0, 0.05), new THREE.MeshBasicMaterial({ color: 0x26C4A5 }), 0, 0.95, 0.22);
       break;
+
     case 'monstera':
-      addPart(g, new THREE.CylinderGeometry(0.28, 0.2, 0.48, 18), whiteMat, 0, 0.24, 0);
-      addPart(g, new THREE.CylinderGeometry(0.04, 0.05, 0.9, 10), woodMat, 0, 0.75, 0);
-      [0, 1.1, 2.2, 3.3, 4.4, 5.5].forEach((ang, i) => {
-        const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 8), mainMat);
-        leaf.scale.set(1.2, 0.15, 0.85);
-        leaf.position.set(Math.cos(ang) * 0.25, 0.75 + i * 0.12, Math.sin(ang) * 0.25);
+      addPart(g, new THREE.CylinderGeometry(0.25, 0.18, 0.45, 18), whiteMat, 0, 0.225, 0);
+      addPart(g, new THREE.CylinderGeometry(0.035, 0.045, 0.8, 10), woodMat, 0, 0.7, 0);
+      [0, 1.2, 2.4, 3.6, 4.8].forEach((ang, i) => {
+        const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), mainMat);
+        leaf.scale.set(1.2, 0.15, 0.8);
+        leaf.position.set(Math.cos(ang) * 0.22, 0.7 + i * 0.1, Math.sin(ang) * 0.22);
         leaf.rotation.set(0.3, -ang, 0.25);
         leaf.castShadow = true;
         g.add(leaf);
@@ -943,7 +1263,7 @@ function createFurnitureMesh(item) {
 }
 
 // =========================================================
-// 5. DIRECT 3D FLOOR DRAG & FIRST-PERSON WASD ENGINE
+// 6. DIRECT 3D FLOOR DRAG & FIRST-PERSON WASD ENGINE
 // =========================================================
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
@@ -974,10 +1294,12 @@ function setCameraMode(mode) {
   const orbitSideUi = document.getElementById('orbit-side-ui');
   const shopDock = document.getElementById('shop-dock');
 
+  const bounds = getActiveRoomBounds();
+
   if (mode === 'walk') {
     selectObject(null);
     controls.enabled = false;
-    camera.position.set(2.8, EYE_HEIGHT, 2.8);
+    camera.position.set(bounds.halfW * 0.6, EYE_HEIGHT, bounds.halfD * 0.6);
     yaw = Math.PI / 4;
     pitch = -0.06;
     camera.rotation.set(pitch, yaw, 0, 'YXZ');
@@ -1003,8 +1325,9 @@ function setCameraMode(mode) {
     orbitBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-[#26C4A5] text-gray-950 transition';
     walkBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-gray-300 hover:bg-gray-800 transition';
 
-    camera.position.set(8.5, 7.2, 8.5);
-    controls.target.set(0, 1, 0);
+    const dist = Math.max(bounds.w, bounds.d) * 1.25;
+    camera.position.set(dist, dist * 0.85, dist);
+    controls.target.set(0, 0.9, 0);
     controls.enabled = true;
     controls.update();
   }
@@ -1062,8 +1385,11 @@ window.addEventListener('pointermove', (e) => {
     if (raycaster.ray.intersectPlane(floorPlane, planeIntersect)) {
       const snapX = Math.round(planeIntersect.x * 4) / 4;
       const snapZ = Math.round(planeIntersect.z * 4) / 4;
-      selectedObject.position.x = Math.max(-3.6, Math.min(3.6, snapX));
-      selectedObject.position.z = Math.max(-3.6, Math.min(3.6, snapZ));
+      const bounds = getActiveRoomBounds();
+      const maxX = bounds.halfW - 0.4;
+      const maxZ = bounds.halfD - 0.4;
+      selectedObject.position.x = Math.max(-maxX, Math.min(maxX, snapX));
+      selectedObject.position.z = Math.max(-maxZ, Math.min(maxZ, snapZ));
       if (selectionBox) selectionBox.update();
     }
   }
@@ -1092,7 +1418,7 @@ window.addEventListener('keydown', (e) => handleKey(e, true), { passive: false }
 window.addEventListener('keyup', (e) => handleKey(e, false), { passive: false });
 
 // =========================================================
-// 6. URL STATE SERIALIZATION & SHOP MANAGEMENT
+// 7. URL STATE SERIALIZATION & SHOP MANAGEMENT
 // =========================================================
 function encodeRoomStateParams() {
   const serialized = placedItems.map(m => {
@@ -1102,7 +1428,7 @@ function encodeRoomStateParams() {
     const r = m.userData.rotIdx || 0;
     return `${id}:${x}:${z}:${r}`;
   }).join(',');
-  return `room=${encodeURIComponent(currentRoom)}&layout=${encodeURIComponent(serialized)}`;
+  return `room=${encodeURIComponent(currentRoom)}&size=${encodeURIComponent(currentSizeKey)}&layout=${encodeURIComponent(serialized)}`;
 }
 
 function syncUrlState() {
@@ -1115,6 +1441,7 @@ function syncUrlState() {
 function loadStateFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
+  const sizeParam = params.get('size');
   const layoutParam = params.get('layout');
 
   if (roomParam && ROOM_THEMES[roomParam]) {
@@ -1122,7 +1449,13 @@ function loadStateFromUrl() {
     document.getElementById('active-room-badge').textContent = currentRoom;
   }
 
-  buildRoomShell();
+  if (sizeParam && ROOM_SIZES[sizeParam]) {
+    currentSizeKey = sizeParam;
+  } else if (ROOM_THEMES[currentRoom]?.defaultSize) {
+    currentSizeKey = ROOM_THEMES[currentRoom].defaultSize;
+  }
+
+  setRoomSize(currentSizeKey);
   renderShop();
 
   if (layoutParam) {
@@ -1152,16 +1485,17 @@ function renderShop() {
   const items = CATALOG.filter(i => i.room === currentRoom || i.room === 'ALL');
 
   items.forEach(item => {
+    const displayName = currentLang === 'bn' ? (item.nameBn || item.name) : item.name;
     const card = document.createElement('button');
-    card.className = 'flex-shrink-0 bg-[#1c1e28] hover:bg-[#252836] border border-white/10 hover:border-[#26C4A5] rounded-xl p-2.5 w-44 text-left transition group';
+    card.className = 'flex-shrink-0 bg-[#1c1e28] hover:bg-[#252836] border border-white/10 hover:border-[#26C4A5] rounded-xl p-2.5 w-48 text-left transition group';
     card.onclick = () => buyItem(item);
     card.innerHTML = `
       <div class="flex justify-between items-start mb-1">
         <span class="text-2xl">${item.icon}</span>
         <span class="mono text-xs font-bold text-[#EF2670] bg-[#EF2670]/10 px-1.5 py-0.5 rounded">৳ ${(item.price / 1000).toFixed(0)}k</span>
       </div>
-      <div class="text-xs font-bold text-gray-100 truncate group-hover:text-[#26C4A5]">${item.name}</div>
-      <div class="text-[10px] text-gray-400">${item.room === 'ALL' ? 'Universal Flex' : item.room}</div>
+      <div class="text-xs font-bold text-gray-100 truncate group-hover:text-[#26C4A5]">${displayName}</div>
+      <div class="text-[10px] text-gray-400">${item.room === 'ALL' ? (currentLang === 'bn' ? 'ইউনিভার্সাল' : 'Universal') : item.room}</div>
     `;
     shopEl.appendChild(card);
   });
@@ -1169,8 +1503,12 @@ function renderShop() {
 
 function buyItem(item, customX = null, customZ = null) {
   const mesh = createFurnitureMesh(item);
-  const posX = customX !== null ? customX : Math.round(((Math.random() - 0.5) * 3.5) * 2) / 2;
-  const posZ = customZ !== null ? customZ : Math.round(((Math.random() - 0.5) * 3.5) * 2) / 2;
+  const bounds = getActiveRoomBounds();
+  const maxSpawnX = bounds.halfW * 0.65;
+  const maxSpawnZ = bounds.halfD * 0.65;
+
+  const posX = customX !== null ? customX : Math.round(((Math.random() - 0.5) * maxSpawnX * 2) * 2) / 2;
+  const posZ = customZ !== null ? customZ : Math.round(((Math.random() - 0.5) * maxSpawnZ * 2) * 2) / 2;
   mesh.position.set(posX, 0, posZ);
   scene.add(mesh);
   placedItems.push(mesh);
@@ -1190,7 +1528,8 @@ function selectObject(mesh) {
   selectionBox = new THREE.BoxHelper(mesh, 0x26C4A5);
   scene.add(selectionBox);
   const data = mesh.userData.itemData;
-  document.getElementById('insp-name').textContent = `${data.icon} ${data.name}`;
+  const displayName = currentLang === 'bn' ? (data.nameBn || data.name) : data.name;
+  document.getElementById('insp-name').textContent = `${data.icon} ${displayName}`;
   document.getElementById('insp-price').textContent = `৳ ${data.price.toLocaleString('en-IN')}`;
   insp.classList.remove('hidden');
 }
@@ -1223,25 +1562,61 @@ function clearRoom() {
 function switchRoom(roomName) {
   currentRoom = roomName;
   document.getElementById('active-room-badge').textContent = roomName;
-  buildRoomShell();
+  if (ROOM_THEMES[roomName]?.defaultSize) {
+    currentSizeKey = ROOM_THEMES[roomName].defaultSize;
+  }
+  setRoomSize(currentSizeKey);
   renderShop();
   updateHUD();
   syncUrlState();
 }
 
 // =========================================================
-// 7. VIRAL RECEIPT & PNG POSTER GENERATOR (STEP 4)
+// 8. REALISTIC BANGLADESHI ROAST TIERS & VIRAL RECEIPT
 // =========================================================
 function getTotalCost() {
   return placedItems.reduce((sum, mesh) => sum + mesh.userData.itemData.price, 0);
 }
 
 function getRoastTier(total) {
-  if (total === 0) return { tag: 'Empty & Broke', roast: 'You placed zero furniture. Even your imagination is on a tight budget.' };
-  if (total < 200000) return { tag: 'Middle-Class Restraint', roast: 'Surprisingly modest. Your parents might actually approve of this financially responsible room.' };
-  if (total < 600000) return { tag: 'EMI Trap Unlocked', roast: 'Say goodbye to weekend outings for the next 4 years. You are officially working for your furniture.' };
-  if (total < 1200000) return { tag: 'Certified 10-Lakh Delusion', roast: 'Life is miserable! Your taste is Gulshan Penthouse, but your bank account is begging for mercy.' };
-  return { tag: 'Generational Debt 💀', roast: 'Absolute financial insanity. Even selling a kidney will only cover the down payment on this room.' };
+  if (total === 0) {
+    return {
+      tag: currentLang === 'bn' ? 'শূন্য পকেট!' : 'Empty & Broke',
+      roast: currentLang === 'bn' 
+        ? 'রুম সম্পূর্ণ ফাঁকা! আপনার কল্পনারও বাজেট টাইট, কোনো আসবাবপত্র কেনার সাহস নেই।'
+        : 'You placed zero furniture. Even your imagination is on a tight budget.'
+    };
+  }
+  if (total < 150000) {
+    return {
+      tag: currentLang === 'bn' ? 'মধ্যবিত্ত সংযম' : 'Middle-Class Restraint',
+      roast: currentLang === 'bn'
+        ? 'আশ্চর্যজনকভাবে সংযমী! আব্বা-আম্মা দেখে হয়তো এই বাজেটটিকে যৌক্তিক ও দায়িত্বশীল বলে অনুমোদন দেবেন।'
+        : 'Surprisingly modest. Your parents might actually approve of this financially responsible room.'
+    };
+  }
+  if (total < 350000) {
+    return {
+      tag: currentLang === 'bn' ? 'ইএমআই ফাঁদে বন্দি' : 'EMI Trap Unlocked',
+      roast: currentLang === 'bn'
+        ? 'আগামী ২ বছর উইকেন্ডে কাচ্চি বিরিয়ানি ও রেস্তোরাঁ বন্ধ! আপনি এখন আনুষ্ঠানিকভাবে নিজের আসবাবের কিস্তির জন্য চাকরি করছেন।'
+        : 'Say goodbye to weekend outings for the next 2 years. You are officially working for your furniture installments.'
+    };
+  }
+  if (total < 700000) {
+    return {
+      tag: currentLang === 'bn' ? 'সার্টিফাইড গুলশান ডিলুশন' : 'Certified Luxury Delusion',
+      roast: currentLang === 'bn'
+        ? 'লাইফ পুরাই তেজপাতা! পছন্দ গুলশান পেন্টহাউস, কিন্তু ব্যাংক একাউন্ট ভেন্টিলেটরে আইসিইউতে।'
+        : 'Life is miserable! Your taste is Gulshan Penthouse, but your bank account is begging for mercy on life support.'
+    };
+  }
+  return {
+    tag: currentLang === 'bn' ? 'বংশপরম্পরায় ঋণ 💀' : 'Generational Debt 💀',
+    roast: currentLang === 'bn'
+      ? 'চরম অর্থনৈতিক উন্মাদনা! নিজের কিডনি বেচেও এই রুমের শুধু ডাউন পেমেন্ট মেটানো যাবে না!'
+      : 'Absolute financial insanity! Even selling a kidney will only cover the down payment on this room.'
+  };
 }
 
 function updateHUD() {
@@ -1266,26 +1641,35 @@ function populateReportCard() {
   const total = getTotalCost();
   const tier = getRoastTier(total);
 
-  document.getElementById('rc-title').textContent = `DREAM ${currentRoom.toUpperCase()} RECEIPT`;
-  document.getElementById('rc-architect').textContent = `ARCHITECT: ${currentLead.name.toUpperCase()}`;
+  const roomDisplayName = currentLang === 'bn' 
+    ? (I18N.bn[`room${currentRoom.replace(/\s+/g, '')}`] || currentRoom)
+    : currentRoom.toUpperCase();
+
+  document.getElementById('rc-title').textContent = currentLang === 'bn' 
+    ? `${roomDisplayName} এর রিয়ালিটি চেক রসিদ` 
+    : `DREAM ${roomDisplayName} RECEIPT`;
+    
+  document.getElementById('rc-architect').textContent = `${currentLang === 'bn' ? 'স্থপতি' : 'ARCHITECT'}: ${currentLead.name.toUpperCase()}`;
   document.getElementById('rc-phone-masked').textContent = `TEL: ${maskPhone(currentLead.phone)}`;
   document.getElementById('rc-total').textContent = `৳ ${total.toLocaleString('en-IN')}`;
   document.getElementById('rc-verdict').textContent = tier.roast;
 
   const listEl = document.getElementById('rc-items');
   if (placedItems.length === 0) {
-    listEl.innerHTML = `<div class="text-gray-400 italic">0x Nothing (Pure Oxygen) .... ৳ 0</div>`;
+    listEl.innerHTML = `<div class="text-gray-400 italic">${currentLang === 'bn' ? '০ টি আসবাব (শুধুমাত্র বাতাস) .... ৳ ০' : '0x Nothing (Pure Oxygen) .... ৳ 0'}</div>`;
   } else {
     listEl.innerHTML = placedItems.map((m, idx) => {
       const d = m.userData.itemData;
-      return `<div class="flex justify-between"><span>${idx + 1}. ${d.icon} ${d.name}</span><span class="font-bold">৳ ${d.price.toLocaleString('en-IN')}</span></div>`;
+      const itemName = currentLang === 'bn' ? (d.nameBn || d.name) : d.name;
+      return `<div class="flex justify-between"><span>${idx + 1}. ${d.icon} ${itemName}</span><span class="font-bold">৳ ${d.price.toLocaleString('en-IN')}</span></div>`;
     }).join('');
   }
 
-  const biryanis = Math.floor(total / 450);
-  const kidneys = (total / 1500000).toFixed(2);
-  document.getElementById('rc-biryani').textContent = `${biryanis.toLocaleString('en-IN')} Plates`;
-  document.getElementById('rc-kidney').textContent = `${kidneys} Kidneys`;
+  // Authentic Bangladeshi Benchmarks: Kacchi Biryani @ ৳480, Kidney @ ৳18,00,000
+  const biryanis = Math.floor(total / 480);
+  const kidneys = (total / 1800000).toFixed(2);
+  document.getElementById('rc-biryani').textContent = `${biryanis.toLocaleString('en-IN')} ${currentLang === 'bn' ? 'প্লেট' : 'Plates'}`;
+  document.getElementById('rc-kidney').textContent = `${kidneys} ${currentLang === 'bn' ? 'টি কিডনি' : 'Kidneys'}`;
 
   const lakhValue = (total / 100000).toFixed(2);
   const baseOrigin = window.location.origin && window.location.origin !== 'null'
@@ -1293,10 +1677,12 @@ function populateReportCard() {
     : 'https://gro10x-ai.vercel.app/prototypes/jam-space/';
   const shareUrl = `${baseOrigin}?${encodeRoomStateParams()}`;
 
-  const shareCaption = `😭 ${currentLead.name} just designed a dream ${currentRoom} on JAM SPACE and the bill came out to ৳ ${total.toLocaleString('en-IN')} (${lakhValue} Lakh)! That equals ${biryanis.toLocaleString()} plates of Kacchi Biryani or ${kidneys} kidneys. Life is so miserable! 💀🛋️ Walk inside my exact 3D room: ${shareUrl}`;
+  const shareCaption = currentLang === 'bn'
+    ? `😭 ${currentLead.name} এইমাত্র JAM SPACE-এ স্বপ্নের ${roomDisplayName} বানালো আর খরচ দাঁড়িয়েছে ৳ ${total.toLocaleString('en-IN')} (${lakhValue} লাখ টাকা)! এটা দিয়ে ${biryanis.toLocaleString()} প্লেট কাচ্চি বিরিয়ানি খাওয়া যেত অথবা ${kidneys} টা কিডনির সমান। লাইফ পুরাই তেজপাতা! 💀🛋️ আমার বানানো ৩ডি রুমে সরাসরি ঢুকুন: ${shareUrl}`
+    : `😭 ${currentLead.name} just designed a dream ${currentRoom} on JAM SPACE and the bill came out to ৳ ${total.toLocaleString('en-IN')} (${lakhValue} Lakh)! That equals ${biryanis.toLocaleString()} plates of Kacchi Biryani or ${kidneys} kidneys. Life is so miserable! 💀🛋️ Walk inside my exact 3D room: ${shareUrl}`;
 
   document.getElementById('rc-share-text').value = shareCaption;
-  document.getElementById('rc-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareUrl)}`;
+  document.getElementById('rc-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}`;
 }
 
 function copyViralPost() {
@@ -1304,77 +1690,143 @@ function copyViralPost() {
   textarea.select();
   navigator.clipboard.writeText(textarea.value);
   const btn = document.getElementById('copy-btn');
-  btn.textContent = '✅ Copied! Paste on Facebook!';
-  setTimeout(() => { btn.textContent = '📋 Copy Facebook Rant + Link'; }, 2500);
+  btn.textContent = currentLang === 'bn' ? '✅ কপি হয়েছে! ফেসবুকে পেস্ট করুন!' : '✅ Copied! Paste on Facebook!';
+  setTimeout(() => { 
+    btn.textContent = currentLang === 'bn' ? '📋 ফেসবুক স্ট্যাটাস ও লিঙ্ক কপি' : '📋 Copy Facebook Rant + Link'; 
+  }, 2500);
+}
+
+// =========================================================
+// 9. HIGH-RES 1080x1400 VIRAL STORY POSTER & WORD-WRAP ENGINE
+// =========================================================
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      ctx.fillText(line.trim(), x, y);
+      line = words[n] + ' ';
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line.trim(), x, y);
+  return y + lineHeight;
 }
 
 function downloadViralPoster() {
   const canvas = document.createElement('canvas');
-  canvas.width = 900;
-  canvas.height = 1200;
+  canvas.width = 1080;
+  canvas.height = 1420;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#14151c';
-  ctx.fillRect(0, 0, 900, 1200);
+  // Background
+  ctx.fillStyle = '#0d0e12';
+  ctx.fillRect(0, 0, 1080, 1420);
 
-  const grad = ctx.createLinearGradient(0, 0, 900, 0);
+  // Gradient Top Bar
+  const grad = ctx.createLinearGradient(0, 0, 1080, 0);
   grad.addColorStop(0, '#EF2670');
   grad.addColorStop(0.5, '#F8C144');
   grad.addColorStop(1, '#26C4A5');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 900, 16);
+  ctx.fillRect(0, 0, 1080, 20);
 
+  // Header Title
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 34px sans-serif';
-  ctx.fillText('JAM SPACE • DREAM ROOM REALITY CHECK', 50, 75);
+  ctx.font = 'bold 38px "Space Grotesk", sans-serif';
+  ctx.fillText('JAM SPACE • DREAM ROOM REALITY CHECK', 60, 85);
 
+  // Synchronized Room Metadata (Guaranteed to match current active room)
   ctx.fillStyle = '#F8C144';
-  ctx.font = 'bold 22px monospace';
-  ctx.fillText(`ARCHITECT: ${currentLead.name.toUpperCase()}  |  ROOM: ${currentRoom.toUpperCase()}`, 50, 115);
+  ctx.font = 'bold 24px monospace';
+  ctx.fillText(`ARCHITECT: ${currentLead.name.toUpperCase()}  |  ROOM: ${currentRoom.toUpperCase()}`, 60, 130);
 
   const img = new Image();
   img.onload = () => {
-    ctx.drawImage(img, 50, 145, 800, 460);
+    // 3D Render Snapshot Frame
+    ctx.drawImage(img, 60, 160, 960, 520);
+    ctx.strokeStyle = '#26C4A5';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(60, 160, 960, 520);
 
+    // White Thermal Receipt Card
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(50, 635, 800, 490);
+    ctx.fillRect(60, 715, 960, 640);
 
     ctx.fillStyle = '#14151c';
     ctx.font = 'bold 28px monospace';
-    ctx.fillText('OFFICIAL DELUSION AUDIT RECEIPT', 85, 690);
+    ctx.fillText('OFFICIAL DELUSION AUDIT RECEIPT', 95, 775);
 
     const total = getTotalCost();
     ctx.fillStyle = '#EF2670';
-    ctx.font = 'bold 54px monospace';
-    ctx.fillText(`TOTAL: BDT ${total.toLocaleString('en-IN')}`, 85, 765);
+    ctx.font = 'bold 62px monospace';
+    ctx.fillText(`TOTAL: BDT ${total.toLocaleString('en-IN')}`, 95, 850);
 
-    const biryanis = Math.floor(total / 450);
-    const kidneys = (total / 1500000).toFixed(2);
+    // Biryani & Kidney Punchline
+    const biryanis = Math.floor(total / 480);
+    const kidneys = (total / 1800000).toFixed(2);
     ctx.fillStyle = '#383635';
     ctx.font = 'bold 24px monospace';
-    ctx.fillText(`• Kacchi Biryanis Sacrificed: ${biryanis.toLocaleString()} Plates`, 85, 835);
-    ctx.fillText(`• Kidney Equivalent: ${kidneys} Kidneys`, 85, 875);
+    ctx.fillText(`• Kacchi Biryanis Sacrificed: ${biryanis.toLocaleString()} Plates (৳ 480/pl)`, 95, 905);
+    ctx.fillText(`• Kidney Equivalent: ${kidneys} Kidneys (৳ 18L Benchmark)`, 95, 945);
 
+    // Top 3 Placed Furnishings
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText('KEY FURNISHINGS IN LAYOUT:', 95, 1000);
+
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '19px monospace';
+    const top3 = placedItems.slice(0, 3);
+    if (top3.length === 0) {
+      ctx.fillText('1. Zero Furniture (Pure Hope & Oxygen) — BDT 0', 95, 1035);
+    } else {
+      top3.forEach((m, idx) => {
+        const d = m.userData.itemData;
+        ctx.fillText(`${idx + 1}. ${d.name} — BDT ${d.price.toLocaleString('en-IN')}`, 95, 1035 + (idx * 30));
+      });
+    }
+
+    // Brutal Roast Text (Multi-Line Word-Wrapped with Zero Truncation)
     ctx.fillStyle = '#14151c';
-    ctx.font = 'italic 22px sans-serif';
-    const roast = getRoastTier(total).roast;
-    ctx.fillText(roast.slice(0, 62), 85, 945);
-    if (roast.length > 62) ctx.fillText(roast.slice(62), 85, 978);
+    ctx.font = 'italic 23px "Space Grotesk", "Hind Siliguri", sans-serif';
+    const roastObj = getRoastTier(total);
+    wrapCanvasText(ctx, `"${roastObj.roast}"`, 95, 1150, 640, 34);
 
+    // Footer Watermark & Live URL Call to Action
     ctx.fillStyle = '#26C4A5';
     ctx.font = 'bold 22px sans-serif';
-    ctx.fillText('Build your own Dream Room at JAM SPACE!', 85, 1075);
+    ctx.fillText('👉 Scan QR to Walk Inside this 3D Room!', 95, 1315);
 
-    const link = document.createElement('a');
-    link.download = `JAM-SPACE-${currentRoom}-Receipt.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    // Draw Official QR Code on Canvas
+    const qrImg = new Image();
+    qrImg.crossOrigin = 'anonymous';
+    qrImg.onload = () => {
+      ctx.drawImage(qrImg, 790, 1100, 190, 190);
+      ctx.strokeStyle = '#14151c';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(790, 1100, 190, 190);
+      finishDownload();
+    };
+    qrImg.onerror = () => { finishDownload(); };
+    qrImg.src = document.getElementById('rc-qr').src;
+
+    function finishDownload() {
+      const link = document.createElement('a');
+      link.download = `JAM-SPACE-${currentRoom}-Delusion-Poster.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
   };
   img.src = latestSnapshotDataUrl;
 }
 
 // =========================================================
-// 8. INITIALIZATION & ANIMATION LOOP
+// 10. INITIALIZATION & ANIMATION LOOP
 // =========================================================
 let lastTime = performance.now();
 function animate(now) {
@@ -1392,8 +1844,12 @@ function animate(now) {
       moveVec.normalize();
       moveVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
       camera.position.addScaledVector(moveVec, WALK_SPEED * delta);
-      camera.position.x = Math.max(-3.8, Math.min(3.8, camera.position.x));
-      camera.position.z = Math.max(-3.8, Math.min(3.8, camera.position.z));
+      
+      const bounds = getActiveRoomBounds();
+      const maxX = bounds.halfW - 0.35;
+      const maxZ = bounds.halfD - 0.35;
+      camera.position.x = Math.max(-maxX, Math.min(maxX, camera.position.x));
+      camera.position.z = Math.max(-maxZ, Math.min(maxZ, camera.position.z));
       camera.position.y = EYE_HEIGHT;
     }
 
@@ -1405,7 +1861,8 @@ function animate(now) {
       while (root.parent && !placedItems.includes(root)) root = root.parent;
       if (placedItems.includes(root)) {
         const d = root.userData.itemData;
-        tagEl.textContent = `Looking at: ${d.icon} ${d.name} (৳ ${d.price.toLocaleString('en-IN')})`;
+        const nameStr = currentLang === 'bn' ? (d.nameBn || d.name) : d.name;
+        tagEl.textContent = `${currentLang === 'bn' ? 'দৃষ্টিতে' : 'Looking at'}: ${d.icon} ${nameStr} (৳ ${d.price.toLocaleString('en-IN')})`;
         tagEl.style.opacity = '1';
       }
     } else {
@@ -1428,10 +1885,12 @@ window.addEventListener('resize', () => {
 loadSavedLead();
 const hasLayout = loadStateFromUrl();
 if (!hasLayout) {
-  buyItem(CATALOG[0], 0, -1.2);
-  buyItem(CATALOG[1], -2.8, -1.2);
-  buyItem(CATALOG[2], 2.8, -1.2);
-  buyItem(CATALOG[15], 0, 0.8);
+  // Balanced starter bedroom layout
+  buyItem(CATALOG[0], 0, -1.0);        // Italian King Bed
+  buyItem(CATALOG[1], 0, -1.9);        // Bedside Table Pair
+  buyItem(CATALOG[2], -1.3, 0.4);      // 4-Door Wardrobe
+  buyItem(CATALOG[4], 1.2, 0.5);       // Study Desk + Chair
+  buyItem(CATALOG[19], 0, 0.4);        // Persian Silk Rug
 }
 requestAnimationFrame(animate);
 </script>
