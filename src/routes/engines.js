@@ -241,6 +241,8 @@ router.get('/summary', requireAuth, async (req, res) => {
                 uptimeSeconds: sahanabagSatellite.uptimeSeconds || 0,
                 totalPlots: sahanabagSatellite.telemetry?.totalPlots || 0,
                 totalDeeds: sahanabagSatellite.telemetry?.totalDeeds || 0,
+                totalTransactions: sahanabagSatellite.telemetry?.finance?.totalTransactions || 0,
+                totalCollectedBDT: sahanabagSatellite.telemetry?.finance?.totalCollectedBDT || 0,
                 botMeshStatus: sahanabagSatellite.botMesh?.username || '@NishatSharminBot',
                 status: sahanabagSatellite.status
               }

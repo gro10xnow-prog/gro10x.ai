@@ -58,7 +58,13 @@ async function getSahanabagSummary(options = {}) {
             totalPlots: Number(data.telemetry?.plots?.total || 0),
             totalDeeds: Number(data.telemetry?.deeds?.total || 0),
             totalCustomers: Number(data.telemetry?.customers?.total || 0),
-            totalAuditLogs: Number(data.telemetry?.audit_logs?.total || 0)
+            totalAuditLogs: Number(data.telemetry?.audit_logs?.total || 0),
+            finance: {
+              activeSchedules: Number(data.telemetry?.finance?.active_schedules || 0),
+              completedSchedules: Number(data.telemetry?.finance?.completed_schedules || 0),
+              totalTransactions: Number(data.telemetry?.finance?.total_transactions || 0),
+              totalCollectedBDT: Number(data.telemetry?.finance?.total_collected_bdt || 0)
+            }
           },
           lastSyncedAt: new Date().toISOString()
         };
@@ -88,7 +94,13 @@ async function getSahanabagSummary(options = {}) {
       totalPlots: 0,
       totalDeeds: 0,
       totalCustomers: 0,
-      totalAuditLogs: 0
+      totalAuditLogs: 0,
+      finance: {
+        activeSchedules: 0,
+        completedSchedules: 0,
+        totalTransactions: 0,
+        totalCollectedBDT: 0
+      }
     },
     note: 'Sahanabag City Township OS daemon is currently offline or unreachable on Port 7000. Displaying fallback values.',
     lastSyncedAt: cachedSummary?.lastSyncedAt || null
