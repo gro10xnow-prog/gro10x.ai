@@ -36,3 +36,20 @@ Whenever a new functional need, venture, or prototype arises:
 ### 3. Pre-Sales vs Chartered Venture Distinction
 * **Pre-Sales / Rapid Prototyping**: Governed by the Mother OS `Foundry Lab Director & Rapid Prototyper` in their dedicated conversation. Prototypes live in `public/prototypes/<slug>/` on Port 3000. Never create dummy clients or venture ports for unclosed pitches.
 * **Chartered Satellite Ventures**: Once contracts are signed and retainers are paid, Central CoS issues the Requisition and charters a 5-person squad with a dedicated port (e.g. Port 5000 ToffeeCon, Port 6000 PurpleBot).
+
+---
+
+### 4. Source Code Ingestion Integrity Mandate
+* When the Founder provides source code, scripts, or assets (e.g., downloaded from Gemini Chat, Claude, or client specs) to Central CoS:
+  1. The CoS must NEVER summarize or describe the code loosely to a digital employee.
+  2. The CoS must package the verbatim code directly or instruct the Founder to paste the exact file content into the digital employee's conversation.
+  3. Digital employees must NEVER generate generic "from-scratch" approximations when reference code has been provided by the Founder.
+
+---
+
+### 5. Chartered Venture Platform Support & Diagnosis Protocol
+* When a satellite venture platform (e.g., ToffeeCon on Port 5000 / Render, or PurpleBot on Port 6000) experiences production issues:
+  1. Central CoS executes diagnostic probes (HTTP latency, DNS, logs, port health) from Mother OS.
+  2. Central CoS isolates the root cause (e.g., cloud provider cold starts, port binding, missing crons, deployment drift).
+  3. Central CoS formulates the architectural remediation plan and provides the Founder with the prompt to dispatch to that venture's dedicated conversation/squad.
+

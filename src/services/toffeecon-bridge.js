@@ -78,6 +78,46 @@ async function getToffeeconSummary(options = {}) {
   };
 }
 
+let keepAliveTimer = null;
+
+/**
+ * Starts a periodic keep-alive heartbeat ping to prevent Render free-tier cold-start dormancy.
+ * Pings /api/system/diagnostics every 10 minutes (default).
+ */
+function startKeepAliveHeartbeat(intervalMs = 10 * 60 * 1000) {
+  if (keepAliveTimer) return;
+  const targetUrl = process.env.TOFFEECON_API_URL || 'https://toffeecon-2026.onrender.com';
+
+  keepAliveTimer = setInterval(async () => {
+    try {
+      await fetch(`${targetUrl}/api/system/diagnostics`, {
+        headers: { 'User-Agent': 'GRO10X-Mother-OS-KeepAlive/1.0' }
+      });
+    } catch (_) {
+      // Best-effort ping; failures are silently absorbed
+    }
+  }, intervalMs);
+
+  if (keepAliveTimer.unref) {
+    keepAliveTimer.unref();
+  }
+}
+
+/**
+ * Stops the keep-alive heartbeat timer (used during testing)
+ */
+function stopKeepAliveHeartbeat() {
+  if (keepAliveTimer) {
+    clearInterval(keepAliveTimer);
+    keepAliveTimer = null;
+  }
+}
+
+// Auto-activate heartbeat in runtime environments outside of unit tests
+if (process.env.NODE_ENV !== 'test') {
+  startKeepAliveHeartbeat();
+}
+
 /**
  * Test helper to reset internal cache between test runs
  */
@@ -89,5 +129,8 @@ function _clearCache() {
 module.exports = {
   TOFFEECON_URL,
   getToffeeconSummary,
+  startKeepAliveHeartbeat,
+  stopKeepAliveHeartbeat,
   _clearCache
 };
+
