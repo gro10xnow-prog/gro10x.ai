@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Project Proposal: AI Food-Tech Marketplace MVP (Denmark) | GRO10X Holdings</title>
+  <meta name="description" content="Technical & Commercial Proposal for Denmark-Based AI-Enabled Food-Tech Marketplace MVP. Engineered by GRO10X Holdings.">
+
+  <!-- OpenGraph Metadata -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GRO10X Holdings">
+  <meta property="og:title" content="Executive Proposal: AI Food-Tech Marketplace MVP (Denmark)">
+  <meta property="og:description" content="Production Architecture, 5-Week Milestone Roadmap, Multi-Role Dashboards & Fixed Quotation. Prepared for Denmark Food-Tech Startup.">
+  <meta property="og:image" content="https://gro10x-ai.vercel.app/images/proposal-og-banner.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #070B12;
+      --bg-surface: #0E1626;
+      --bg-card: rgba(15, 23, 42, 0.75);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(0, 223, 137, 0.3);
+      --primary: #00DF89;
+      --primary-glow: rgba(0, 223, 137, 0.2);
+      --cyan: #00F0FF;
+      --gold: #F59E0B;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'Space Grotesk', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #101B2E 0%, #070B12 100%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.5;
+      padding: 32px 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top Accent Line */
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #00DF89, #00F0FF, #3B82F6);
+    }
+
+    /* Header Bar */
+    .header {
+      padding: 36px 40px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .brand-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .brand-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--primary);
+      background: rgba(0, 223, 137, 0.1);
+      border: 1px solid rgba(0, 223, 137, 0.25);
+      padding: 4px 10px;
+      border-radius: 20px;
+      width: fit-content;
+    }
+
+    .title {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #FFFFFF;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .meta-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 220px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .meta-label { color: var(--text-dim); }
+    .meta-val { font-weight: 600; color: var(--text-main); font-family: var(--font-mono); }
+
+    /* Content Body */
+    .content {
+      padding: 32px 40px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .section-title span {
+      color: var(--cyan);
+      font-size: 14px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    /* Executive Statement */
+    .hero-box {
+      background: linear-gradient(135deg, rgba(0, 223, 137, 0.08), rgba(0, 240, 255, 0.04));
+      border: 1px solid rgba(0, 223, 137, 0.2);
+      border-radius: 14px;
+      padding: 20px 24px;
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: #E2E8F0;
+    }
+
+    .hero-box strong {
+      color: var(--primary);
+    }
+
+    /* 6 Modules Grid */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .module-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .module-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .module-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .module-icon {
+      font-size: 18px;
+    }
+
+    .module-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .module-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .pill {
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #CBD5E1;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    /* Tech Stack Strip */
+    .tech-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .tech-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .tech-label {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .tech-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Roadmap Timeline */
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .timeline-col {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timeline-week {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cyan);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 4px;
+    }
+
+    .timeline-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .timeline-list {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .timeline-list li::before {
+      content: '› ';
+      color: var(--primary);
+    }
+
+    /* Commercials & Guarantees */
+    .commercials-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .pricing-card {
+      background: linear-gradient(135deg, rgba(0, 223, 137, 0.12), rgba(15, 23, 42, 0.9));
+      border: 1.5px solid var(--primary);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .price-headline {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .price-amount {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .price-type {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .milestone-stages {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      color: #CBD5E1;
+    }
+
+    .stage-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+      padding-bottom: 4px;
+    }
+
+    .guarantee-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .guarantee-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .guarantee-list li {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .guarantee-list li strong {
+      color: #FFFFFF;
+    }
+
+    .check-icon {
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    /* Footer & Action Bar */
+    .footer {
+      background: rgba(0, 0, 0, 0.35);
+      border-top: 1px solid var(--border-subtle);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .contact-info {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .contact-info strong {
+      color: #FFFFFF;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #00C77A);
+      color: #070B12;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 223, 137, 0.4);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* Print / PDF Mode */
+    @media print {
+      body {
+        background: #FFFFFF !important;
+        color: #0F172A !important;
+        padding: 0 !important;
+      }
+      .container {
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        background: #FFFFFF !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .title, .section-title, .module-header, .price-amount, .timeline-title {
+        color: #0F172A !important;
+      }
+      .hero-box {
+        background: #F1F5F9 !important;
+        border: 1px solid #CBD5E1 !important;
+        color: #1E293B !important;
+      }
+      .module-card, .tech-box, .timeline-col, .guarantee-card {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #334155 !important;
+      }
+      .pricing-card {
+        background: #F0FDF4 !important;
+        border: 2px solid #059669 !important;
+      }
+      .price-amount {
+        color: #059669 !important;
+      }
+      .pill {
+        background: #E2E8F0 !important;
+        border: 1px solid #CBD5E1 !important;
+        color: #0F172A !important;
+      }
+      .footer {
+        background: #F8FAFC !important;
+        border-top: 1px solid #E2E8F0 !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header, .content, .footer {
+        padding: 20px;
+      }
+      .modules-grid, .tech-strip, .timeline, .commercials-grid {
+        grid-template-columns: 1fr;
+      }
+      .title {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="proposalContainer">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand-group">
+        <div class="brand-tag">⚡ GRO10X Holdings &middot; Engineering Division</div>
+        <h1 class="title">AI Food-Tech Marketplace MVP</h1>
+        <p class="subtitle">Turnkey Technical Specification, Architecture & Commercial Proposal &middot; Denmark 🇩🇰</p>
+      </div>
+
+      <div class="meta-box">
+        <div class="meta-row">
+          <span class="meta-label">Reference:</span>
+          <span class="meta-val">GRO-DK-FOODTECH</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Target Market:</span>
+          <span class="meta-val">Denmark / EU</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Contract Type:</span>
+          <span class="meta-val">Fixed Project MVP</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Delivery SLA:</span>
+          <span class="meta-val">5 Weeks</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="content">
+
+      <!-- Executive Summary -->
+      <section class="hero-box">
+        <strong>Executive Commitment:</strong> We engineer a <strong>launch-ready, secure, and production-grade MVP</strong> for your Denmark food-tech startup—not merely a static prototype. Built on a modular, multi-tenant architecture designed to scale seamlessly from day-one web bookings into future native iOS/Android applications, with strict <strong>GDPR compliance and automated Stripe marketplace payouts</strong>.
+      </section>
+
+      <!-- 6 Core MVP Feature Modules -->
+      <section>
+        <h2 class="section-title"><span>01 &middot;</span> Core MVP Scope & Module Breakdown</h2>
+        <div class="modules-grid">
+          
+          <!-- Module 1 -->
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-icon">🎨</span>
+              <span>1. Modern UI/UX & Booking Flow</span>
+            </div>
+            <p class="module-desc">High-conversion, mobile-first design tailored for European consumers with frictionless appointment and food service scheduling.</p>
+            <div class="module-pills">
+              <span class="pill">Next.js 14 App Router</span>
+              <span class="pill">Tailwind CSS</span>
+              <span class="pill">Mobile Responsive</span>
+            </div>
+          </div>
+
+          <!-- Module 2 -->
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-icon">👥</span>
+              <span>2. Multi-Role User Management</span>
+            </div>
+            <p class="module-desc">Secure RBAC with 3 dedicated portals: Customer Profile, Service Provider / Kitchen Partner Portal, and Super Admin Command Center.</p>
+            <div class="module-pills">
+              <span class="pill">Customer Portal</span>
+              <span class="pill">Provider Dashboard</span>
+              <span class="pill">Super Admin RBAC</span>
+            </div>
+          </div>
+
+          <!-- Module 3 -->
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-icon">🛒</span>
+              <span>3. Marketplace & Scheduling Engine</span>
+            </div>
+            <p class="module-desc">Catalog management, live calendar availability, multi-criteria filtering, order booking lifecycle, and real-time status tracking.</p>
+            <div class="module-pills">
+              <span class="pill">Availability Calendar</span>
+              <span class="pill">Live Booking Pipeline</span>
+              <span class="pill">Search & Filter</span>
+            </div>
+          </div>
+
+          <!-- Module 4 -->
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-icon">🧠</span>
+              <span>4. AI-Enabled Intelligence Engine</span>
+            </div>
+            <p class="module-desc">Production OpenAI GPT-4o integration for smart food/service recommendations, menu parsing, dietary matching, and automated summaries.</p>
+            <div class="module-pills">
+              <span class="pill">OpenAI GPT-4o</span>
+              <span class="pill">Smart Matching</span>
+              <span class="pill">Schema Enforced</span>
+            </div>
+          </div>
+
+          <!-- Module 5 -->
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-icon">💳</span>
+              <span>5. Stripe Marketplace Split Payments</span>
+            </div>
+            <p class="module-desc">End-to-end automated payment flows: platform fee deductions, instant provider split payouts (Stripe Connect), and financial ledger logs.</p>
+            <div class="module-pills">
+              <span class="pill">Stripe Connect</span>
+              <span class="pill">Commission Split</span>
+              <span class="pill">DKK / EUR Support</span>
+            </div>
+          </div>
+
+          <!-- Module 6 -->
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-icon">🛡️</span>
+              <span>6. Admin Control, Security & GDPR</span>
+            </div>
+            <p class="module-desc">Full governance over users, bookings, and platform revenue. Built with EU GDPR privacy controls, cookie management, and SEO foundation.</p>
+            <div class="module-pills">
+              <span class="pill">GDPR Consent</span>
+              <span class="pill">Audit Logs</span>
+              <span class="pill">Row-Level Security</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Technology Stack -->
+      <section>
+        <h2 class="section-title"><span>02 &middot;</span> Battle-Tested Technology Architecture</h2>
+        <div class="tech-strip">
+          <div class="tech-box">
+            <div class="tech-label">Frontend SPA</div>
+            <div class="tech-val">Next.js 14 / TypeScript</div>
+          </div>
+          <div class="tech-box">
+            <div class="tech-label">Backend & APIs</div>
+            <div class="tech-val">Node.js / Express Modular</div>
+          </div>
+          <div class="tech-box">
+            <div class="tech-label">Database & RLS</div>
+            <div class="tech-val">PostgreSQL (Supabase)</div>
+          </div>
+          <div class="tech-box">
+            <div class="tech-label">Payments & AI</div>
+            <div class="tech-val">Stripe Connect + OpenAI</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5-Week Milestone Roadmap -->
+      <section>
+        <h2 class="section-title"><span>03 &middot;</span> 5-Week Milestone Delivery Roadmap</h2>
+        <div class="timeline">
+          
+          <div class="timeline-col">
+            <div class="timeline-week">WEEK 01</div>
+            <div class="timeline-title">Foundation</div>
+            <ul class="timeline-list">
+              <li>DB schema & RLS</li>
+              <li>Multi-role auth</li>
+              <li>Brand UI system</li>
+            </ul>
+          </div>
+
+          <div class="timeline-col">
+            <div class="timeline-week">WEEK 02</div>
+            <div class="timeline-title">Marketplace</div>
+            <ul class="timeline-list">
+              <li>Service catalog</li>
+              <li>Search & filters</li>
+              <li>Calendar booking</li>
+            </ul>
+          </div>
+
+          <div class="timeline-col">
+            <div class="timeline-week">WEEK 03</div>
+            <div class="timeline-title">Payments</div>
+            <ul class="timeline-list">
+              <li>Stripe Connect</li>
+              <li>Commission split</li>
+              <li>Vendor payout</li>
+            </ul>
+          </div>
+
+          <div class="timeline-col">
+            <div class="timeline-week">WEEK 04</div>
+            <div class="timeline-title">AI & Admin</div>
+            <ul class="timeline-list">
+              <li>OpenAI matching</li>
+              <li>Admin dashboard</li>
+              <li>GDPR consent</li>
+            </ul>
+          </div>
+
+          <div class="timeline-col">
+            <div class="timeline-week">WEEK 05</div>
+            <div class="timeline-title">Launch Ready</div>
+            <ul class="timeline-list">
+              <li>Cross-device QA</li>
+              <li>Cloud deployment</li>
+              <li>Full IP handover</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Commercials & Guarantees -->
+      <section>
+        <h2 class="section-title"><span>04 &middot;</span> Commercial Terms & Milestone Disbursements</h2>
+        <div class="commercials-grid">
+          
+          <!-- Pricing -->
+          <div class="pricing-card">
+            <div>
+              <div class="price-headline">
+                <span class="price-amount">&euro;4,200</span>
+                <span class="price-type">Fixed Project Price</span>
+              </div>
+              <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Zero hidden charges &middot; Milestone escrow disbursements</p>
+            </div>
+
+            <div class="milestone-stages">
+              <div class="stage-row">
+                <span>Kickoff & Architecture Approval:</span>
+                <span style="font-family: var(--font-mono); font-weight: 700; color: #FFFFFF;">25% (&euro;1,050)</span>
+              </div>
+              <div class="stage-row">
+                <span>Multi-Portal & Booking Engine Demo:</span>
+                <span style="font-family: var(--font-mono); font-weight: 700; color: #FFFFFF;">25% (&euro;1,050)</span>
+              </div>
+              <div class="stage-row">
+                <span>Stripe Payments & AI Operational:</span>
+                <span style="font-family: var(--font-mono); font-weight: 700; color: #FFFFFF;">25% (&euro;1,050)</span>
+              </div>
+              <div class="stage-row">
+                <span>Final QA, Live Deploy & Source Handover:</span>
+                <span style="font-family: var(--font-mono); font-weight: 700; color: #FFFFFF;">25% (&euro;1,050)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Guarantees -->
+          <div class="guarantee-card">
+            <div style="font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: #FFFFFF;">
+              🛡️ Complete Enterprise Protection
+            </div>
+            <ul class="guarantee-list">
+              <li>
+                <span class="check-icon">&#10003;</span>
+                <span><strong>100% IP & Source Code Ownership:</strong> Delivered cleanly with zero vendor lock-in.</span>
+              </li>
+              <li>
+                <span class="check-icon">&#10003;</span>
+                <span><strong>30 Days Warranty:</strong> Dedicated post-launch bug fixing and monitoring included.</span>
+              </li>
+              <li>
+                <span class="check-icon">&#10003;</span>
+                <span><strong>Mobile-Ready Architecture:</strong> Clean APIs structured for future native iOS & Android apps.</span>
+              </li>
+              <li>
+                <span class="check-icon">&#10003;</span>
+                <span><strong>Strict NDA Adherence:</strong> Your proprietary concepts and business model remain confidential.</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="contact-info">
+        <div><strong>GRO10X Holdings &middot; Technology Agency</strong></div>
+        <div style="color: var(--text-dim); margin-top: 2px;">Managing Director: Firoz Ahmed &middot; Live Core: <a href="https://gro10x-ai.vercel.app" style="color: var(--cyan); text-decoration: none;" target="_blank">gro10x-ai.vercel.app</a></div>
+      </div>
+
+      <div class="btn-group no-print">
+        <button onclick="window.print()" class="btn btn-primary">
+          <span>📄 Print / Save as PDF</span>
+        </button>
+        <a href="https://gro10x-ai.vercel.app" target="_blank" class="btn btn-outline">
+          <span>🌐 Visit Agency Core</span>
+        </a>
+      </div>
+    </footer>
+  </div>
+
+</body>
+</html>
