@@ -459,7 +459,8 @@
 
     <!-- Filter Buttons -->
     <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (4)</button>
+      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (5)</button>
+      <button class="filter-btn" onclick="filterPrototypes('proptech', this)">PropTech & Land (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('spatial', this)">3D & Spatial (2)</button>
       <button class="filter-btn" onclick="filterPrototypes('fintech', this)">Fintech & Enterprise (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('growth', this)">BPO & Social (1)</button>
@@ -468,6 +469,34 @@
 
   <!-- Prototype Showcase Grid -->
   <main class="showcase-grid">
+
+    <!-- Card 0: Sahanabag City (সাহানাবাগ সিটি) -->
+    <article class="proto-card" data-category="proptech">
+      <div class="proto-preview-box" style="background: radial-gradient(circle, #064E3B, #070B12);">
+        <span class="proto-tag tag-emerald">Digital Cadastral OS</span>
+        <div class="proto-overlay-icon">🗺️</div>
+      </div>
+      <div class="proto-body">
+        <h2 class="proto-title">সাহানাবাগ সিটি (Sahanabag City)</h2>
+        <p class="proto-desc">
+          Interactive SVG digital twin for a 42-plot residential township in Dubalhati Rajbari Road, Naogaon. Features live color-coded deed statuses, Master Ledger Dossier, instant Bengali search, and Telegram AI document digitizer simulation.
+        </p>
+        <div class="proto-meta">
+          <span class="meta-chip">Interactive Cadastral SVG</span>
+          <span class="meta-chip">Master Ledger Dossier</span>
+          <span class="meta-chip">Telegram Vision AI</span>
+          <span class="meta-chip">Bangla Search</span>
+        </div>
+        <div class="proto-actions">
+          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/sahanabag-city/', 'সাহানাবাগ সিটি (Sahanabag City OS)')">
+            📱 Interactive Preview
+          </button>
+          <a href="/prototypes/sahanabag-city/" target="_blank" class="proto-btn btn-emerald">
+            🚀 Launch Live
+          </a>
+        </div>
+      </div>
+    </article>
 
     <!-- Card 1: JAM SPACE 3D -->
     <article class="proto-card" data-category="spatial">

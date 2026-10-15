@@ -556,6 +556,11 @@ app.get(['/prototypes', '/prototypes/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/index.html'));
 });
 
+// Sahanabag City Township OS Prototype
+app.get(['/prototypes/sahanabag-city', '/prototypes/sahanabag-city/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/sahanabag-city/index.html'));
+});
+
 // National Housing Finance Backwards Compatibility & Canonical Routing
 app.get(['/nhf', '/nhf/'], (req, res) => {
   res.redirect(302, '/prototypes/nhf-portal/');

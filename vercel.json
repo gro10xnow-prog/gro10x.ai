@@ -181,6 +181,10 @@
       "dest": "/public/prototypes/index.html"
     },
     {
+      "src": "/prototypes/sahanabag-city",
+      "dest": "/public/prototypes/sahanabag-city/index.html"
+    },
+    {
       "src": "/nhf(/.*)?",
       "status": 302,
       "headers": { "Location": "/prototypes/nhf-portal/" }
