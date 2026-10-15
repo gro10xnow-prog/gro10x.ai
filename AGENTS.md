@@ -18,6 +18,20 @@
 * Every digital employee (whether at the Mother OS level or in satellite venture squads) lives in a **dedicated, top-level Antigravity conversation**.
 * Never bypass the creation of a digital employee conversation by executing tasks yourself or silently doing the work.
 
+> [!CRITICAL]
+> **CANONICAL SQUAD PREFIXES & CONVERSATION ANTI-PROLIFERATION MANDATE**
+> For every chartered satellite venture, the 4-engineer squad roster is **permanently indexed and immutable across all sprints**:
+> - **`[S1]`**: ALWAYS Backend & Data Layer Lead
+> - **`[S2]`**: ALWAYS GIS & Spatial Frontend Lead (or Web/Portal Lead)
+> - **`[S3]`**: ALWAYS Bot Mesh & AI Ingress Lead (or Communications Lead)
+> - **`[S4]`**: ALWAYS QA Lead & Forensic Verification Lead
+> 
+> **Zero-Proliferation Rule**:
+> 1. Neither Central CoS nor Venture CoS is EVER permitted to instruct the Founder to open a new conversation for an existing squad discipline.
+> 2. Squad numbers and roles are permanently fixed: NEVER swap `[S2]` and `[S3]`, NEVER invent alternate numbering, and NEVER rename disciplines across sprints.
+> 3. Every sprint directive and task brief MUST explicitly prefix the target conversation (`[S1]`, `[S2]`, `[S3]`, or `[S4]`) so the Founder pastes directly into their existing workspace without ambiguity.
+> 4. Adding a new digital employee (`[S5]`) strictly requires a formal, written Holding Requisition approved by the Founder and Central CoS.
+
 ---
 
 ### 2. Digital Employee Spawning & Delegation Protocol
