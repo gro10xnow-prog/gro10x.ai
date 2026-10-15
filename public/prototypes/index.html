@@ -459,7 +459,8 @@
 
     <!-- Filter Buttons -->
     <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (5)</button>
+      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (7)</button>
+      <button class="filter-btn" onclick="filterPrototypes('agency', this)">Madmen & Telecom AI (2)</button>
       <button class="filter-btn" onclick="filterPrototypes('proptech', this)">PropTech & Land (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('spatial', this)">3D & Spatial (2)</button>
       <button class="filter-btn" onclick="filterPrototypes('fintech', this)">Fintech & Enterprise (1)</button>
@@ -470,7 +471,63 @@
   <!-- Prototype Showcase Grid -->
   <main class="showcase-grid">
 
-    <!-- Card 0: Sahanabag City (সাহানাবাগ সিটি) -->
+    <!-- Card 1: Madmen Agency OS & Showcase (LIME-INSPIRED) -->
+    <article class="proto-card" data-category="agency">
+      <div class="proto-preview-box" style="background: radial-gradient(circle, #1a2205, #070809);">
+        <span class="proto-tag" style="background: rgba(191,255,4,0.2); color:#BFFF04; border:1px solid rgba(191,255,4,0.4);">Agency of Record</span>
+        <div class="proto-overlay-icon">⚡</div>
+      </div>
+      <div class="proto-body">
+        <h2 class="proto-title">MADMEN — Agency OS & Showcase</h2>
+        <p class="proto-desc">
+          Inspired by golime.xyz. Features an interactive 3D WebGL Monolith centerpiece, the Banglalink Toffee and Ryze client case archive, and a live dark-glass Agency OS Cockpit with 1-click deliverable signoffs and influencer SLA telemetry.
+        </p>
+        <div class="proto-meta">
+          <span class="meta-chip">Three.js 3D Monolith</span>
+          <span class="meta-chip">Live Agency Cockpit</span>
+          <span class="meta-chip">1-Click Signoff Queue</span>
+          <span class="meta-chip">Banglalink Toffee / Ryze</span>
+        </div>
+        <div class="proto-actions">
+          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/madmen-os/', 'MADMEN Agency OS & Showcase')">
+            📱 Interactive Preview
+          </button>
+          <a href="/prototypes/madmen-os/" target="_blank" class="proto-btn btn-emerald">
+            🚀 Launch Live
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 2: Banglalink Ryze "Gen-Z Star" AI Video Simulator -->
+    <article class="proto-card" data-category="agency">
+      <div class="proto-preview-box" style="background: radial-gradient(circle, #2a0845, #0A0B0E);">
+        <span class="proto-tag" style="background: rgba(255,85,0,0.2); color:#FF5500; border:1px solid rgba(255,85,0,0.4);">Generative AI Casting</span>
+        <div class="proto-overlay-icon">🎬</div>
+      </div>
+      <div class="proto-body">
+        <h2 class="proto-title">Banglalink Ryze — Gen-Z AI Video Star</h2>
+        <p class="proto-desc">
+          The Cadbury / Shah Rukh Khan AI model tailored for Banglalink's Gen-Z brand Ryze. Biometric face alignment, persona casting, simulated latent diffusion video inpainting, custom Web Audio beat, and 1080×1920 Instagram Reel story poster generation.
+        </p>
+        <div class="proto-meta">
+          <span class="meta-chip">Neural Face Inpainting</span>
+          <span class="meta-chip">Persona Vibe Selector</span>
+          <span class="meta-chip">Web Audio Beat Synth</span>
+          <span class="meta-chip">1080x1920 Story Poster</span>
+        </div>
+        <div class="proto-actions">
+          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/ryze-ai-star/', 'Banglalink Ryze AI Star Simulator')">
+            📱 Interactive Preview
+          </button>
+          <a href="/prototypes/ryze-ai-star/" target="_blank" class="proto-btn btn-emerald">
+            🚀 Launch Live
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 3: Sahanabag City (সাহানাবাগ সিটি) -->
     <article class="proto-card" data-category="proptech">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #064E3B, #070B12);">
         <span class="proto-tag tag-emerald">Digital Cadastral OS</span>

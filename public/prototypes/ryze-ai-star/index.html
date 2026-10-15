@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>BANGLALINK RYZE — Gen-Z AI Brand Film Star Simulator</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --ryze-orange: #FF5500;
+      --ryze-purple: #8A2BE2;
+      --ryze-violet: #A855F7;
+      --ryze-cyan: #00F0FF;
+      --ryze-dark: #0A0B0E;
+    }
+    body {
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--ryze-dark);
+      color: #f3f4f6;
+      overflow-x: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono { font-family: 'Space Mono', monospace; }
+
+    /* Cyber scanlines */
+    .scanlines {
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.3) 50%,
+        rgba(0, 0, 0, 0.3)
+      );
+      background-size: 100% 4px;
+    }
+
+    .ryze-gradient {
+      background: linear-gradient(135deg, #FF5500 0%, #8A2BE2 55%, #00F0FF 100%);
+    }
+
+    .orange-glow {
+      box-shadow: 0 0 30px -5px rgba(255, 85, 0, 0.5);
+    }
+    .purple-glow {
+      box-shadow: 0 0 30px -5px rgba(138, 43, 226, 0.5);
+    }
+
+    /* Pulse animation */
+    @keyframes radarScan {
+      0% { top: 0%; opacity: 0.8; }
+      50% { opacity: 1; }
+      100% { top: 100%; opacity: 0.2; }
+    }
+    .radar-beam {
+      animation: radarScan 2s linear infinite;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0A0B0E; }
+    ::-webkit-scrollbar-thumb { background: #262938; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--ryze-orange); }
+  </style>
+</head>
+<body class="bg-[#0A0B0E] min-h-screen text-gray-100 relative selection:bg-[#FF5500] selection:text-white">
+
+  <!-- Ambient Top Ambient Gradient -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-80 bg-gradient-to-b from-[#8A2BE2]/20 via-[#FF5500]/10 to-transparent blur-3xl pointer-events-none z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP FIXED HEADER                                          -->
+  <!-- ========================================================= -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#0A0B0E]/90 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3.5 flex justify-between items-center">
+    
+    <!-- Banglalink Ryze Brand -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FF5500] to-[#8A2BE2] flex items-center justify-center font-black text-white text-base shadow-[0_0_15px_rgba(255,85,0,0.6)]">
+        ⚡
+      </div>
+      <div>
+        <div class="font-extrabold tracking-tighter text-base sm:text-lg leading-tight flex items-center gap-2">
+          <span>BANGLALINK <span class="text-[#FF5500]">RYZE</span></span>
+          <span class="text-[10px] mono uppercase tracking-widest bg-white/10 text-[#00F0FF] px-1.5 py-0.5 rounded border border-[#00F0FF]/30">AI Star v2.4</span>
+        </div>
+        <div class="text-[10px] text-gray-400 font-medium hidden sm:block tracking-wide">
+          The Cadbury / Shah Rukh Khan Generative Model Tailored for Gen-Z
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Navigation / Back Link -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <a href="/prototypes/madmen-os/" class="text-xs text-gray-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-xl transition flex items-center gap-1">
+        <span>← Madmen OS</span>
+      </a>
+      <a href="/prototypes" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-xl transition">
+        Showroom
+      </a>
+      <button onclick="resetSimulator()" class="bg-white/10 hover:bg-white/20 text-xs font-bold px-3 py-1.5 rounded-xl transition text-gray-300">
+        Reset ↺
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN WORKFLOW ENGINE: MULTI-STEP SIMULATOR                -->
+  <!-- ========================================================= -->
+  <main class="pt-24 pb-20 px-4 sm:px-6 max-w-5xl mx-auto relative z-10">
+
+    <!-- Hero Card Banner -->
+    <div class="rounded-3xl border border-white/10 bg-gradient-to-br from-[#12141e] via-[#0e1017] to-[#161224] p-6 sm:p-10 shadow-2xl relative overflow-hidden mb-8">
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-[#FF5500]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-10 -top-10 w-64 h-64 bg-[#8A2BE2]/15 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="max-w-2xl relative z-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF5500]/15 border border-[#FF5500]/40 text-[#FF5500] text-xs font-bold uppercase tracking-wider mb-4">
+          <span>🔥</span> #RyzeYourVibe Nationwide Campaign
+        </div>
+
+        <h1 class="text-2xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight mb-3">
+          Star in the Next <br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5500] via-[#A855F7] to-[#00F0FF]">
+            Ryze Brand Film
+          </span>
+        </h1>
+
+        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-xl">
+          Upload your selfie or choose a sample avatar. Our neural pipeline maps your face into Banglalink Ryze's high-octane 4K youth film with synchronized beat-music and instant TikTok/Reel story cards.
+        </p>
+
+        <!-- Progress Pills -->
+        <div class="flex flex-wrap items-center gap-2 mt-6 text-xs font-bold">
+          <div id="step-pill-1" class="px-3 py-1 rounded-xl bg-[#FF5500] text-white">1. Face Intake</div>
+          <span class="text-gray-600">›</span>
+          <div id="step-pill-2" class="px-3 py-1 rounded-xl bg-gray-800 text-gray-400">2. Vibe Persona</div>
+          <span class="text-gray-600">›</span>
+          <div id="step-pill-3" class="px-3 py-1 rounded-xl bg-gray-800 text-gray-400">3. AI Neural Blend</div>
+          <span class="text-gray-600">›</span>
+          <div id="step-pill-4" class="px-3 py-1 rounded-xl bg-gray-800 text-gray-400">4. 4K Video & Poster</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- STEP 1: PHOTO / SELFIE INTAKE & FACE LANDMARK SCAN        -->
+    <!-- ========================================================= -->
+    <div id="section-step-1" class="bg-[#0f1118] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl mb-8">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#FF5500] mono">STEP 1 • BIOMETRIC INTAKE</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white mt-1">Provide Your Face for Generative Inpainting</h2>
+        </div>
+        <span class="text-xs text-gray-400 mono hidden sm:block">Zero Data Retained • Client-Side Simulation</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        
+        <!-- Left: Upload Box & Instant Samples -->
+        <div>
+          <!-- File Drop Zone -->
+          <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="border-2 border-dashed border-white/20 hover:border-[#FF5500] rounded-2xl p-6 text-center cursor-pointer transition bg-black/40 hover:bg-black/60 group">
+            <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+            <div class="text-4xl mb-3 group-hover:scale-110 transition">📸</div>
+            <div class="text-sm font-bold text-white mb-1">Click to Upload or Drag Selfie</div>
+            <div class="text-xs text-gray-400">High-contrast, frontal face photo works best</div>
+          </div>
+
+          <!-- Instant Demo Test Avatars -->
+          <div class="mt-4 pt-4 border-t border-white/10">
+            <div class="text-xs text-gray-400 font-bold mb-2.5 flex items-center gap-1.5">
+              <span>⚡</span> Or Select Instant Sample Pitch Avatar:
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="selectSampleAvatar('aryan')" class="bg-[#181a24] hover:bg-[#232736] border border-white/10 hover:border-[#FF5500] p-2.5 rounded-xl text-left transition">
+                <div class="text-xl mb-1">👦</div>
+                <div class="text-xs font-bold text-white">Aryan</div>
+                <div class="text-[10px] text-gray-400">Street Vibe</div>
+              </button>
+              <button onclick="selectSampleAvatar('tanha')" class="bg-[#181a24] hover:bg-[#232736] border border-white/10 hover:border-[#8A2BE2] p-2.5 rounded-xl text-left transition">
+                <div class="text-xl mb-1">👧</div>
+                <div class="text-xs font-bold text-white">Tanha</div>
+                <div class="text-[10px] text-gray-400">Esports Pro</div>
+              </button>
+              <button onclick="selectSampleAvatar('zayan')" class="bg-[#181a24] hover:bg-[#232736] border border-white/10 hover:border-[#00F0FF] p-2.5 rounded-xl text-left transition">
+                <div class="text-xl mb-1">🧑</div>
+                <div class="text-xs font-bold text-white">Zayan</div>
+                <div class="text-[10px] text-gray-400">Cyberpunk</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- User Name & Handle Inputs -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+            <div>
+              <label class="block text-[11px] font-bold text-gray-300 uppercase mono mb-1">Star Name *</label>
+              <input type="text" id="user-name" value="Aryan Chowdhury" class="w-full bg-black/60 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#FF5500]">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-gray-300 uppercase mono mb-1">Social Handle (@) *</label>
+              <input type="text" id="user-handle" value="@aryanchy_07" class="w-full bg-black/60 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#8A2BE2]">
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Interactive Face Biometric Alignment Scanner -->
+        <div class="flex flex-col items-center">
+          <div class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-black/80 border-2 border-white/15 overflow-hidden flex items-center justify-center shadow-2xl">
+            
+            <!-- Avatar Face Image Preview -->
+            <img id="face-preview" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80" alt="Face Preview" class="w-full h-full object-cover">
+
+            <!-- Face Detection Oval Overlay -->
+            <div class="absolute inset-4 rounded-[45%] border-2 border-dashed border-[#00F0FF] pointer-events-none flex items-center justify-center">
+              <!-- Radar Beam Scanline -->
+              <div class="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent shadow-[0_0_12px_#00F0FF] radar-beam"></div>
+            </div>
+
+            <!-- Landmark Points Overlay -->
+            <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-[#FF5500] absolute top-28 left-24 shadow-[0_0_8px_#FF5500]"></div>
+              <div class="w-2 h-2 rounded-full bg-[#FF5500] absolute top-28 right-24 shadow-[0_0_8px_#FF5500]"></div>
+              <div class="w-2 h-2 rounded-full bg-[#00F0FF] absolute top-36 left-1/2 -translate-x-1/2 shadow-[0_0_8px_#00F0FF]"></div>
+              <div class="w-2 h-2 rounded-full bg-[#8A2BE2] absolute top-44 left-1/2 -translate-x-1/2 shadow-[0_0_8px_#8A2BE2]"></div>
+            </div>
+
+            <!-- Status Tag -->
+            <div class="absolute bottom-2 left-2 right-2 bg-black/85 backdrop-blur-md px-2.5 py-1 rounded-xl text-center border border-white/10 text-[10px] mono text-[#00F0FF]">
+              ● 68 Facial Landmarks Aligned (99.4% Fit)
+            </div>
+          </div>
+
+          <button onclick="goToStep(2)" class="mt-5 w-full max-w-xs bg-gradient-to-r from-[#FF5500] to-[#8A2BE2] hover:brightness-110 text-white font-extrabold py-3.5 rounded-2xl text-xs sm:text-sm shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2">
+            <span>Proceed to Persona Vibe</span>
+            <span>→</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- STEP 2: PERSONA VIBE SELECTOR                             -->
+    <!-- ========================================================= -->
+    <div id="section-step-2" class="hidden bg-[#0f1118] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl mb-8">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#8A2BE2] mono">STEP 2 • PERSONA CASTING</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white mt-1">Select Your Ryze Brand Film Persona</h2>
+        </div>
+        <button onclick="goToStep(1)" class="text-xs text-gray-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-xl">
+          ← Re-align Face
+        </button>
+      </div>
+
+      <!-- 3 Persona Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        
+        <!-- Persona 1: Runway Fashion Icon -->
+        <div id="persona-card-fashion" onclick="selectPersona('fashion')" class="group cursor-pointer bg-[#141620] hover:bg-[#1a1d2c] border-2 border-[#8A2BE2] rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden shadow-xl">
+          <div class="text-4xl mb-3">⚡</div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#8A2BE2]/20 text-[#A855F7] border border-[#8A2BE2]/40">
+              High Fashion & Cyber
+            </span>
+            <h3 class="text-lg font-bold text-white mt-2 group-hover:text-[#A855F7] transition">Runway Cyber Icon</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Metallic puffers, dark sunglasses, neon strobe catwalk, and heavy bass drop.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/10 text-xs font-bold text-[#A855F7] flex items-center justify-between">
+            <span>Selected Style</span>
+            <span>✓</span>
+          </div>
+        </div>
+
+        <!-- Persona 2: Underground Streetwear Beatmaker -->
+        <div id="persona-card-street" onclick="selectPersona('street')" class="group cursor-pointer bg-[#141620] hover:bg-[#1a1d2c] border-2 border-transparent hover:border-[#FF5500] rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden">
+          <div class="text-4xl mb-3">🛹</div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#FF5500]/20 text-[#FF5500] border border-[#FF5500]/40">
+              Dhaka Streetwear
+            </span>
+            <h3 class="text-lg font-bold text-white mt-2 group-hover:text-[#FF5500] transition">Underground Beatmaker</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Dhanmondi rooftop at golden hour, oversized bombers, MPC drum pads, and smoke flares.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/10 text-xs font-bold text-gray-500 flex items-center justify-between">
+            <span>Select Style</span>
+            <span>→</span>
+          </div>
+        </div>
+
+        <!-- Persona 3: Neon Esports Champion -->
+        <div id="persona-card-gamer" onclick="selectPersona('gamer')" class="group cursor-pointer bg-[#141620] hover:bg-[#1a1d2c] border-2 border-transparent hover:border-[#00F0FF] rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden">
+          <div class="text-4xl mb-3">🎮</div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/40">
+              Esports Arena
+            </span>
+            <h3 class="text-lg font-bold text-white mt-2 group-hover:text-[#00F0FF] transition">Neon Esports Champion</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Hyper-focused gaming arena, RGB battle headsets, hologram HUDs, and trophy confetti.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/10 text-xs font-bold text-gray-500 flex items-center justify-between">
+            <span>Select Style</span>
+            <span>→</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="text-center">
+        <button onclick="startAiSynthesis()" class="w-full max-w-sm bg-gradient-to-r from-[#FF5500] via-[#8A2BE2] to-[#00F0FF] hover:brightness-110 text-white font-extrabold py-4 rounded-2xl text-sm shadow-2xl transition transform active:scale-95 inline-flex items-center justify-center gap-2">
+          <span>🚀 Generate My Ryze Brand Film</span>
+          <span>(Simulate Inpainting)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- STEP 3: AI VIDEO PIPELINE SIMULATOR (LIVE SYNTHESIS)      -->
+    <!-- ========================================================= -->
+    <div id="section-step-3" class="hidden bg-[#0f1118] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-xl mb-8">
+      <div class="text-center max-w-lg mx-auto mb-8">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FF5500] to-[#8A2BE2] mx-auto flex items-center justify-center text-xl shadow-lg mb-3 animate-spin">
+          ⚙️
+        </div>
+        <h2 class="text-xl sm:text-2xl font-bold text-white" id="synth-status-title">
+          Synthesizing Brand Film Scene...
+        </h2>
+        <p class="text-xs text-gray-400 mt-1" id="synth-status-desc">
+          Mapping your facial geometry onto the Ryze protagonist master sequence.
+        </p>
+      </div>
+
+      <!-- Animated Progress Bar -->
+      <div class="max-w-xl mx-auto mb-8">
+        <div class="flex justify-between text-xs font-bold mono mb-2 text-gray-300">
+          <span id="synth-stage-name">Stage 1: Landmark Normalization</span>
+          <span id="synth-percent" class="text-[#FF5500]">0%</span>
+        </div>
+        <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden p-0.5 border border-white/10">
+          <div id="synth-bar" class="h-full bg-gradient-to-r from-[#FF5500] via-[#8A2BE2] to-[#00F0FF] rounded-full transition-all duration-300" style="width: 5%"></div>
+        </div>
+      </div>
+
+      <!-- Neural Terminal Diagnostics -->
+      <div class="bg-black/80 border border-white/10 rounded-2xl p-4 max-w-xl mx-auto font-mono text-[11px] text-gray-400 max-h-40 overflow-y-auto" id="synth-terminal">
+        <div class="text-[#00F0FF]">[0.00s] Initializing Latent Diffusion UNet (512x512 latent grid)...</div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- STEP 4: DYNAMIC 4K VIDEO PLAYER & STORY CARD GENERATOR    -->
+    <!-- ========================================================= -->
+    <div id="section-step-4" class="hidden space-y-8">
+      
+      <!-- Video Player Preview Container -->
+      <div class="bg-[#0f1118] border border-[#FF5500]/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-[#FF5500] mono">🎬 RENDER COMPLETE</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-white mt-0.5">
+              Your Ryze Brand Film Master Cut
+            </h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/40">
+              ● 4K Master Rendered
+            </span>
+            <button onclick="goToStep(2)" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl font-bold transition">
+              Change Persona
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulated Player Canvas -->
+        <div class="relative w-full aspect-video rounded-2xl bg-black border border-white/15 overflow-hidden shadow-2xl flex items-center justify-center group">
+          
+          <!-- Background Scene Canvas (Moving procedural lights & protagonist) -->
+          <canvas id="video-canvas" class="w-full h-full object-cover"></canvas>
+
+          <!-- Scanline overlay -->
+          <div class="absolute inset-0 scanlines pointer-events-none opacity-40"></div>
+
+          <!-- Protagonist Face Dynamic Overlay Badge -->
+          <div class="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/75 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/15">
+            <img id="player-face-thumbnail" src="" class="w-9 h-9 rounded-full object-cover border-2 border-[#FF5500]">
+            <div>
+              <div class="font-bold text-xs text-white" id="player-user-name">Aryan Chowdhury</div>
+              <div class="text-[10px] text-[#00F0FF] mono">Lead Actor • Ryze Hero</div>
+            </div>
+          </div>
+
+          <!-- Official Ryze Watermark -->
+          <div class="absolute bottom-16 right-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-xl border border-white/10 text-xs font-extrabold text-white">
+            <span class="text-[#FF5500]">⚡</span> RYZE BRAND FILM
+          </div>
+
+          <!-- Audio Equalizer Bars (Pulsating to audio beat) -->
+          <div class="absolute bottom-16 left-4 z-20 flex items-end gap-1 h-6">
+            <div class="w-1.5 bg-[#FF5500] rounded-full animate-bounce" style="height: 60%"></div>
+            <div class="w-1.5 bg-[#8A2BE2] rounded-full animate-bounce" style="height: 100%; animation-delay: 0.1s"></div>
+            <div class="w-1.5 bg-[#00F0FF] rounded-full animate-bounce" style="height: 80%; animation-delay: 0.2s"></div>
+            <div class="w-1.5 bg-[#FF5500] rounded-full animate-bounce" style="height: 45%; animation-delay: 0.15s"></div>
+            <span class="text-[10px] mono text-gray-300 ml-1">#RyzeYourVibe Anthem</span>
+          </div>
+
+          <!-- Play / Pause Overlay Button -->
+          <button id="play-pause-btn" onclick="togglePlay()" class="absolute z-20 bg-black/70 hover:bg-[#FF5500] text-white p-5 rounded-full transition transform group-hover:scale-110 shadow-2xl border border-white/20">
+            <span id="play-icon" class="text-2xl">▶</span>
+          </button>
+        </div>
+
+        <!-- Video Player Bottom Controls -->
+        <div class="mt-4 flex flex-wrap justify-between items-center gap-4 text-xs">
+          <div class="flex items-center gap-3">
+            <button onclick="toggleAudio()" id="audio-toggle-btn" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5">
+              <span>🔊</span> <span id="audio-status-text">Audio: On (Synth Beat)</span>
+            </button>
+            <span class="text-gray-400 mono">Aspect: 16:9 4K Cinema • Color: Cyberpunk LUT</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="applyVisualFilter('neon')" class="px-2.5 py-1 rounded-lg bg-[#FF5500]/20 text-[#FF5500] font-bold border border-[#FF5500]/40">Neon LUT</button>
+            <button onclick="applyVisualFilter('violet')" class="px-2.5 py-1 rounded-lg bg-[#8A2BE2]/20 text-[#A855F7] font-bold border border-[#8A2BE2]/40">Violet Glitch</button>
+            <button onclick="applyVisualFilter('gold')" class="px-2.5 py-1 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] font-bold border border-[#00F0FF]/40">Cyan Drift</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Story Frame Download (Instagram Reel / TikTok Story 1080x1920) -->
+      <div class="bg-[#0f1118] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl">
+        <div class="flex flex-wrap justify-between items-end gap-4 mb-6">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-[#00F0FF] mono">📱 SHAREABLE STORY POSTER</span>
+            <h3 class="text-xl font-bold text-white mt-0.5">Download Vertical Story Poster (1080×1920)</h3>
+            <p class="text-xs text-gray-400 mt-1">Ready for Instagram Stories, TikTok, and WhatsApp Status with official Banglalink Ryze badge.</p>
+          </div>
+          
+          <div class="flex gap-2">
+            <button onclick="generateAndDownloadPoster()" class="bg-[#FF5500] hover:brightness-110 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs transition shadow-lg flex items-center gap-2">
+              <span>📸 Download Story (PNG)</span>
+            </button>
+            <button onclick="copyShareCaption()" id="copy-btn" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5">
+              <span>📋 Copy TikTok Caption</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hidden Canvas Used for 1080x1920 Poster Generation -->
+        <canvas id="poster-canvas" width="1080" height="1920" class="hidden"></canvas>
+
+        <!-- Preview Card -->
+        <div class="bg-black/60 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-6">
+          <div class="w-36 h-64 rounded-xl bg-gray-900 overflow-hidden border border-white/20 shrink-0 shadow-lg relative">
+            <img id="poster-mini-preview" src="" class="w-full h-full object-cover">
+          </div>
+          <div class="text-xs space-y-2 text-gray-300">
+            <div class="font-bold text-sm text-white flex items-center gap-2">
+              <span>✨ Official Ryze Brand Star Certificate</span>
+              <span class="text-[10px] bg-[#00F0FF]/20 text-[#00F0FF] px-2 py-0.5 rounded">QR Enabled</span>
+            </div>
+            <p class="leading-relaxed">
+              Anyone who scans the QR code embedded on your story poster will spawn directly into this interactive simulator to cast themselves alongside you.
+            </p>
+            <div class="bg-black/40 p-2.5 rounded-lg border border-white/5 mono text-[11px] text-gray-400">
+              #RyzeYourVibe • Banglalink Youth Network • AI Star Campaign 2026
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT: GENERATIVE VIDEO SIMULATION & CANVAS ENGINE   -->
+  <!-- ========================================================= -->
+  <script>
+    // State
+    let currentStep = 1;
+    let selectedPersona = 'fashion';
+    let currentAvatarUrl = 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80';
+    let isPlaying = false;
+    let isAudioOn = true;
+    let activeFilter = 'neon';
+
+    const SAMPLE_AVATARS = {
+      aryan: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
+      tanha: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
+      zayan: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80'
+    };
+
+    function selectSampleAvatar(key) {
+      if (SAMPLE_AVATARS[key]) {
+        currentAvatarUrl = SAMPLE_AVATARS[key];
+        document.getElementById('face-preview').src = currentAvatarUrl;
+        if (key === 'aryan') {
+          document.getElementById('user-name').value = 'Aryan Chowdhury';
+          document.getElementById('user-handle').value = '@aryanchy_07';
+        } else if (key === 'tanha') {
+          document.getElementById('user-name').value = 'Tanha Tasnia';
+          document.getElementById('user-handle').value = '@tanha_gaming';
+        } else if (key === 'zayan') {
+          document.getElementById('user-name').value = 'Zayan Al-Din';
+          document.getElementById('user-handle').value = '@zayan_cyber';
+        }
+      }
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          currentAvatarUrl = e.target.result;
+          document.getElementById('face-preview').src = currentAvatarUrl;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function selectPersona(p) {
+      selectedPersona = p;
+      ['fashion', 'street', 'gamer'].forEach(k => {
+        const card = document.getElementById(`persona-card-${k}`);
+        if (!card) return;
+        if (k === p) {
+          card.className = 'group cursor-pointer bg-[#141620] border-2 border-[#FF5500] rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden shadow-xl';
+        } else {
+          card.className = 'group cursor-pointer bg-[#141620] hover:bg-[#1a1d2c] border-2 border-transparent hover:border-white/20 rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden';
+        }
+      });
+    }
+
+    function goToStep(step) {
+      currentStep = step;
+      [1, 2, 3, 4].forEach(s => {
+        const sec = document.getElementById(`section-step-${s}`);
+        const pill = document.getElementById(`step-pill-${s}`);
+        if (sec) {
+          if (s === step) sec.classList.remove('hidden');
+          else sec.classList.add('hidden');
+        }
+        if (pill) {
+          if (s === step) pill.className = 'px-3 py-1 rounded-xl bg-[#FF5500] text-white';
+          else if (s < step) pill.className = 'px-3 py-1 rounded-xl bg-emerald-600 text-white';
+          else pill.className = 'px-3 py-1 rounded-xl bg-gray-800 text-gray-400';
+        }
+      });
+      window.scrollTo({ top: 180, behavior: 'smooth' });
+    }
+
+    function resetSimulator() {
+      goToStep(1);
+      isPlaying = false;
+    }
+
+    // 3. SYNTHESIS PIPELINE ANIMATOR
+    function startAiSynthesis() {
+      goToStep(3);
+      const titleEl = document.getElementById('synth-status-title');
+      const descEl = document.getElementById('synth-status-desc');
+      const stageNameEl = document.getElementById('synth-stage-name');
+      const percentEl = document.getElementById('synth-percent');
+      const barEl = document.getElementById('synth-bar');
+      const terminalEl = document.getElementById('synth-terminal');
+
+      terminalEl.innerHTML = '';
+      function logMsg(msg, color = '#00F0FF') {
+        const line = document.createElement('div');
+        line.style.color = color;
+        line.textContent = `[${(performance.now()/1000).toFixed(2)}s] ${msg}`;
+        terminalEl.appendChild(line);
+        terminalEl.scrollTop = terminalEl.scrollHeight;
+      }
+
+      logMsg('Initiating Ryze Generative Pipeline v2.4...');
+      logMsg('Extracting 68 3D facial landmarks from source...');
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 4;
+        if (progress > 100) progress = 100;
+
+        percentEl.textContent = `${progress}%`;
+        barEl.style.width = `${progress}%`;
+
+        if (progress === 24) {
+          stageNameEl.textContent = 'Stage 1: Landmark Alignment';
+          logMsg('Landmark mesh warped to protagonist head rotation (yaw: -4.2°, pitch: +2.1°)');
+        } else if (progress === 52) {
+          stageNameEl.textContent = 'Stage 2: Latent Diffusion Inpainting';
+          titleEl.textContent = 'Diffusion UNet Running Denoising Steps...';
+          logMsg('Applying Ryze Cyberpunk LoRA weights (alpha: 0.85)...', '#FF5500');
+          logMsg('Step 25/50: Latent space photoreal blend converging (loss: 0.0124)', '#A855F7');
+        } else if (progress === 80) {
+          stageNameEl.textContent = 'Stage 3: 4K Temporal Upscale & Sonic Grade';
+          titleEl.textContent = 'Temporal Super-Resolution & Sonic Master...';
+          logMsg('ESRGAN 4K Upscale: 1080p -> 3840x2160 @ 60 FPS', '#BFFF04');
+          logMsg('Mixing 24-bit 48kHz #RyzeYourVibe audio stems...', '#00F0FF');
+        } else if (progress >= 100) {
+          clearInterval(interval);
+          logMsg('✓ Master Render Complete! Launching Cinema Player...', '#BFFF04');
+          setTimeout(() => {
+            initPlayerAndPoster();
+            goToStep(4);
+          }, 800);
+        }
+      }, 120);
+    }
+
+    // 4. CANVAS VIDEO PLAYER SIMULATOR
+    let canvas, ctx, animFrameId;
+    let playerTime = 0;
+
+    function initPlayerAndPoster() {
+      const nameVal = document.getElementById('user-name').value || 'Ryze Star';
+      document.getElementById('player-user-name').textContent = nameVal;
+      document.getElementById('player-face-thumbnail').src = currentAvatarUrl;
+
+      canvas = document.getElementById('video-canvas');
+      if (!canvas) return;
+      canvas.width = 1280;
+      canvas.height = 720;
+      ctx = canvas.getContext('2d');
+
+      isPlaying = true;
+      document.getElementById('play-icon').textContent = '❚❚';
+
+      // Load avatar image into memory for live drawing
+      const avatarImg = new Image();
+      avatarImg.crossOrigin = 'anonymous';
+      avatarImg.onload = () => {
+        runPlayerLoop(avatarImg);
+        generateMiniPoster(avatarImg);
+      };
+      avatarImg.src = currentAvatarUrl;
+
+      // Start Synthesized Web Audio
+      startSynthBeat();
+    }
+
+    function runPlayerLoop(avatarImg) {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+
+      function loop() {
+        if (isPlaying) {
+          playerTime += 0.035;
+        }
+
+        // Draw cinematic background
+        ctx.fillStyle = '#08090d';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dynamic laser beams
+        const beamX = (Math.sin(playerTime * 1.5) * 0.5 + 0.5) * canvas.width;
+        const grad = ctx.createRadialGradient(beamX, 100, 20, beamX, 100, 600);
+        grad.addColorStop(0, selectedPersona === 'street' ? 'rgba(255, 85, 0, 0.45)' : 'rgba(138, 43, 226, 0.45)');
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Cyber Grid Lines on Floor
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.15)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < canvas.width; i += 80) {
+          ctx.beginPath();
+          ctx.moveTo(i, 400);
+          ctx.lineTo(i + (i - canvas.width / 2) * 1.5, canvas.height);
+          ctx.stroke();
+        }
+
+        // Protagonist Body Silhouette
+        ctx.fillStyle = '#11131c';
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2 - 160, canvas.height);
+        ctx.lineTo(canvas.width / 2 - 100, 380);
+        ctx.lineTo(canvas.width / 2 + 100, 380);
+        ctx.lineTo(canvas.width / 2 + 160, canvas.height);
+        ctx.fill();
+
+        // Jacket Neon Accents
+        ctx.strokeStyle = activeFilter === 'neon' ? '#FF5500' : (activeFilter === 'violet' ? '#A855F7' : '#00F0FF');
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Composited Protagonist Head with Avatar Face
+        const headX = canvas.width / 2;
+        const headY = 260 + Math.sin(playerTime * 2) * 8; // subtle breathing motion
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(headX, headY, 110, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(avatarImg, headX - 110, headY - 110, 220, 220);
+        ctx.restore();
+
+        // Neon Cyber Visor / Lighting Overlay
+        ctx.save();
+        ctx.strokeStyle = activeFilter === 'neon' ? 'rgba(255, 85, 0, 0.7)' : 'rgba(0, 240, 255, 0.7)';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(headX, headY, 112, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Futuristic Glitch Artifacts
+        if (Math.random() > 0.92) {
+          ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
+          ctx.fillRect(headX - 120, headY - 20, 240, 8);
+        }
+
+        animFrameId = requestAnimationFrame(loop);
+      }
+
+      loop();
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      document.getElementById('play-icon').textContent = isPlaying ? '❚❚' : '▶';
+    }
+
+    function applyVisualFilter(type) {
+      activeFilter = type;
+    }
+
+    // 5. WEB AUDIO API SYNTHESIZER BEAT (#RyzeYourVibe)
+    let audioCtx = null;
+    let audioInterval = null;
+
+    function toggleAudio() {
+      isAudioOn = !isAudioOn;
+      const statusText = document.getElementById('audio-status-text');
+      if (isAudioOn) {
+        statusText.textContent = 'Audio: On (Synth Beat)';
+        startSynthBeat();
+      } else {
+        statusText.textContent = 'Audio: Muted';
+        stopSynthBeat();
+      }
+    }
+
+    function startSynthBeat() {
+      if (!isAudioOn) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        stopSynthBeat();
+
+        let beatStep = 0;
+        audioInterval = setInterval(() => {
+          if (!isPlaying || !isAudioOn) return;
+
+          // Kick & Bass
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          if (beatStep % 4 === 0) {
+            // Heavy 808 Kick
+            osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.18);
+            gain.gain.setValueAtTime(0.28, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+          } else if (beatStep % 2 === 1) {
+            // Cyber Synth Pluck
+            osc.type = 'sawtooth';
+            const notes = [220, 261.6, 293.7, 329.6];
+            const note = notes[Math.floor(Math.random() * notes.length)];
+            osc.frequency.setValueAtTime(note, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+          }
+
+          beatStep = (beatStep + 1) % 16;
+        }, 180);
+      } catch (e) {}
+    }
+
+    function stopSynthBeat() {
+      if (audioInterval) clearInterval(audioInterval);
+    }
+
+    // 6. 1080x1920 HIGH-RES STORY POSTER GENERATOR
+    function generateMiniPoster(avatarImg) {
+      const pCanvas = document.getElementById('poster-canvas');
+      const pCtx = pCanvas.getContext('2d');
+      const W = 1080;
+      const H = 1920;
+
+      // Dark Cyberpunk Background
+      pCtx.fillStyle = '#07080c';
+      pCtx.fillRect(0, 0, W, H);
+
+      // Gradient glows
+      const rad = pCtx.createRadialGradient(W / 2, 850, 100, W / 2, 850, 800);
+      rad.addColorStop(0, selectedPersona === 'street' ? 'rgba(255, 85, 0, 0.4)' : 'rgba(138, 43, 226, 0.45)');
+      rad.addColorStop(1, 'transparent');
+      pCtx.fillStyle = rad;
+      pCtx.fillRect(0, 0, W, H);
+
+      // Top Brand Header
+      pCtx.fillStyle = '#ffffff';
+      pCtx.font = 'bold 44px sans-serif';
+      pCtx.fillText('⚡ BANGLALINK RYZE', 90, 160);
+
+      pCtx.fillStyle = '#00F0FF';
+      pCtx.font = 'bold 28px monospace';
+      pCtx.fillText('OFFICIAL BRAND FILM STAR • 2026', 90, 215);
+
+      // Draw Avatar Hero Face
+      pCtx.save();
+      pCtx.beginPath();
+      pCtx.arc(W / 2, 880, 360, 0, Math.PI * 2);
+      pCtx.clip();
+      pCtx.drawImage(avatarImg, W / 2 - 360, 880 - 360, 720, 720);
+      pCtx.restore();
+
+      // Holographic Ring
+      pCtx.strokeStyle = '#FF5500';
+      pCtx.lineWidth = 14;
+      pCtx.beginPath();
+      pCtx.arc(W / 2, 880, 370, 0, Math.PI * 2);
+      pCtx.stroke();
+
+      // User Title & Name
+      const userName = document.getElementById('user-name').value || 'Aryan Chowdhury';
+      const userHandle = document.getElementById('user-handle').value || '@aryanchy_07';
+
+      pCtx.fillStyle = '#ffffff';
+      pCtx.font = 'bold 72px sans-serif';
+      pCtx.textAlign = 'center';
+      pCtx.fillText(userName.toUpperCase(), W / 2, 1380);
+
+      pCtx.fillStyle = '#FF5500';
+      pCtx.font = 'bold 38px monospace';
+      pCtx.fillText(`${userHandle} • #RyzeYourVibe`, W / 2, 1445);
+
+      // Draw Persona Badge
+      pCtx.fillStyle = '#8A2BE2';
+      pCtx.font = 'bold 32px sans-serif';
+      const personaLabels = {
+        fashion: 'RUNWAY CYBER ICON',
+        street: 'UNDERGROUND BEATMAKER',
+        gamer: 'NEON ESPORTS CHAMPION'
+      };
+      pCtx.fillText(`[ ${personaLabels[selectedPersona]} ]`, W / 2, 1510);
+
+      // Footer Call to Action
+      pCtx.fillStyle = '#94a3b8';
+      pCtx.font = '30px sans-serif';
+      pCtx.fillText('Scan QR to Star in the Ryze Brand Film with Me', W / 2, 1720);
+
+      pCtx.fillStyle = '#00F0FF';
+      pCtx.font = 'bold 28px monospace';
+      pCtx.fillText('https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/', W / 2, 1775);
+
+      // Load QR Code onto Poster Canvas
+      const qrImg = new Image();
+      qrImg.crossOrigin = 'anonymous';
+      const shareUrl = 'https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/';
+      qrImg.onload = () => {
+        pCtx.drawImage(qrImg, W / 2 - 60, 1550, 120, 120);
+        document.getElementById('poster-mini-preview').src = pCanvas.toDataURL('image/png');
+      };
+      qrImg.onerror = () => {
+        document.getElementById('poster-mini-preview').src = pCanvas.toDataURL('image/png');
+      };
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareUrl)}`;
+    }
+
+    function generateAndDownloadPoster() {
+      const pCanvas = document.getElementById('poster-canvas');
+      const userName = document.getElementById('user-name').value || 'Ryze-Star';
+      const link = document.createElement('a');
+      link.download = `Ryze-AI-Star-${userName.replace(/\s+/g, '-')}.png`;
+      link.href = pCanvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function copyShareCaption() {
+      const userName = document.getElementById('user-name').value || 'Me';
+      const userHandle = document.getElementById('user-handle').value || '@me';
+      const shareText = `Yo! I just got cast as the lead in the new @Banglalink Ryze brand film using generative AI! 🔥 Check my official 4K cut & star in the film with me here: https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/ 🚀⚡ #RyzeYourVibe #Banglalink #GenZ`;
+
+      navigator.clipboard.writeText(shareText);
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => {
+        btn.textContent = '📋 Copy TikTok Caption';
+      }, 2500);
+    }
+  </script>
+</body>
+</html>

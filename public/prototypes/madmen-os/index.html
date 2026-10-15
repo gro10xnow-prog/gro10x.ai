@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MADMEN — Cultural Campaigns for Telcos & Giants | Agency OS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --lime: #BFFF04;
+      --lime-glow: rgba(191, 255, 4, 0.4);
+      --amber: #FFB800;
+      --cyan: #00F0FF;
+      --bg-dark: #070809;
+      --card-dark: #0f1115;
+    }
+    body {
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: #f3f4f6;
+      overflow-x: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono { font-family: 'Space Mono', monospace; }
+    
+    /* Subtle Lime Grid Background */
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+
+    .lime-glow {
+      box-shadow: 0 0 35px -5px var(--lime-glow);
+    }
+    .lime-border-glow:hover {
+      border-color: var(--lime);
+      box-shadow: 0 0 25px -4px rgba(191, 255, 4, 0.25);
+    }
+
+    /* Ambient Spotlight */
+    .spotlight {
+      background: radial-gradient(circle at 50% 0%, rgba(191, 255, 4, 0.12) 0%, transparent 65%);
+    }
+
+    /* Smooth Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070809; }
+    ::-webkit-scrollbar-thumb { background: #22262d; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--lime); }
+  </style>
+</head>
+<body class="bg-[#070809] min-h-screen text-gray-100 relative selection:bg-[#BFFF04] selection:text-black">
+
+  <!-- Ambient Light Header Flare -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 spotlight pointer-events-none z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP FIXED NAVIGATION & COCKPIT SWITCHER                   -->
+  <!-- ========================================================= -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#070809]/85 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3.5 flex justify-between items-center transition-all duration-300">
+    
+    <!-- Brand Logo -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-[#BFFF04] flex items-center justify-center font-black text-black text-base shadow-[0_0_15px_rgba(191,255,4,0.5)]">
+        M
+      </div>
+      <div>
+        <div class="font-extrabold tracking-tighter text-lg leading-tight flex items-center gap-2">
+          <span>MADMEN</span>
+          <span class="text-[10px] mono uppercase tracking-widest bg-white/10 text-[#BFFF04] px-1.5 py-0.5 rounded border border-[#BFFF04]/30">Agency OS</span>
+        </div>
+        <div class="text-[10px] text-gray-400 font-medium hidden sm:block tracking-wide">
+          Agency of Record • Cult Campaigns for Telcos & Giants
+        </div>
+      </div>
+    </div>
+
+    <!-- The Central Interactive Mode Switcher [👁️ Public Showcase | ⚡ Agency OS Cockpit] -->
+    <div class="bg-[#12141a] border border-white/15 p-1 rounded-2xl flex items-center shadow-2xl">
+      <button id="nav-btn-showcase" onclick="switchView('showcase')" class="px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#BFFF04] text-black shadow-lg">
+        <span>👁️</span> <span class="hidden sm:inline">Public</span> Showcase
+      </button>
+      <button id="nav-btn-cockpit" onclick="switchView('cockpit')" class="px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition flex items-center gap-1.5">
+        <span>⚡</span> <span class="hidden sm:inline">Agency OS</span> Cockpit
+        <span class="w-2 h-2 rounded-full bg-[#BFFF04] animate-pulse ml-0.5"></span>
+      </button>
+    </div>
+
+    <!-- Right Header Action -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <a href="/prototypes" class="hidden md:inline-flex items-center gap-1 text-xs text-gray-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-xl transition">
+        ← Showroom
+      </a>
+      <button onclick="openBriefingModal()" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold px-3 sm:px-4 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5">
+        <span>Brief Us</span>
+        <span class="text-[#BFFF04]">↗</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- VIEW 1: PUBLIC AGENCY SHOWCASE (GOLIME-INSPIRED)           -->
+  <!-- ========================================================= -->
+  <main id="view-showcase" class="pt-24 pb-20 px-4 sm:px-8 max-w-7xl mx-auto relative z-10 transition-opacity duration-300">
+    
+    <!-- Hero Section with 3D Monolith Centerpiece -->
+    <div class="relative rounded-3xl border border-white/10 bg-[#0c0d12]/90 p-6 sm:p-12 overflow-hidden shadow-2xl mb-16 bg-grid">
+      
+      <!-- 3D Monolith WebGL Canvas -->
+      <div id="monolith-canvas-container" class="absolute inset-0 z-0 pointer-events-auto opacity-75 sm:opacity-90"></div>
+
+      <!-- Hero Overlay Content -->
+      <div class="relative z-10 max-w-2xl pointer-events-none">
+        
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#BFFF04]/10 border border-[#BFFF04]/30 text-[#BFFF04] text-xs font-bold uppercase tracking-wider mb-5">
+          <span class="w-2 h-2 rounded-full bg-[#BFFF04] animate-ping"></span>
+          Autonomous Agency Operating System
+        </div>
+
+        <h1 class="text-3xl sm:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-5">
+          Cult Cultural <br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#BFFF04] via-white to-[#00F0FF]">
+            Campaigns for Telcos
+          </span> <br/>
+          & Category Giants.
+        </h1>
+
+        <p class="text-sm sm:text-base text-gray-300 font-normal leading-relaxed mb-8 max-w-xl">
+          Branding, 360° digital culture, and custom generative technology for brands that dominate the Bangladesh market. From Banglalink Toffee to Ryze youth takeovers.
+        </p>
+
+        <!-- CTA Action Cluster -->
+        <div class="flex flex-wrap items-center gap-3 pointer-events-auto">
+          <button onclick="switchView('cockpit')" class="bg-[#BFFF04] hover:brightness-110 text-black font-extrabold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xl transition transform active:scale-95 flex items-center gap-2">
+            <span>⚡ Enter Live Agency OS</span>
+            <span>→</span>
+          </button>
+          
+          <a href="/prototypes/ryze-ai-star/" class="bg-[#191b24] hover:bg-[#222533] border border-[#00F0FF]/40 text-[#00F0FF] font-bold px-5 py-3 rounded-2xl text-xs sm:text-sm shadow-xl transition flex items-center gap-2">
+            <span>🚀 Try Ryze AI Simulator</span>
+          </a>
+        </div>
+
+        <!-- 3D Hint -->
+        <div class="mt-6 text-[11px] text-gray-500 mono flex items-center gap-1.5">
+          <span>💡</span> <span>Touch or drag the 3D Prism Monolith to inspect cultural gravity.</span>
+        </div>
+      </div>
+
+      <!-- Real Impact KPI Ticker -->
+      <div class="mt-12 sm:mt-16 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 relative z-10 pointer-events-auto">
+        <div>
+          <div class="text-2xl sm:text-3xl font-black text-white mono">৳450M+</div>
+          <div class="text-xs text-gray-400 font-medium mt-1">Verified Client Media Impact</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-black text-[#BFFF04] mono">180M+</div>
+          <div class="text-xs text-gray-400 font-medium mt-1">Organic Video Views Across IP</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-black text-[#00F0FF] mono">45+</div>
+          <div class="text-xs text-gray-400 font-medium mt-1">Creator Mesh on Real-Time SLA</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-black text-[#FFB800] mono">100%</div>
+          <div class="text-xs text-gray-400 font-medium mt-1">Multi-Year Retainer Longevity</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- FEATURED WORK: REAL CLIENT ROSTER                         -->
+    <!-- ========================================================= -->
+    <div class="mb-20">
+      <div class="flex flex-wrap justify-between items-end gap-4 mb-8">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-[#BFFF04] mono">[ CASE ARCHIVE ]</span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-1 tracking-tight">
+            Dominating Digital Culture in Bangladesh
+          </h2>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-400 max-w-md">
+          Every campaign is built on proprietary digital infrastructure—zero missed deadlines, zero lost WhatsApp files.
+        </p>
+      </div>
+
+      <!-- 4 High-Impact Case Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Card 1: Banglalink Toffee (ToffeeCon 2026) -->
+        <div class="bg-[#0f1115] border border-white/10 hover:border-[#BFFF04] rounded-3xl p-6 sm:p-8 transition duration-300 flex flex-col justify-between group relative overflow-hidden lime-border-glow cursor-pointer" onclick="openCaseModal('toffee')">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-[#BFFF04]/5 rounded-full blur-3xl pointer-events-none group-hover:bg-[#BFFF04]/15 transition"></div>
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#BFFF04]/15 text-[#BFFF04] border border-[#BFFF04]/30">
+                🎬 Digital Ecosystem & Livestream
+              </span>
+              <span class="text-xs text-gray-400 mono">Port 5000 / Mother OS</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-white group-hover:text-[#BFFF04] transition">
+              Banglalink Toffee — ToffeeCon 2026 Summit
+            </h3>
+            <p class="text-xs sm:text-sm text-gray-400 mt-2.5 leading-relaxed">
+              Full digital takeover for Bangladesh's premier OTT creator summit. Real-time creator check-ins, automated livestream telemetry, and 3D virtual stage broadcasting.
+            </p>
+          </div>
+          <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-xs">
+            <div class="mono text-gray-300">
+              <span class="text-[#BFFF04] font-bold">10.4M</span> Stream Reach • <span class="text-[#BFFF04] font-bold">45</span> Creators
+            </div>
+            <span class="text-[#BFFF04] font-bold flex items-center gap-1 group-hover:translate-x-1 transition">
+              Case Dossier →
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 2: Banglalink Ryze (Gen-Z Takeover) -->
+        <div class="bg-[#0f1115] border border-white/10 hover:border-[#00F0FF] rounded-3xl p-6 sm:p-8 transition duration-300 flex flex-col justify-between group relative overflow-hidden cursor-pointer" onclick="openCaseModal('ryze')">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-[#00F0FF]/5 rounded-full blur-3xl pointer-events-none group-hover:bg-[#00F0FF]/15 transition"></div>
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30">
+                ⚡ Gen-Z Youth & AI Video Star
+              </span>
+              <span class="text-xs text-gray-400 mono">Interactive Prototype</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-white group-hover:text-[#00F0FF] transition">
+              Banglalink Ryze — #RyzeYourVibe Campaign
+            </h3>
+            <p class="text-xs sm:text-sm text-gray-400 mt-2.5 leading-relaxed">
+              Tailoring the Cadbury / Shah Rukh Khan AI model for Bangladesh youth. Over 320,000 Gen-Z users cast themselves as the lead character in Ryze's cyberpunk brand film.
+            </p>
+          </div>
+          <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-xs">
+            <div class="mono text-gray-300">
+              <span class="text-[#00F0FF] font-bold">320k</span> AI Renders • <span class="text-[#00F0FF] font-bold">#1</span> TikTok Trend
+            </div>
+            <a href="/prototypes/ryze-ai-star/" onclick="event.stopPropagation()" class="bg-[#00F0FF]/20 hover:bg-[#00F0FF]/40 border border-[#00F0FF]/50 text-[#00F0FF] px-3 py-1 rounded-lg font-bold transition">
+              Launch AI Star ↗
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 3: Rishka Connects -->
+        <div class="bg-[#0f1115] border border-white/10 hover:border-[#FFB800] rounded-3xl p-6 sm:p-8 transition duration-300 flex flex-col justify-between group relative overflow-hidden cursor-pointer" onclick="openCaseModal('rishka')">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-[#FFB800]/5 rounded-full blur-3xl pointer-events-none group-hover:bg-[#FFB800]/15 transition"></div>
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FFB800]/15 text-[#FFB800] border border-[#FFB800]/30">
+                🎪 Experiential & Underground Music
+              </span>
+              <span class="text-xs text-gray-400 mono">Cultural IP</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-white group-hover:text-[#FFB800] transition">
+              Rishka Connects — Street Culture Festivals
+            </h3>
+            <p class="text-xs sm:text-sm text-gray-400 mt-2.5 leading-relaxed">
+              Bridging Dhaka's underground electronic artists, visual typographers, and street rickshaw artisans into a multi-city cult festival experience.
+            </p>
+          </div>
+          <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-xs">
+            <div class="mono text-gray-300">
+              <span class="text-[#FFB800] font-bold">18,500</span> Attendees • <span class="text-[#FFB800] font-bold">100%</span> Soldout
+            </div>
+            <span class="text-[#FFB800] font-bold flex items-center gap-1 group-hover:translate-x-1 transition">
+              Case Dossier →
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 4: Cadbury & FMCG Activations -->
+        <div class="bg-[#0f1115] border border-white/10 hover:border-purple-400 rounded-3xl p-6 sm:p-8 transition duration-300 flex flex-col justify-between group relative overflow-hidden cursor-pointer" onclick="openCaseModal('cadbury')">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-purple-500/15 transition"></div>
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                🍫 FMCG Generative Experience
+              </span>
+              <span class="text-xs text-gray-400 mono">Retail AI Blitz</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-white group-hover:text-purple-400 transition">
+              Cadbury / FMCG — Hyperlocal Viral Gifting
+            </h3>
+            <p class="text-xs sm:text-sm text-gray-400 mt-2.5 leading-relaxed">
+              QR-powered retail engagement where store shoppers personalized AI greetings for loved ones, bridging physical shelves with viral social storytelling.
+            </p>
+          </div>
+          <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-xs">
+            <div class="mono text-gray-300">
+              <span class="text-purple-400 font-bold">85,000+</span> Greetings • <span class="text-purple-400 font-bold">+34%</span> Festive Lift
+            </div>
+            <span class="text-purple-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition">
+              Case Dossier →
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- WHY AGENCIES OUTGROW BASIC WEBSITES                       -->
+    <!-- ========================================================= -->
+    <div class="rounded-3xl border border-white/15 bg-gradient-to-b from-[#12141c] to-[#0c0d12] p-8 sm:p-12 shadow-2xl mb-12">
+      <div class="max-w-3xl mb-8">
+        <span class="text-xs font-bold uppercase tracking-widest text-[#BFFF04] mono">[ THE MADMEN DOCTRINE ]</span>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-1">
+          Why Top Digital Agencies Outgrow Basic Portfolio Websites
+        </h2>
+        <p class="text-xs sm:text-sm text-gray-400 mt-2 leading-relaxed">
+          In 2026, pitching telcos and conglomerates with static PDF credentials and endless WhatsApp revisions is agency suicide. Madmen operates as a live software organism.
+        </p>
+      </div>
+
+      <!-- Feature Comparison Matrix -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Legacy Agency Way -->
+        <div class="bg-black/40 border border-red-500/20 rounded-2xl p-6">
+          <div class="text-xs font-bold uppercase tracking-wider text-red-400 mb-3 flex items-center gap-2">
+            <span>❌</span> Yesterday's Agency Workflow
+          </div>
+          <ul class="space-y-3 text-xs text-gray-400">
+            <li class="flex items-start gap-2">
+              <span class="text-red-500">✕</span>
+              <span>Heavy 50MB static PDF creds lost in client spam folders.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-red-500">✕</span>
+              <span>Client approvals trapped in chaotic WhatsApp voice notes and lost threads.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-red-500">✕</span>
+              <span>Manual influencer tracking spreadsheets that drift out of sync within 48 hours.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-red-500">✕</span>
+              <span>No real-time deliverable telemetry or live campaign countdowns.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- The Madmen Agency OS Way -->
+        <div class="bg-black/60 border border-[#BFFF04]/40 rounded-2xl p-6 shadow-[0_0_30px_rgba(191,255,4,0.1)]">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#BFFF04] mb-3 flex items-center gap-2">
+            <span>⚡</span> The Madmen Agency OS Advantage
+          </div>
+          <ul class="space-y-3 text-xs text-gray-200">
+            <li class="flex items-start gap-2">
+              <span class="text-[#BFFF04] font-bold">✓</span>
+              <span><b>Live Cockpit:</b> Real-time client visibility into every active sprint and campaign deliverable.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-[#BFFF04] font-bold">✓</span>
+              <span><b>1-Click Signoff Queue:</b> Brand managers approve 4K cuts or request revisions in seconds.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-[#BFFF04] font-bold">✓</span>
+              <span><b>Automated Influencer Mesh:</b> Real-time SLA tracking across 45+ creators simultaneously.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-[#BFFF04] font-bold">✓</span>
+              <span><b>Custom AI Prototypes:</b> Delivering bespoke generative tech (like Ryze AI Star) in pre-sales.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Action Button to Switch to Cockpit -->
+      <div class="mt-8 text-center">
+        <button onclick="switchView('cockpit')" class="bg-[#BFFF04] hover:brightness-110 text-black font-extrabold px-8 py-3.5 rounded-2xl text-xs sm:text-sm shadow-xl transition transform active:scale-95 inline-flex items-center gap-2">
+          <span>⚡ Launch Live Agency OS Cockpit Now</span>
+          <span>→</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- VIEW 2: AGENCY OS COCKPIT (THE LIVE COMMAND CENTER)       -->
+  <!-- ========================================================= -->
+  <main id="view-cockpit" class="hidden pt-24 pb-20 px-4 sm:px-8 max-w-7xl mx-auto relative z-10 transition-opacity duration-300">
+    
+    <!-- Cockpit Header Banner -->
+    <div class="bg-[#12141c]/90 border border-[#BFFF04]/30 rounded-3xl p-6 sm:p-8 mb-8 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+      <div class="flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#BFFF04] animate-pulse"></span>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#BFFF04] mono">LIVE CLIENT COMMAND COCKPIT</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Active Campaign Telemetry & Deliverable Queue
+          </h1>
+          <p class="text-xs text-gray-400 mt-1">
+            Real-time synchronization with Mother OS • Role: <b class="text-white">Brand Director / Partner Portal</b>
+          </p>
+        </div>
+
+        <!-- Quick Status Pills -->
+        <div class="flex items-center gap-2">
+          <div class="bg-black/40 border border-white/10 px-3 py-1.5 rounded-xl text-xs mono">
+            <span class="text-gray-400">Sync:</span> <span class="text-[#BFFF04] font-bold">Realtime (42ms)</span>
+          </div>
+          <button onclick="switchView('showcase')" class="bg-white/10 hover:bg-white/20 border border-white/15 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+            Exit to Showcase ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Live KPI Quad -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/10">
+        <div class="bg-[#0b0c10] border border-white/10 p-3.5 rounded-2xl">
+          <div class="text-[10px] text-gray-400 uppercase tracking-wider mono">Active Campaigns</div>
+          <div class="text-2xl font-black text-white mono mt-1">4 Live</div>
+          <div class="text-[11px] text-[#BFFF04] mt-0.5">● 100% On Schedule</div>
+        </div>
+        <div class="bg-[#0b0c10] border border-white/10 p-3.5 rounded-2xl">
+          <div class="text-[10px] text-gray-400 uppercase tracking-wider mono">Deliverable Progress</div>
+          <div class="text-2xl font-black text-[#BFFF04] mono mt-1">82.4%</div>
+          <div class="text-[11px] text-gray-400 mt-0.5">38/46 Artifacts Locked</div>
+        </div>
+        <div class="bg-[#0b0c10] border border-white/10 p-3.5 rounded-2xl">
+          <div class="text-[10px] text-gray-400 uppercase tracking-wider mono">Pending Signoffs</div>
+          <div id="kpi-pending-count" class="text-2xl font-black text-[#FFB800] mono mt-1">3 Items</div>
+          <div class="text-[11px] text-gray-400 mt-0.5">Requires Brand Manager Click</div>
+        </div>
+        <div class="bg-[#0b0c10] border border-white/10 p-3.5 rounded-2xl">
+          <div class="text-[10px] text-gray-400 uppercase tracking-wider mono">Active Creators</div>
+          <div class="text-2xl font-black text-[#00F0FF] mono mt-1">45 Roster</div>
+          <div class="text-[11px] text-[#00F0FF] mt-0.5">38 Drafts Approved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cockpit Main Columns -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left 2 Cols: Deliverable Approval Queue & Campaign Tracking -->
+      <div class="lg:col-span-2 space-y-8">
+        
+        <!-- MODULE 1: INTERACTIVE 1-CLICK CREATIVE APPROVAL QUEUE -->
+        <div class="bg-[#0f1115] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl">
+          <div class="flex justify-between items-center mb-5 pb-3 border-b border-white/10">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-[#FFB800] mono">⚡ INTERACTIVE APPROVAL QUEUE</span>
+              <h2 class="text-lg font-bold text-white mt-0.5">Client Review & 1-Click Signoff Sandbox</h2>
+            </div>
+            <span class="text-xs bg-[#FFB800]/20 text-[#FFB800] font-bold px-2.5 py-1 rounded-full border border-[#FFB800]/40">
+              Interactive Demo
+            </span>
+          </div>
+
+          <div class="space-y-4" id="approval-queue-list">
+            
+            <!-- Item 1: Ryze Hero Film Cut -->
+            <div id="queue-item-1" class="bg-[#151720] border border-white/10 hover:border-white/20 p-4 rounded-2xl transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-xl shrink-0">
+                  🎬
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-sm text-white">Ryze_Hero_Film_DirectorCut_v3.mp4</h3>
+                    <span id="badge-item-1" class="text-[10px] mono bg-[#FFB800]/20 text-[#FFB800] font-bold px-2 py-0.5 rounded border border-[#FFB800]/30">
+                      Needs Signoff
+                    </span>
+                  </div>
+                  <div class="text-xs text-gray-400 mt-0.5">
+                    Banglalink Ryze Q4 Drop • 45s TVC/Digital Master • 4K Color Grade Locked
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 w-full sm:w-auto shrink-0" id="actions-item-1">
+                <button onclick="approveQueueItem(1, 'Ryze_Hero_Film_DirectorCut_v3.mp4')" class="flex-1 sm:flex-none bg-[#BFFF04] hover:brightness-110 text-black font-extrabold px-3.5 py-2 rounded-xl text-xs transition shadow active:scale-95">
+                  ✓ Approve Cut
+                </button>
+                <button onclick="requestRevision(1)" class="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 text-gray-300 font-bold px-3 py-2 rounded-xl text-xs transition">
+                  💬 Revision
+                </button>
+              </div>
+            </div>
+
+            <!-- Item 2: ToffeeCon Key Visual -->
+            <div id="queue-item-2" class="bg-[#151720] border border-white/10 hover:border-white/20 p-4 rounded-2xl transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-emerald-900/40 border border-emerald-500/30 flex items-center justify-center text-xl shrink-0">
+                  🏙️
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-sm text-white">ToffeeCon_3D_OOH_Billboard_Gulshan1.png</h3>
+                    <span id="badge-item-2" class="text-[10px] mono bg-[#FFB800]/20 text-[#FFB800] font-bold px-2 py-0.5 rounded border border-[#FFB800]/30">
+                      Needs Signoff
+                    </span>
+                  </div>
+                  <div class="text-xs text-gray-400 mt-0.5">
+                    ToffeeCon 2026 • 3D Anamorphic Billboard Render • 6000×3375 Master
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 w-full sm:w-auto shrink-0" id="actions-item-2">
+                <button onclick="approveQueueItem(2, 'ToffeeCon_3D_OOH_Billboard_Gulshan1.png')" class="flex-1 sm:flex-none bg-[#BFFF04] hover:brightness-110 text-black font-extrabold px-3.5 py-2 rounded-xl text-xs transition shadow active:scale-95">
+                  ✓ Approve Print
+                </button>
+                <button onclick="requestRevision(2)" class="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 text-gray-300 font-bold px-3 py-2 rounded-xl text-xs transition">
+                  💬 Revision
+                </button>
+              </div>
+            </div>
+
+            <!-- Item 3: Rishka Music Teaser -->
+            <div id="queue-item-3" class="bg-[#151720] border border-white/10 hover:border-white/20 p-4 rounded-2xl transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-amber-900/40 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">
+                  🎧
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-sm text-white">Rishka_Vol3_ArtistLineup_InstagramStory.mp4</h3>
+                    <span id="badge-item-3" class="text-[10px] mono bg-[#FFB800]/20 text-[#FFB800] font-bold px-2 py-0.5 rounded border border-[#FFB800]/30">
+                      Needs Signoff
+                    </span>
+                  </div>
+                  <div class="text-xs text-gray-400 mt-0.5">
+                    Rishka Connects • 1080×1920 9:16 Vertical Story Motion • Audio Mastered
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 w-full sm:w-auto shrink-0" id="actions-item-3">
+                <button onclick="approveQueueItem(3, 'Rishka_Vol3_ArtistLineup_InstagramStory.mp4')" class="flex-1 sm:flex-none bg-[#BFFF04] hover:brightness-110 text-black font-extrabold px-3.5 py-2 rounded-xl text-xs transition shadow active:scale-95">
+                  ✓ Approve Story
+                </button>
+                <button onclick="requestRevision(3)" class="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 text-gray-300 font-bold px-3 py-2 rounded-xl text-xs transition">
+                  💬 Revision
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- MODULE 2: ACTIVE CAMPAIGNS SPRINT RADAR -->
+        <div class="bg-[#0f1115] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl">
+          <div class="flex justify-between items-center mb-5 pb-3 border-b border-white/10">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-[#00F0FF] mono">📊 SPRINT VELOCITY</span>
+              <h2 class="text-lg font-bold text-white mt-0.5">Active Client Retainers & Milestones</h2>
+            </div>
+            <span class="text-xs text-gray-400 mono">Mother OS Unified</span>
+          </div>
+
+          <div class="space-y-5">
+            
+            <!-- Sprint 1: Banglalink Ryze Q4 -->
+            <div>
+              <div class="flex justify-between text-xs mb-1.5 font-bold">
+                <span class="text-white flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[#00F0FF]"></span>
+                  Banglalink Ryze Q4 Drop & AI Star Campaign
+                </span>
+                <span class="mono text-[#00F0FF]">78% Complete (14/18 Deliverables)</span>
+              </div>
+              <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-[#00F0FF] to-[#BFFF04] h-2.5 rounded-full" style="width: 78%"></div>
+              </div>
+              <div class="flex justify-between text-[11px] text-gray-400 mt-1 mono">
+                <span>Budget Burn: ৳1.85 Cr / ৳2.20 Cr</span>
+                <span>Launch T-Minus: 6 Days</span>
+              </div>
+            </div>
+
+            <!-- Sprint 2: ToffeeCon 2026 -->
+            <div>
+              <div class="flex justify-between text-xs mb-1.5 font-bold">
+                <span class="text-white flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[#BFFF04]"></span>
+                  Banglalink Toffee — ToffeeCon 2026 Keynote & Portal
+                </span>
+                <span class="mono text-[#BFFF04]">92% Complete (23/25 Deliverables)</span>
+              </div>
+              <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-[#BFFF04] to-emerald-400 h-2.5 rounded-full" style="width: 92%"></div>
+              </div>
+              <div class="flex justify-between text-[11px] text-gray-400 mt-1 mono">
+                <span>Portal Ready on Port 5000</span>
+                <span>Stage Rehearsals: Oct 22</span>
+              </div>
+            </div>
+
+            <!-- Sprint 3: Rishka Underground Vol. 3 -->
+            <div>
+              <div class="flex justify-between text-xs mb-1.5 font-bold">
+                <span class="text-white flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[#FFB800]"></span>
+                  Rishka Connects — Festival Vol. 3 (Hatirjheel Stage)
+                </span>
+                <span class="mono text-[#FFB800]">55% Complete (11/20 Deliverables)</span>
+              </div>
+              <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-[#FFB800] to-orange-500 h-2.5 rounded-full" style="width: 55%"></div>
+              </div>
+              <div class="flex justify-between text-[11px] text-gray-400 mt-1 mono">
+                <span>Artist Agreements Signed: 12/12</span>
+                <span>Ticket Portal Opens: Nov 01</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right 1 Col: Influencer Live Mesh & Real-time Agency Log -->
+      <div class="space-y-8">
+        
+        <!-- MODULE 3: INFLUENCER TRACKING MESH -->
+        <div class="bg-[#0f1115] border border-white/10 rounded-3xl p-6 shadow-xl">
+          <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-[#BFFF04] mono">📱 CREATOR MESH</span>
+              <h3 class="text-base font-bold text-white">Live Creator Submissions</h3>
+            </div>
+            <span class="text-xs mono text-[#BFFF04]">45 Total</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="bg-[#151720] p-3 rounded-xl border border-white/5 flex justify-between items-center text-xs">
+              <div>
+                <div class="font-bold text-white">Rakin Absar (@rakinabsar)</div>
+                <div class="text-[11px] text-gray-400">Ryze TikTok Skit • 1.2M Followers</div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                Live & Tracking
+              </span>
+            </div>
+
+            <div class="bg-[#151720] p-3 rounded-xl border border-white/5 flex justify-between items-center text-xs">
+              <div>
+                <div class="font-bold text-white">Protik Rahman (@protik)</div>
+                <div class="text-[11px] text-gray-400">Ryze Beatmaker Reel • 680k Followers</div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FFB800]/20 text-[#FFB800] border border-[#FFB800]/40">
+                Reviewing Draft
+              </span>
+            </div>
+
+            <div class="bg-[#151720] p-3 rounded-xl border border-white/5 flex justify-between items-center text-xs">
+              <div>
+                <div class="font-bold text-white">Tanha Tasnia (@tanhatasnia)</div>
+                <div class="text-[11px] text-gray-400">ToffeeCon Host Teaser • 940k Followers</div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                Live & Tracking
+              </span>
+            </div>
+
+            <div class="bg-[#151720] p-3 rounded-xl border border-white/5 flex justify-between items-center text-xs">
+              <div>
+                <div class="font-bold text-white">Shams Afroz (@thoughtsofshams)</div>
+                <div class="text-[11px] text-gray-400">Ryze AI Star Reaction • 2.1M Followers</div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/40">
+                Scheduled (T-48h)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODULE 4: REAL-TIME TELEMETRY AUDIT LOG -->
+        <div class="bg-[#0f1115] border border-white/10 rounded-3xl p-6 shadow-xl">
+          <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400 mono">📡 REAL-TIME EVENT STREAM</span>
+            <span class="w-2 h-2 rounded-full bg-[#BFFF04] animate-ping"></span>
+          </div>
+
+          <div id="cockpit-event-log" class="space-y-2.5 text-[11px] mono text-gray-300 max-h-56 overflow-y-auto pr-1">
+            <div class="text-gray-400">[00:54:12] ● System telemetry synced with Mother OS.</div>
+            <div class="text-[#00F0FF]">[00:52:45] ● Ryze AI Star prototype generated 1,420 test renders.</div>
+            <div class="text-emerald-400">[00:48:10] ● Banglalink Brand Team verified ToffeeCon stage render.</div>
+            <div class="text-[#BFFF04]">[00:35:00] ● Port 5000 ToffeeCon webhook response: 200 OK (28ms).</div>
+            <div class="text-gray-400">[00:22:15] ● 4K Upscale worker pool operational on 4 nodes.</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: CASE DOSSIER DETAIL POPUP                          -->
+  <!-- ========================================================= -->
+  <div id="case-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#12141c] border border-white/20 w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl relative my-auto">
+      <button onclick="closeCaseModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg px-2 py-1 rounded-lg border border-white/10">
+        ✕
+      </button>
+      <div id="case-modal-content">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: QUICK CLIENT BRIEFING INTAKE                       -->
+  <!-- ========================================================= -->
+  <div id="briefing-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#12141c] border border-[#BFFF04]/30 w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl relative my-auto">
+      <button onclick="closeBriefingModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg px-2 py-1 rounded-lg border border-white/10">
+        ✕
+      </button>
+      
+      <div class="mb-5">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#BFFF04] mono">MADMEN BRIEFING ROOM</span>
+        <h2 class="text-xl font-bold text-white mt-1">Commission a Campaign or Platform</h2>
+        <p class="text-xs text-gray-400 mt-1">Direct channel to Madmen Partners & GRO10X Central Foundry.</p>
+      </div>
+
+      <form onsubmit="submitBriefingForm(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1">Company / Brand *</label>
+          <input type="text" id="brief-brand" required placeholder="e.g. Banglalink, Grameenphone, Unilever" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#BFFF04]">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1">Your Name & Role *</label>
+          <input type="text" id="brief-name" required placeholder="e.g. Tamim (Head of Brand)" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#BFFF04]">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1">Work WhatsApp / Phone *</label>
+          <input type="text" id="brief-phone" required placeholder="+880 1700 000000" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#BFFF04]">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1">Campaign Scope</label>
+          <select id="brief-scope" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#BFFF04]">
+            <option>360° Digital Culture & Telco Campaign</option>
+            <option>Generative AI Brand Activation (Like Ryze AI Star)</option>
+            <option>Experiential Summit / Festival Tech Platform</option>
+            <option>Dedicated Agency Operating System Deployment</option>
+          </select>
+        </div>
+
+        <button type="submit" class="w-full bg-[#BFFF04] hover:brightness-110 text-black font-extrabold py-3.5 rounded-xl text-xs sm:text-sm shadow-xl transition transform active:scale-95 mt-4">
+          🚀 Request Confidential Pitch Briefing
+        </button>
+        <div id="brief-success" class="hidden text-center text-xs text-[#BFFF04] font-bold mt-2">
+          ✓ Request logged! Our executive partner will reach out via WhatsApp within 4 hours.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT: THREE.JS MONOLITH & INTERACTIVE COCKPIT LOGIC  -->
+  <!-- ========================================================= -->
+  <script>
+    // 1. VIEW SWITCHER
+    let currentView = 'showcase';
+    function switchView(view) {
+      currentView = view;
+      const showcaseEl = document.getElementById('view-showcase');
+      const cockpitEl = document.getElementById('view-cockpit');
+      const btnShowcase = document.getElementById('nav-btn-showcase');
+      const btnCockpit = document.getElementById('nav-btn-cockpit');
+
+      if (view === 'cockpit') {
+        showcaseEl.classList.add('hidden');
+        cockpitEl.classList.remove('hidden');
+        btnCockpit.className = 'px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#BFFF04] text-black shadow-lg';
+        btnShowcase.className = 'px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition flex items-center gap-1.5';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        cockpitEl.classList.add('hidden');
+        showcaseEl.classList.remove('hidden');
+        btnShowcase.className = 'px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#BFFF04] text-black shadow-lg';
+        btnCockpit.className = 'px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition flex items-center gap-1.5';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // 2. THREE.JS 3D MONOLITH CENTERPIECE
+    const container = document.getElementById('monolith-canvas-container');
+    let scene, camera, renderer, monolithGroup, outerWireframe, innerCore, particleSystem;
+    let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+
+    function initThreeMonolith() {
+      if (!container) return;
+
+      const width = container.clientWidth || 800;
+      const height = container.clientHeight || 500;
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+      camera.position.set(0, 0, 7.5);
+
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      monolithGroup = new THREE.Group();
+      scene.add(monolithGroup);
+
+      // Outer Geometric Polyhedron Wireframe (Octahedron / Icosahedron)
+      const outerGeo = new THREE.IcosahedronGeometry(2.3, 1);
+      const wireMat = new THREE.MeshBasicMaterial({
+        color: 0xBFFF04,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.35
+      });
+      outerWireframe = new THREE.Mesh(outerGeo, wireMat);
+      monolithGroup.add(outerWireframe);
+
+      // Inner Core Solid Prism
+      const innerGeo = new THREE.OctahedronGeometry(1.4, 0);
+      const coreMat = new THREE.MeshStandardMaterial({
+        color: 0x0f1115,
+        roughness: 0.1,
+        metalness: 0.9,
+        emissive: 0x152202,
+        emissiveIntensity: 0.4
+      });
+      innerCore = new THREE.Mesh(innerGeo, coreMat);
+      monolithGroup.add(innerCore);
+
+      // Accent Neon Rings
+      const ringGeo = new THREE.TorusGeometry(2.8, 0.025, 16, 64);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x00F0FF, transparent: true, opacity: 0.5 });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = Math.PI / 3;
+      monolithGroup.add(ring);
+
+      // Ambient Floating Dust Particles
+      const particleGeo = new THREE.BufferGeometry();
+      const count = 120;
+      const posArray = new Float32Array(count * 3);
+      for (let i = 0; i < count * 3; i++) {
+        posArray[i] = (Math.random() - 0.5) * 12;
+      }
+      particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+      const particleMat = new THREE.PointsMaterial({
+        size: 0.05,
+        color: 0xBFFF04,
+        transparent: true,
+        opacity: 0.6
+      });
+      particleSystem = new THREE.Points(particleGeo, particleMat);
+      scene.add(particleSystem);
+
+      // Lighting
+      const light1 = new THREE.DirectionalLight(0xBFFF04, 1.8);
+      light1.position.set(5, 5, 5);
+      scene.add(light1);
+
+      const light2 = new THREE.PointLight(0x00F0FF, 2.5, 10);
+      light2.position.set(-4, -3, 3);
+      scene.add(light2);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.2);
+      scene.add(ambient);
+
+      // Pointer Interactivity
+      window.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+          const rect = container.getBoundingClientRect();
+          mouseX = ((e.touches[0].clientX - rect.left) / rect.width - 0.5) * 2;
+          mouseY = ((e.touches[0].clientY - rect.top) / rect.height - 0.5) * 2;
+        }
+      }, { passive: true });
+
+      window.addEventListener('resize', () => {
+        if (!container) return;
+        const newW = container.clientWidth;
+        const newH = container.clientHeight;
+        camera.aspect = newW / newH;
+        camera.updateProjectionMatrix();
+        renderer.setSize(newW, newH);
+      });
+
+      animate();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Smooth inertia
+      targetX += (mouseX - targetX) * 0.05;
+      targetY += (mouseY - targetY) * 0.05;
+
+      if (monolithGroup) {
+        monolithGroup.rotation.y += 0.007;
+        monolithGroup.rotation.x = targetY * 0.4;
+        monolithGroup.rotation.z = -targetX * 0.3;
+      }
+
+      if (innerCore) {
+        innerCore.rotation.y -= 0.012;
+        innerCore.rotation.z += 0.008;
+      }
+
+      if (particleSystem) {
+        particleSystem.rotation.y += 0.001;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // 3. CASE DOSSIER MODALS
+    const CASES = {
+      toffee: {
+        tag: '🎬 OTT & CREATOR PLATFORM',
+        title: 'Banglalink Toffee — ToffeeCon 2026 Summit',
+        subtitle: 'Digital Takeover & Autonomous Creator Infrastructure',
+        deliverables: [
+          'Live interactive creator passport & RSVP portal',
+          '3D virtual summit stage and live telemetry stream',
+          'Automated influencer content verification',
+          'Over 10.4M live video stream reach across mobile'
+        ],
+        techStack: 'Port 5000 / Three.js / WebSockets / Cloudflare Stream',
+        result: '100% SLA fulfillment. Re-appointed as Agency of Record for 2026-2027.'
+      },
+      ryze: {
+        tag: '⚡ GEN-Z TELECOM CULTURE',
+        title: 'Banglalink Ryze — #RyzeYourVibe Campaign',
+        subtitle: 'Personalized Generative AI Brand Film Simulator',
+        deliverables: [
+          'First generative video casting engine in Bangladesh telecom',
+          'Neural face normalizer & 4K brand film compositor',
+          'Dynamic TikTok/Reels story card with custom audio track',
+          '320,000+ personalized avatars generated in 72 hours'
+        ],
+        techStack: 'Canvas Neural Blending / Audio Synthesis / WebGL / Node.js',
+        result: '#1 Trending hashtag on TikTok Bangladesh, 4.2x Gen-Z SIM acquisition uplift.'
+      },
+      rishka: {
+        tag: '🎪 EXPERIENTIAL & CULTURAL IP',
+        title: 'Rishka Connects — Street Culture Festivals',
+        subtitle: 'Bridging Underground Dhaka Music with Heritage Craft',
+        deliverables: [
+          'Multi-city physical & digital ticket lottery architecture',
+          'Visual branding featuring modern Bengali street typography',
+          '18,500 physical attendees with zero security incidents',
+          'Over 40 million organic social impressions across reels'
+        ],
+        techStack: 'RFID Wristband Sync / Next-Gen Ticketing / Dynamic Video Walls',
+        result: 'Sold out in 14 minutes. Cemented Madmen as cultural IP powerhouse.'
+      },
+      cadbury: {
+        tag: '🍫 FMCG RETAIL INNOVATION',
+        title: 'Cadbury / FMCG — Hyperlocal Viral Gifting',
+        subtitle: 'Turning Supermarket Shelves into AI Storytelling Nodes',
+        deliverables: [
+          'Point-of-sale QR code intake across 450+ modern trade outlets',
+          'Zero-install browser AI greeting card generator',
+          '85,000 personalized video greetings delivered via WhatsApp',
+          '+34% festive SKU retail volume uplift'
+        ],
+        techStack: 'Dynamic Video Templating / WhatsApp Business API / Zero-Login Auth',
+        result: 'Highest festive social engagement index recorded in brand history.'
+      }
+    };
+
+    function openCaseModal(key) {
+      const data = CASES[key];
+      if (!data) return;
+      const content = document.getElementById('case-modal-content');
+      content.innerHTML = `
+        <div class="mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#BFFF04] mono">${data.tag}</span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white mt-1">${data.title}</h2>
+          <p class="text-xs sm:text-sm text-gray-300 mt-1">${data.subtitle}</p>
+        </div>
+
+        <div class="space-y-4 my-5 text-xs text-gray-300">
+          <div class="bg-black/50 p-3.5 rounded-xl border border-white/10">
+            <div class="font-bold text-white mb-2 uppercase tracking-wide mono text-[11px] text-[#00F0FF]">Key Deliverables:</div>
+            <ul class="space-y-1.5 list-disc list-inside text-gray-300">
+              ${data.deliverables.map(d => `<li>${d}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-black/50 p-3 rounded-xl border border-white/10">
+              <div class="text-[10px] text-gray-400 mono">Technology Stack:</div>
+              <div class="font-bold text-white mt-1">${data.techStack}</div>
+            </div>
+            <div class="bg-black/50 p-3 rounded-xl border border-white/10">
+              <div class="text-[10px] text-gray-400 mono">Campaign Outcome:</div>
+              <div class="font-bold text-[#BFFF04] mt-1">${data.result}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          ${key === 'ryze' ? `<a href="/prototypes/ryze-ai-star/" class="bg-[#00F0FF] hover:brightness-110 text-black font-extrabold px-4 py-2 rounded-xl text-xs transition">Launch Live Simulator ↗</a>` : ''}
+          <button onclick="closeCaseModal()" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl text-xs transition">Close Dossier</button>
+        </div>
+      `;
+      document.getElementById('case-modal').classList.remove('hidden');
+    }
+
+    function closeCaseModal() {
+      document.getElementById('case-modal').classList.add('hidden');
+    }
+
+    // 4. INTERACTIVE APPROVAL QUEUE HANDLERS
+    let pendingCount = 3;
+    function approveQueueItem(id, filename) {
+      const itemEl = document.getElementById(`queue-item-${id}`);
+      const badgeEl = document.getElementById(`badge-item-${id}`);
+      const actionsEl = document.getElementById(`actions-item-${id}`);
+
+      if (badgeEl) {
+        badgeEl.className = 'text-[10px] mono bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/30';
+        badgeEl.textContent = '✓ Approved by Brand Partner';
+      }
+
+      if (actionsEl) {
+        actionsEl.innerHTML = `
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1">
+            <span>✓ Locked for Distribution</span>
+          </span>
+        `;
+      }
+
+      // Log event
+      const logEl = document.getElementById('cockpit-event-log');
+      if (logEl) {
+        const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+        const logEntry = document.createElement('div');
+        logEntry.className = 'text-[#BFFF04]';
+        logEntry.textContent = `[${time}] ✓ Partner approved: ${filename}`;
+        logEl.prepend(logEntry);
+      }
+
+      pendingCount = Math.max(0, pendingCount - 1);
+      const kpiEl = document.getElementById('kpi-pending-count');
+      if (kpiEl) {
+        kpiEl.textContent = `${pendingCount} Items`;
+      }
+    }
+
+    function requestRevision(id) {
+      alert(`Revision ticket opened for item #${id}. Our creative editor has been notified on Mother OS.`);
+    }
+
+    // 5. BRIEFING MODAL
+    function openBriefingModal() {
+      document.getElementById('briefing-modal').classList.remove('hidden');
+    }
+    function closeBriefingModal() {
+      document.getElementById('briefing-modal').classList.add('hidden');
+    }
+    function submitBriefingForm(e) {
+      e.preventDefault();
+      document.getElementById('brief-success').classList.remove('hidden');
+      setTimeout(() => {
+        closeBriefingModal();
+        document.getElementById('brief-success').classList.add('hidden');
+      }, 2500);
+    }
+
+    // Initialize 3D Monolith
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeMonolith();
+    });
+  </script>
+</body>
+</html>
