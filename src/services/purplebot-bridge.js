@@ -30,39 +30,53 @@ async function getPurplebotSummary(options = {}) {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    const res = await fetch(`${targetUrl}/api/system/health`, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'GRO10X-Mother-OS/2.1.0' }
-    });
-    clearTimeout(timeoutId);
+    let res = null;
+    let data = null;
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data) {
-        cachedSummary = {
-          status: 'CONNECTED',
-          venture: 'PURPLEBOT_CORE',
-          engine: 4,
-          satelliteUrl: targetUrl,
-          client: 'Purplebot Digital Limited',
-          health: data.status || 'healthy',
-          version: data.version || '1.1.0',
-          database: data.dbConnection || 'Connected',
-          uptimeSeconds: Number(data.uptimeSeconds || 0),
-          agencyTelemetry: {
-            totalStaff: Number(data.agencyTelemetry?.totalStaff || 0),
-            openTasks: Number(data.agencyTelemetry?.openTasks || 0),
-            urgentTasks: Number(data.agencyTelemetry?.urgentTasks || 0),
-            overdueTasks: Number(data.agencyTelemetry?.overdueTasks || 0)
-          },
-          botStatus: data.botStatus || {},
-          lastSyncedAt: new Date().toISOString()
-        };
-        lastFetchTime = now;
-        return cachedSummary;
+    try {
+      res = await fetch(`${targetUrl}/api/system/health`, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'GRO10X-Mother-OS/2.1.0' }
+      });
+
+      // Dual-endpoint check: if /api/system/health returns 404/HTML (Vercel cloud rewrite), fallback to /api/system-health
+      if (!res.ok || !res.headers.get('content-type')?.includes('application/json')) {
+        res = await fetch(`${targetUrl}/api/system-health`, {
+          signal: controller.signal,
+          headers: { 'User-Agent': 'GRO10X-Mother-OS/2.1.0' }
+        });
       }
+
+      if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
+        data = await res.json();
+      }
+    } finally {
+      clearTimeout(timeoutId);
+    }
+    if (data) {
+      cachedSummary = {
+        status: 'CONNECTED',
+        venture: 'PURPLEBOT_CORE',
+        engine: 4,
+        satelliteUrl: targetUrl,
+        client: 'Purplebot Digital Limited',
+        health: data.status || 'healthy',
+        version: data.version || '1.1.0',
+        database: data.dbConnection || 'Connected',
+        uptimeSeconds: Number(data.uptimeSeconds || 0),
+        agencyTelemetry: {
+          totalStaff: Number(data.agencyTelemetry?.totalStaff || 0),
+          openTasks: Number(data.agencyTelemetry?.openTasks || 0),
+          urgentTasks: Number(data.agencyTelemetry?.urgentTasks || 0),
+          overdueTasks: Number(data.agencyTelemetry?.overdueTasks || 0)
+        },
+        botStatus: data.botStatus || {},
+        lastSyncedAt: new Date().toISOString()
+      };
+      lastFetchTime = now;
+      return cachedSummary;
     }
   } catch (err) {
     // Graceful fallback when standalone engine is offline or during cold start
