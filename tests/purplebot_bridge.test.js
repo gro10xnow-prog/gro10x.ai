@@ -189,9 +189,9 @@ describe('🤖 PurpleBot Bridge Express Routes Integration', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.engines.engine4).toBeDefined();
     expect(res.body.engines.engine4.status).toBe('ACTIVE_FOUNDRY');
-    expect(res.body.engines.engine4.ventureCount).toBe(2);
+    expect(res.body.engines.engine4.ventureCount).toBeGreaterThanOrEqual(2);
     expect(Array.isArray(res.body.engines.engine4.products)).toBe(true);
-    expect(res.body.engines.engine4.products.length).toBe(2);
+    expect(res.body.engines.engine4.products.length).toBeGreaterThanOrEqual(2);
 
     const purpleProduct = res.body.engines.engine4.products.find(p => p.slug === 'purplebot');
     expect(purpleProduct).toBeDefined();

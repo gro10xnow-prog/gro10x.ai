@@ -20,6 +20,7 @@ const engine1Bridge = require('../services/engine1-bridge');
 const commerce10xBridge = require('../services/commerce10x-bridge');
 const toffeeconBridge = require('../services/toffeecon-bridge');
 const purplebotBridge = require('../services/purplebot-bridge');
+const sahanabagBridge = require('../services/sahanabag-bridge');
 
 // Engine Targets definition ($100k ARR target breakdown)
 const ENGINE_TARGETS = {
@@ -155,11 +156,12 @@ router.get('/summary', requireAuth, async (req, res) => {
     const netMarginUSD = totalPaidRevenueUSD - totalExpensesUSD;
     const netMarginPercent = totalPaidRevenueUSD > 0 ? Math.round((netMarginUSD / totalPaidRevenueUSD) * 100) : 0;
 
-    const [engine1Satellite, commerce10xSatellite, toffeeconSatellite, purplebotSatellite] = await Promise.all([
+    const [engine1Satellite, commerce10xSatellite, toffeeconSatellite, purplebotSatellite, sahanabagSatellite] = await Promise.all([
       engine1Bridge.getEngine1Summary(),
       commerce10xBridge.getCommerce10xSummary(),
       toffeeconBridge.getToffeeconSummary(),
-      purplebotBridge.getPurplebotSummary()
+      purplebotBridge.getPurplebotSummary(),
+      sahanabagBridge.getSahanabagSummary()
     ]);
 
     const responseData = {
@@ -203,7 +205,7 @@ router.get('/summary', requireAuth, async (req, res) => {
           current: Math.round(engineTotals.engine4),
           percent: Math.min(100, Math.round((engineTotals.engine4 / ENGINE_TARGETS.engine4.target) * 100)),
           status: 'ACTIVE_FOUNDRY',
-          ventureCount: 2,
+          ventureCount: 3,
           products: [
             {
               name: 'ToffeeCon 2026 Experience OS',
@@ -228,6 +230,19 @@ router.get('/summary', requireAuth, async (req, res) => {
                 openTasks: purplebotSatellite.agencyTelemetry?.openTasks || 0,
                 dbConnection: purplebotSatellite.database || 'Disconnected',
                 status: purplebotSatellite.status
+              }
+            },
+            {
+              name: 'Sahanabag City Township OS',
+              slug: 'sahanabag-city',
+              client: 'সাহানাবাগ সিটি (Sahanabag City)',
+              satellite: sahanabagSatellite,
+              liveMetrics: {
+                uptimeSeconds: sahanabagSatellite.uptimeSeconds || 0,
+                totalPlots: sahanabagSatellite.telemetry?.totalPlots || 0,
+                totalDeeds: sahanabagSatellite.telemetry?.totalDeeds || 0,
+                botMeshStatus: sahanabagSatellite.botMesh?.username || '@NishatSharminBot',
+                status: sahanabagSatellite.status
               }
             }
           ]
@@ -728,6 +743,18 @@ router.get('/purplebot/bridge', requireAuth, async (req, res) => {
   try {
     const summary = await purplebotBridge.getPurplebotSummary();
     res.json({ success: true, engineId: 'engine4', venture: 'PURPLEBOT_CORE', data: summary });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+/**
+ * GET /api/engines/sahanabag/bridge
+ * Returns live satellite telemetry from standalone Sahanabag City Township OS platform (Port 7000)
+ */
+router.get('/sahanabag/bridge', requireAuth, async (req, res) => {
+  try {
+    const summary = await sahanabagBridge.getSahanabagSummary();
+    res.json({ success: true, engineId: 'engine4', venture: 'SAHANABAG_CITY_TOWNSHIP_OS', data: summary });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
