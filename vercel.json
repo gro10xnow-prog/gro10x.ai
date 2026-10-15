@@ -169,6 +169,10 @@
       "dest": "/public/sprint.html"
     },
     {
+      "src": "/(.*\\.pdf)",
+      "dest": "/public/$1"
+    },
+    {
       "src": "/proposal(.*)",
       "dest": "/public/proposal.html"
     },
