@@ -459,7 +459,8 @@
 
     <!-- Filter Buttons -->
     <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (8)</button>
+      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (9)</button>
+      <button class="filter-btn" onclick="filterPrototypes('workforce', this)">Workforce & AI EdTech (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('mobility', this)">Clean Mobility & EV (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('agency', this)">Madmen & Telecom AI (2)</button>
       <button class="filter-btn" onclick="filterPrototypes('proptech', this)">PropTech & Land (1)</button>
@@ -471,6 +472,35 @@
 
   <!-- Prototype Showcase Grid -->
   <main class="showcase-grid">
+
+    <!-- Card: GRO10X × SHOMVOB Strategic Partnership Pitch Deck -->
+    <article class="proto-card" data-category="workforce">
+      <div class="proto-preview-box" style="background: radial-gradient(circle, #0284c7, #070B12);">
+        <span class="proto-tag" style="background: rgba(14,165,233,0.25); color:#38bdf8; border:1px solid rgba(14,165,233,0.4);">Forbes Asia 100 • AI EdTech</span>
+        <div class="proto-overlay-icon">🎓</div>
+      </div>
+      <div class="proto-body">
+        <h2 class="proto-title">GRO10X × SHOMVOB Pitch Deck</h2>
+        <p class="proto-desc">
+          Interactive executive presentation deck for Shomvob Technologies Ltd. Features 9 full-screen slides, keyboard navigation, embedded YouTube course showcase (WK5FHftYFo0), live AI Demand Scout lead simulator, TalentSentry video interview rubric, and 50/50 Academy co-venture unit economics.
+        </p>
+        <div class="proto-meta">
+          <span class="meta-chip">9 Interactive Slides</span>
+          <span class="meta-chip">AI Academy (50k @ ৳499)</span>
+          <span class="meta-chip">TalentSentry Video AI</span>
+          <span class="meta-chip">Demand Scout BD Bot</span>
+          <span class="meta-chip">Keyboard Nav (← / → / F)</span>
+        </div>
+        <div class="proto-actions">
+          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/shomvob-pitch/', 'GRO10X × SHOMVOB Strategic Deck')">
+            📱 Interactive Preview
+          </button>
+          <a href="/prototypes/shomvob-pitch/" target="_blank" class="proto-btn btn-emerald">
+            🚀 Launch Live
+          </a>
+        </div>
+      </div>
+    </article>
 
     <!-- Card 0: BAHON (বাহন) — Green Bashundhara Electric Fleet Command -->
     <article class="proto-card" data-category="mobility">

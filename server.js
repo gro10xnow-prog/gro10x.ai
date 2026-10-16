@@ -576,6 +576,11 @@ app.get(['/prototypes/bahon', '/prototypes/bahon/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/bahon/index.html'));
 });
 
+// Shomvob Strategic Partnership Pitch Deck Prototype
+app.get(['/prototypes/shomvob-pitch', '/prototypes/shomvob-pitch/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/shomvob-pitch/index.html'));
+});
+
 // National Housing Finance Backwards Compatibility & Canonical Routing
 app.get(['/nhf', '/nhf/'], (req, res) => {
   res.redirect(302, '/prototypes/nhf-portal/');
