@@ -43,6 +43,7 @@ function mapProposal(p) {
     clientPhone: p.client_phone || p.clientPhone || '',
     projectTitle: p.project_title || p.projectTitle || 'AI Solution Proposal',
     projectSummary: p.project_summary || p.projectSummary || '',
+    prototypeUrl: p.prototype_url || p.prototypeUrl || null,
     scopeItems: Array.isArray(p.scope_items) ? p.scope_items : (Array.isArray(p.scopeItems) ? p.scopeItems : []),
     oneTimeItems: Array.isArray(p.one_time_items) ? p.one_time_items : (Array.isArray(p.oneTimeItems) ? p.oneTimeItems : []),
     recurringItems: Array.isArray(p.recurring_items) ? p.recurring_items : (Array.isArray(p.recurringItems) ? p.recurringItems : []),
@@ -235,10 +236,162 @@ const DEFAULT_PROPOSALS = [
     view_count: 0,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
+  },
+  {
+    id: 'PROP-2026-SERVIQ',
+    share_token: 'serviq-ai-workforce',
+    client_name: 'Merajul Islam',
+    client_company: 'Serviq BPO Limited',
+    client_email: 'Meraj5417@gmail.com',
+    client_phone: '+880 1674-007700',
+    project_title: 'AI Workforce Acceleration with Google Gemini Ecosystem',
+    project_summary: 'Dedicated enterprise AI corporate training program tailored specifically for Serviq BPO operations, precision-engineered from the audited daily workflows of Rayhan, Ridhiya, Partha, and Shabuddin. Equips 6 enrolled team members with official 18-month Google Gemini Pro corporate access (2M token context window), deep Google Workspace AI integration (Docs, Sheets, Gmail), and zero-hallucination Google NotebookLM SOP ground-truth knowledge bases to eliminate manual administrative bottlenecks and accelerate field workforce operations.',
+    canonical_service_code: 'TRAIN-SERVIQ',
+    scope_items: [
+      {
+        title: 'Module 1 (Online — 1.5h): Gemini 1.5 Pro & Multimodal Rapid Prompting for BPO Customer & Field Operations',
+        description: 'Harnessing Gemini 1.5 Pro\'s 2M token context window and native multimodality. Eliminates Shabuddin\'s customer support backlog with persona system prompts, few-shot templates, and bilingual translation; resolves Rayhan\'s field incident chaos with multimodal image/screenshot OCR triage and emergency escalation routing.'
+      },
+      {
+        title: 'Module 2 (Online — 1.5h): Google Workspace AI Mastery — Automating Docs, Gmail & Advanced Google Sheets',
+        description: 'Deep AI integration into daily office workflows. Automates Partha\'s daily status reporting in Google Sheets with natural language formula building, regex data cleaning, and narrative executive summaries; streamlines Ridhiya\'s daily administrative updates in Gmail and Docs with consolidated multi-department digest pipelines and polished executive circulars.'
+      },
+      {
+        title: 'Module 3 (Online — 1.5h): Google NotebookLM as Serviq Ground-Truth SOP & Compliance Knowledge Hub',
+        description: 'Constructing a zero-hallucination institutional brain for Serviq BPO. Ground-truth ingestion of Bangladesh Labor Act, Serviq employee handbooks, Paylio user manuals, and client SLA agreements. Enables Shabuddin, Ridhiya, and Rayhan to execute instant verified policy lookups, while empowering Meraj Bhai & Moon Bhai to analyze 80+ page enterprise RFP tenders and audio briefings in minutes.'
+      },
+      {
+        title: 'Module 4 (Offline Hands-On Lab — 2.0h): Live Operational Restructuring on Laptops — Solving Real Daily Tasks',
+        description: '100% active screen-to-screen building at Serviq Banani office across 4 dedicated execution stations (Rayhan: Field Escalation Engine; Ridhiya: Master Daily Digest Pipeline; Partha: Automated Status Dashboard; Shabuddin: Customer Query Matrix). Trainees resolve real daily operational files with custom prompt shortcuts, achieving minimum 60% turnaround time reduction on the spot.'
+      },
+      {
+        title: 'Module 5 (Offline Hands-On Lab — 2.0h): Founders AI Command Center, Quality Control & Capstone Showcase',
+        description: 'Executive governance and institutionalization for Meraj Bhai & Moon Bhai. Building the 3-Bullet Morning Executive Brief and enterprise BPO/EOR proposal drafting engine; establishing human-in-the-loop and PII data hygiene guardrails. Concludes with live 5-minute capstone demos from each trainee proving measurable operational ROI, followed by graduation certification.'
+      }
+    ],
+    one_time_items: [
+      {
+        name: 'Corporate AI Training Program (6 Enrolled Seats)',
+        description: 'Comprehensive 5-module curriculum (8.5 Total Hours: 3 Online Masterclasses + 2 Offline Hands-On Lab Sessions at Serviq Banani office) led by Firoz Uddin Ahmed (Founder & CEO, GRO10X Holdings). Covers 6 seats for Meraj, Moon, Ridhiya, Rayhan, Shabuddin, Partha.',
+        amount: 9000
+      },
+      {
+        name: 'Google Gemini Pro 18-Month Subscriptions (6 Accounts)',
+        description: 'Official 18-month Google Gemini Pro corporate activation links provisioned directly for all 6 enrolled team email addresses (Pass-through cost: ৳500 × 6 accounts).',
+        amount: 3000
+      }
+    ],
+    recurring_items: [],
+    one_time_total: 12000,
+    recurring_total: 0,
+    currency: 'BDT',
+    timeline: 'October 22 – October 27, 2026 (Completed within October)',
+    valid_until: '2026-10-31',
+    terms: '1. Commercial Investment: Total fee ৳12,000 BDT for 6 enrolled seats (inclusive of 8.5 training hours + 6× 18-month Gemini Pro subscriptions).\n2. Payment Milestones:\n   • 50% Advance (৳6,000 BDT) required upon proposal acceptance to immediately provision all 6 Google Gemini Pro activation links.\n   • 50% Final Settlement (৳6,000 BDT) payable upon completion of Online Session 3.\n3. Training Format & Delivery:\n   • 3 Online Live Masterclasses (1.5 hrs each = 4.5 hrs) via Google Meet.\n   • 2 Offline Hands-On Lab Sessions (2.0 hrs each = 4.0 hrs) at Serviq Banani Office (House 31, Road 1/A, Block-I, Banani, Dhaka).\n   • Total Duration: 8.5 Hours of intensive, practical workflow automation.\n4. Schedule Track Preference:\n   • Option A (Recommended): Online Oct 22, 23, 24 (8:00 PM - 9:30 PM) | Offline Lab Oct 25 (10:00 AM - 2:30 PM) at Banani.\n   • Option B (Fallback): Online Oct 23, 24, 25 (8:00 PM - 9:30 PM) | Offline Lab Oct 26 (11:00 AM - 3:30 PM) at Banani.\n5. Lead Trainer: Firoz Uddin Ahmed (Founder & CEO, GRO10X Holdings).\n6. Take-Home Assets: Customized prompt libraries, Google Sheets automation models, shared NotebookLM ground-truth knowledge repository, and official graduation certificates.',
+    notes: 'Reference prototype content calendar previously built for Serviq is live at: https://gro10x-ai.vercel.app/prototypes/serviq-pilot/',
+    prototype_url: 'https://gro10x-ai.vercel.app/prototypes/serviq-pilot/',
+    status: 'Sent',
+    created_by: 'GRO-003',
+    view_count: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: 'PROP-2026-BAHON',
+    share_token: 'bahon-fleet',
+    client_name: 'Bahon Management & Green Bashundhara Society Committee',
+    client_company: 'Green Bashundhara Initiative (Bahon Electric Transport)',
+    client_email: 'arif.ahmed@banglalink.net',
+    client_phone: '+880 1680-061704',
+    project_title: 'Bahon Fleet Command Center: Real-Time Spatial Telemetry & Anti-Leakage Revenue Operating System',
+    project_summary: 'Enterprise operating system and cloud command center for Bashundhara Residential Area\'s transition to an organized electric transit fleet. Features real-time vehicle telemetry across Blocks A–P, live battery depot inventory management, anti-leakage cashless QR/bKash fare reconciliation, and automated security gate intrusion geofencing.',
+    canonical_service_code: 'FLEET-BAHON',
+    scope_items: [
+      {
+        title: '1. Spatial Fleet Command Center & Bashundhara Block-to-Block Geofencing Engine',
+        description: 'Interactive high-density GIS map covering Blocks A through P. Configurable zone polygons, restricted zone monitoring, live congestion heatmaps, and sub-second vehicle positioning.'
+      },
+      {
+        title: '2. IoT Telemetry & Live Vehicle Fleet Ingress (Initial Fleet up to 50 Bahon EVs)',
+        description: 'Real-time telemetry ingestion pipelines capturing battery state of charge (SoC), operational velocity, GPS coordinates, passenger occupancy status, and automated maintenance alert triggers.'
+      },
+      {
+        title: '3. Cashless QR Fare Collection & Automated Daily Revenue Reconciliation',
+        description: 'Dynamic QR fare collection system integrated with bKash and cashless digital payment rails. Eliminates manual cash leakage with automated driver shift reconciliation and society revenue share audits.'
+      },
+      {
+        title: '4. Security Gate Intrusion Alert & Traditional Rickshaw Intercept Protocol',
+        description: 'Automated perimeter gate geofencing detecting unauthorized entry by non-registered traditional rickshaws. Dispatches instant visual alerts and security post notifications for rapid interception.'
+      },
+      {
+        title: '5. Solar Swap Depot Inventory & Battery Health Telemetry (Hubs Alpha & Beta)',
+        description: 'Dedicated battery inventory management console tracking real-time swap station bays, charging cycles, battery degradation diagnostics, and predictive replenishment alerts across primary depots.'
+      }
+    ],
+    one_time_items: [
+      {
+        name: 'Bahon Fleet Command Center 30-Day Managed Pilot Deployment',
+        description: 'Full system architecture, spatial GIS geofencing map setup, IoT telemetry ingestion integration for up to 50 Bahon EVs, solar depot tracking, and cashless fare audit configuration.',
+        amount: 60000
+      }
+    ],
+    recurring_items: [
+      {
+        name: 'Monthly Fleet Cloud Telemetry & Maintenance Retainer (Post-Pilot)',
+        description: 'Dedicated high-availability cloud hosting, real-time telemetry streaming pipelines, continuous map updates, and priority under-60-minute defect support.',
+        amount: 15000,
+        frequency: 'Monthly'
+      }
+    ],
+    one_time_total: 60000,
+    recurring_total: 15000,
+    currency: 'BDT',
+    timeline: '30-Day Managed Pilot Deployment',
+    valid_until: '2026-11-30',
+    terms: '1. Commercial Investment: ৳60,000 BDT for the 30-Day Managed Pilot Deployment (up to 50 active Bahon electric vehicles).\n2. Payment Milestones:\n   • 50% Mobilization Advance (৳30,000 BDT) upon proposal acceptance to provision cloud telemetry servers and configure spatial geofencing.\n   • 50% Final Settlement (৳30,000 BDT) upon pilot handover and Green Bashundhara Committee UAT sign-off.\n3. Post-Pilot Cloud Retainer: ৳15,000 BDT/month (Optional) for ongoing high-availability cloud telemetry hosting, server maintenance, and SLA support.\n4. Intellectual Property & Sovereignty: Green Bashundhara Initiative retains full data ownership and telemetry log privacy.\n5. Virtual CTO & Architecture Lead: Zayan (GRO10X Holdings). Commercial Sponsor: Arif Ahmed (GRO-PARTNER-01 / Banglalink Enterprise).',
+    notes: 'Reference prototype live command center: https://gro10x-ai.vercel.app/prototypes/bahon/',
+    prototype_url: 'https://gro10x-ai.vercel.app/prototypes/bahon/',
+    status: 'Sent',
+    created_by: 'GRO-PARTNER-01',
+    view_count: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
 
 const ENTERPRISE_PRESETS = {
+  BAHON_FLEET_COMMAND: {
+    id: 'bahon-fleet',
+    presetKey: 'BAHON_FLEET_COMMAND',
+    name: 'Bahon Electric Transport — Fleet Command Center & Anti-Leakage OS',
+    clientName: 'Bahon Management & Green Bashundhara Society Committee',
+    clientCompany: 'Green Bashundhara Initiative (Bahon Electric Transport)',
+    clientEmail: 'arif.ahmed@banglalink.net',
+    clientPhone: '+880 1680-061704',
+    projectTitle: 'Bahon Fleet Command Center: Real-Time Spatial Telemetry & Anti-Leakage Revenue Operating System',
+    projectSummary: 'Enterprise operating system and cloud command center for Bashundhara Residential Area\'s transition to an organized electric transit fleet. Features real-time vehicle telemetry across Blocks A–P, live battery depot inventory management, anti-leakage cashless QR/bKash fare reconciliation, and automated security gate intrusion geofencing.',
+    canonicalServiceCode: 'FLEET-BAHON',
+    oneTimeTotal: 60000,
+    recurringTotal: 15000,
+    currency: 'BDT',
+    timeline: '30-Day Managed Pilot Deployment'
+  },
+  SERVIQ_AI_WORKFORCE: {
+    id: 'serviq-ai-workforce',
+    presetKey: 'SERVIQ_AI_WORKFORCE',
+    name: 'Serviq BPO Limited — AI Workforce Acceleration with Google Gemini Ecosystem',
+    clientName: 'Merajul Islam',
+    clientCompany: 'Serviq BPO Limited',
+    clientEmail: 'Meraj5417@gmail.com',
+    clientPhone: '+880 1674-007700',
+    projectTitle: 'AI Workforce Acceleration with Google Gemini Ecosystem',
+    projectSummary: 'Dedicated enterprise AI corporate training program tailored specifically for Serviq BPO operations, precision-engineered from the audited daily workflows of Rayhan, Ridhiya, Partha, and Shabuddin. Equips 6 enrolled team members with official 18-month Google Gemini Pro corporate access (2M token context window), deep Google Workspace AI integration (Docs, Sheets, Gmail), and zero-hallucination Google NotebookLM SOP ground-truth knowledge bases to eliminate manual administrative bottlenecks and accelerate field workforce operations.',
+    canonicalServiceCode: 'TRAIN-SERVIQ',
+    oneTimeTotal: 12000,
+    recurringTotal: 0,
+    currency: 'BDT',
+    timeline: 'October 22 – October 27, 2026 (Completed within October)'
+  },
   NATIONAL_HOUSING_FINANCE_AI_OS: {
     id: 'nhf-enterprise-ai-os',
     presetKey: 'NATIONAL_HOUSING_FINANCE_AI_OS',
@@ -383,6 +536,7 @@ function proposalToQuoteRecord(p) {
     timeline: p.timeline || '2–3 Weeks',
     terms: p.terms || '',
     notes: p.notes || '',
+    prototype_url: p.prototype_url || p.prototypeUrl || null,
     created_by: p.created_by || p.createdBy || 'GRO-001',
     view_count: Number(p.view_count || p.viewCount || 0),
     viewed_at: p.viewed_at || p.viewedAt || null,
@@ -425,6 +579,7 @@ function quoteRecordToProposal(q) {
     client_phone: meta.client_phone || '',
     project_title: q.project_title,
     project_summary: meta.project_summary || '',
+    prototype_url: meta.prototype_url || null,
     canonical_service_code: meta.canonical_service_code || null,
     scope_items: meta.scope_items && meta.scope_items.length > 0 ? meta.scope_items : scopeItems,
     one_time_items: meta.one_time_items || [],

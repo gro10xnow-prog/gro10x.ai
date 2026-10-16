@@ -193,6 +193,25 @@
       "unlockedSkus": [
         "PLA-14"
       ]
+    },
+    "CUST-0Q4E7KF": {
+      "id": "CUST-0Q4E7KF",
+      "email": "elena.test.1792094244657@plannerqueengro.com",
+      "name": "Elena Rostova",
+      "createdAt": "2026-10-15T19:57:25.078Z",
+      "unlockedSkus": [
+        "PLA-14",
+        "PLA-15"
+      ]
+    },
+    "CUST-5O05UF0": {
+      "id": "CUST-5O05UF0",
+      "email": "test.creator.1792094264459@plannerqueengro.com",
+      "name": "Test Creator",
+      "createdAt": "2026-10-15T19:57:44.881Z",
+      "unlockedSkus": [
+        "PLA-14"
+      ]
     }
   },
   "wallets": {
@@ -267,7 +286,7 @@
       "lifetimeEarned": 200
     },
     "CUST-SV6PPK6": {
-      "balance": 140,
+      "balance": 130,
       "tier": "VIP Creator",
       "lifetimeEarned": 200
     },
@@ -297,6 +316,16 @@
       "lifetimeEarned": 200
     },
     "CUST-SE3MQ7I": {
+      "balance": 190,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-0Q4E7KF": {
+      "balance": 40,
+      "tier": "VIP Creator",
+      "lifetimeEarned": 200
+    },
+    "CUST-5O05UF0": {
       "balance": 190,
       "tier": "VIP Creator",
       "lifetimeEarned": 200
@@ -564,6 +593,13 @@
     ],
     "CUST-SV6PPK6": [
       {
+        "id": "TXN-1792094231681",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-10-15T19:57:11.681Z"
+      },
+      {
         "id": "TXN-1791447073360",
         "amount": -10,
         "type": "debit",
@@ -729,6 +765,45 @@
         "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
         "timestamp": "2026-10-08T08:10:54.051Z"
       }
+    ],
+    "CUST-0Q4E7KF": [
+      {
+        "id": "TXN-1792094245405",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-10-15T19:57:25.405Z"
+      },
+      {
+        "id": "TXN-RED-1792094245220",
+        "amount": -150,
+        "type": "debit",
+        "reason": "Unlocked Companion: ADHD Low-Dopamine Daily Planner (PLA-15)",
+        "timestamp": "2026-10-15T19:57:25.220Z"
+      },
+      {
+        "id": "TXN-1792094245078",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-10-15T19:57:25.078Z"
+      }
+    ],
+    "CUST-5O05UF0": [
+      {
+        "id": "TXN-1792094265076",
+        "amount": -10,
+        "type": "debit",
+        "reason": "AI Focus Coach Morning Briefing",
+        "timestamp": "2026-10-15T19:57:45.076Z"
+      },
+      {
+        "id": "TXN-1792094264881",
+        "amount": 200,
+        "type": "credit",
+        "reason": "Welcome Bonus (PLA-14 Purchase Unlock)",
+        "timestamp": "2026-10-15T19:57:44.882Z"
+      }
     ]
   },
   "states": {
@@ -847,6 +922,15 @@
           "week_goal_1": "Etsy Launch"
         },
         "updatedAt": "2026-10-08T08:10:54.378Z"
+      }
+    },
+    "CUST-5O05UF0": {
+      "PLA-14": {
+        "data": {
+          "owner_name": "Elena Vance",
+          "week_goal_1": "Etsy Launch"
+        },
+        "updatedAt": "2026-10-15T19:57:45.151Z"
       }
     }
   }

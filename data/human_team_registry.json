@@ -1,8 +1,8 @@
 {
   "conglomerate": "GRO10X Holdings",
   "authority": "Central Chief of Staff & Virtual CTO × Head of People & Talent Operations",
-  "last_updated": "2026-10-16T18:42:00+06:00",
-  "registry_version": "1.1.0",
+  "last_updated": "2026-10-16T18:55:00+06:00",
+  "registry_version": "1.2.0",
   "total_human_personnel": 5,
   "human_roster": [
     {
@@ -27,13 +27,14 @@
       "contact": {
         "phone": "+8801798558479",
         "norm_phone": "1798558479",
+        "whatsapp": "+8801798558479",
         "email": "rafsanameen@gmail.com"
       },
-      "designation": "Head of Business Development",
-      "department": "Strategy & Commercial Growth",
+      "designation": "Head of Business Development (Commercial Lead)",
+      "department": "Business Development & Commercial Partnerships",
       "status": "Active",
       "employment_type": "Core Leadership Team",
-      "conglomerate_tier": "Technology Admin",
+      "conglomerate_tier": "Core Leadership Team",
       "credentials": {
         "access_pin": "1019"
       }
@@ -74,14 +75,24 @@
       "contact": {
         "phone": "+8801680061704",
         "norm_phone": "1680061704",
-        "whatsapp": "+8801680061704"
+        "whatsapp": "+8801680061704",
+        "email": "arif.partner@gro10x.ai"
       },
       "designation": "Strategic Industry Partner & Deal Originator",
-      "department": "Strategic Alliances & Industry Ventures",
+      "department": "Strategic Partnerships & Venture Origin",
       "status": "Active Strategic Partner",
-      "employment_type": "External Venture Partner",
-      "coverage": ["Banking Solutions", "Mobility & Transport (Bahon)", "Healthcare Solutions"],
-      "model": "Deal Origination & Industry Co-Venture Partnership"
+      "employment_type": "Strategic Venture Partner",
+      "conglomerate_tier": "Strategic Venture Partner",
+      "domain": "Banking Solutions, Mobility/Transport (Bahon), Healthcare",
+      "domains": [
+        "Banking Solutions",
+        "Mobility/Transport (Bahon)",
+        "Healthcare"
+      ],
+      "model": "Deal Origination & Industry Co-Venture Partnership",
+      "credentials": {
+        "access_pin": "1704"
+      }
     },
     {
       "human_id": "GRO-PARTNER-02",
@@ -90,14 +101,20 @@
       "contact": {
         "phone": "+8801873472524",
         "norm_phone": "1873472524",
-        "whatsapp": "+8801873472524"
+        "whatsapp": "+8801873472524",
+        "email": "samrat.partner@gro10x.ai"
       },
       "designation": "Technical Solutions Partner & Enterprise IT Architect",
-      "department": "Enterprise Architecture & Special Projects",
+      "department": "Enterprise Architecture & Infrastructure Solutions",
       "status": "Active Strategic Partner",
-      "employment_type": "External Enterprise Technical Partner",
-      "background": "BUP ICT 1, Enterprise IT Solutions",
-      "coverage": ["Server Infrastructure", "Deep-Tech Integrations", "Enterprise Core Banking Architecture"]
+      "employment_type": "Strategic Venture Partner",
+      "conglomerate_tier": "Strategic Venture Partner",
+      "background": "BUP ICT 1, Enterprise Server & Core Banking Infrastructure",
+      "technical_specialization": "Enterprise Server & Core Banking Infrastructure",
+      "model": "Technical Solutions Architecture & Enterprise System Integrations",
+      "credentials": {
+        "access_pin": "2524"
+      }
     }
   ]
 }

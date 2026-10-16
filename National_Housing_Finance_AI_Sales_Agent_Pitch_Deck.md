@@ -192,7 +192,7 @@
     1. Nominate one person from your retail sales or credit team to share your current rate sheet.
     2. Agree on the target customer profile (e.g. corporate executives in Dhaka).
     3. Start the 30-day pilot next week.
-  - **Presenter Contact Details:** Gro10x.ai
+  - **Presenter Contact Details:** Rafsan Ameen (Business Development Lead) | Direct: +880 1798-558479 | corporate@gro10x.ai | Gro10x.ai
 * **Prompt for AI Slide Generator:**
   > Closing presentation slide titled 'Next Steps: Starting the 30-Day Pilot'. Bold central quote: 'Empowering National Housing Finance with Modern, Automated Sales Reach'. 3 clean action steps: 1. Nominate a retail coordinator, 2. Provide product rate sheet, 3. Launch 30-day trial. Clean contact details at bottom. Minimalist banking aesthetic.
 * **Talking Point:**

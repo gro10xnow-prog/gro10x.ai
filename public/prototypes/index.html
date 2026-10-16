@@ -459,7 +459,8 @@
 
     <!-- Filter Buttons -->
     <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (7)</button>
+      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (8)</button>
+      <button class="filter-btn" onclick="filterPrototypes('mobility', this)">Clean Mobility & EV (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('agency', this)">Madmen & Telecom AI (2)</button>
       <button class="filter-btn" onclick="filterPrototypes('proptech', this)">PropTech & Land (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('spatial', this)">3D & Spatial (2)</button>
@@ -470,6 +471,35 @@
 
   <!-- Prototype Showcase Grid -->
   <main class="showcase-grid">
+
+    <!-- Card 0: BAHON (বাহন) — Green Bashundhara Electric Fleet Command -->
+    <article class="proto-card" data-category="mobility">
+      <div class="proto-preview-box" style="background: radial-gradient(circle, #064E3B, #070B12);">
+        <span class="proto-tag tag-emerald">Electric Fleet & Telemetry</span>
+        <div class="proto-overlay-icon">🛺</div>
+      </div>
+      <div class="proto-body">
+        <h2 class="proto-title">বাহন | BAHON — Green Bashundhara</h2>
+        <p class="proto-desc">
+          Electric fleet management command center for Green Bashundhara Initiative. Features an interactive vector map of Bashundhara Avenues (Blocks A–P), 28 dynamic e-rickshaws, live driver/battery telemetry dossiers, 100% anti-leakage revenue tracking, regulated fixed fare matrix, and solar swap station monitors.
+        </p>
+        <div class="proto-meta">
+          <span class="meta-chip">Bashundhara R/A Grid</span>
+          <span class="meta-chip">28 Live e-Bahons</span>
+          <span class="meta-chip">Anti-Leakage Revenue</span>
+          <span class="meta-chip">Bilingual (BN/EN)</span>
+          <span class="meta-chip">Solar Swap Hubs</span>
+        </div>
+        <div class="proto-actions">
+          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/bahon/', 'বাহন (BAHON Electric Fleet Command)')">
+            📱 Interactive Preview
+          </button>
+          <a href="/prototypes/bahon/" target="_blank" class="proto-btn btn-emerald">
+            🚀 Launch Live
+          </a>
+        </div>
+      </div>
+    </article>
 
     <!-- Card 1: Madmen Agency OS & Showcase (LIME-INSPIRED) -->
     <article class="proto-card" data-category="agency">

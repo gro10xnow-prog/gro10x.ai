@@ -66,7 +66,7 @@ To prepare GRO10X for unicorn-scale institutional valuation, every digital inter
 | **`PRJ-SAHANABAG-SP4`** | **Sahanabag City OS**<br>*(Engine 4 Satellite #3)* | Public 3D Booking Portal, Field Agent Suite, Cash-Flow Intelligence, Bangla বায়না পত্র | 🟢 COMPLETED | 205 | 12,500 | ৳25,000 | $206.25 |
 | **`PRJ-PURPLEBOT-SP1`** | **PurpleBot Core OS**<br>*(Engine 3 Satellite #2)* | 6-Level Hierarchy Engine, 12-Step Status Pipeline, Real-Time SSE Sync | 🟢 COMPLETED | 140 | 8,750 | ৳17,500 | $144.38 |
 | **`PRJ-PURPLEBOT-SP2`** | **PurpleBot Core OS**<br>*(Engine 3 Satellite #2)* | Lean V1 UI, Review Room, HR Roster, 2.3MB Hardware-Style PDF Manual | 🟢 COMPLETED | 212 | 8,750 | ৳17,500 | $144.38 |
-| **`PRJ-PURPLEBOT-SP2-1`** | **PurpleBot Core OS**<br>*(Engine 3 Satellite #2)* | Production DB Sanitization, Chrome Extension v4.4.0, Auth Deduplication, Telegram Webhook Secret Fix | 🟡 IN_PROGRESS | 212 | 5,000 | ৳10,000 | $82.50 |
+| **`PRJ-PURPLEBOT-SP2-1`** | **PurpleBot Core OS**<br>*(Engine 3 Satellite #2)* | Production DB Sanitization, Chrome Extension v4.4.0, Auth Deduplication, Telegram Webhook Secret Fix<br>↳ *Contractor QA Expense: `EXP-20261016-QA01` (৳2,500 / 1,250 Credits) — S. M Mahmud Bin Murad (Onim)* | 🟡 IN_PROGRESS | 212 | 5,000 | ৳10,000 | $82.50 |
 | **`PRJ-MOTHEROS-FOUNDRY`** | **Mother OS Foundry Lab**<br>*(Engine 1 / Engine 2)* | National Housing Finance AI Deck, Serviq Content Calendar, Motion-as-Code Engine | 🟢 COMPLETED | 77 | 25,000 | ৳50,000 (R&D) | $412.50 |
 
 ---

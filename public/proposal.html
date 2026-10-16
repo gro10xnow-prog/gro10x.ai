@@ -688,6 +688,23 @@
       </div>
     </section>
 
+    <!-- Reference Prototype / Live Proof of Concept (if available) -->
+    <section class="section" id="prototypeSection" style="display: none;">
+      <div class="section-header">
+        <span class="section-icon">🚀</span>
+        <h2 class="section-title">Reference Prototype & Pilot Proof-of-Concept</h2>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--cyan); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div style="flex: 1; min-width: 260px;">
+          <h4 style="margin: 0 0 6px 0; font-size: 16px; color: #fff;" id="prototypeTitle">Interactive Prototype Demonstration</h4>
+          <p style="margin: 0; font-size: 14px; color: var(--text-dim);" id="prototypeSummary">A live proof-of-concept prototype previously developed for this engagement is available to inspect.</p>
+        </div>
+        <a id="prototypeLink" href="#" target="_blank" class="btn btn-outline" style="border-color: var(--cyan); color: var(--cyan); font-weight: 700;">
+          <span>🔗</span> View Live Prototype &rarr;
+        </a>
+      </div>
+    </section>
+
     <!-- Scope of Deliverables -->
     <section class="section">
       <div class="section-header">
@@ -732,7 +749,7 @@
       </div>
 
       <!-- Phase 2: Monthly Retainer -->
-      <div class="table-container">
+      <div class="table-container" id="recurringTableContainer">
         <div class="table-header-title">
           <h4>🔄 Phase 2: Ongoing AI Infrastructure & Maintenance Retainer</h4>
           <span class="status-badge" style="font-size: 11px;">Monthly Operational</span>
@@ -783,8 +800,8 @@
           <span class="pricing-pill-label">One-Time Build</span>
           <span class="pricing-pill-value" id="bottomOneTime">৳0</span>
         </div>
-        <div style="color: var(--border-subtle); font-size: 20px;">|</div>
-        <div class="pricing-pill-item">
+        <div style="color: var(--border-subtle); font-size: 20px;" id="bottomRecurringDivider">|</div>
+        <div class="pricing-pill-item" id="bottomRecurringItem">
           <span class="pricing-pill-label">Monthly Retainer</span>
           <span class="pricing-pill-value" id="bottomRecurring" style="color: var(--cyan);">৳0/mo</span>
         </div>
@@ -942,19 +959,61 @@
       document.getElementById('oneTimeTotalVal').textContent = `${currSymbol} ${Number(p.oneTimeTotal || 0).toLocaleString()}`;
       document.getElementById('bottomOneTime').textContent = `${currSymbol} ${Number(p.oneTimeTotal || 0).toLocaleString()}`;
 
+      // Interactive Prototype Binding
+      const prototypeSec = document.getElementById('prototypeSection');
+      if (prototypeSec) {
+        let protoUrl = p.prototype_url || p.prototypeUrl;
+        if (!protoUrl && p.notes && p.notes.includes('http')) {
+          const m = p.notes.match(/(https?:\/\/[^\s]+)/);
+          if (m) protoUrl = m[1];
+        }
+        if (protoUrl) {
+          prototypeSec.style.display = 'block';
+          const link = document.getElementById('prototypeLink');
+          if (link) link.href = protoUrl;
+          if (protoUrl.includes('serviq-pilot')) {
+            const titleEl = document.getElementById('prototypeTitle');
+            const summaryEl = document.getElementById('prototypeSummary');
+            if (titleEl) titleEl.textContent = 'Serviq Pilot Content Sprint Calendar (Live)';
+            if (summaryEl) summaryEl.textContent = 'Explore the interactive pilot content sprint calendar previously engineered for Serviq operations.';
+          } else if (protoUrl.includes('bahon')) {
+            const titleEl = document.getElementById('prototypeTitle');
+            const summaryEl = document.getElementById('prototypeSummary');
+            if (titleEl) titleEl.textContent = 'Bahon Fleet Command Center (Interactive Prototype)';
+            if (summaryEl) summaryEl.textContent = 'Explore the real-time spatial telemetry, Bashundhara geofencing, solar depot inventory, and anti-leakage revenue console.';
+          }
+        } else {
+          prototypeSec.style.display = 'none';
+        }
+      }
+
       // Recurring items table
+      const recurringContainer = document.getElementById('recurringTableContainer');
       const recurringBody = document.getElementById('recurringItemsBody');
-      recurringBody.innerHTML = (p.recurringItems || []).map(item => `
-        <tr>
-          <td>
-            <div class="item-name">${item.name}</div>
-            <div class="item-desc">${item.description || ''}</div>
-          </td>
-          <td class="item-amount">${currSymbol} ${Number(item.amount || 0).toLocaleString()} / ${item.frequency || 'mo'}</td>
-        </tr>
-      `).join('');
-      document.getElementById('recurringTotalVal').textContent = `${currSymbol} ${Number(p.recurringTotal || 0).toLocaleString()} / month`;
-      document.getElementById('bottomRecurring').textContent = `${currSymbol} ${Number(p.recurringTotal || 0).toLocaleString()}/mo`;
+      const recurringDivider = document.getElementById('bottomRecurringDivider');
+      const recurringItem = document.getElementById('bottomRecurringItem');
+      const hasRecurring = Array.isArray(p.recurringItems) && p.recurringItems.length > 0 && Number(p.recurringTotal || 0) > 0;
+
+      if (hasRecurring) {
+        if (recurringContainer) recurringContainer.style.display = 'block';
+        if (recurringDivider) recurringDivider.style.display = 'block';
+        if (recurringItem) recurringItem.style.display = 'flex';
+        recurringBody.innerHTML = (p.recurringItems || []).map(item => `
+          <tr>
+            <td>
+              <div class="item-name">${item.name}</div>
+              <div class="item-desc">${item.description || ''}</div>
+            </td>
+            <td class="item-amount">${currSymbol} ${Number(item.amount || 0).toLocaleString()} / ${item.frequency || 'mo'}</td>
+          </tr>
+        `).join('');
+        document.getElementById('recurringTotalVal').textContent = `${currSymbol} ${Number(p.recurringTotal || 0).toLocaleString()} / month`;
+        document.getElementById('bottomRecurring').textContent = `${currSymbol} ${Number(p.recurringTotal || 0).toLocaleString()}/mo`;
+      } else {
+        if (recurringContainer) recurringContainer.style.display = 'none';
+        if (recurringDivider) recurringDivider.style.display = 'none';
+        if (recurringItem) recurringItem.style.display = 'none';
+      }
 
       // Terms
       if (p.terms) {

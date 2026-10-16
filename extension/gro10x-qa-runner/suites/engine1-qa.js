@@ -1,6 +1,6 @@
 /**
- * Engine 1 Desk (AI Agent Ecosystems & Platforms) QA Automation Suite (12 Steps)
- * Tests Telemetry, Inbox, Takeover, Studio, and Developer Settings
+ * Engine 1 Desk (AI Agent Ecosystems & Platforms) QA Automation Suite (13 Steps)
+ * Tests Telemetry, Inbox, Takeover, Studio, Satellite Bridge Endpoints, and Developer Settings
  */
 
 const ENGINE1_QA_SUITE = {
@@ -68,28 +68,35 @@ const ENGINE1_QA_SUITE = {
     },
     {
       id: 'step-9',
-      title: '9. Verify Vector Knowledge Base Table Rendered',
-      action: 'assert_visible',
-      selector: 'table',
-      assertion: { type: 'wait_selector', selector: 'table tbody tr', timeout: 3000 }
+      title: '9. Validate Satellite Bridge Health Probe (/api/engines/engine1/bridge)',
+      action: 'wait_ms',
+      duration: 250,
+      assertion: { type: 'custom_check', check: 'assert_engine1_satellite_bridge' }
     },
     {
       id: 'step-10',
-      title: '10. Switch to Developer Control Settings Tab',
+      title: '10. Validate Master Engine Summary Satellite Integration (/api/engines/summary)',
+      action: 'wait_ms',
+      duration: 250,
+      assertion: { type: 'custom_check', check: 'assert_engine1_summary_satellite' }
+    },
+    {
+      id: 'step-11',
+      title: '11. Switch to Developer Control Settings Tab',
       action: 'click',
       selector: 'button[onclick*="switchTab(\'settings\')"]',
       assertion: { type: 'wait_selector', selector: '.card-glass', timeout: 3000 }
     },
     {
-      id: 'step-11',
-      title: '11. Verify Multi-Model Routing Ladder Tiers',
+      id: 'step-12',
+      title: '12. Verify Multi-Model Routing Ladder Tiers',
       action: 'assert_visible',
       selector: '.e1-badge-emerald',
-      assertion: { type: 'custom_check', check: 'assert_exists' }
+      assertion: { type: 'wait_selector', selector: '.e1-badge-emerald', timeout: 2000 }
     },
     {
-      id: 'step-12',
-      title: '12. Verify Hard Spending Ceilings & Safety Controls',
+      id: 'step-13',
+      title: '13. Verify Hard Spending Ceilings & Safety Controls',
       action: 'assert_visible',
       selector: 'button[onclick*="updateSpendingCap"]',
       assertion: { type: 'wait_selector', selector: 'button[onclick*="toggleSafetyKillSwitch"]', timeout: 2000 }

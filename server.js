@@ -571,6 +571,11 @@ app.get(['/prototypes/ryze-ai-star', '/prototypes/ryze-ai-star/'], (req, res) =>
   res.sendFile(path.join(__dirname, 'public/prototypes/ryze-ai-star/index.html'));
 });
 
+// Bahon Fleet Command Center Prototype (Green Bashundhara Initiative)
+app.get(['/prototypes/bahon', '/prototypes/bahon/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/bahon/index.html'));
+});
+
 // National Housing Finance Backwards Compatibility & Canonical Routing
 app.get(['/nhf', '/nhf/'], (req, res) => {
   res.redirect(302, '/prototypes/nhf-portal/');

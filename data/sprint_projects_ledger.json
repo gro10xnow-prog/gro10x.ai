@@ -2,7 +2,7 @@
   "conglomerate": "GRO10X Holdings",
   "currencyStandard": {
     "unit": "Credit",
-    "fiatEquivalentBdt": 2.00,
+    "fiatEquivalentBdt": 2,
     "fiatEquivalentUsd": 0.0165,
     "usdToCreditRate": 60.6,
     "formula": "1 Credit = BDT 2.00"
@@ -40,7 +40,11 @@
       "bdtValuation": 12500,
       "usdValuation": 103.12,
       "testsCertified": 52,
-      "artifacts": ["Master GIS 3D Digital Twin", "Plot Boundary Polygon Engine", "Master Database Schema"],
+      "artifacts": [
+        "Master GIS 3D Digital Twin",
+        "Plot Boundary Polygon Engine",
+        "Master Database Schema"
+      ],
       "charteredDate": "2026-10-02",
       "completedDate": "2026-10-06"
     },
@@ -56,7 +60,11 @@
       "bdtValuation": 12500,
       "usdValuation": 103.12,
       "testsCertified": 108,
-      "artifacts": ["Plot State Machine", "Dynamic EMI Calculator", "@NishatSharminBot Dispatcher"],
+      "artifacts": [
+        "Plot State Machine",
+        "Dynamic EMI Calculator",
+        "@NishatSharminBot Dispatcher"
+      ],
       "charteredDate": "2026-10-06",
       "completedDate": "2026-10-10"
     },
@@ -72,7 +80,11 @@
       "bdtValuation": 12500,
       "usdValuation": 103.12,
       "testsCertified": 154,
-      "artifacts": ["Executive CRM Cockpit", "Investor EMI Ledger", "SMS & WhatsApp Notification Bridge"],
+      "artifacts": [
+        "Executive CRM Cockpit",
+        "Investor EMI Ledger",
+        "SMS & WhatsApp Notification Bridge"
+      ],
       "charteredDate": "2026-10-10",
       "completedDate": "2026-10-14"
     },
@@ -88,7 +100,12 @@
       "bdtValuation": 25000,
       "usdValuation": 206.25,
       "testsCertified": 205,
-      "artifacts": ["Public /booking/ 3D Portal", "Field Sales /agent/ Suite", "Cash-Flow 4-Bucket Aging Analytics", "Certified Bangla Bayna Patra HTML"],
+      "artifacts": [
+        "Public /booking/ 3D Portal",
+        "Field Sales /agent/ Suite",
+        "Cash-Flow 4-Bucket Aging Analytics",
+        "Certified Bangla Bayna Patra HTML"
+      ],
       "charteredDate": "2026-10-14",
       "completedDate": "2026-10-16"
     },
@@ -104,7 +121,11 @@
       "bdtValuation": 17500,
       "usdValuation": 144.38,
       "testsCertified": 140,
-      "artifacts": ["6-Level Hierarchy Engine", "12-Step Pipeline State Machine", "Real-time SSE Broadcast Sync"],
+      "artifacts": [
+        "6-Level Hierarchy Engine",
+        "12-Step Pipeline State Machine",
+        "Real-time SSE Broadcast Sync"
+      ],
       "charteredDate": "2026-09-28",
       "completedDate": "2026-10-05"
     },
@@ -120,7 +141,12 @@
       "bdtValuation": 17500,
       "usdValuation": 144.38,
       "testsCertified": 212,
-      "artifacts": ["Lean V1 Desktop UI", "Telegram MiniApp 3-Tab Focus", "Review Room & Checklists", "2.3MB Vector PDF Hardware User Manual"],
+      "artifacts": [
+        "Lean V1 Desktop UI",
+        "Telegram MiniApp 3-Tab Focus",
+        "Review Room & Checklists",
+        "2.3MB Vector PDF Hardware User Manual"
+      ],
       "charteredDate": "2026-10-06",
       "completedDate": "2026-10-15"
     },
@@ -134,17 +160,26 @@
       "pricingType": "Commercial",
       "creditValuation": 5000,
       "bdtValuation": 10000,
-      "usdValuation": 82.50,
+      "usdValuation": 82.5,
       "testsCertified": 212,
-      "artifacts": ["Supabase Data Sanitization", "Chrome Extension v4.4.0", "Auth Table Deduplication", "Telegram Webhook Secret Synchronization"],
+      "artifacts": [
+        "Supabase Data Sanitization",
+        "Chrome Extension v4.4.0",
+        "Auth Table Deduplication",
+        "Telegram Webhook Secret Synchronization"
+      ],
       "contractorPayout": {
         "expenseId": "EXP-20261016-QA01",
         "payee": "S. M Mahmud Bin Murad (Onim)",
         "phone": "+8801755087633",
         "role": "Human QA Verification Specialist",
+        "category": "Contractor QA & Human Verification",
         "amountBdt": 2500,
         "amountCredits": 1250,
-        "status": "Approved"
+        "purpose": "Independent exploratory QA audit and creative UX critique for PurpleOS V1 handover",
+        "status": "Approved",
+        "disbursementCondition": "Disbursement upon delivery of QA feedback in Telegram group",
+        "loggedDate": "2026-10-16"
       },
       "charteredDate": "2026-10-16",
       "completedDate": null
@@ -159,9 +194,14 @@
       "pricingType": "Internal R&D (100% Equity Discount)",
       "creditValuation": 25000,
       "bdtValuation": 50000,
-      "usdValuation": 412.50,
+      "usdValuation": 412.5,
       "testsCertified": 77,
-      "artifacts": ["National Housing Finance AI Sales Deck & Proposal", "Serviq AI Content Calendar & Visual Suite", "Gro10x Motion-as-Code Framework", "Prototype Showroom Engine"],
+      "artifacts": [
+        "National Housing Finance AI Sales Deck & Proposal",
+        "Serviq AI Content Calendar & Visual Suite",
+        "Gro10x Motion-as-Code Framework",
+        "Prototype Showroom Engine"
+      ],
       "charteredDate": "2026-09-20",
       "completedDate": "2026-10-14"
     }
@@ -171,7 +211,7 @@
     "totalSprintsCompleted": 7,
     "totalCreditsGenerated": 78750,
     "totalBdtValuation": 157500,
-    "totalUsdValuation": 1300.00,
+    "totalUsdValuation": 1300,
     "totalTestsPassingAcrossHoldings": 494
   }
 }

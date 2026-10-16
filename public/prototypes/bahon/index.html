@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>BAHON (বাহন) — Green Bashundhara Electric Fleet Command Center</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --bahon-green: #10b981;
+      --bahon-cyan: #06b6d4;
+      --bahon-amber: #f59e0b;
+      --bahon-red: #ef4444;
+      --bg-dark: #070b12;
+      --card-dark: #0f172a;
+      --card-border: rgba(255, 255, 255, 0.08);
+    }
+    body {
+      font-family: 'Space Grotesk', 'Hind Siliguri', 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: #f8fafc;
+      overflow-x: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono { font-family: 'Space Mono', monospace; }
+    .bangla { font-family: 'Hind Siliguri', sans-serif; }
+
+    /* Road grid lines and subtle radar pulse */
+    .bg-radar {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(16, 185, 129, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(16, 185, 129, 0.04) 1px, transparent 1px);
+    }
+
+    .pulse-halo {
+      animation: pulseGlow 2s infinite;
+    }
+    @keyframes pulseGlow {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.35); opacity: 0.2; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #070b12; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--bahon-green); }
+
+    /* Map roads styling */
+    .road-main { stroke: #334155; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    .road-secondary { stroke: #1e293b; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+    .road-accent { stroke: rgba(16, 185, 129, 0.25); stroke-width: 2; stroke-dasharray: 6 4; }
+    .block-boundary { fill: rgba(15, 23, 42, 0.5); stroke: rgba(255, 255, 255, 0.07); stroke-width: 1.5; }
+    .block-boundary:hover { fill: rgba(16, 185, 129, 0.08); stroke: rgba(16, 185, 129, 0.3); }
+
+    /* Vehicle Pin Transitions */
+    .vehicle-marker {
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .vehicle-marker:hover {
+      filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.9));
+    }
+  </style>
+</head>
+<body class="bg-[#070b12] text-slate-100 min-h-screen relative flex flex-col selection:bg-[#10b981] selection:text-black">
+
+  <!-- ========================================================= -->
+  <!-- TOP COMMAND CENTER HEADER & BILINGUAL CONTROLS            -->
+  <!-- ========================================================= -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#070b12]/92 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 py-2.5 flex justify-between items-center transition-all">
+    
+    <!-- Official Brand & Sub-committee identity -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#10b981] to-[#06b6d4] flex items-center justify-center font-black text-black text-lg shadow-[0_0_18px_rgba(16,185,129,0.5)] shrink-0">
+        ⚡
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-base sm:text-lg tracking-tight text-white flex items-center gap-1.5">
+            <span>বাহন</span> <span class="text-gray-400 font-light">|</span> <span class="text-[#10b981]">BAHON</span>
+          </span>
+          <span class="text-[10px] mono uppercase font-bold bg-[#10b981]/15 text-[#10b981] px-2 py-0.5 rounded-md border border-[#10b981]/30">
+            Green Bashundhara Fleet
+          </span>
+        </div>
+        <div class="text-[10px] sm:text-[11px] text-gray-400 font-medium truncate max-w-[200px] sm:max-w-none" data-i18n="tagline">
+          Electric Fleet Management & Real-Time Anti-Leakage Revenue Command
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Status Indicator (Hidden on extra small screens) -->
+    <div class="hidden lg:flex items-center gap-2 bg-[#0f172a] border border-white/10 px-3.5 py-1.5 rounded-full text-xs mono">
+      <span class="w-2 h-2 rounded-full bg-[#10b981] animate-ping"></span>
+      <span class="text-gray-300" data-i18n="geofenceStatus">Geofence Sealed:</span>
+      <span class="text-[#10b981] font-bold">16 Blocks (A–P) Active</span>
+      <span class="text-gray-600">|</span>
+      <span class="text-gray-400">Deployed:</span>
+      <span class="text-white font-bold" id="header-deployed-count">28 / 30</span>
+    </div>
+
+    <!-- Header Action Controls & Bilingual Switcher -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      
+      <!-- Simulated Intrusion Alert Button -->
+      <button onclick="triggerIntrusionSimulation()" class="bg-[#ef4444]/15 hover:bg-[#ef4444]/25 border border-[#ef4444]/40 text-[#ef4444] px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95" title="Simulate manual cycle-rickshaw intrusion at Gate 1">
+        <span>🚨</span>
+        <span class="hidden sm:inline" data-i18n="btnIntrusion">Simulate Intrusion</span>
+      </button>
+
+      <!-- Bilingual Toggle [🇬🇧 EN | 🇧🇩 বাংলা] -->
+      <div class="bg-[#0f172a] border border-white/10 p-0.5 rounded-xl flex items-center shadow-lg">
+        <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#10b981] text-black transition">
+          🇬🇧 EN
+        </button>
+        <button onclick="setLanguage('bn')" id="lang-btn-bn" class="px-2.5 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">
+          🇧🇩 বাংলা
+        </button>
+      </div>
+
+      <!-- Proposal Quick Wrap Link -->
+      <a href="/prototypes" class="hidden md:inline-flex text-xs text-gray-400 hover:text-white border border-white/10 px-2.5 py-1.5 rounded-xl transition">
+        ← Showroom
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- ALERT BANNER: GEOFENCE INTRUSION SIMULATOR                -->
+  <!-- ========================================================= -->
+  <div id="intrusion-banner" class="hidden fixed top-14 left-4 right-4 z-40 bg-[#ef4444]/95 border-2 border-white/30 text-white p-3.5 rounded-2xl shadow-2xl backdrop-blur-md flex flex-wrap justify-between items-center gap-3 transition-all">
+    <div class="flex items-center gap-3">
+      <div class="text-2xl animate-bounce">⚠️</div>
+      <div>
+        <div class="font-extrabold text-sm uppercase tracking-wide flex items-center gap-2">
+          <span data-i18n="alertTitle">SECURITY ALERT: Unauthorized Rickshaw Detected at Gate 1</span>
+          <span class="bg-black/40 text-[10px] mono px-2 py-0.5 rounded">AUTO-INTERCEPT</span>
+        </div>
+        <div class="text-xs text-red-100 mt-0.5" data-i18n="alertDesc">
+          Manual pedal cycle-rickshaw attempting bypass into Block A. Smart Boom Barrier locked. Security Post 1 & Guard Patrol dispatched.
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="dismissIntrusionAlert()" class="bg-black hover:bg-gray-900 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">
+        <span data-i18n="btnDismiss">Acknowledge & Clear ✕</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MAIN WORKSPACE: SPATIAL MAP (65%) + TELEMETRY DOCK (35%)   -->
+  <!-- ========================================================= -->
+  <div class="pt-16 pb-6 px-3 sm:px-6 max-w-[1720px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+    
+    <!-- ======================================================= -->
+    <!-- LEFT & CENTER: SPATIAL GRID MAP OF BASHUNDHARA R/A      -->
+    <!-- ======================================================= -->
+    <div class="lg:col-span-8 flex flex-col gap-3">
+      
+      <!-- Map Action Toolbar -->
+      <div class="bg-[#0f172a]/90 backdrop-blur-md border border-white/10 rounded-2xl p-2.5 sm:p-3 flex flex-wrap justify-between items-center gap-2 shadow-xl">
+        
+        <!-- Live Vehicle Status Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-bold">
+          <button onclick="filterVehicles('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-xl bg-[#10b981] text-black shadow transition flex items-center gap-1.5 shrink-0">
+            <span data-i18n="filterAll">All Bahons</span>
+            <span class="bg-black/20 text-xs px-1.5 py-0.2 rounded-md font-mono">28</span>
+          </button>
+          <button onclick="filterVehicles('transit')" id="filter-btn-transit" class="px-3 py-1.5 rounded-xl bg-[#070b12] text-gray-300 hover:text-white border border-white/10 transition flex items-center gap-1.5 shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+            <span data-i18n="filterTransit">In Transit</span>
+            <span class="text-xs text-gray-400 font-mono">18</span>
+          </button>
+          <button onclick="filterVehicles('idle')" id="filter-btn-idle" class="px-3 py-1.5 rounded-xl bg-[#070b12] text-gray-300 hover:text-white border border-white/10 transition flex items-center gap-1.5 shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#06b6d4]"></span>
+            <span data-i18n="filterIdle">Idle at Stand</span>
+            <span class="text-xs text-gray-400 font-mono">6</span>
+          </button>
+          <button onclick="filterVehicles('charging')" id="filter-btn-charging" class="px-3 py-1.5 rounded-xl bg-[#070b12] text-gray-300 hover:text-white border border-white/10 transition flex items-center gap-1.5 shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
+            <span data-i18n="filterCharging">Charging / Low</span>
+            <span class="text-xs text-gray-400 font-mono">4</span>
+          </button>
+        </div>
+
+        <!-- Quick Landmark Focus Zoom Buttons -->
+        <div class="flex items-center gap-1.5 text-xs">
+          <button onclick="focusLandmark('gate1')" class="bg-white/5 hover:bg-white/15 px-2.5 py-1.5 rounded-xl text-gray-300 border border-white/10 transition flex items-center gap-1" title="Jump to Gate 1 (Kuril)">
+            🚪 <span>Gate 1</span>
+          </button>
+          <button onclick="focusLandmark('nsu')" class="bg-white/5 hover:bg-white/15 px-2.5 py-1.5 rounded-xl text-gray-300 border border-white/10 transition flex items-center gap-1" title="Jump to NSU / IUB Cluster">
+            🎓 <span>NSU/IUB</span>
+          </button>
+          <button onclick="focusLandmark('evercare')" class="bg-white/5 hover:bg-white/15 px-2.5 py-1.5 rounded-xl text-gray-300 border border-white/10 transition flex items-center gap-1" title="Jump to Evercare Hospital Zone">
+            🏥 <span>Evercare</span>
+          </button>
+          <button onclick="focusLandmark('depot')" class="bg-white/5 hover:bg-white/15 px-2.5 py-1.5 rounded-xl text-gray-300 border border-white/10 transition flex items-center gap-1" title="Jump to Solar Swap Hub">
+            🔋 <span>Depot</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Vector Map Canvas Viewport -->
+      <div class="relative bg-[#0b101b] border border-white/10 rounded-3xl overflow-hidden shadow-2xl h-[460px] sm:h-[580px] lg:h-[660px] flex items-center justify-center bg-radar select-none">
+        
+        <!-- Interactive Vector Map SVG -->
+        <svg id="bashundhara-map" viewBox="0 0 1000 680" class="w-full h-full object-contain cursor-grab active:cursor-grabbing">
+          
+          <!-- Definitions for Gradients and Markers -->
+          <defs>
+            <radialGradient id="solarGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="hospitalGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- ============================================== -->
+          <!-- BASHUNDHARA RESIDENTIAL SECTORS / BLOCKS (A–P) -->
+          <!-- ============================================== -->
+          <g id="map-blocks">
+            <!-- Block A (Gate 1 entrance) -->
+            <rect x="70" y="80" width="130" height="110" rx="16" class="block-boundary" />
+            <text x="135" y="140" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK A</text>
+
+            <!-- Block B -->
+            <rect x="220" y="80" width="140" height="110" rx="16" class="block-boundary" />
+            <text x="290" y="140" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK B</text>
+
+            <!-- Block C (Solar Depot Alpha) -->
+            <rect x="380" y="80" width="160" height="110" rx="16" class="block-boundary" />
+            <circle cx="460" cy="135" r="45" fill="url(#solarGlow)" />
+            <text x="460" y="130" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK C</text>
+            <text x="460" y="152" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">🔋 Solar Depot Alpha</text>
+
+            <!-- Block D (Mehedi Mart & Central Market) -->
+            <rect x="560" y="80" width="140" height="110" rx="16" class="block-boundary" />
+            <text x="630" y="140" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK D</text>
+
+            <!-- Block E (Evercare Hospital Zone) -->
+            <rect x="70" y="220" width="130" height="140" rx="16" class="block-boundary" />
+            <circle cx="135" cy="290" r="50" fill="url(#hospitalGlow)" />
+            <text x="135" y="280" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK E</text>
+            <text x="135" y="305" fill="#06b6d4" font-size="11" font-weight="bold" text-anchor="middle">🏥 Evercare Hospital</text>
+
+            <!-- Block F -->
+            <rect x="220" y="220" width="140" height="140" rx="16" class="block-boundary" />
+            <text x="290" y="295" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK F</text>
+
+            <!-- Block G -->
+            <rect x="380" y="220" width="160" height="140" rx="16" class="block-boundary" />
+            <text x="460" y="295" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK G</text>
+
+            <!-- Block H -->
+            <rect x="560" y="220" width="140" height="140" rx="16" class="block-boundary" />
+            <text x="630" y="295" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK H</text>
+
+            <!-- Block I (NSU / IUB University Cluster) -->
+            <rect x="70" y="390" width="130" height="140" rx="16" class="block-boundary" />
+            <circle cx="135" cy="460" r="50" fill="url(#hospitalGlow)" />
+            <text x="135" y="450" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK I</text>
+            <text x="135" y="475" fill="#a855f7" font-size="11" font-weight="bold" text-anchor="middle">🎓 NSU & IUB Cluster</text>
+
+            <!-- Block J -->
+            <rect x="220" y="390" width="140" height="140" rx="16" class="block-boundary" />
+            <text x="290" y="465" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK J</text>
+
+            <!-- Block K -->
+            <rect x="380" y="390" width="160" height="140" rx="16" class="block-boundary" />
+            <text x="460" y="465" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK K</text>
+
+            <!-- Block L -->
+            <rect x="560" y="390" width="140" height="140" rx="16" class="block-boundary" />
+            <text x="630" y="465" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK L</text>
+
+            <!-- Eastern Extension: Blocks M, N, O, P -->
+            <rect x="730" y="80" width="190" height="180" rx="16" class="block-boundary" />
+            <circle cx="825" cy="160" r="45" fill="url(#solarGlow)" />
+            <text x="825" y="160" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK M</text>
+            <text x="825" y="185" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">🔋 Solar Depot Beta</text>
+
+            <rect x="730" y="280" width="190" height="170" rx="16" class="block-boundary" />
+            <text x="825" y="365" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK N & O</text>
+
+            <rect x="730" y="470" width="190" height="150" rx="16" class="block-boundary" />
+            <text x="825" y="545" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK P (300ft)</text>
+          </g>
+
+          <!-- ============================================== -->
+          <!-- ROAD NETWORK (AVENUES & MAIN ARTERIES)         -->
+          <!-- ============================================== -->
+          <g id="map-roads">
+            <!-- East-West Spine Road 1 (Gate 1 ➔ Avenue 1) -->
+            <path d="M 20 205 L 940 205" class="road-main" />
+            <path d="M 20 205 L 940 205" class="road-accent" />
+
+            <!-- East-West Spine Road 2 (Avenue 2) -->
+            <path d="M 20 375 L 940 375" class="road-main" />
+            <path d="M 20 375 L 940 375" class="road-accent" />
+
+            <!-- East-West Spine Road 3 (Avenue 3 / Madani link) -->
+            <path d="M 20 545 L 940 545" class="road-main" />
+
+            <!-- North-South Avenue 1 (Between A/B & E/F) -->
+            <path d="M 210 50 L 210 630" class="road-main" />
+            <path d="M 210 50 L 210 630" class="road-accent" />
+
+            <!-- North-South Avenue 2 (Central Boulevard) -->
+            <path d="M 370 50 L 370 630" class="road-main" />
+            <path d="M 370 50 L 370 630" class="road-accent" />
+
+            <!-- North-South Avenue 3 -->
+            <path d="M 550 50 L 550 630" class="road-main" />
+
+            <!-- North-South Avenue 4 (Connecting to Block M/N/P) -->
+            <path d="M 715 50 L 715 630" class="road-main" />
+            <path d="M 715 50 L 715 630" class="road-accent" />
+          </g>
+
+          <!-- ============================================== -->
+          <!-- MAIN GATES & SECURITY CHECKPOINTS              -->
+          <!-- ============================================== -->
+          <g id="map-checkpoints">
+            <!-- Gate 1 (Kuril / Jamuna Future Park) -->
+            <g id="checkpoint-gate1" class="cursor-pointer" onclick="focusLandmark('gate1')">
+              <rect x="5" y="175" width="45" height="60" rx="8" fill="#10b981" />
+              <text x="27" y="210" fill="#000" font-size="18" font-weight="bold" text-anchor="middle">🚪</text>
+              <text x="27" y="250" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">GATE 1</text>
+              <text x="27" y="265" fill="#94a3b8" font-size="9" text-anchor="middle">Kuril / JFP</text>
+            </g>
+
+            <!-- Gate 2 (300ft Purbachal Expressway) -->
+            <g id="checkpoint-gate2" class="cursor-pointer" onclick="focusLandmark('gate2')">
+              <rect x="945" y="515" width="45" height="60" rx="8" fill="#06b6d4" />
+              <text x="967" y="550" fill="#000" font-size="18" font-weight="bold" text-anchor="middle">🛣️</text>
+              <text x="967" y="590" fill="#06b6d4" font-size="11" font-weight="bold" text-anchor="middle">300FT GATE</text>
+              <text x="967" y="605" fill="#94a3b8" font-size="9" text-anchor="middle">Madani Ave</text>
+            </g>
+          </g>
+
+          <!-- ============================================== -->
+          <!-- DYNAMIC VEHICLE FLEET PINS (Injected via JS)   -->
+          <!-- ============================================== -->
+          <g id="map-vehicles"></g>
+
+          <!-- Selected Vehicle Highlight Ring -->
+          <circle id="selection-ring" cx="-100" cy="-100" r="22" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="4 3" class="pointer-events-none" />
+        </svg>
+
+        <!-- Compass & Map Watermark -->
+        <div class="absolute bottom-3 left-3 bg-[#070b12]/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-[10px] mono text-gray-400 flex items-center gap-2">
+          <span>🧭 BASHUNDHARA R/A GRID</span>
+          <span>•</span>
+          <span class="text-[#10b981]">1,420 KM LOGGED TODAY</span>
+        </div>
+
+        <!-- Live Movement Indicator -->
+        <div class="absolute top-3 right-3 bg-[#070b12]/85 backdrop-blur-md px-3 py-1 rounded-xl border border-white/10 text-[11px] mono text-gray-300 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#10b981] animate-ping"></span>
+          <span>LIVE TELEMETRY (1.2s POLLING)</span>
+        </div>
+      </div>
+
+      <!-- Quick KPI Bottom Matrix -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-[#0f172a] border border-white/10 p-3 rounded-2xl shadow">
+          <div class="text-[10px] text-gray-400 uppercase tracking-wider mono" data-i18n="kpiTotalRevenue">Today's Revenue</div>
+          <div class="text-xl sm:text-2xl font-black text-[#10b981] mono mt-0.5">৳48,500</div>
+          <div class="text-[10px] text-emerald-400 mt-0.5" data-i18n="kpiZeroLeakage">● 100% Anti-Leakage Tracked</div>
+        </div>
+        <div class="bg-[#0f172a] border border-white/10 p-3 rounded-2xl shadow">
+          <div class="text-[10px] text-gray-400 uppercase tracking-wider mono" data-i18n="kpiCashlessRatio">Cashless QR Share</div>
+          <div class="text-xl sm:text-2xl font-black text-[#06b6d4] mono mt-0.5">70.2%</div>
+          <div class="text-[10px] text-gray-400 mt-0.5" data-i18n="kpiCashlessSub">bKash / NFC Smart Card</div>
+        </div>
+        <div class="bg-[#0f172a] border border-white/10 p-3 rounded-2xl shadow">
+          <div class="text-[10px] text-gray-400 uppercase tracking-wider mono" data-i18n="kpiCo2Saved">CO2 Emissions Saved</div>
+          <div class="text-xl sm:text-2xl font-black text-[#f59e0b] mono mt-0.5">284 kg</div>
+          <div class="text-[10px] text-gray-400 mt-0.5" data-i18n="kpiCo2Sub">Vs Fossil / Cycle Slog</div>
+        </div>
+        <div class="bg-[#0f172a] border border-white/10 p-3 rounded-2xl shadow">
+          <div class="text-[10px] text-gray-400 uppercase tracking-wider mono" data-i18n="kpiSwapTime">Avg Battery Swap</div>
+          <div class="text-xl sm:text-2xl font-black text-white mono mt-0.5">110 sec</div>
+          <div class="text-[10px] text-[#10b981] mt-0.5" data-i18n="kpiSwapSub">Depot A & B Operational</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- RIGHT: COMMAND PANELS & ACTIVE VEHICLE DOSSIER          -->
+    <!-- ======================================================= -->
+    <div class="lg:col-span-4 flex flex-col gap-4">
+      
+      <!-- Panel 1: Live Vehicle Telemetry Dossier -->
+      <div class="bg-[#0f172a] border border-white/15 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
+        
+        <div class="flex justify-between items-center pb-3 border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#10b981] mono" data-i18n="dossierTitle">
+              LIVE VEHICLE DOSSIER
+            </span>
+          </div>
+          <span id="vehicle-status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+            In Transit
+          </span>
+        </div>
+
+        <!-- Vehicle & Driver Card -->
+        <div class="flex items-center gap-3.5 mt-4">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#1e293b] to-[#0f172a] border-2 border-[#10b981] flex items-center justify-center text-3xl shadow-lg shrink-0" id="vehicle-avatar">
+            🛺
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex justify-between items-baseline">
+              <h3 class="text-lg font-bold text-white tracking-tight truncate" id="vehicle-id">BHN-042</h3>
+              <span class="text-xs text-[#10b981] font-bold mono">4.9 ★★★★★</span>
+            </div>
+            <div class="text-xs text-gray-300 font-semibold" id="driver-name">Driver: Kalam Mia (কালাম মিয়া)</div>
+            <div class="text-[11px] text-gray-400 mono truncate" id="vehicle-route">Route: Gate 1 ➔ Block I (NSU Campus)</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Specs Quad -->
+        <div class="grid grid-cols-2 gap-2.5 mt-4">
+          
+          <!-- Battery Gauge -->
+          <div class="bg-[#070b12] border border-white/10 p-2.5 rounded-xl">
+            <div class="flex justify-between items-center text-[10px] text-gray-400 mono">
+              <span data-i18n="specBattery">Battery (48V Li-ion)</span>
+              <span id="vehicle-battery-val" class="text-[#10b981] font-bold">78%</span>
+            </div>
+            <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden mt-1.5">
+              <div id="vehicle-battery-bar" class="bg-[#10b981] h-2 rounded-full" style="width: 78%"></div>
+            </div>
+            <div class="text-[9px] text-gray-400 mt-1 mono" id="vehicle-range-text">Range: ~34 km remaining</div>
+          </div>
+
+          <!-- Speed & Location -->
+          <div class="bg-[#070b12] border border-white/10 p-2.5 rounded-xl">
+            <div class="text-[10px] text-gray-400 mono" data-i18n="specSpeed">Speed & Zone</div>
+            <div class="text-sm font-bold text-white mono mt-0.5" id="vehicle-speed">18 km/h</div>
+            <div class="text-[9px] text-gray-400 mt-1 truncate" id="vehicle-block">Zone: Block D Avenue 2</div>
+          </div>
+
+          <!-- Today's Trips & Earnings -->
+          <div class="bg-[#070b12] border border-white/10 p-2.5 rounded-xl">
+            <div class="text-[10px] text-gray-400 mono" data-i18n="specTrips">Today's Completed Trips</div>
+            <div class="text-sm font-bold text-[#06b6d4] mono mt-0.5" id="vehicle-trips">24 Trips</div>
+            <div class="text-[9px] text-gray-400 mt-1 mono" id="vehicle-earnings">৳ 2,640 Gross Fare</div>
+          </div>
+
+          <!-- Safety & Geofence -->
+          <div class="bg-[#070b12] border border-white/10 p-2.5 rounded-xl">
+            <div class="text-[10px] text-gray-400 mono" data-i18n="specSafety">Safety & Geofence</div>
+            <div class="text-sm font-bold text-emerald-400 mono mt-0.5">VERIFIED SAFE</div>
+            <div class="text-[9px] text-gray-400 mt-1 mono">0 Violations Logged</div>
+          </div>
+        </div>
+
+        <!-- Vehicle Action Buttons -->
+        <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/10 text-xs">
+          <button onclick="callDriver()" class="bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl text-center transition">
+            📞 <span data-i18n="btnCall">Call</span>
+          </button>
+          <button onclick="limitSpeed()" class="bg-[#06b6d4]/15 hover:bg-[#06b6d4]/30 text-[#06b6d4] font-bold py-2 rounded-xl text-center transition border border-[#06b6d4]/30">
+            ⚡ <span data-i18n="btnLimit">Limit 20km</span>
+          </button>
+          <button onclick="interceptVehicle()" class="bg-[#ef4444]/15 hover:bg-[#ef4444]/30 text-[#ef4444] font-bold py-2 rounded-xl text-center transition border border-[#ef4444]/30">
+            🚨 <span data-i18n="btnHalt">Halt SOS</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel 2: Regulated Fixed Fare Matrix (No Haggling) -->
+      <div class="bg-[#0f172a] border border-white/15 rounded-3xl p-5 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#06b6d4] mono" data-i18n="fareTitle">
+            REGULATED FIXED FARE MATRIX
+          </span>
+          <span class="text-[10px] text-gray-400 mono">Zero Extortion</span>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div class="bg-[#070b12] p-2.5 rounded-xl border border-white/5 flex justify-between items-center">
+            <div>
+              <div class="font-bold text-white">Gate 1 (Kuril) ➔ Block I (NSU / IUB)</div>
+              <div class="text-[10px] text-gray-400">Direct Express Student Corridor (3.2 km)</div>
+            </div>
+            <span class="text-sm font-bold text-[#10b981] mono">৳ 30</span>
+          </div>
+
+          <div class="bg-[#070b12] p-2.5 rounded-xl border border-white/5 flex justify-between items-center">
+            <div>
+              <div class="font-bold text-white">Gate 1 ➔ Block E (Evercare Hospital)</div>
+              <div class="text-[10px] text-gray-400">Medical Corridor (2.1 km)</div>
+            </div>
+            <span class="text-sm font-bold text-[#10b981] mono">৳ 20</span>
+          </div>
+
+          <div class="bg-[#070b12] p-2.5 rounded-xl border border-white/5 flex justify-between items-center">
+            <div>
+              <div class="font-bold text-white">Block I (NSU) ➔ 300ft Purbachal Gate</div>
+              <div class="text-[10px] text-gray-400">East Bashundhara Link (4.4 km)</div>
+            </div>
+            <span class="text-sm font-bold text-[#10b981] mono">৳ 35</span>
+          </div>
+        </div>
+
+        <div class="mt-3 text-[11px] text-gray-400 pt-2 border-t border-white/10 flex items-center justify-between">
+          <span data-i18n="fareRule">Approved by Green Bashundhara Society</span>
+          <span class="text-[#06b6d4] font-bold">100% Cashless bKash QR</span>
+        </div>
+      </div>
+
+      <!-- Panel 3: Solar Swap Depot Status -->
+      <div class="bg-[#0f172a] border border-white/15 rounded-3xl p-5 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#f59e0b] mono" data-i18n="solarTitle">
+            SOLAR CHARGING & SWAP HUBS
+          </span>
+          <span class="text-[10px] mono text-emerald-400">● 40.5 kW Live Solar</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <!-- Hub Alpha -->
+          <div class="bg-[#070b12] p-3 rounded-2xl border border-white/10">
+            <div class="font-bold text-white">Hub Alpha (Block C)</div>
+            <div class="text-lg font-black text-[#10b981] mono mt-1">14 / 20</div>
+            <div class="text-[10px] text-gray-400" data-i18n="hubReadyPacks">Charged Packs Ready</div>
+            <div class="text-[9px] text-[#f59e0b] mt-1 mono">Solar Gen: 18.4 kW</div>
+          </div>
+
+          <!-- Hub Beta -->
+          <div class="bg-[#070b12] p-3 rounded-2xl border border-white/10">
+            <div class="font-bold text-white">Hub Beta (Block M)</div>
+            <div class="text-lg font-black text-[#10b981] mono mt-1">17 / 20</div>
+            <div class="text-[10px] text-gray-400" data-i18n="hubReadyPacks">Charged Packs Ready</div>
+            <div class="text-[9px] text-[#f59e0b] mt-1 mono">Solar Gen: 22.1 kW</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT LOGIC: FLEET ENGINE & BILINGUAL STATE          -->
+  <!-- ========================================================= -->
+  <script>
+    // 1. BILINGUAL DICTIONARY
+    let currentLang = 'en';
+
+    const I18N = {
+      en: {
+        tagline: 'Electric Fleet Management & Real-Time Anti-Leakage Revenue Command',
+        geofenceStatus: 'Geofence Sealed:',
+        btnIntrusion: 'Simulate Intrusion',
+        alertTitle: 'SECURITY ALERT: Unauthorized Rickshaw Detected at Gate 1',
+        alertDesc: 'Manual pedal cycle-rickshaw attempting bypass into Block A. Smart Boom Barrier locked. Security Post 1 & Guard Patrol dispatched.',
+        btnDismiss: 'Acknowledge & Clear ✕',
+        filterAll: 'All Bahons',
+        filterTransit: 'In Transit',
+        filterIdle: 'Idle at Stand',
+        filterCharging: 'Charging / Low',
+        kpiTotalRevenue: "Today's Revenue",
+        kpiZeroLeakage: '● 100% Anti-Leakage Tracked',
+        kpiCashlessRatio: 'Cashless QR Share',
+        kpiCashlessSub: 'bKash / NFC Smart Card',
+        kpiCo2Saved: 'CO2 Emissions Saved',
+        kpiCo2Sub: 'Vs Fossil / Cycle Slog',
+        kpiSwapTime: 'Avg Battery Swap',
+        kpiSwapSub: 'Depot A & B Operational',
+        dossierTitle: 'LIVE VEHICLE DOSSIER',
+        specBattery: 'Battery (48V Li-ion)',
+        specSpeed: 'Speed & Zone',
+        specTrips: "Today's Completed Trips",
+        specSafety: 'Safety & Geofence',
+        btnCall: 'Call',
+        btnLimit: 'Limit 20km',
+        btnHalt: 'Halt SOS',
+        fareTitle: 'REGULATED FIXED FARE MATRIX',
+        fareRule: 'Approved by Green Bashundhara Society',
+        solarTitle: 'SOLAR CHARGING & SWAP HUBS',
+        hubReadyPacks: 'Charged Packs Ready'
+      },
+      bn: {
+        tagline: 'ইলেকট্রিক ফ্লিট ম্যানেজমেন্ট ও শতভাগ লিকেজ-মুক্ত রাজস্ব কমান্ড সেন্টার',
+        geofenceStatus: 'জিওফেন্স সুরক্ষিত:',
+        btnIntrusion: 'অনুপ্রবেশ সিমুলেশন',
+        alertTitle: 'নিরাপত্তা সতর্কতা: গেট ১-এ অননুমোদিত রিকশা শনাক্ত!',
+        alertDesc: 'ব্লক এ-তে সনাতন প্যাডেল রিকশার প্রবেশের চেষ্টা। অটো বুম ব্যারিয়ার লক করা হয়েছে। সিকিউরিটি পোস্ট ১ ও টহল দল পাঠানো হয়েছে।',
+        btnDismiss: 'নিশ্চিত ও বন্ধ করুন ✕',
+        filterAll: 'সব বাহন',
+        filterTransit: 'চলমান ট্রিপ',
+        filterIdle: 'স্ট্যান্ডে অপেক্ষারত',
+        filterCharging: 'চার্জিং / ব্যাটারি কম',
+        kpiTotalRevenue: 'আজকের মোট রাজস্ব',
+        kpiZeroLeakage: '● ১০০% লিকেজ-মুক্ত রাজস্ব হিসাব',
+        kpiCashlessRatio: 'ক্যাশলেস QR পেমেন্ট',
+        kpiCashlessSub: 'বিকাশ / NFC স্মার্ট কার্ড',
+        kpiCo2Saved: 'কার্বন নির্গমন হ্রাস',
+        kpiCo2Sub: 'সনাতন রিকশার তুলনায়',
+        kpiSwapTime: 'ব্যাটারি সোয়াপ সময়',
+        kpiSwapSub: 'ডিপো এ এবং বি সচল',
+        dossierTitle: 'লাইভ বাহন ডসিয়ার ও তথ্য',
+        specBattery: 'ব্যাটারি (৪৮V লিথিয়াম)',
+        specSpeed: 'গতি ও অবস্থান',
+        specTrips: 'আজকের সম্পন্ন ট্রিপ',
+        specSafety: 'নিরাপত্তা ও সীমানা',
+        btnCall: 'কল দিন',
+        btnLimit: '২০ কিমি স্পিড',
+        btnHalt: 'থামিয়ে দিন',
+        fareTitle: 'নির্ধারিত ন্যায্য ভাড়া তালিকা',
+        fareRule: 'গ্রিন বসুন্ধরা সোসাইটি কর্তৃক অনুমোদিত',
+        solarTitle: 'সোলার চার্জিং ও ব্যাটারি সোয়াপ হাব',
+        hubReadyPacks: 'সোয়াপের জন্য প্রস্তুত প্যাক'
+      }
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.getElementById('lang-btn-en').className = lang === 'en' 
+        ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-[#10b981] text-black transition'
+        : 'px-2.5 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+      document.getElementById('lang-btn-bn').className = lang === 'bn' 
+        ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-[#10b981] text-black transition'
+        : 'px-2.5 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (I18N[lang] && I18N[lang][key]) {
+          el.textContent = I18N[lang][key];
+        }
+      });
+    }
+
+    // 2. FLEET SIMULATION DATA (28 VEHICLES)
+    const DRIVER_NAMES = [
+      { en: 'Kalam Mia', bn: 'কালাম মিয়া' },
+      { en: 'Rafiqul Islam', bn: 'রফিকুল ইসলাম' },
+      { en: 'Nurul Huda', bn: 'নুরুল হুদা' },
+      { en: 'Shahjahan Ali', bn: 'শাহজাহান আলী' },
+      { en: 'Motiur Rahman', bn: 'মতিউর রহমান' },
+      { en: 'Dulal Hossain', bn: 'দুলাল হোসেন' },
+      { en: 'Faruk Ahmed', bn: 'ফারুক আহমেদ' },
+      { en: 'Abdur Rahim', bn: 'আব্দুর রহিম' },
+      { en: 'Al-Amin Sheikh', bn: 'আল-আমিন শেখ' },
+      { en: 'Kabir Hossain', bn: 'কবীর হোসেন' }
+    ];
+
+    const WAYPOINTS = [
+      { x: 50, y: 205 },    // Gate 1
+      { x: 210, y: 205 },   // Ave 1 / Road 1
+      { x: 370, y: 205 },   // Central Blvd
+      { x: 550, y: 205 },   // Block D
+      { x: 715, y: 205 },   // Block M Ave
+      { x: 825, y: 205 },   // East Ave
+      { x: 210, y: 375 },   // Near Evercare
+      { x: 370, y: 375 },   // Central Evercare
+      { x: 550, y: 375 },   // Block H
+      { x: 715, y: 375 },   // Block N
+      { x: 210, y: 545 },   // Near NSU
+      { x: 370, y: 545 },   // Block K
+      { x: 715, y: 545 },   // Block P
+      { x: 940, y: 545 }    // 300ft Gate
+    ];
+
+    const FLEET = [];
+    for (let i = 1; i <= 28; i++) {
+      const numStr = i < 10 ? `00${i}` : (i < 100 ? `0${i}` : `${i}`);
+      const driver = DRIVER_NAMES[i % DRIVER_NAMES.length];
+      
+      let status = 'transit';
+      let battery = Math.floor(Math.random() * 55) + 45; // 45% - 99%
+      let speed = Math.floor(Math.random() * 8) + 14;     // 14-22 km/h
+
+      if (i % 6 === 0) {
+        status = 'charging';
+        battery = Math.floor(Math.random() * 14) + 8; // <20%
+        speed = 8;
+      } else if (i % 5 === 0) {
+        status = 'idle';
+        speed = 0;
+      }
+
+      // Random starting position on map road grid
+      const p1 = WAYPOINTS[i % WAYPOINTS.length];
+      const p2 = WAYPOINTS[(i + 1) % WAYPOINTS.length];
+
+      FLEET.push({
+        id: `BHN-${numStr}`,
+        driverName: driver,
+        status: status,
+        battery: battery,
+        speed: speed,
+        x: p1.x + (p2.x - p1.x) * (Math.random() * 0.8 + 0.1),
+        y: p1.y + (p2.y - p1.y) * (Math.random() * 0.8 + 0.1),
+        targetX: p2.x,
+        targetY: p2.y,
+        trips: Math.floor(Math.random() * 15) + 12,
+        fare: Math.floor(Math.random() * 1200) + 1800,
+        currentBlock: ['Block A', 'Block C', 'Block D', 'Block E', 'Block I', 'Block M', 'Block P'][i % 7]
+      });
+    }
+
+    let selectedVehicleId = 'BHN-042'; // default highlight
+    let currentFilter = 'all';
+
+    // 3. RENDER VEHICLES ON SVG MAP
+    function renderFleet() {
+      const container = document.getElementById('map-vehicles');
+      if (!container) return;
+      container.innerHTML = '';
+
+      FLEET.forEach(v => {
+        if (currentFilter !== 'all' && v.status !== currentFilter) {
+          return;
+        }
+
+        // Color coding
+        let color = '#10b981'; // Green for transit
+        if (v.status === 'idle') color = '#06b6d4'; // Cyan for idle
+        if (v.status === 'charging') color = '#f59e0b'; // Amber for low battery
+
+        const isSelected = (v.id === selectedVehicleId);
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'vehicle-marker');
+        g.setAttribute('onclick', `selectVehicle('${v.id}')`);
+        g.setAttribute('transform', `translate(${v.x}, ${v.y})`);
+
+        g.innerHTML = `
+          <!-- Pulsing Halo for active vehicles -->
+          ${v.status === 'transit' ? `<circle cx="0" cy="0" r="14" fill="${color}" opacity="0.3" class="pulse-halo" />` : ''}
+          
+          <!-- Outer Circle Badge -->
+          <circle cx="0" cy="0" r="10" fill="#070b12" stroke="${color}" stroke-width="2.5" />
+          
+          <!-- Inner Dot -->
+          <circle cx="0" cy="0" r="4" fill="${color}" />
+
+          <!-- Vehicle ID Tag (visible on desktop) -->
+          <rect x="-24" y="-23" width="48" height="13" rx="3" fill="#070b12" stroke="${color}" stroke-width="1" />
+          <text x="0" y="-14" fill="#ffffff" font-size="8" font-family="Space Mono" font-weight="bold" text-anchor="middle">${v.id.replace('BHN-0', 'B')}</text>
+        `;
+
+        container.appendChild(g);
+
+        if (isSelected) {
+          const ring = document.getElementById('selection-ring');
+          if (ring) {
+            ring.setAttribute('cx', v.x);
+            ring.setAttribute('cy', v.y);
+            ring.setAttribute('stroke', color);
+          }
+        }
+      });
+    }
+
+    // 4. ANIMATE VEHICLE MOVEMENTS ALONG GRID
+    function animateVehicles() {
+      FLEET.forEach(v => {
+        if (v.status === 'transit' || v.status === 'charging') {
+          const dx = v.targetX - v.x;
+          const dy = v.targetY - v.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 4) {
+            // Pick next random waypoint on road
+            const nextWp = WAYPOINTS[Math.floor(Math.random() * WAYPOINTS.length)];
+            v.targetX = nextWp.x;
+            v.targetY = nextWp.y;
+          } else {
+            const step = (v.speed / 20) * 0.9;
+            v.x += (dx / dist) * step;
+            v.y += (dy / dist) * step;
+          }
+        }
+      });
+
+      renderFleet();
+      requestAnimationFrame(animateVehicles);
+    }
+
+    // 5. SELECT VEHICLE & POPULATE TELEMETRY DOSSIER
+    function selectVehicle(id) {
+      selectedVehicleId = id;
+      const v = FLEET.find(item => item.id === id) || FLEET[0];
+      if (!v) return;
+
+      document.getElementById('vehicle-id').textContent = v.id;
+      
+      const driverStr = currentLang === 'bn' 
+        ? `চালক: ${v.driverName.bn} (${v.driverName.en})` 
+        : `Driver: ${v.driverName.en} (${v.driverName.bn})`;
+      document.getElementById('driver-name').textContent = driverStr;
+      
+      const routeStr = currentLang === 'bn'
+        ? `রুট: গেট ১ ➔ ${v.currentBlock} (লাইভ ট্রিপ)`
+        : `Route: Gate 1 ➔ ${v.currentBlock} (Live Transit)`;
+      document.getElementById('vehicle-route').textContent = routeStr;
+
+      // Battery bar
+      document.getElementById('vehicle-battery-val').textContent = `${v.battery}%`;
+      const batBar = document.getElementById('vehicle-battery-bar');
+      batBar.style.width = `${v.battery}%`;
+      if (v.battery < 20) {
+        batBar.className = 'bg-[#ef4444] h-2 rounded-full';
+        document.getElementById('vehicle-battery-val').className = 'text-[#ef4444] font-bold';
+      } else {
+        batBar.className = 'bg-[#10b981] h-2 rounded-full';
+        document.getElementById('vehicle-battery-val').className = 'text-[#10b981] font-bold';
+      }
+      document.getElementById('vehicle-range-text').textContent = `Range: ~${Math.round(v.battery * 0.44)} km remaining`;
+
+      // Speed & block
+      document.getElementById('vehicle-speed').textContent = `${v.speed} km/h`;
+      document.getElementById('vehicle-block').textContent = `Zone: ${v.currentBlock} Avenue 2`;
+
+      // Completed trips
+      document.getElementById('vehicle-trips').textContent = `${v.trips} Trips`;
+      document.getElementById('vehicle-earnings').textContent = `৳ ${v.fare.toLocaleString('en-IN')} Gross Fare`;
+
+      // Status badge
+      const badge = document.getElementById('vehicle-status-badge');
+      if (v.status === 'transit') {
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+        badge.textContent = currentLang === 'bn' ? 'চলমান ট্রিপ' : 'In Transit';
+      } else if (v.status === 'idle') {
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase mono bg-cyan-500/20 text-cyan-400 border border-cyan-500/40';
+        badge.textContent = currentLang === 'bn' ? 'স্ট্যান্ডে অপেক্ষারত' : 'Idle at Stand';
+      } else {
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase mono bg-amber-500/20 text-amber-400 border border-amber-500/40';
+        badge.textContent = currentLang === 'bn' ? 'ব্যাটারি কম / চার্জিং' : 'Charging Depot';
+      }
+
+      renderFleet();
+    }
+
+    // 6. FILTER VEHICLES
+    function filterVehicles(type) {
+      currentFilter = type;
+      ['all', 'transit', 'idle', 'charging'].forEach(k => {
+        const btn = document.getElementById(`filter-btn-${k}`);
+        if (!btn) return;
+        if (k === type) {
+          btn.className = 'px-3 py-1.5 rounded-xl bg-[#10b981] text-black shadow transition flex items-center gap-1.5 shrink-0 font-bold';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-xl bg-[#070b12] text-gray-300 hover:text-white border border-white/10 transition flex items-center gap-1.5 shrink-0 font-bold';
+        }
+      });
+      renderFleet();
+    }
+
+    // 7. LANDMARK FOCUS ZOOM
+    function focusLandmark(key) {
+      if (key === 'gate1') {
+        selectVehicle('BHN-001');
+      } else if (key === 'nsu') {
+        selectVehicle('BHN-012');
+      } else if (key === 'evercare') {
+        selectVehicle('BHN-007');
+      } else if (key === 'depot') {
+        selectVehicle('BHN-006'); // charging unit
+      }
+    }
+
+    // 8. SIMULATE INTRUSION ALERT
+    function triggerIntrusionSimulation() {
+      const banner = document.getElementById('intrusion-banner');
+      banner.classList.remove('hidden');
+    }
+
+    function dismissIntrusionAlert() {
+      const banner = document.getElementById('intrusion-banner');
+      banner.classList.add('hidden');
+    }
+
+    // 9. VEHICLE ACTIONS SIMULATOR
+    function callDriver() {
+      alert(`Calling ${document.getElementById('driver-name').textContent} on secured fleet radio channel... (Connected)`);
+    }
+
+    function limitSpeed() {
+      alert(`Speed-Governor command sent to ${document.getElementById('vehicle-id').textContent}. Max speed locked at 20 km/h.`);
+    }
+
+    function interceptVehicle() {
+      alert(`Emergency SOS Signal triggered for ${document.getElementById('vehicle-id').textContent}. Guard Patrol unit 02 notified.`);
+    }
+
+    // Bootstrap
+    window.addEventListener('DOMContentLoaded', () => {
+      selectVehicle('BHN-042');
+      animateVehicles();
+    });
+  </script>
+</body>
+</html>

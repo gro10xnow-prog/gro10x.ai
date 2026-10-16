@@ -4195,6 +4195,48 @@
     // If testing with mock leads without AI scorecard, verify drawer itself rendered properly
     result.detail = 'Verified lead profile drawer container active with AI readiness telemetry attributes';
   }
+} else if (assertion.check === 'assert_engine1_satellite_bridge') {
+  await sleep(200);
+  const token = localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || localStorage.getItem('jwt_token') || '';
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+  const resp = await fetch('/api/engines/engine1/bridge', { headers });
+  if (!resp.ok) {
+    throw new Error(`Engine 1 satellite bridge HTTP error: ${resp.status}`);
+  }
+  const json = await resp.json();
+  if (!json.success || !json.data) {
+    throw new Error('Engine 1 satellite bridge invalid response structure');
+  }
+  const { status, satelliteUrl, benchCount } = json.data;
+  const isOnline = status === 'online' || status === 'CONNECTED';
+  const isOfflineMock = status === 'offline_mock' || status === 'STANDALONE_OFFLINE' || status === 'offline';
+  if (!isOnline && !isOfflineMock) {
+    throw new Error(`Engine 1 satellite bridge unexpected status: ${status} (expected online or offline_mock)`);
+  }
+  if (!satelliteUrl || typeof benchCount !== 'number') {
+    throw new Error('Engine 1 satellite bridge missing valid metadata (satelliteUrl or benchCount)');
+  }
+  result.detail = `Validated Engine 1 Satellite Bridge (${isOnline ? 'ONLINE live telemetry' : 'OFFLINE_MOCK fallback'}): status=${status}, url=${satelliteUrl}, benchCount=${benchCount}`;
+} else if (assertion.check === 'assert_engine1_summary_satellite') {
+  await sleep(200);
+  const token = localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || localStorage.getItem('jwt_token') || '';
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+  const resp = await fetch('/api/engines/summary', { headers });
+  if (!resp.ok) {
+    throw new Error(`Engines summary HTTP error: ${resp.status}`);
+  }
+  const json = await resp.json();
+  const e1 = json.summary?.engine1;
+  if (!e1 || !e1.satellite) {
+    throw new Error('Engines summary missing engine1 satellite metadata');
+  }
+  const { status, satelliteUrl, benchCount } = e1.satellite;
+  const isOnline = status === 'online' || status === 'CONNECTED';
+  const isOfflineMock = status === 'offline_mock' || status === 'STANDALONE_OFFLINE' || status === 'offline';
+  if (!isOnline && !isOfflineMock) {
+    throw new Error(`Engines summary engine1 unexpected satellite status: ${status}`);
+  }
+  result.detail = `Validated Engines Summary Satellite: status=${status}, url=${satelliteUrl || 'N/A'}, benchCount=${benchCount ?? 'N/A'}`;
 } else if (assertion.check) {
   await sleep(200);
   const candidate = assertion.selector ? querySelectorSmart(assertion.selector) : null;
