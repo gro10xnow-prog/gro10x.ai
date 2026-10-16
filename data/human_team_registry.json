@@ -1,0 +1,103 @@
+{
+  "conglomerate": "GRO10X Holdings",
+  "authority": "Central Chief of Staff & Virtual CTO × Head of People & Talent Operations",
+  "last_updated": "2026-10-16T18:42:00+06:00",
+  "registry_version": "1.1.0",
+  "total_human_personnel": 5,
+  "human_roster": [
+    {
+      "human_id": "GRO-000",
+      "full_name": "Firoz Uddin Ahmed",
+      "preferred_name": "Plabon / Firoz",
+      "contact": {
+        "phone": "+8801708459008",
+        "norm_phone": "1708459008",
+        "email": "gro10xnow@gmail.com"
+      },
+      "designation": "Founder & Chief Executive Officer",
+      "department": "Executive Leadership & Board",
+      "status": "Active",
+      "employment_type": "Executive Founder",
+      "conglomerate_tier": "Owner / Admin"
+    },
+    {
+      "human_id": "GRO-003",
+      "full_name": "Rafsan Ameen",
+      "preferred_name": "Rafsan",
+      "contact": {
+        "phone": "+8801798558479",
+        "norm_phone": "1798558479",
+        "email": "rafsanameen@gmail.com"
+      },
+      "designation": "Head of Business Development",
+      "department": "Strategy & Commercial Growth",
+      "status": "Active",
+      "employment_type": "Core Leadership Team",
+      "conglomerate_tier": "Technology Admin",
+      "credentials": {
+        "access_pin": "1019"
+      }
+    },
+    {
+      "human_id": "GRO-H-001",
+      "full_name": "S. M Mahmud Bin Murad",
+      "preferred_name": "Onim",
+      "contact": {
+        "phone": "+8801755087633",
+        "norm_phone": "1755087633",
+        "whatsapp": "+8801755087633",
+        "email": "onim@gro10x.ai"
+      },
+      "designation": "Junior QA Specialist & Product Apprentice",
+      "department": "Quality Engineering & Product Solutions",
+      "status": "Active",
+      "employment_type": "Apprentice / External Contractor",
+      "conglomerate_tier": "Specialist / Crew",
+      "assigned_venture": {
+        "name": "PurpleBot Digital Core OS",
+        "engine": "Engine 3 Satellite #2 / Engine 4 Foundry",
+        "local_emp_code": "PBD-033",
+        "web_portal_url": "https://purpleos-iota.vercel.app/app",
+        "telegram_bot": "@purplemanosbot",
+        "default_pin": "7633"
+      },
+      "first_assignment": {
+        "task_name": "PurpleOS V1 End-to-End Human UX & Creative Workflow Audit",
+        "milestone_compensation_bdt": 2500.00,
+        "compensation_status": "Approved via Central Finance (EXP-20261016-QA01)"
+      }
+    },
+    {
+      "human_id": "GRO-PARTNER-01",
+      "full_name": "Arif Ahmed",
+      "preferred_name": "Arif",
+      "contact": {
+        "phone": "+8801680061704",
+        "norm_phone": "1680061704",
+        "whatsapp": "+8801680061704"
+      },
+      "designation": "Strategic Industry Partner & Deal Originator",
+      "department": "Strategic Alliances & Industry Ventures",
+      "status": "Active Strategic Partner",
+      "employment_type": "External Venture Partner",
+      "coverage": ["Banking Solutions", "Mobility & Transport (Bahon)", "Healthcare Solutions"],
+      "model": "Deal Origination & Industry Co-Venture Partnership"
+    },
+    {
+      "human_id": "GRO-PARTNER-02",
+      "full_name": "Mahmudul Hasan Samrat",
+      "preferred_name": "Sam",
+      "contact": {
+        "phone": "+8801873472524",
+        "norm_phone": "1873472524",
+        "whatsapp": "+8801873472524"
+      },
+      "designation": "Technical Solutions Partner & Enterprise IT Architect",
+      "department": "Enterprise Architecture & Special Projects",
+      "status": "Active Strategic Partner",
+      "employment_type": "External Enterprise Technical Partner",
+      "background": "BUP ICT 1, Enterprise IT Solutions",
+      "coverage": ["Server Infrastructure", "Deep-Tech Integrations", "Enterprise Core Banking Architecture"]
+    }
+  ]
+}
