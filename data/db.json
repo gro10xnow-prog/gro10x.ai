@@ -1,41 +1,26 @@
 {
-  "clients": [],
+  "clients": [
+    {
+      "id": "CLI-SHOMVOB-TECH",
+      "name": "Shomvob Technologies Limited",
+      "company": "Shomvob Technologies Limited",
+      "email": "rifad@shomvob.co",
+      "phone": "+8801700000000",
+      "status": "Pitch Delivered",
+      "category": "Workforce Super-App & EdTech",
+      "notes": "In-Person Strategic Pitch: Baridhara DOHS (Rifad Hossain, CEO & Hasibur Rahman, COO). 17-slide deck at /prototypes/shomvob-pitch/",
+      "bound_prototype": "https://gro10x-ai.vercel.app/prototypes/shomvob-pitch/"
+    }
+  ],
   "services": [],
   "team": [],
   "tasks": [],
   "reviews": [],
   "invoices": [
     {
-      "id": "INV-2026-013",
-      "client_id": "CLI-MUSG3NC9-111A",
-      "amount": 2625,
-      "status": "Pending",
-      "due_date": "2026-10-29",
-      "issue_date": "2026-10-15",
-      "paid_at": null
-    },
-    {
-      "id": "INV-2026-015",
-      "client_id": "CLI-MU4FXM7E-1366",
-      "amount": 105000,
-      "status": "Pending",
-      "due_date": "2026-10-29",
-      "issue_date": "2026-10-15",
-      "paid_at": null
-    },
-    {
       "id": "INV-2026-014",
       "client_id": null,
       "amount": 63000,
-      "status": "Pending",
-      "due_date": "2026-10-29",
-      "issue_date": "2026-10-15",
-      "paid_at": null
-    },
-    {
-      "id": "INV-2026-021",
-      "client_id": "CLI-MULEN4X0-BA05",
-      "amount": 12600,
       "status": "Pending",
       "due_date": "2026-10-29",
       "issue_date": "2026-10-15",
@@ -60,15 +45,6 @@
       "paid_at": null
     },
     {
-      "id": "INV-2026-018",
-      "client_id": "CLI-MU4Q02BV-0EE6",
-      "amount": 105000,
-      "status": "Paid",
-      "due_date": "2026-10-29",
-      "issue_date": "2026-10-15",
-      "paid_at": "2026-10-15T19:46:54.598+00:00"
-    },
-    {
       "id": "INV-2026-019",
       "client_id": null,
       "amount": 25000,
@@ -81,15 +57,6 @@
       "id": "INV-2026-020",
       "client_id": null,
       "amount": 50000,
-      "status": "Pending",
-      "due_date": "2026-10-29",
-      "issue_date": "2026-10-15",
-      "paid_at": null
-    },
-    {
-      "id": "INV-2026-022",
-      "client_id": "CLI-MU1TLEQ1-DE57",
-      "amount": 50400,
       "status": "Pending",
       "due_date": "2026-10-29",
       "issue_date": "2026-10-15",
@@ -207,76 +174,6 @@
       "created_at": "2026-09-20T21:08:19.238+00:00"
     },
     {
-      "id": "LED-UCB-BANK",
-      "name": "Zahin Head of Digital Banking",
-      "email": "digital.banking@ucb.com.bd",
-      "phone": "+880 1700-000000",
-      "company": "United Commercial Bank PLC",
-      "stage": "Proposal Sent",
-      "score": 90,
-      "created_at": "2026-09-14T22:34:14+00:00"
-    },
-    {
-      "id": "LED-CITYBANK-CAP",
-      "name": "Investment Banking Head",
-      "email": "investments@citybankcapital.com",
-      "phone": "+880 1711-990011",
-      "company": "City Bank Capital PLC",
-      "stage": "Draft Proposal",
-      "score": 85,
-      "created_at": "2026-09-20T10:00:00+00:00"
-    },
-    {
-      "id": "LED-SUMMIT-POWER",
-      "name": "Chief Technology Officer",
-      "email": "procurement@summitpower.com",
-      "phone": "+880 1711-882200",
-      "company": "Summit Power AI",
-      "stage": "Onboarding",
-      "score": 100,
-      "created_at": "2026-09-16T23:16:58+00:00"
-    },
-    {
-      "id": "LED-APEX-FOOT",
-      "name": "Lead Contact",
-      "email": "partners@apexfootwear.com",
-      "phone": "+8801700998877",
-      "company": "Apex Footwear Limited",
-      "stage": "Active Retainer",
-      "score": 100,
-      "created_at": "2026-09-20T21:08:31+00:00"
-    },
-    {
-      "id": "LED-HYPERSCALE",
-      "name": "Rafiqul Islam (CTO)",
-      "email": "rafiq@hyperscale.com",
-      "phone": "+8801711998877",
-      "company": "HyperScale Retail Ltd",
-      "stage": "Onboarding",
-      "score": 90,
-      "created_at": "2026-09-16T18:35:08+00:00"
-    },
-    {
-      "id": "LED-APEX-MESH",
-      "name": "Apex Mesh CEO",
-      "email": "ceo@apexmesh.com",
-      "phone": "+880 1711-554433",
-      "company": "Apex Mesh Corp",
-      "stage": "Onboarding",
-      "score": 85,
-      "created_at": "2026-09-28T15:31:04+00:00"
-    },
-    {
-      "id": "LED-APEX-BIO",
-      "name": "Dr. Tariqul Alam",
-      "email": "tariqul@apexbio.tech",
-      "phone": "+880 1711-998877",
-      "company": "Apex BioTech Labs",
-      "stage": "Onboarding",
-      "score": 85,
-      "created_at": "2026-10-03T13:46:17+00:00"
-    },
-    {
       "id": "LED-SERVIQ-BPO",
       "name": "Merajul Islam",
       "email": "Meraj5417@gmail.com",
@@ -305,189 +202,25 @@
       "stage": "Proposal Delivered",
       "score": 95,
       "created_at": "2026-09-27T21:36:40+00:00"
+    },
+    {
+      "id": "LED-SHOMVOB-TECH",
+      "name": "Rifad Hossain (CEO)",
+      "company": "Shomvob Technologies Limited",
+      "email": "rifad@shomvob.co",
+      "phone": "+8801700000000",
+      "service_interest": "AI Workforce Super-App, TalentSentry & Vernacular Voice",
+      "source": "Co-Venture Strategic Pitch",
+      "status": "in_progress",
+      "stage": "Pitch Delivered",
+      "value": 700000,
+      "currency": "BDT",
+      "score": 95,
+      "assigned_to": "GRO-000",
+      "notes": "17-Slide Presentation Engine live on Vercel. Pacing HUD in copilot.html."
     }
   ],
   "quotes": [
-    {
-      "id": "QTE-2026-001",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-01",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-17T05:25:08.824+00:00",
-      "updated_at": "2026-09-17T05:25:08.824+00:00"
-    },
-    {
-      "id": "QTE-2026-002",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-01",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-17T05:36:33.203+00:00",
-      "updated_at": "2026-09-17T05:36:33.203+00:00"
-    },
-    {
-      "id": "QTE-2026-003",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-01",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-17T05:53:47.378+00:00",
-      "updated_at": "2026-09-17T05:53:47.378+00:00"
-    },
-    {
-      "id": "QTE-2026-004",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-04",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-20T21:08:52.965+00:00",
-      "updated_at": "2026-09-20T21:08:52.965+00:00"
-    },
-    {
-      "id": "QTE-2026-005",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-04",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-20T21:18:37.576+00:00",
-      "updated_at": "2026-09-20T21:18:37.576+00:00"
-    },
-    {
-      "id": "QTE-2026-006",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-04",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-20T21:30:18.639+00:00",
-      "updated_at": "2026-09-20T21:30:18.639+00:00"
-    },
-    {
-      "id": "QTE-2026-007",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-04",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-20T21:31:59.227+00:00",
-      "updated_at": "2026-09-20T21:31:59.227+00:00"
-    },
-    {
-      "id": "QTE-2026-008",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-04",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-20T21:37:54.964+00:00",
-      "updated_at": "2026-09-20T21:37:54.964+00:00"
-    },
-    {
-      "id": "QTE-2026-009",
-      "client_id": null,
-      "client_name": "United Commercial Bank (UCB)",
-      "project_title": "Enterprise 24/7 AI Chatbot Deployment Solution",
-      "scope": "",
-      "amount": 50000,
-      "currency": "BDT",
-      "status": "Draft",
-      "valid_until": "2026-10-04",
-      "line_items": [
-        {
-          "amount": 50000,
-          "description": "Enterprise 24/7 AI Chatbot Deployment Solution"
-        }
-      ],
-      "notes": "",
-      "created_at": "2026-09-20T21:40:25.517+00:00",
-      "updated_at": "2026-09-20T21:40:25.517+00:00"
-    },
     {
       "id": "PROP-2026-004",
       "client_id": null,
