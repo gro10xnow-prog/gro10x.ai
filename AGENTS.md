@@ -78,3 +78,22 @@ When creating or refining pre-sales prototypes in `public/prototypes/<slug>/`:
 5. **Robust Canvas Exports**: Downloadable share cards must implement word-wrapping, dynamic QR links to exact 3D URL state, synchronized room metadata, and high-resolution mobile story proportions.
 
 
+
+---
+
+### 7. Sequential Squad Relay & Discipline Domain Boundary Mandate (Anti-Monolith Protocol)
+To maintain architectural integrity and prevent single-agent hallucination or discipline collapse:
+1. **Zero-Monolith Rule**: No single squad lead (e.g., `[S1] Backend`) is EVER permitted to implement an entire sprint across disciplines. `[S1]` must never write frontend HTML/CSS/JS in `/public/`, edit bot dispatchers, or author master QA verification suites.
+2. **Strict File Domain Boundaries**:
+   - **`[S1]` (Backend & Data)**: Hard-locked to `/server/db/`, `/server/routes/`, and domain controllers.
+   - **`[S2]` (Frontend & Spatial)**: Hard-locked to `/public/`, UI views, WebGL canvases, and client styling.
+   - **`[S3]` (Bot Mesh & AI)**: Hard-locked to `/server/services/telegram.js`, webhooks, and multimodal OCR pipelines.
+   - **`[S4]` (QA & SecOps)**: Hard-locked to `/tests/`, stress harnesses, and regression certification. Only `[S4]` can certify test gates.
+3. **The 4-Stage Baton-Pass Protocol**:
+   - A Venture Chief of Staff is **STRICTLY FORBIDDEN** from bundling an entire milestone into one squad's prompt.
+   - The CoS must orchestrate an ordered sequential relay:
+     * **Stage 1**: Dispatch to `[S1]`. Inspect backend report.
+     * **Stage 2**: Dispatch to `[S2]`. Inspect frontend report.
+     * **Stage 3**: Dispatch to `[S3]`. Inspect bot report.
+     * **Stage 4**: Dispatch to `[S4]`. Inspect independent QA certification.
+   - The Venture CoS must produce distinct receipts from all 4 squads before compiling the final Executive Attainment Report for Central Holdings.
