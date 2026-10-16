@@ -76,6 +76,14 @@ When creating or refining pre-sales prototypes in `public/prototypes/<slug>/`:
 3. **Authentic Localized Pricing**: For Bangladesh market ventures, all prices must reflect authentic local retail tiers (BDT) rather than arbitrary or hyper-inflated numbers.
 4. **Bilingual Invariant (EN + BN)**: Client-facing consumer prototypes must provide a seamless English/Bangla toggle for viral shareability and local stakeholder demos.
 5. **Robust Canvas Exports**: Downloadable share cards must implement word-wrapping, dynamic QR links to exact 3D URL state, synchronized room metadata, and high-resolution mobile story proportions.
+6. **The "Proposal-Wrapped Prototype" Mandate (Zero Naked Prototype Links)**:
+   - **STRICT PROHIBITION**: Central CoS, Venture CoS, or digital leads must NEVER instruct the Founder to share a raw, standalone prototype link (`/prototypes/<slug>/`) directly to a client or prospect.
+   - **The Dual-Asset Invariant**: Every technology prototype MUST be embedded inside an official interactive GRO10X Proposal (`/p/<token>`).
+   - **Pipeline Conversion**: The proposal wraps the prototype with commercial investment tiers, clear scope boundaries, mobilization advance milestones, alignment call scheduling, and one-tap client acceptance.
+   - **Sequential Delivery Protocol**:
+     * Stage 1: `Foundry Lab Director` builds the prototype (`/prototypes/<slug>/`).
+     * Stage 2: `Proposal Engine & Deal Structurer` wraps the prototype inside the official proposal (`PROP-YYYY-<CLIENT>`).
+     * Stage 3: The client receives only the canonical Proposal Link (`https://gro10x-ai.vercel.app/p/<token>`) showcasing the live prototype card.
 
 
 
