@@ -68,3 +68,12 @@ These strategic insights are banked here to be progressively integrated as we sc
 ### 💡 Item 4: Investor Valuation Narrative
 * Position GRO10X not as an IT consulting firm (which trades at 1-2x revenue), but as a **Tech Platform & Autonomous Digital Labor Infrastructure** (which trades at 10-20x ARR).
 * The ledger proves repeatable software creation at superhuman velocity and ultra-low cost.
+
+### 💡 Item 5: The Junior Apprenticeship & Human QA Layer (The Onim Protocol)
+* **Talent Grooming Model**: As the gigafactory scales, solo execution creates a bottleneck. We cultivate high-potential human apprentices (e.g. S. M Mahmud Bin Murad / Onim, `+8801755087633`) to act as the human bridge.
+* **The 2-Phase Staged Evaluation**:
+  - **Phase 1: Exploratory Human Walkthrough**: Tests real user UX, catches edge cases scripts miss, and learns the client value proposition first-hand.
+  - **Phase 2: Chrome Extension Automated Testing**: Teaches him how our automated test engines and digital squads verify code.
+* **Per-Cycle Compensation**: Fixed BDT 2,500 (1,250 Credits) milestone expense per QA audit, logged directly into the Mother OS platform ledger.
+* **Future Delegation**: Once trained in Antigravity workflows, apprentices can take over full venture account handling, QA verification, and client communications.
+

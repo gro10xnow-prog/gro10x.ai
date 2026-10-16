@@ -137,6 +137,15 @@
       "usdValuation": 82.50,
       "testsCertified": 212,
       "artifacts": ["Supabase Data Sanitization", "Chrome Extension v4.4.0", "Auth Table Deduplication", "Telegram Webhook Secret Synchronization"],
+      "contractorPayout": {
+        "expenseId": "EXP-20261016-QA01",
+        "payee": "S. M Mahmud Bin Murad (Onim)",
+        "phone": "+8801755087633",
+        "role": "Human QA Verification Specialist",
+        "amountBdt": 2500,
+        "amountCredits": 1250,
+        "status": "Approved"
+      },
       "charteredDate": "2026-10-16",
       "completedDate": null
     },
