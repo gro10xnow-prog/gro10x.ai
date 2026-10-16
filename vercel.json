@@ -177,7 +177,15 @@
       "dest": "/public/proposal.html"
     },
     {
-      "src": "/prototypes/shomvob-pitch(/.*)?",
+      "src": "/prototypes/shomvob-pitch/copilot(.*)",
+      "dest": "/public/prototypes/shomvob-pitch/copilot.html"
+    },
+    {
+      "src": "/prototypes/shomvob-pitch/?$",
+      "dest": "/public/prototypes/shomvob-pitch/index.html"
+    },
+    {
+      "src": "/prototypes/shomvob-pitch/index(.*)",
       "dest": "/public/prototypes/shomvob-pitch/index.html"
     },
     {
