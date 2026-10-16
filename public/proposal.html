@@ -967,6 +967,15 @@
           const m = p.notes.match(/(https?:\/\/[^\s]+)/);
           if (m) protoUrl = m[1];
         }
+        // Canonical token-level fallback to guarantee 100% display
+        const sToken = (p.shareToken || p.share_token || '').toLowerCase();
+        if (!protoUrl && (sToken === 'bahon-fleet' || (p.projectTitle || '').toLowerCase().includes('bahon'))) {
+          protoUrl = 'https://gro10x-ai.vercel.app/prototypes/bahon/';
+        }
+        if (!protoUrl && (sToken === 'serviq-ai-workforce' || (p.projectTitle || '').toLowerCase().includes('serviq'))) {
+          protoUrl = 'https://gro10x-ai.vercel.app/prototypes/serviq-pilot/';
+        }
+
         if (protoUrl) {
           prototypeSec.style.display = 'block';
           const link = document.getElementById('prototypeLink');

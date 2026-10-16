@@ -43,7 +43,7 @@ function mapProposal(p) {
     clientPhone: p.client_phone || p.clientPhone || '',
     projectTitle: p.project_title || p.projectTitle || 'AI Solution Proposal',
     projectSummary: p.project_summary || p.projectSummary || '',
-    prototypeUrl: p.prototype_url || p.prototypeUrl || null,
+    prototypeUrl: p.prototype_url || p.prototypeUrl || (p.notes && p.notes.match(/https?:\/\/[^\s]+prototypes\/[^\s]+/)?.[0]) || null,
     scopeItems: Array.isArray(p.scope_items) ? p.scope_items : (Array.isArray(p.scopeItems) ? p.scopeItems : []),
     oneTimeItems: Array.isArray(p.one_time_items) ? p.one_time_items : (Array.isArray(p.oneTimeItems) ? p.oneTimeItems : []),
     recurringItems: Array.isArray(p.recurring_items) ? p.recurring_items : (Array.isArray(p.recurringItems) ? p.recurringItems : []),
