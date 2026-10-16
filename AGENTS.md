@@ -97,3 +97,31 @@ To maintain architectural integrity and prevent single-agent hallucination or di
      * **Stage 3**: Dispatch to `[S3]`. Inspect bot report.
      * **Stage 4**: Dispatch to `[S4]`. Inspect independent QA certification.
    - The Venture CoS must produce distinct receipts from all 4 squads before compiling the final Executive Attainment Report for Central Holdings.
+
+---
+
+### 8. The Conglomerate Sprint-as-Project Lifecycle Ledger Protocol
+To ensure 100% historical traceability, capacity accounting, and institutional valuation:
+1. **The Sprint-as-Project Law**: Every planned sprint across Mother OS or chartered satellite ventures is formally registered as an immutable Project entity in `data/sprint_projects_ledger.json` and `docs/HOLDINGS_SPRINT_LEDGER.md`.
+2. **The 3-State Lifecycle Gate**:
+   - **`CHARTERED`**: Central CoS drafts the sprint scope, assigns the venture code, establishes credit valuation, and creates the Project record.
+   - **`IN_PROGRESS`**: Directive is forwarded to the Venture CoS. Sequential squad baton-pass (`[S1]` ➔ `[S2]` ➔ `[S3]` ➔ `[S4]`) is underway.
+   - **`COMPLETED`**: Venture CoS delivers the certified 4-squad Attainment Report. Central CoS verifies L0 ingress, marks the project completed, logs the final test count, and locks the ledger entry.
+3. **Internal vs Commercial Accounting**:
+   - **Mother OS / Foundry Lab**: Logged as internal capacity investment (non-paid enterprise R&D).
+   - **Satellite Ventures**: Logged with commercial contract value and credit pricing for enterprise valuation.
+
+---
+
+### 9. The GRO10X Credit-Based Valuation & Monetization Economy
+The financial operating system powering the GRO10X Conglomerate Gigafactory:
+1. **Canonical Peg**: Strictly **1 Credit = BDT 2.00** (USD conversion dynamically pegged at rounded ~60 Credits = $1.00 USD).
+2. **B2C Retail Monetization**:
+   - **Freemium Onboarding**: Retail users receive a fixed initial credit grant.
+   - **Prepaid Usage**: Top-up credit packages purchased via bKash, Nagad, or card prior to service consumption.
+3. **B2B Enterprise Monetization**:
+   - **Pilot Allocation**: Enterprise clients receive initial trial credits.
+   - **Postpaid Monthly Reconciliation**: Invoiced at end-of-month based on actual credit consumption across active seats, API calls, and automations.
+4. **Investor & Unicorn Governance**:
+   - Every completed sprint, engineering man-hour, and digital squad output is mapped to credit velocity, establishing an audited asset ledger for institutional venture capital diligence.
+

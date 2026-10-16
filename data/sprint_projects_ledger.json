@@ -1,0 +1,162 @@
+{
+  "conglomerate": "GRO10X Holdings",
+  "currencyStandard": {
+    "unit": "Credit",
+    "fiatEquivalentBdt": 2.00,
+    "fiatEquivalentUsd": 0.0165,
+    "usdToCreditRate": 60.6,
+    "formula": "1 Credit = BDT 2.00"
+  },
+  "businessModels": {
+    "b2c": {
+      "mode": "Prepaid",
+      "model": "Initial free credits grant on signup, subsequent prepaid credit packages via bKash/Nagad/Cards"
+    },
+    "b2b": {
+      "mode": "Postpaid",
+      "model": "Initial free enterprise trial credits, subsequent monthly consumption billing reconciled at end of billing cycle"
+    },
+    "internal": {
+      "mode": "Capacity Ledger",
+      "model": "Mother OS & Foundry Lab R&D logged as operational capacity investment"
+    }
+  },
+  "projects": [
+    {
+      "id": "PRJ-SAHANABAG-SP1",
+      "venture": "Sahanabag City Township OS",
+      "engine": "Engine 4 Satellite #3",
+      "port": 7000,
+      "sprint": "Sprint 1: Master GIS 3D Twin & Database Layer",
+      "status": "COMPLETED",
+      "pricingType": "Commercial",
+      "creditValuation": 125000,
+      "bdtValuation": 250000,
+      "usdValuation": 2062.50,
+      "testsCertified": 52,
+      "artifacts": ["Master GIS 3D Digital Twin", "Plot Boundary Polygon Engine", "Master Database Schema"],
+      "charteredDate": "2026-10-02",
+      "completedDate": "2026-10-06"
+    },
+    {
+      "id": "PRJ-SAHANABAG-SP2",
+      "venture": "Sahanabag City Township OS",
+      "engine": "Engine 4 Satellite #3",
+      "port": 7000,
+      "sprint": "Sprint 2: Plot Reservation State Machine & Telegram Alerts",
+      "status": "COMPLETED",
+      "pricingType": "Commercial",
+      "creditValuation": 150000,
+      "bdtValuation": 300000,
+      "usdValuation": 2475.00,
+      "testsCertified": 108,
+      "artifacts": ["Plot State Machine", "Dynamic EMI Calculator", "@NishatSharminBot Dispatcher"],
+      "charteredDate": "2026-10-06",
+      "completedDate": "2026-10-10"
+    },
+    {
+      "id": "PRJ-SAHANABAG-SP3",
+      "venture": "Sahanabag City Township OS",
+      "engine": "Engine 4 Satellite #3",
+      "port": 7000,
+      "sprint": "Sprint 3: Executive CRM Cockpit & Investor EMI Ledger",
+      "status": "COMPLETED",
+      "pricingType": "Commercial",
+      "creditValuation": 175000,
+      "bdtValuation": 350000,
+      "usdValuation": 2887.50,
+      "testsCertified": 154,
+      "artifacts": ["Executive CRM Cockpit", "Investor EMI Ledger", "SMS & WhatsApp Notification Bridge"],
+      "charteredDate": "2026-10-10",
+      "completedDate": "2026-10-14"
+    },
+    {
+      "id": "PRJ-SAHANABAG-SP4",
+      "venture": "Sahanabag City Township OS",
+      "engine": "Engine 4 Satellite #3",
+      "port": 7000,
+      "sprint": "Sprint 4: Public 3D Booking, Field Agent Suite & Cash-Flow Intelligence",
+      "status": "COMPLETED",
+      "pricingType": "Commercial",
+      "creditValuation": 200000,
+      "bdtValuation": 400000,
+      "usdValuation": 3300.00,
+      "testsCertified": 205,
+      "artifacts": ["Public /booking/ 3D Portal", "Field Sales /agent/ Suite", "Cash-Flow 4-Bucket Aging Analytics", "Certified Bangla Bayna Patra HTML"],
+      "charteredDate": "2026-10-14",
+      "completedDate": "2026-10-16"
+    },
+    {
+      "id": "PRJ-PURPLEBOT-SP1",
+      "venture": "PurpleBot Digital Core OS",
+      "engine": "Engine 3 Satellite #2",
+      "port": 6000,
+      "sprint": "Sprint 1: 6-Level Hierarchy & 12-Step Production Pipeline",
+      "status": "COMPLETED",
+      "pricingType": "Commercial",
+      "creditValuation": 150000,
+      "bdtValuation": 300000,
+      "usdValuation": 2475.00,
+      "testsCertified": 140,
+      "artifacts": ["6-Level Hierarchy Engine", "12-Step Pipeline State Machine", "Real-time SSE Broadcast Sync"],
+      "charteredDate": "2026-09-28",
+      "completedDate": "2026-10-05"
+    },
+    {
+      "id": "PRJ-PURPLEBOT-SP2",
+      "venture": "PurpleBot Digital Core OS",
+      "engine": "Engine 3 Satellite #2",
+      "port": 6000,
+      "sprint": "Sprint 2: Executive V1 Hardening, Focus Mode & Hardware-Style User Manual",
+      "status": "COMPLETED",
+      "pricingType": "Commercial",
+      "creditValuation": 175000,
+      "bdtValuation": 350000,
+      "usdValuation": 2887.50,
+      "testsCertified": 212,
+      "artifacts": ["Lean V1 Desktop UI", "Telegram MiniApp 3-Tab Focus", "Review Room & Checklists", "2.3MB Vector PDF Hardware User Manual"],
+      "charteredDate": "2026-10-06",
+      "completedDate": "2026-10-15"
+    },
+    {
+      "id": "PRJ-PURPLEBOT-SP2-1",
+      "venture": "PurpleBot Digital Core OS",
+      "engine": "Engine 3 Satellite #2",
+      "port": 6000,
+      "sprint": "Sprint 2.1: Production Purge, Inspector v4.4.0 & P0 Ingress Remediation",
+      "status": "IN_PROGRESS",
+      "pricingType": "Commercial",
+      "creditValuation": 75000,
+      "bdtValuation": 150000,
+      "usdValuation": 1237.50,
+      "testsCertified": 212,
+      "artifacts": ["Supabase Data Sanitization", "Chrome Extension v4.4.0", "Auth Table Deduplication", "Telegram Webhook Secret Synchronization"],
+      "charteredDate": "2026-10-16",
+      "completedDate": null
+    },
+    {
+      "id": "PRJ-MOTHEROS-FOUNDRY",
+      "venture": "Mother OS Foundry Lab & Pre-Sales",
+      "engine": "Engine 1 / Engine 2",
+      "port": 3000,
+      "sprint": "Foundry Cohort 1: Pre-Sales Rapid Prototyping & AI Ingress",
+      "status": "COMPLETED",
+      "pricingType": "Internal R&D",
+      "creditValuation": 250000,
+      "bdtValuation": 500000,
+      "usdValuation": 4125.00,
+      "testsCertified": 77,
+      "artifacts": ["National Housing Finance AI Sales Deck & Proposal", "Serviq AI Content Calendar & Visual Suite", "Gro10x Motion-as-Code Framework", "Prototype Showroom Engine"],
+      "charteredDate": "2026-09-20",
+      "completedDate": "2026-10-14"
+    }
+  ],
+  "totals": {
+    "totalSprintsChartered": 8,
+    "totalSprintsCompleted": 7,
+    "totalCreditsGenerated": 1300000,
+    "totalBdtValuation": 2600000,
+    "totalUsdValuation": 21450.00,
+    "totalTestsPassingAcrossHoldings": 494
+  }
+}
