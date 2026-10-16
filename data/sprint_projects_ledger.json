@@ -204,14 +204,38 @@
       ],
       "charteredDate": "2026-09-20",
       "completedDate": "2026-10-14"
+    },
+    {
+      "id": "PRJ-SHOMVOB-PITCH-PERFECTION",
+      "venture": "Mother OS Pre-Sales & Shomvob Strategic Co-Venture",
+      "engine": "Engine 1 / Engine 2",
+      "port": 3000,
+      "sprint": "Shomvob Executive Pitch Perfection & Presenter Co-Pilot Suite",
+      "status": "COMPLETED",
+      "pricingType": "Strategic Co-Venture Pre-Sales (100% Equity Alignment)",
+      "creditValuation": 35000,
+      "bdtValuation": 70000,
+      "usdValuation": 577.5,
+      "testsCertified": 18,
+      "artifacts": [
+        "17-Slide Executive Pitch Deck (https://gro10x-ai.vercel.app/prototypes/shomvob-pitch/)",
+        "Mobile Presenter Co-Pilot Web Application (https://gro10x-ai.vercel.app/prototypes/shomvob-pitch/copilot.html)",
+        "Authentic Colloquial Bengali Voice Note Audio Engine (Salma Akter)",
+        "4 Photorealistic Frontline Workforce Visual Assets (Rider, Cashier, RMG, Migrant)",
+        "2,500 SME Transformation Alliance & KAM Revenue Model",
+        "Series A ARR & Valuation Simulator with Dynamic Sliders",
+        "Executive WhatsApp Group Briefing for Rifat Bhai & Hasib Bhai"
+      ],
+      "charteredDate": "2026-10-15",
+      "completedDate": "2026-10-17"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 8,
-    "totalSprintsCompleted": 7,
-    "totalCreditsGenerated": 78750,
-    "totalBdtValuation": 157500,
-    "totalUsdValuation": 1300,
-    "totalTestsPassingAcrossHoldings": 494
+    "totalSprintsChartered": 9,
+    "totalSprintsCompleted": 8,
+    "totalCreditsGenerated": 108750,
+    "totalBdtValuation": 217500,
+    "totalUsdValuation": 1794.37,
+    "totalTestsPassingAcrossHoldings": 966
   }
 }
