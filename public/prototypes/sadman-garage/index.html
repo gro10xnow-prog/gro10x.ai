@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SADMAN'S DREAM GARAGE — 3D Digital Twin Showroom</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    :root {
+      --gold-accent: #E5B869;
+      --dark-obsidian: #07090E;
+      --neon-cyan: #00F0FF;
+      --neon-emerald: #10B981;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--dark-obsidian);
+      color: #F8FAFC;
+      overflow: hidden;
+      user-select: none;
+      touch-action: none;
+    }
+    .cinzel { font-family: 'Cinzel', serif; }
+    .mono { font-family: 'Space Mono', monospace; }
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+
+    #canvas-container, canvas {
+      touch-action: none !important;
+      -webkit-touch-callout: none;
+      overscroll-behavior: none;
+      outline: none;
+    }
+
+    /* Glass Panels */
+    .glass-panel {
+      background: rgba(11, 15, 25, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .glass-panel-gold {
+      background: rgba(16, 20, 32, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(229, 184, 105, 0.35);
+    }
+
+    /* Custom Scrollbar for Spec Panels */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-[#07090E] text-white w-screen h-screen relative flex flex-col justify-between selection:bg-[#E5B869] selection:text-black">
+
+  <!-- 3D WebGL Canvas Viewport -->
+  <div id="canvas-container" class="absolute inset-0 z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP NAVIGATION & STATUS BAR                               -->
+  <!-- ========================================================= -->
+  <header class="relative z-30 px-4 sm:px-8 py-3.5 flex flex-wrap justify-between items-center gap-3 bg-[#07090E]/85 backdrop-blur-md border-b border-white/5">
+    
+    <!-- Title & Commemorative Badge -->
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-black border border-[#E5B869]/40 flex items-center justify-center flex-shrink-0">
+        <span class="cinzel text-xs font-black text-[#E5B869]">MSB</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white heading-font">
+            SADMAN'S DREAM GARAGE
+          </h1>
+          <span class="text-[10px] mono uppercase font-bold bg-[#E5B869]/20 text-[#E5B869] px-2 py-0.5 rounded-full border border-[#E5B869]/40">
+            3D DIGITAL TWIN
+          </span>
+        </div>
+        <div class="text-[11px] text-gray-400 mt-0.5">
+          Curated for Mohammad Sadman Bashir (<span class="text-gray-300 mono">@bashir_bhai_clicks</span>) • Birthday Edition
+        </div>
+      </div>
+    </div>
+
+      <button id="btn-theme-music" onclick="toggleThemeMusic()" class="bg-gradient-to-r from-red-600/30 to-amber-600/30 hover:from-red-600/50 hover:to-amber-600/50 text-amber-300 border border-amber-500/40 px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 active:scale-95 shadow">
+        <span id="music-icon" class="animate-pulse">🎵</span>
+        <span id="music-label">NFS Garage OST: OFF</span>
+      </button>
+
+      <button onclick="openDedicationModal()" class="bg-[#E5B869]/20 hover:bg-[#E5B869]/30 text-[#E5B869] border border-[#E5B869]/40 px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 active:scale-95 shadow">
+        <span>❤️ Birthday Letter</span>
+      </button>
+
+      <a href="/prototypes/sadman-garage/poster" class="bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5">
+        <span>🖼️ 4K Framed Poster</span>
+      </a>
+
+      <a href="/prototypes/" class="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-3 py-1.5 rounded-xl transition hidden sm:inline-block">
+        ← Showroom Hub
+      </a>
+    </div>
+  </header>
+
+  <!-- Background Need for Speed Theme Audio -->
+  <audio id="garage-ost" src="/audio/sadman-garage-theme.mp3" loop preload="auto"></audio>
+
+  <!-- ========================================================= -->
+  <!-- FLOATING CAR SELECTOR & TECHNICAL SPECIFICATION PANEL     -->
+  <!-- ========================================================= -->
+  
+  <!-- Left Side: Live Vehicle Selector Stack -->
+  <div class="absolute left-4 sm:left-8 top-20 z-20 w-72 sm:w-80 glass-panel rounded-3xl p-4 sm:p-5 shadow-2xl">
+    <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
+      <span class="text-[10px] mono text-[#E5B869] font-bold uppercase tracking-wider">HERO FLEET SELECTOR</span>
+      <span class="text-[10px] mono text-gray-400" id="car-index-display">01 / 05</span>
+    </div>
+
+    <!-- Car Selector Buttons -->
+    <div class="space-y-2 mb-4" id="car-switcher-buttons">
+      
+      <!-- Button 1: Nissan Patrol -->
+      <button onclick="switchCar(0)" class="car-btn w-full text-left p-2.5 rounded-2xl border border-[#E5B869] bg-[#E5B869]/15 text-white transition flex items-center justify-between group active:scale-98" data-car="0">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">🚙</span>
+          <div>
+            <div class="text-xs font-bold text-white">Nissan Patrol Super Safari</div>
+            <div class="text-[10px] text-gray-400">4.8L V8 • The Desert King</div>
+          </div>
+        </div>
+        <span class="text-xs text-[#E5B869] font-bold">Active</span>
+      </button>
+
+      <!-- Button 2: 300SL Gullwing -->
+      <button onclick="switchCar(1)" class="car-btn w-full text-left p-2.5 rounded-2xl border border-white/10 hover:border-white/30 bg-black/40 text-gray-300 transition flex items-center justify-between group active:scale-98" data-car="1">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">🏎️</span>
+          <div>
+            <div class="text-xs font-bold text-white">1954 Benz 300SL Gullwing</div>
+            <div class="text-[10px] text-gray-400">3.0L Classic • Silver Legend</div>
+          </div>
+        </div>
+        <span class="text-xs text-gray-500 font-bold group-hover:text-white">View</span>
+      </button>
+
+      <!-- Button 3: Centenario -->
+      <button onclick="switchCar(2)" class="car-btn w-full text-left p-2.5 rounded-2xl border border-white/10 hover:border-white/30 bg-black/40 text-gray-300 transition flex items-center justify-between group active:scale-98" data-car="2">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">⚡</span>
+          <div>
+            <div class="text-xs font-bold text-white">Lamborghini Centenario</div>
+            <div class="text-[10px] text-gray-400">6.5L V12 • 770HP Apex</div>
+          </div>
+        </div>
+        <span class="text-xs text-gray-500 font-bold group-hover:text-white">View</span>
+      </button>
+
+      <!-- Button 4: Mustang GT -->
+      <button onclick="switchCar(3)" class="car-btn w-full text-left p-2.5 rounded-2xl border border-white/10 hover:border-white/30 bg-black/40 text-gray-300 transition flex items-center justify-between group active:scale-98" data-car="3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">🐎</span>
+          <div>
+            <div class="text-xs font-bold text-white">Ford Mustang GT 5.0</div>
+            <div class="text-[10px] text-gray-400">V8 Coyote • Detroit Muscle</div>
+          </div>
+        </div>
+        <span class="text-xs text-gray-500 font-bold group-hover:text-white">View</span>
+      </button>
+
+      <!-- Button 5: AMG G-Wagon -->
+      <button onclick="switchCar(4)" class="car-btn w-full text-left p-2.5 rounded-2xl border border-white/10 hover:border-white/30 bg-black/40 text-gray-300 transition flex items-center justify-between group active:scale-98" data-car="4">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">🦾</span>
+          <div>
+            <div class="text-xs font-bold text-white">Mercedes-AMG G63</div>
+            <div class="text-[10px] text-gray-400">Twin-Turbo V8 • Obsidian Box</div>
+          </div>
+        </div>
+        <span class="text-xs text-gray-500 font-bold group-hover:text-white">View</span>
+      </button>
+
+    </div>
+
+    <!-- Live Sound Rev Engine Trigger -->
+    <div class="pt-3 border-t border-white/10">
+      <button onclick="triggerEngineRev()" id="btn-engine-rev" class="w-full bg-gradient-to-r from-red-600 via-amber-600 to-yellow-500 hover:brightness-110 text-white font-extrabold py-2.5 px-4 rounded-2xl text-xs transition shadow-xl flex items-center justify-center gap-2 active:scale-95">
+        <span id="rev-icon">🔊</span>
+        <span id="rev-label">START ENGINE & REV SOUND</span>
+      </button>
+      <div class="text-[10px] mono text-gray-400 text-center mt-1.5" id="engine-audio-note">
+        Real-time Web Audio Synthesized Exhaust
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Active Vehicle Telemetry Dossier -->
+  <div class="absolute right-4 sm:right-8 top-20 z-20 w-72 sm:w-80 glass-panel rounded-3xl p-4 sm:p-5 shadow-2xl hidden md:block">
+    <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
+      <span class="text-[10px] mono text-[#00F0FF] font-bold uppercase tracking-wider">TELEMETRY DOSSIER</span>
+      <span class="text-[10px] mono text-[#10B981]" id="spec-status">60 FPS VERIFIED</span>
+    </div>
+
+    <div id="spec-dossier-content">
+      <h2 class="text-lg font-black text-white heading-font" id="spec-car-name">
+        Nissan Patrol Super Safari V8
+      </h2>
+      <div class="text-xs text-[#E5B869] font-medium mt-0.5" id="spec-car-tagline">
+        The Unstoppable Desert Sovereign
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="grid grid-cols-2 gap-2 mt-4 text-xs">
+        <div class="bg-black/50 p-2.5 rounded-xl border border-white/5">
+          <div class="text-[9px] mono text-gray-400 uppercase">ENGINE DISPLACEMENT</div>
+          <div class="text-sm font-bold text-white mono mt-0.5" id="spec-engine">4.8L Inline-6 / V8</div>
+        </div>
+        <div class="bg-black/50 p-2.5 rounded-xl border border-white/5">
+          <div class="text-[9px] mono text-gray-400 uppercase">PEAK POWER</div>
+          <div class="text-sm font-bold text-[#E5B869] mono mt-0.5" id="spec-power">400 BHP</div>
+        </div>
+        <div class="bg-black/50 p-2.5 rounded-xl border border-white/5">
+          <div class="text-[9px] mono text-gray-400 uppercase">DRIVETRAIN</div>
+          <div class="text-sm font-bold text-[#00F0FF] mono mt-0.5" id="spec-drivetrain">Heavy-Duty 4WD</div>
+        </div>
+        <div class="bg-black/50 p-2.5 rounded-xl border border-white/5">
+          <div class="text-[9px] mono text-gray-400 uppercase">EXHAUST TONE</div>
+          <div class="text-sm font-bold text-[#10B981] mono mt-0.5" id="spec-tone">Throaty V8 Rumble</div>
+        </div>
+      </div>
+
+      <p class="text-xs text-gray-300 mt-3 leading-relaxed" id="spec-description">
+        Built for brutal desert dunes and long cross-country expeditions. High-torque resilience with an iconic two-tone safari aesthetic.
+      </p>
+
+      <div class="mt-4 pt-3 border-t border-white/10 flex justify-between text-[11px] mono text-gray-400">
+        <span>Owner: Sadman Bashir</span>
+        <span class="text-[#E5B869]">Edition 01/01</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM CONTROLLER DOCK (NEON, CAMERA, & SOUND CONTROLS)   -->
+  <!-- ========================================================= -->
+  <footer class="relative z-30 px-4 sm:px-8 py-3 bg-[#07090E]/90 backdrop-blur-xl border-t border-white/5 flex flex-wrap justify-between items-center gap-3">
+    
+    <!-- Neon Underglow Customizer -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-bold text-gray-400 hidden lg:inline mono">NEON UNDERGLOW:</span>
+      <div class="flex items-center gap-1.5" id="neon-color-pills">
+        <button onclick="setNeonUnderglow('#10B981', this)" class="neon-pill w-6 h-6 rounded-full bg-[#10B981] border-2 border-white shadow-[0_0_10px_#10B981] transition transform active:scale-95" title="Emerald Green"></button>
+        <button onclick="setNeonUnderglow('#00F0FF', this)" class="neon-pill w-6 h-6 rounded-full bg-[#00F0FF] border-2 border-transparent hover:border-white shadow-[0_0_10px_#00F0FF] transition transform active:scale-95" title="Cyan Neon"></button>
+        <button onclick="setNeonUnderglow('#A855F7', this)" class="neon-pill w-6 h-6 rounded-full bg-[#A855F7] border-2 border-transparent hover:border-white shadow-[0_0_10px_#A855F7] transition transform active:scale-95" title="Cyberpunk Purple"></button>
+        <button onclick="setNeonUnderglow('#F59E0B', this)" class="neon-pill w-6 h-6 rounded-full bg-[#F59E0B] border-2 border-transparent hover:border-white shadow-[0_0_10px_#F59E0B] transition transform active:scale-95" title="Amber Glow"></button>
+        <button onclick="setNeonUnderglow('#FFFFFF', this)" class="neon-pill w-6 h-6 rounded-full bg-[#FFFFFF] border-2 border-transparent hover:border-white shadow-[0_0_10px_#FFFFFF] transition transform active:scale-95" title="Arctic White"></button>
+        <button onclick="setNeonUnderglow(null, this)" class="neon-pill px-2 py-0.5 rounded-lg bg-white/10 text-[10px] text-gray-400 hover:text-white border border-white/10 transition" title="Turn Off Neon">OFF</button>
+      </div>
+    </div>
+
+    <!-- Camera View Presets -->
+    <div class="flex items-center gap-1.5 text-xs">
+      <span class="text-xs font-bold text-gray-400 hidden xl:inline mono">CAMERA:</span>
+      <button onclick="setCameraView('hero')" class="cam-btn px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition active:scale-95">
+        Hero 3/4
+      </button>
+      <button onclick="setCameraView('side')" class="cam-btn px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold transition active:scale-95">
+        Side
+      </button>
+      <button onclick="setCameraView('top')" class="cam-btn px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold transition active:scale-95">
+        Top
+      </button>
+      <button onclick="setCameraView('rear')" class="cam-btn px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold transition active:scale-95">
+        Rear
+      </button>
+      <button onclick="toggleAutoRotate()" id="btn-auto-rotate" class="px-2.5 py-1 rounded-xl bg-[#E5B869]/20 text-[#E5B869] border border-[#E5B869]/30 font-bold transition active:scale-95">
+        🔄 360° Spin
+      </button>
+    </div>
+
+    <!-- Commercial Gift Pilot Callout -->
+    <div class="flex items-center gap-2">
+      <button onclick="openCustomGiftModal()" class="bg-gradient-to-r from-[#E5B869] via-amber-500 to-[#10B981] text-black font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-lg transition transform hover:-translate-y-0.5 active:scale-95 flex items-center gap-1.5">
+        <span>✨ Create Custom Garage Gift</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- MODAL 1: DEDICATION & BIRTHDAY HOMAGE                     -->
+  <!-- ========================================================= -->
+  <div id="modal-dedication" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 hidden">
+    <div class="glass-panel-gold rounded-3xl p-6 sm:p-8 max-w-xl w-full text-center relative border border-[#E5B869]/50 shadow-2xl">
+      
+      <button onclick="closeDedicationModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+        ✕
+      </button>
+
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E5B869] to-[#00F0FF] p-[2px] mx-auto mb-4">
+        <div class="w-full h-full bg-[#07090E] rounded-2xl flex items-center justify-center text-3xl">
+          🎂
+        </div>
+      </div>
+
+      <div class="text-[11px] mono uppercase text-[#E5B869] font-bold tracking-widest mb-1">
+        Curated with Love for Mohammad Sadman Bashir on his Birthday — Gifted by Anika & Plabon
+      </div>
+      <h2 class="cinzel text-2xl sm:text-3xl font-black text-white tracking-wide">
+        FOR MOHAMMAD SADMAN BASHIR
+      </h2>
+      <div class="text-xs text-gray-400 font-medium mb-4">
+        Photography Craftsman (<span class="text-[#E5B869] mono">@bashir_bhai_clicks</span>) & Motoring Aficionado
+      </div>
+
+      <div class="bg-black/60 border border-white/10 rounded-2xl p-5 text-left text-xs sm:text-sm text-gray-200 leading-relaxed space-y-3 font-sans italic">
+        <p>
+          "Happy Birthday, Sadman! Here’s to a brother who lives life on high revs and impossible deadlines. From late-night highway pulls to timeless memories frozen behind your camera lens, your spirit and dedication light up every room."
+        </p>
+        <p>
+          "May this year bring you unstoppable momentum, endless open roads, and a real-life garage filled with the roar of V8s and V12s. We love you and appreciate everything you are!"
+        </p>
+        <div class="pt-3 border-t border-white/10 flex justify-between items-center text-xs not-italic font-sans">
+          <span class="text-gray-400">Gifted with all our love,</span>
+          <span class="text-[#E5B869] font-extrabold text-sm">Anika & Plabon</span>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <a href="/prototypes/sadman-garage/poster" class="bg-[#E5B869] hover:brightness-110 text-black font-extrabold px-6 py-2.5 rounded-xl text-xs transition shadow-xl">
+          🖼️ View 4K Printable Wall Poster ➔
+        </a>
+        <button onclick="closeDedicationModal()" class="bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition">
+          Return to 3D Garage
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL 2: CUSTOM PHYGITAL GIFT PILOT (COMMERCIAL ENGINE)   -->
+  <!-- ========================================================= -->
+  <div id="modal-custom-gift" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 hidden">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center relative border border-white/15 shadow-2xl">
+      
+      <button onclick="closeCustomGiftModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+        ✕
+      </button>
+
+      <span class="text-xs mono uppercase text-[#10B981] font-bold tracking-widest">
+        GRO10X FOUNDRY LAB // PILOT INITIATIVE
+      </span>
+      <h2 class="text-xl sm:text-2xl font-bold text-white mt-1 heading-font">
+        Bespoke Phygital Gift & Frame Engine
+      </h2>
+      <p class="text-xs text-gray-300 mt-1 mb-5">
+        Turn anyone's dream fleet or life milestone into an ultra-high-definition 4K physical poster + interactive 3D WebGL Digital Twin.
+      </p>
+
+      <div class="space-y-3 text-left text-xs mb-5">
+        <div>
+          <label class="block text-gray-400 mb-1">Recipient Name & Occasion:</label>
+          <input type="text" id="gift-name" value="e.g. Plabon's Dream Speedboat // Birthday" class="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-white outline-none focus:border-[#E5B869]">
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Favorite 3 Vehicles or Watches:</label>
+          <input type="text" id="gift-fleet" value="Porsche 911 GT3, Land Cruiser LC300, Defender 110" class="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-white outline-none focus:border-[#E5B869]">
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Your Contact Email / WhatsApp:</label>
+          <input type="text" id="gift-contact" placeholder="+88017... or email" class="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-white outline-none focus:border-[#E5B869]">
+        </div>
+      </div>
+
+      <button onclick="submitGiftRequest()" id="btn-submit-gift" class="w-full bg-gradient-to-r from-[#10B981] to-[#00F0FF] hover:brightness-110 text-black font-extrabold py-3 rounded-2xl text-xs sm:text-sm transition shadow-xl active:scale-95">
+        🚀 Request Bespoke Phygital Twin Frame
+      </button>
+      <div id="gift-success-msg" class="text-[11px] mono text-[#10B981] mt-2 hidden">
+        ✅ Inquiry dispatched to Foundry Lab Director. We will contact you within 2 hours!
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- THREE.JS 3D SHOWROOM & AUDIO SYNTHESIZER SCRIPT           -->
+  <!-- ========================================================= -->
+  <script>
+    // Data Manifest for the 5 Hero Cars
+    const CAR_DATA = [
+      {
+        id: 0,
+        name: "Nissan Patrol Super Safari V8",
+        tagline: "The Unstoppable Desert Sovereign",
+        engine: "4.8L V8 (400 BHP)",
+        power: "400 BHP / 560 Nm",
+        drivetrain: "Heavy-Duty 4WD Diff-Lock",
+        tone: "Deep Throaty V8 Rumble",
+        desc: "Built for brutal desert dunes and long cross-country expeditions. High-torque resilience with an iconic two-tone safari aesthetic.",
+        colorBody: 0xECEAE4, // Pearl White
+        colorRoof: 0xC4A47C, // Desert Gold/Champagne
+        soundType: "v8_deep",
+        type: "suv"
+      },
+      {
+        id: 1,
+        name: "1954 Mercedes-Benz 300SL Gullwing",
+        tagline: "The Timeless Silver Legend",
+        engine: "3.0L M198 Inline-6",
+        power: "215 BHP / 275 Nm",
+        drivetrain: "Rear-Wheel Drive Mechanical",
+        tone: "Classic Mechanical Rasp",
+        desc: "The world's first production fuel-injected supercar with legendary upward-opening gullwing doors and tubular spaceframe chassis.",
+        colorBody: 0xC0C6CD, // Iconic Silver Metallic
+        colorRoof: 0x900C3F, // Red leather interior hint
+        soundType: "vintage",
+        type: "coupe"
+      },
+      {
+        id: 2,
+        name: "Lamborghini Centenario",
+        tagline: "Naturally Aspirated V12 Carbon Apex",
+        engine: "6.5L NA V12 (770 BHP)",
+        power: "770 BHP / 690 Nm",
+        drivetrain: "All-Wheel Drive Dual-Clutch",
+        tone: "High-Pitched V12 Scream",
+        desc: "A celebration of Ferruccio Lamborghini's centenary. Carbon-fiber monocoque, rear-wheel steering, and an intoxicating 8,500 RPM scream.",
+        colorBody: 0x22262B, // Carbon / Matte Charcoal
+        colorRoof: 0x00F0FF, // Electric Cyan Accent
+        soundType: "v12_scream",
+        type: "hypercar"
+      },
+      {
+        id: 3,
+        name: "Ford Mustang GT 5.0",
+        tagline: "Raw American Detroit Muscle",
+        engine: "5.0L Coyote V8",
+        power: "480 BHP / 569 Nm",
+        drivetrain: "6-Speed Manual RWD",
+        tone: "Crossplane V8 Burble & Roar",
+        desc: "Aggressive front splitter, functional hood heat extractors, active valve performance exhaust, and an unmistakable American roar.",
+        colorBody: 0xB91C1C, // Race Red
+        colorRoof: 0xFFFFFF, // White Racing Stripes
+        soundType: "v8_muscle",
+        type: "muscle"
+      },
+      {
+        id: 4,
+        name: "Mercedes-AMG G63 G-Wagon",
+        tagline: "The Boxy Obsidian Luxury Beast",
+        engine: "4.0L Biturbo V8",
+        power: "577 BHP / 850 Nm",
+        drivetrain: "Triple-Locking Differential AWD",
+        tone: "AMG Biturbo V8 Growl & Pop",
+        desc: "Unmistakable silhouette, side-exiting dual AMG chrome exhaust tips, flared arches, and unmatched luxury status on city streets.",
+        colorBody: 0x111317, // Obsidian Night Black
+        colorRoof: 0x242830, // Matte accents
+        soundType: "v8_amg",
+        type: "g_wagon"
+      }
+    ];
+
+    let currentCarIndex = 0;
+    let scene, camera, renderer, controls;
+    let carRootGroup, underglowMesh, underglowLight;
+    let autoRotate = true;
+
+    // Web Audio Synthesizer Engine
+    let audioCtx = null;
+    let isRevving = false;
+
+    function initThree() {
+      const container = document.getElementById('canvas-container');
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // 1. Scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x07090E);
+      scene.fog = new THREE.FogExp2(0x07090E, 0.025);
+
+      // 2. Camera
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+      camera.position.set(5.5, 2.4, 6.2);
+
+      // 3. Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+      container.appendChild(renderer.domElement);
+
+      // 4. Controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 - 0.03; // Don't go below floor
+      controls.minDistance = 3.5;
+      controls.maxDistance = 14;
+      controls.target.set(0, 0.65, 0);
+
+      // 5. Studio Lighting
+      buildStudioLighting();
+
+      // 6. Polished Reflective Showroom Floor
+      buildShowroomFloor();
+
+      // 7. Vehicle Root Container
+      carRootGroup = new THREE.Group();
+      scene.add(carRootGroup);
+
+      // Build First Car
+      loadCarModel(0);
+
+      // Event Listeners
+      window.addEventListener('resize', onWindowResize, false);
+
+      // Render Loop
+      animate();
+    }
+
+    function buildStudioLighting() {
+      // Ambient Soft Light
+      const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+      scene.add(ambient);
+
+      // Overhead Softbox Light (Key Light)
+      const softbox = new THREE.RectAreaLight ? null : null; // Fallback to Spot/Directional
+      const mainSpot = new THREE.SpotLight(0xffffff, 3.5);
+      mainSpot.position.set(0, 7.5, 0);
+      mainSpot.angle = Math.PI / 3;
+      mainSpot.penumbra = 0.8;
+      mainSpot.castShadow = true;
+      mainSpot.shadow.mapSize.width = 1024;
+      mainSpot.shadow.mapSize.height = 1024;
+      scene.add(mainSpot);
+
+      // Warm Accent Rim Light (Gold highlight)
+      const rimLight1 = new THREE.DirectionalLight(0xE5B869, 1.8);
+      rimLight1.position.set(-6, 3, -4);
+      scene.add(rimLight1);
+
+      // Cool Cyan Fill Light
+      const fillLight = new THREE.DirectionalLight(0x00F0FF, 1.2);
+      fillLight.position.set(6, 2.5, 4);
+      scene.add(fillLight);
+
+      // Neon Underglow Light & Halo
+      underglowLight = new THREE.PointLight(0x10B981, 2.8, 4.5);
+      underglowLight.position.set(0, 0.12, 0);
+      scene.add(underglowLight);
+    }
+
+    function buildShowroomFloor() {
+      // 1. Dark Mirror Ground Plane
+      const floorGeo = new THREE.PlaneGeometry(40, 40);
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0x0A0D14,
+        roughness: 0.18,
+        metalness: 0.85
+      });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = 0;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      // 2. Circular Turntable Disc
+      const ringGeo = new THREE.RingGeometry(3.6, 3.75, 64);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0xE5B869, side: THREE.DoubleSide });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = 0.005;
+      scene.add(ring);
+
+      // 3. Neon Underglow Halo Disc under car
+      const underGeo = new THREE.PlaneGeometry(3.4, 5.2);
+      const underMat = new THREE.MeshBasicMaterial({
+        color: 0x10B981,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false
+      });
+      underglowMesh = new THREE.Mesh(underGeo, underMat);
+      underglowMesh.rotation.x = -Math.PI / 2;
+      underglowMesh.position.y = 0.008;
+      scene.add(underglowMesh);
+    }
+
+    // Procedural Three.js 3D Car Model Assembler
+    function loadCarModel(index) {
+      // Clear previous car
+      while(carRootGroup.children.length > 0){
+        const obj = carRootGroup.children[0];
+        carRootGroup.remove(obj);
+      }
+
+      const data = CAR_DATA[index];
+      currentCarIndex = index;
+
+      // Update UI Text & Specs
+      updateUI(data);
+
+      const car = new THREE.Group();
+
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: data.colorBody,
+        metalness: 0.75,
+        roughness: 0.22
+      });
+
+      const glassMat = new THREE.MeshStandardMaterial({
+        color: 0x0f172a,
+        metalness: 0.95,
+        roughness: 0.05,
+        transparent: true,
+        opacity: 0.85
+      });
+
+      const wheelMat = new THREE.MeshStandardMaterial({
+        color: 0x151515,
+        roughness: 0.6,
+        metalness: 0.3
+      });
+
+      const chromeMat = new THREE.MeshStandardMaterial({
+        color: 0xE2E8F0,
+        metalness: 0.95,
+        roughness: 0.1
+      });
+
+      // Build model according to silhouette type
+      if (data.type === "suv") {
+        // Nissan Patrol Super Safari
+        // Main Lower Body
+        const lowerGeo = new THREE.BoxGeometry(2.1, 0.85, 4.4);
+        const lower = new THREE.Mesh(lowerGeo, bodyMat);
+        lower.position.y = 0.85;
+        lower.castShadow = true;
+        car.add(lower);
+
+        // Upper Cabin
+        const cabinGeo = new THREE.BoxGeometry(1.9, 0.8, 2.7);
+        const cabinMat = new THREE.MeshStandardMaterial({ color: data.colorRoof, metalness: 0.6, roughness: 0.3 });
+        const cabin = new THREE.Mesh(cabinGeo, cabinMat);
+        cabin.position.set(0, 1.6, -0.3);
+        cabin.castShadow = true;
+        car.add(cabin);
+
+        // Windows
+        const winGeo = new THREE.BoxGeometry(1.92, 0.65, 2.5);
+        const win = new THREE.Mesh(winGeo, glassMat);
+        win.position.set(0, 1.6, -0.3);
+        car.add(win);
+
+        // Roof Rack
+        const rackGeo = new THREE.BoxGeometry(1.7, 0.08, 2.4);
+        const rack = new THREE.Mesh(rackGeo, chromeMat);
+        rack.position.set(0, 2.05, -0.3);
+        car.add(rack);
+
+        // Rear Spare Wheel
+        const spareGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.28, 24);
+        const spare = new THREE.Mesh(spareGeo, wheelMat);
+        spare.rotation.x = Math.PI / 2;
+        spare.position.set(0, 1.0, -2.35);
+        car.add(spare);
+
+        // Big All-Terrain Wheels
+        addWheels(car, 0.45, 0.32, 1.05, 1.35, 0.45, wheelMat, chromeMat);
+
+      } else if (data.type === "coupe") {
+        // 1954 300SL Gullwing
+        // Curvaceous Lower Body
+        const bodyGeo = new THREE.BoxGeometry(1.85, 0.55, 4.2);
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.55;
+        body.castShadow = true;
+        car.add(body);
+
+        // Curved Cockpit Dome
+        const domeGeo = new THREE.SphereGeometry(1.1, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const dome = new THREE.Mesh(domeGeo, glassMat);
+        dome.scale.set(0.78, 0.55, 1.3);
+        dome.position.set(0, 0.75, -0.2);
+        car.add(dome);
+
+        // Chrome Bumpers
+        const bFront = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.1, 0.15), chromeMat);
+        bFront.position.set(0, 0.45, 2.15);
+        car.add(bFront);
+
+        const bRear = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.1, 0.15), chromeMat);
+        bRear.position.set(0, 0.45, -2.15);
+        car.add(bRear);
+
+        // Classic Wire Wheels
+        addWheels(car, 0.36, 0.22, 0.92, 1.25, 0.36, wheelMat, chromeMat);
+
+      } else if (data.type === "hypercar") {
+        // Lamborghini Centenario
+        // Ultra-low Wedge Base
+        const wedgeGeo = new THREE.BoxGeometry(2.0, 0.45, 4.6);
+        const wedge = new THREE.Mesh(wedgeGeo, bodyMat);
+        wedge.position.y = 0.4;
+        wedge.castShadow = true;
+        car.add(wedge);
+
+        // Low cockpit canopy
+        const canopyGeo = new THREE.ConeGeometry(1.2, 2.4, 4);
+        const canopy = new THREE.Mesh(canopyGeo, glassMat);
+        canopy.rotation.y = Math.PI / 4;
+        canopy.rotation.x = Math.PI / 2;
+        canopy.scale.set(0.75, 1.1, 0.38);
+        canopy.position.set(0, 0.72, -0.2);
+        car.add(canopy);
+
+        // Aero Cyan Wing & Splitter
+        const wingMat = new THREE.MeshStandardMaterial({ color: data.colorRoof, metalness: 0.9, roughness: 0.1 });
+        const wing = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.05, 0.45), wingMat);
+        wing.position.set(0, 0.85, -2.15);
+        car.add(wing);
+
+        // Rear Aggressive Diffuser
+        const diff = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.2, 0.2), wingMat);
+        diff.position.set(0, 0.25, -2.35);
+        car.add(diff);
+
+        // Low Profile Big Rims
+        addWheels(car, 0.36, 0.28, 1.02, 1.35, 0.36, wheelMat, chromeMat);
+
+      } else if (data.type === "muscle") {
+        // Ford Mustang GT 5.0
+        // Muscular Hood & Body
+        const musGeo = new THREE.BoxGeometry(1.95, 0.65, 4.5);
+        const mus = new THREE.Mesh(musGeo, bodyMat);
+        mus.position.y = 0.6;
+        mus.castShadow = true;
+        car.add(mus);
+
+        // Fastback Roofline
+        const roofGeo = new THREE.BoxGeometry(1.65, 0.55, 2.2);
+        const roofMat = new THREE.MeshStandardMaterial({ color: 0x1A1C22, roughness: 0.3 });
+        const roof = new THREE.Mesh(roofGeo, roofMat);
+        roof.position.set(0, 1.15, -0.4);
+        car.add(roof);
+
+        // Dual White Racing Stripes on Hood
+        const stripeGeo = new THREE.BoxGeometry(0.35, 0.02, 4.48);
+        const stripe = new THREE.Mesh(stripeGeo, new THREE.MeshBasicMaterial({ color: 0xFFFFFF }));
+        stripe.position.set(0, 0.93, 0);
+        car.add(stripe);
+
+        // American V8 Wheels
+        addWheels(car, 0.38, 0.25, 0.98, 1.32, 0.38, wheelMat, chromeMat);
+
+      } else if (data.type === "g_wagon") {
+        // Mercedes-AMG G63 Boxy Beast
+        // Iconic High Box Body
+        const gBodyGeo = new THREE.BoxGeometry(2.0, 1.25, 4.3);
+        const gBody = new THREE.Mesh(gBodyGeo, bodyMat);
+        gBody.position.y = 1.15;
+        gBody.castShadow = true;
+        car.add(gBody);
+
+        // Windows all around
+        const winGGeo = new THREE.BoxGeometry(2.02, 0.55, 2.8);
+        const winG = new THREE.Mesh(winGGeo, glassMat);
+        winG.position.set(0, 1.45, -0.3);
+        car.add(winG);
+
+        // Vertical Panamericana Grille
+        const grill = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.45, 0.1), chromeMat);
+        grill.position.set(0, 1.0, 2.18);
+        car.add(grill);
+
+        // Side Exhaust Dual Pipes
+        const pipeGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.25, 12);
+        const pipeL = new THREE.Mesh(pipeGeo, chromeMat);
+        pipeL.rotation.z = Math.PI / 2;
+        pipeL.position.set(-1.05, 0.4, -0.4);
+        car.add(pipeL);
+
+        // Big AMG Offroad Wheels
+        addWheels(car, 0.45, 0.3, 1.05, 1.35, 0.45, wheelMat, chromeMat);
+      }
+
+      carRootGroup.add(car);
+    }
+
+    function addWheels(group, radius, width, posX, posZ, posY, tireMat, rimMat) {
+      const geo = new THREE.CylinderGeometry(radius, radius, width, 24);
+      const rimGeo = new THREE.CylinderGeometry(radius * 0.65, radius * 0.65, width + 0.02, 16);
+
+      const positions = [
+        [-posX, posY, posZ],  // Front Left
+        [posX, posY, posZ],   // Front Right
+        [-posX, posY, -posZ], // Rear Left
+        [posX, posY, -posZ]   // Rear Right
+      ];
+
+      positions.forEach(([x, y, z]) => {
+        const wheel = new THREE.Mesh(geo, tireMat);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(x, y, z);
+        wheel.castShadow = true;
+
+        const rim = new THREE.Mesh(rimGeo, rimMat);
+        wheel.add(rim);
+
+        group.add(wheel);
+      });
+    }
+
+    function switchCar(index) {
+      loadCarModel(index);
+
+      // Highlight active button
+      const buttons = document.querySelectorAll('.car-btn');
+      buttons.forEach(btn => {
+        const bIdx = parseInt(btn.getAttribute('data-car'), 10);
+        if (bIdx === index) {
+          btn.className = "car-btn w-full text-left p-2.5 rounded-2xl border border-[#E5B869] bg-[#E5B869]/15 text-white transition flex items-center justify-between group active:scale-98";
+          btn.querySelector('span:last-child').textContent = "Active";
+          btn.querySelector('span:last-child').className = "text-xs text-[#E5B869] font-bold";
+        } else {
+          btn.className = "car-btn w-full text-left p-2.5 rounded-2xl border border-white/10 hover:border-white/30 bg-black/40 text-gray-300 transition flex items-center justify-between group active:scale-98";
+          btn.querySelector('span:last-child').textContent = "View";
+          btn.querySelector('span:last-child').className = "text-xs text-gray-500 font-bold group-hover:text-white";
+        }
+      });
+    }
+
+    function updateUI(data) {
+      document.getElementById('car-index-display').textContent = `0${data.id + 1} / 05`;
+      document.getElementById('spec-car-name').textContent = data.name;
+      document.getElementById('spec-car-tagline').textContent = data.tagline;
+      document.getElementById('spec-engine').textContent = data.engine;
+      document.getElementById('spec-power').textContent = data.power;
+      document.getElementById('spec-drivetrain').textContent = data.drivetrain;
+      document.getElementById('spec-tone').textContent = data.tone;
+      document.getElementById('spec-description').textContent = data.desc;
+    }
+
+    // Neon Underglow Customizer
+    function setNeonUnderglow(colorHex, btn) {
+      if (!underglowMesh || !underglowLight) return;
+
+      if (!colorHex) {
+        underglowMesh.visible = false;
+        underglowLight.visible = false;
+      } else {
+        underglowMesh.visible = true;
+        underglowLight.visible = true;
+        const col = new THREE.Color(colorHex);
+        underglowMesh.material.color = col;
+        underglowLight.color = col;
+      }
+
+      // Highlight active pill
+      document.querySelectorAll('.neon-pill').forEach(p => p.classList.remove('border-white'));
+      if (btn && colorHex) btn.classList.add('border-white');
+    }
+
+    // Camera Presets
+    function setCameraView(preset) {
+      if (preset === 'hero') {
+        gsapAnimateCamera(5.5, 2.4, 6.2);
+      } else if (preset === 'side') {
+        gsapAnimateCamera(7.0, 1.2, 0);
+      } else if (preset === 'top') {
+        gsapAnimateCamera(0.1, 8.5, 0.1);
+      } else if (preset === 'rear') {
+        gsapAnimateCamera(-3.5, 1.8, -5.5);
+      }
+    }
+
+    function gsapAnimateCamera(tx, ty, tz) {
+      const startPos = camera.position.clone();
+      const endPos = new THREE.Vector3(tx, ty, tz);
+      let progress = 0;
+
+      function step() {
+        progress += 0.05;
+        camera.position.lerpVectors(startPos, endPos, progress);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      }
+      step();
+    }
+
+    function toggleAutoRotate() {
+      autoRotate = !autoRotate;
+      const btn = document.getElementById('btn-auto-rotate');
+      if (btn) {
+        btn.textContent = autoRotate ? "🔄 360° Spin: ON" : "⏸️ Spin: OFF";
+      }
+    }
+
+    // Web Audio Synthesizer: Procedural V8 & V12 Exhaust Sound
+    function triggerEngineRev() {
+      const data = CAR_DATA[currentCarIndex];
+      const btn = document.getElementById('btn-engine-rev');
+      const icon = document.getElementById('rev-icon');
+      const label = document.getElementById('rev-label');
+
+      if (isRevving) return;
+      isRevving = true;
+
+      if (btn) btn.classList.add('brightness-125', 'scale-98');
+      if (icon) icon.textContent = "🔥";
+      if (label) label.textContent = `REVVING ${data.engine.toUpperCase()}...`;
+
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const t = audioCtx.currentTime;
+
+        // Sound Characteristics depending on soundType
+        const isV12 = data.soundType === "v12_scream";
+        const baseFreq = isV12 ? 95 : 55; // V12 revs higher
+        const peakFreq = isV12 ? 380 : 190;
+
+        // Primary Engine Oscillator (Sawtooth for raw mechanical growl)
+        const osc = audioCtx.createOscillator();
+        osc.type = isV12 ? 'sawtooth' : 'triangle';
+        osc.frequency.setValueAtTime(baseFreq, t);
+        osc.frequency.exponentialRampToValueAtTime(peakFreq, t + 0.6);
+        osc.frequency.exponentialRampToValueAtTime(peakFreq * 1.15, t + 1.2);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq, t + 2.5);
+
+        // Sub-Bass rumble oscillator (Deep V8 displacement)
+        const subOsc = audioCtx.createOscillator();
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(baseFreq / 2, t);
+        subOsc.frequency.exponentialRampToValueAtTime(peakFreq / 2, t + 0.6);
+        subOsc.frequency.exponentialRampToValueAtTime(baseFreq / 2, t + 2.5);
+
+        // Resonant Low-Pass Filter
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(isV12 ? 1400 : 800, t);
+        filter.frequency.exponentialRampToValueAtTime(isV12 ? 3800 : 2200, t + 0.6);
+        filter.frequency.exponentialRampToValueAtTime(isV12 ? 1200 : 700, t + 2.5);
+
+        // Volume Gain Envelope
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.01, t);
+        gain.gain.linearRampToValueAtTime(0.18, t + 0.2);
+        gain.gain.linearRampToValueAtTime(0.24, t + 1.0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+
+        osc.connect(filter);
+        subOsc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(t);
+        subOsc.start(t);
+        osc.stop(t + 2.9);
+        subOsc.stop(t + 2.9);
+
+        // Throttle back visual state
+        setTimeout(() => {
+          isRevving = false;
+          if (btn) btn.classList.remove('brightness-125', 'scale-98');
+          if (icon) icon.textContent = "🔊";
+          if (label) label.textContent = "START ENGINE & REV SOUND";
+        }, 2900);
+
+      } catch (e) {
+        console.warn("Audio unavailable:", e);
+        isRevving = false;
+        if (label) label.textContent = "START ENGINE & REV SOUND";
+      }
+    }
+
+    // Modals
+    function openDedicationModal() {
+      document.getElementById('modal-dedication').classList.remove('hidden');
+    }
+    function closeDedicationModal() {
+      document.getElementById('modal-dedication').classList.add('hidden');
+    }
+
+    function openCustomGiftModal() {
+      document.getElementById('modal-custom-gift').classList.remove('hidden');
+    }
+    function closeCustomGiftModal() {
+      document.getElementById('modal-custom-gift').classList.add('hidden');
+    }
+
+    function submitGiftRequest() {
+      const btn = document.getElementById('btn-submit-gift');
+      const msg = document.getElementById('gift-success-msg');
+      if (btn) btn.textContent = "✅ Dispatching Request...";
+      setTimeout(() => {
+        if (msg) msg.classList.remove('hidden');
+        if (btn) btn.textContent = "🚀 Request Received!";
+      }, 700);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // Need for Speed Garage Soundtrack Toggle
+    let isMusicPlaying = false;
+    function toggleThemeMusic() {
+      const audio = document.getElementById('garage-ost');
+      const btn = document.getElementById('btn-theme-music');
+      const icon = document.getElementById('music-icon');
+      const label = document.getElementById('music-label');
+      if (!audio) return;
+
+      if (isMusicPlaying) {
+        audio.pause();
+        isMusicPlaying = false;
+        if (label) label.textContent = "NFS Garage OST: OFF";
+        if (btn) {
+          btn.classList.remove('from-amber-600/50', 'to-red-600/50', 'border-amber-400');
+          btn.classList.add('from-red-600/30', 'to-amber-600/30', 'border-amber-500/40');
+        }
+        if (icon) icon.classList.remove('animate-spin');
+      } else {
+        audio.volume = 0.55;
+        audio.play().then(() => {
+          isMusicPlaying = true;
+          if (label) label.textContent = "NFS Garage OST: PLAYING";
+          if (btn) {
+            btn.classList.remove('from-red-600/30', 'to-amber-600/30', 'border-amber-500/40');
+            btn.classList.add('from-amber-600/50', 'to-red-600/50', 'border-amber-400');
+          }
+          if (icon) icon.classList.add('animate-spin');
+        }).catch(err => {
+          console.warn("Autoplay blocked, user interaction required:", err);
+        });
+      }
+    }
+
+    // Try starting audio on first user touch / click anywhere on the page
+    function attemptFirstPlay() {
+      const audio = document.getElementById('garage-ost');
+      if (audio && !isMusicPlaying) {
+        toggleThemeMusic();
+      }
+      window.removeEventListener('click', attemptFirstPlay);
+      window.removeEventListener('touchstart', attemptFirstPlay);
+    }
+    window.addEventListener('click', attemptFirstPlay, { once: true });
+    window.addEventListener('touchstart', attemptFirstPlay, { once: true });
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Auto rotation of car turntable if enabled
+      if (autoRotate && carRootGroup) {
+        carRootGroup.rotation.y += 0.0035;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('DOMContentLoaded', initThree);
+  </script>
+</body>
+</html>

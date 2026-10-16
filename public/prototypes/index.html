@@ -459,12 +459,12 @@
 
     <!-- Filter Buttons -->
     <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (9)</button>
+      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (10)</button>
+      <button class="filter-btn" onclick="filterPrototypes('spatial', this)">3D & Spatial (3)</button>
       <button class="filter-btn" onclick="filterPrototypes('workforce', this)">Workforce & AI EdTech (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('mobility', this)">Clean Mobility & EV (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('agency', this)">Madmen & Telecom AI (2)</button>
       <button class="filter-btn" onclick="filterPrototypes('proptech', this)">PropTech & Land (1)</button>
-      <button class="filter-btn" onclick="filterPrototypes('spatial', this)">3D & Spatial (2)</button>
       <button class="filter-btn" onclick="filterPrototypes('fintech', this)">Fintech & Enterprise (1)</button>
       <button class="filter-btn" onclick="filterPrototypes('growth', this)">BPO & Social (1)</button>
     </div>
@@ -472,6 +472,35 @@
 
   <!-- Prototype Showcase Grid -->
   <main class="showcase-grid">
+
+    <!-- Card: Sadman's Dream Garage & Phygital Twin -->
+    <article class="proto-card" data-category="spatial">
+      <div class="proto-preview-box" style="background: radial-gradient(circle, #2a2012, #07090E);">
+        <span class="proto-tag" style="background: rgba(229,184,105,0.25); color:#E5B869; border:1px solid rgba(229,184,105,0.4);">Phygital Twin • 3D WebGL</span>
+        <div class="proto-overlay-icon">🏎️</div>
+      </div>
+      <div class="proto-body">
+        <h2 class="proto-title">Sadman's Dream Garage & 4K Frame</h2>
+        <p class="proto-desc">
+          Bespoke Phygital automotive gift system for Mohammad Sadman Bashir (@bashir_bhai_clicks). Features a 16:9 4K printable wall poster and an interactive 3D WebGL garage with 5 hero vehicles (Nissan Patrol V8, 300SL Gullwing, Centenario V12, Mustang GT, AMG G63), neon underglow customizer, and Web Audio V8/V12 revving sounds. Gifted by Anika & Plabon.
+        </p>
+        <div class="proto-meta">
+          <span class="meta-chip">16:9 4K Print Poster</span>
+          <span class="meta-chip">Three.js r128 WebGL</span>
+          <span class="meta-chip">5 Hero Supercars</span>
+          <span class="meta-chip">Web Audio V8/V12 Synth</span>
+          <span class="meta-chip">Scannable QR Gateway</span>
+        </div>
+        <div class="proto-actions">
+          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/sadman-garage/', 'Sadman\'s Dream Garage 3D Twin')">
+            📱 Interactive Preview
+          </button>
+          <a href="/prototypes/sadman-garage/" target="_blank" class="proto-btn btn-emerald">
+            🚀 Launch 3D Twin
+          </a>
+        </div>
+      </div>
+    </article>
 
     <!-- Card: GRO10X × SHOMVOB Strategic Partnership Pitch Deck -->
     <article class="proto-card" data-category="workforce">

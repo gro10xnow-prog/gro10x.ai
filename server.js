@@ -581,6 +581,14 @@ app.get(['/prototypes/shomvob-pitch', '/prototypes/shomvob-pitch/'], (req, res) 
   res.sendFile(path.join(__dirname, 'public/prototypes/shomvob-pitch/index.html'));
 });
 
+// Sadman's Dream Garage & Phygital Twin Prototype
+app.get(['/prototypes/sadman-garage', '/prototypes/sadman-garage/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/sadman-garage/index.html'));
+});
+app.get(['/prototypes/sadman-garage/poster', '/prototypes/sadman-garage/poster.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/sadman-garage/poster.html'));
+});
+
 // National Housing Finance Backwards Compatibility & Canonical Routing
 app.get(['/nhf', '/nhf/'], (req, res) => {
   res.redirect(302, '/prototypes/nhf-portal/');

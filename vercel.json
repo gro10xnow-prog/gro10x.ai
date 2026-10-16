@@ -197,6 +197,14 @@
       "dest": "/public/prototypes/serviq-pilot/index.html"
     },
     {
+      "src": "/prototypes/sadman-garage/poster(/.*)?",
+      "dest": "/public/prototypes/sadman-garage/poster.html"
+    },
+    {
+      "src": "/prototypes/sadman-garage(/.*)?",
+      "dest": "/public/prototypes/sadman-garage/index.html"
+    },
+    {
       "src": "/prototypes/(.*)",
       "dest": "/public/prototypes/$1"
     },
