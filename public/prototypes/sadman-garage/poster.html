@@ -43,35 +43,23 @@
       overflow: hidden;
     }
 
-    /* Subtle Technical Grid & Grain */
-    .bg-grid {
-      background-size: 32px 32px;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    /* Custom Chamfered Tech Frame Moulding (Matching Inspiration) */
+    .tech-frame-container {
+      position: relative;
+      background: linear-gradient(135deg, rgba(229,184,105,0.4) 0%, rgba(0,240,255,0.3) 50%, rgba(229,184,105,0.2) 100%);
+      padding: 6px;
+      border-radius: 28px;
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.25), inset 0 0 25px rgba(229, 184, 105, 0.2);
     }
-
-    /* Print Invariants */
-    @media print {
-      @page {
-        size: landscape;
-        margin: 0;
-      }
-      body {
-        background: #000 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      .no-print {
-        display: none !important;
-      }
-      .poster-canvas {
-        width: 100vw !important;
-        height: 100vh !important;
-        max-width: none !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-      }
+    .tech-frame-inner {
+      background: #07090E;
+      border-radius: 22px;
+      overflow: hidden;
+      position: relative;
+    }
+    .neon-gold-border {
+      border: 3px solid rgba(229, 184, 105, 0.85);
+      box-shadow: 0 0 20px rgba(229, 184, 105, 0.4), inset 0 0 15px rgba(0, 240, 255, 0.2);
     }
   </style>
 </head>
@@ -147,88 +135,88 @@
         </p>
       </div>
 
-      <!-- Centerpiece Caricature & Dream Fleet Montage Frame -->
-      <div class="relative z-10 flex-1 flex flex-col justify-center items-center my-4">
+      <!-- Centerpiece Caricature in Sci-Fi Chamfered Bezel Frame (Matching Inspiration) -->
+      <div class="relative z-10 flex-1 flex flex-col justify-center items-center my-2">
         
-        <!-- Dream Fleet Badges Stack -->
-        <div class="w-full grid grid-cols-5 gap-2 sm:gap-3 mb-4">
+        <!-- Sci-Fi / Cybernetic Double-Bezel Frame Container -->
+        <div class="w-full relative p-[3px] rounded-3xl bg-gradient-to-r from-[#E5B869] via-[#00F0FF] to-[#E5B869] shadow-[0_0_40px_rgba(0,240,255,0.35)]">
           
-          <!-- Car 1: Nissan Patrol -->
-          <div class="bg-black/40 border border-white/10 hover:border-[#E5B869]/50 rounded-2xl p-2.5 sm:p-3 text-center transition">
-            <div class="text-2xl sm:text-3xl mb-1">🚙</div>
-            <div class="text-[10px] sm:text-xs font-bold text-white uppercase truncate">Patrol Safari</div>
-            <div class="text-[9px] mono text-[#E5B869]">4.8L V8 / 400HP</div>
-          </div>
+          <!-- Outer Chamfer Bezel -->
+          <div class="bg-[#090D16] p-2.5 sm:p-3 rounded-[22px] relative overflow-hidden border border-[#E5B869]/40">
+            
+            <!-- Inner Glowing Neon Inset Frame -->
+            <div class="relative w-full aspect-[16/9] max-h-[460px] rounded-2xl overflow-hidden border-2 border-[#00F0FF]/80 shadow-[inset_0_0_25px_rgba(0,240,255,0.3)]">
+              
+              <!-- Google Flow Caricature Artwork -->
+              <img 
+                src="/images/sadman-anika-caricature.jpg" 
+                alt="Sadman & Anika in Dream Garage" 
+                class="w-full h-full object-cover object-center transform scale-[1.01]"
+              />
 
-          <!-- Car 2: 300SL Gullwing -->
-          <div class="bg-black/40 border border-white/10 hover:border-[#E5B869]/50 rounded-2xl p-2.5 sm:p-3 text-center transition">
-            <div class="text-2xl sm:text-3xl mb-1">🏎️</div>
-            <div class="text-[10px] sm:text-xs font-bold text-white uppercase truncate">300SL Gullwing</div>
-            <div class="text-[9px] mono text-gray-400">1954 Silver Legend</div>
-          </div>
+              <!-- Bottom Glass Cinematic Nameplate Overlay (Matching Inspiration) -->
+              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 sm:p-5 flex flex-col justify-end">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm sm:text-base font-extrabold text-white uppercase tracking-wider cinzel">
+                    MOHAMMAD SADMAN BASHIR
+                  </span>
+                  <span class="text-xs text-red-500 animate-pulse">❤️</span>
+                  <span class="text-sm sm:text-base font-extrabold text-[#E5B869] uppercase tracking-wider cinzel">
+                    ANIKA
+                  </span>
+                </div>
+                <p class="text-[11px] sm:text-xs text-gray-200 mt-1 leading-snug line-clamp-2 max-w-2xl font-medium">
+                  Behind every great photograph (<span class="text-[#E5B869] font-mono font-bold">@bashir_bhai_clicks</span>) and every adrenaline-fueled highway pull is a partnership defined by endless deadlines, big laughs, and boundless ambition.
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-2 text-[10px] mono text-gray-300">
+                  <span class="bg-black/60 px-2 py-0.5 rounded border border-white/15">🎂 October 17 Milestone</span>
+                  <span class="bg-black/60 px-2 py-0.5 rounded border border-white/15 text-[#00F0FF]">🏎️ High-Speed Duo</span>
+                  <span class="bg-black/60 px-2 py-0.5 rounded border border-white/15 text-[#E5B869]">📸 Lens & Horizon</span>
+                </div>
+              </div>
 
-          <!-- Car 3: Centenario -->
-          <div class="bg-black/40 border border-[#00F0FF]/30 rounded-2xl p-2.5 sm:p-3 text-center transition shadow-[0_0_15px_rgba(0,240,255,0.1)]">
-            <div class="text-2xl sm:text-3xl mb-1">⚡</div>
-            <div class="text-[10px] sm:text-xs font-bold text-[#00F0FF] uppercase truncate">Centenario</div>
-            <div class="text-[9px] mono text-[#00F0FF]">6.5L V12 / 770HP</div>
-          </div>
+            </div>
 
-          <!-- Car 4: Mustang GT -->
-          <div class="bg-black/40 border border-white/10 hover:border-[#E5B869]/50 rounded-2xl p-2.5 sm:p-3 text-center transition">
-            <div class="text-2xl sm:text-3xl mb-1">🐎</div>
-            <div class="text-[10px] sm:text-xs font-bold text-white uppercase truncate">Mustang GT 5.0</div>
-            <div class="text-[9px] mono text-red-400">V8 Coyote Detroit</div>
-          </div>
-
-          <!-- Car 5: AMG G-Wagon -->
-          <div class="bg-black/40 border border-white/10 hover:border-[#E5B869]/50 rounded-2xl p-2.5 sm:p-3 text-center transition">
-            <div class="text-2xl sm:text-3xl mb-1">🦾</div>
-            <div class="text-[10px] sm:text-xs font-bold text-white uppercase truncate">AMG G63</div>
-            <div class="text-[9px] mono text-[#10B981]">Twin-Turbo V8</div>
           </div>
 
         </div>
 
-        <!-- Stylized Illustrative Couple Feature Frame (Sadman & Anika) -->
-        <div class="w-full max-w-2xl bg-gradient-to-r from-black/85 via-[#101726]/90 to-black/85 border-2 border-[#E5B869]/50 rounded-3xl p-5 sm:p-7 shadow-[0_15px_40px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-xl">
+        <!-- 5 Hero Fleet Badges Stack Below Picture (Matching Inspiration) -->
+        <div class="w-full grid grid-cols-5 gap-2 sm:gap-3 mt-3.5">
           
-          <div class="absolute -right-12 -top-12 w-44 h-44 bg-[#E5B869]/15 rounded-full blur-2xl pointer-events-none"></div>
+          <!-- Car 1: Nissan Patrol -->
+          <div class="bg-black/50 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-2 text-center transition">
+            <div class="text-xl sm:text-2xl mb-0.5">🚙</div>
+            <div class="text-[9px] sm:text-[10px] font-bold text-white uppercase truncate">Patrol Safari</div>
+            <div class="text-[8px] mono text-[#E5B869]">4.8L V8 / 400HP</div>
+          </div>
 
-          <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-7">
-            
-            <!-- Real Authentic Couple Portrait Photo -->
-            <div class="relative w-36 h-44 sm:w-40 sm:h-48 rounded-2xl bg-gradient-to-tr from-[#E5B869] via-amber-400 to-[#00F0FF] p-[2.5px] flex-shrink-0 shadow-2xl">
-              <div class="w-full h-full bg-[#090D16] rounded-2xl overflow-hidden relative group">
-                <img src="/images/sadman-anika-portrait.png" alt="Sadman & Anika" class="w-full h-full object-cover object-top transition duration-500 transform group-hover:scale-105">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-2.5">
-                  <div class="text-[10px] font-bold text-white mono tracking-wider bg-black/60 px-2 py-0.5 rounded border border-white/10 w-full text-center">
-                    SADMAN & ANIKA
-                  </div>
-                </div>
-              </div>
-            </div>
+          <!-- Car 2: 300SL Gullwing -->
+          <div class="bg-black/50 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-2 text-center transition">
+            <div class="text-xl sm:text-2xl mb-0.5">🏎️</div>
+            <div class="text-[9px] sm:text-[10px] font-bold text-white uppercase truncate">300SL Gullwing</div>
+            <div class="text-[8px] mono text-gray-400">1954 Silver Legend</div>
+          </div>
 
-            <!-- Heartwarming Narrative Summary -->
-            <div class="flex-1 text-center sm:text-left">
-              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <span class="text-sm sm:text-base font-extrabold text-white uppercase tracking-wider">MOHAMMAD SADMAN BASHIR</span>
-                <span class="text-sm text-red-500 animate-pulse">❤️</span>
-                <span class="text-sm sm:text-base font-extrabold text-[#E5B869] uppercase tracking-wider">ANIKA</span>
-              </div>
-              <div class="text-xs text-amber-300 font-mono mt-1 font-semibold">
-                ROAD TRIP 01 // PARTNERS ON ASPHALT & IN LIFE
-              </div>
-              <p class="text-xs sm:text-sm text-gray-200 mt-2.5 leading-relaxed font-medium">
-                Behind every great photograph (<span class="text-[#E5B869] font-mono font-bold">@bashir_bhai_clicks</span>) and every adrenaline-fueled highway pull is a partnership defined by endless deadlines, big laughs, and boundless ambition.
-              </p>
-              <div class="mt-3.5 flex flex-wrap items-center justify-center sm:justify-start gap-2 text-[10px] mono text-gray-300 font-semibold">
-                <span class="bg-black/60 px-2.5 py-1 rounded-lg border border-white/15 text-white">🎂 October 17 Milestone</span>
-                <span class="bg-black/60 px-2.5 py-1 rounded-lg border border-white/15 text-[#00F0FF]">🏎️ High-Speed Duo</span>
-                <span class="bg-black/60 px-2.5 py-1 rounded-lg border border-white/15 text-[#E5B869]">📸 Lens & Horizon</span>
-              </div>
-            </div>
+          <!-- Car 3: Centenario -->
+          <div class="bg-black/50 border border-[#00F0FF]/40 rounded-xl p-2 text-center transition shadow-[0_0_12px_rgba(0,240,255,0.15)]">
+            <div class="text-xl sm:text-2xl mb-0.5">⚡</div>
+            <div class="text-[9px] sm:text-[10px] font-bold text-[#00F0FF] uppercase truncate">Centenario</div>
+            <div class="text-[8px] mono text-[#00F0FF]">6.5L V12 / 770HP</div>
+          </div>
 
+          <!-- Car 4: Mustang GT -->
+          <div class="bg-black/50 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-2 text-center transition">
+            <div class="text-xl sm:text-2xl mb-0.5">🐎</div>
+            <div class="text-[9px] sm:text-[10px] font-bold text-white uppercase truncate">Mustang GT 5.0</div>
+            <div class="text-[8px] mono text-red-400">V8 Coyote Detroit</div>
+          </div>
+
+          <!-- Car 5: AMG G-Wagon -->
+          <div class="bg-black/50 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-2 text-center transition">
+            <div class="text-xl sm:text-2xl mb-0.5">🦾</div>
+            <div class="text-[9px] sm:text-[10px] font-bold text-white uppercase truncate">AMG G63</div>
+            <div class="text-[8px] mono text-[#10B981]">Twin-Turbo V8</div>
           </div>
 
         </div>
@@ -321,11 +309,29 @@
         </div>
       </div>
 
+      <!-- Mini 3D Car Cutout Vignettes (Matching Inspiration: Gullwing + Patrol) -->
+      <div class="flex items-center justify-between px-2 -mb-1">
+        <div class="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition">
+          <span class="text-3xl filter drop-shadow-[0_4px_12px_rgba(0,240,255,0.4)]">🏎️</span>
+          <div class="text-[9px] mono text-gray-300">
+            <span class="text-[#E5B869] font-bold block">300SL GULLWING</span>
+            <span class="text-gray-400">Classics Fleet</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition">
+          <div class="text-[9px] mono text-gray-300 text-right">
+            <span class="text-[#00F0FF] font-bold block">NISSAN PATROL</span>
+            <span class="text-gray-400">Safari Edition</span>
+          </div>
+          <span class="text-3xl filter drop-shadow-[0_4px_12px_rgba(229,184,105,0.4)]">🚙</span>
+        </div>
+      </div>
+
       <!-- Scannable Dynamic QR Code & Digital Twin Gateway -->
-      <div class="bg-black/80 border border-white/10 rounded-2xl p-4 flex items-center gap-4">
+      <div class="bg-black/85 border border-[#00F0FF]/30 rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_20px_rgba(0,240,255,0.15)]">
         
         <!-- Generated Dynamic SVG QR Code targeting Live URL -->
-        <div class="w-20 h-20 bg-white p-1.5 rounded-xl flex-shrink-0 flex items-center justify-center shadow-lg">
+        <div class="w-20 h-20 bg-white p-1.5 rounded-xl flex-shrink-0 flex items-center justify-center shadow-lg border border-white/20">
           <img 
             src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://gro10x-ai.vercel.app/prototypes/sadman-garage/&bgcolor=ffffff&color=000000&margin=0" 
             alt="Scan QR for 3D Garage" 
@@ -340,7 +346,7 @@
           <div class="text-xs font-bold text-white mt-0.5">
             Scan to Enter 3D Interactive Garage
           </div>
-          <p class="text-[10px] text-gray-400 mt-1 leading-snug">
+          <p class="text-[10px] text-gray-300 mt-1 leading-snug">
             Explore Sadman's 5 hero cars in 3D WebGL, listen to V8/V12 revving audio engines, and customize neon underglow.
           </p>
           <a href="/prototypes/sadman-garage/" class="text-[10px] mono text-[#E5B869] font-bold hover:underline mt-1 inline-block">
