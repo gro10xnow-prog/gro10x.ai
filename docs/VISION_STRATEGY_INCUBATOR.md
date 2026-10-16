@@ -77,3 +77,17 @@ These strategic insights are banked here to be progressively integrated as we sc
 * **Per-Cycle Compensation**: Fixed BDT 2,500 (1,250 Credits) milestone expense per QA audit, logged directly into the Mother OS platform ledger.
 * **Future Delegation**: Once trained in Antigravity workflows, apprentices can take over full venture account handling, QA verification, and client communications.
 
+### 💡 Item 6: The Human Delegate & Antigravity Bridge SOP
+* **The Problem**: When a human apprentice takes over day-to-day operations with an enterprise client (e.g., Onim working with Purplebot), how do we give him autonomous execution power without risking production disasters?
+* **The 3-Layer Safety Architecture**:
+  1. **Layer 1: Field Operator & Client Liaison (Onim's Machine)**:
+     - Onim communicates with the client team, collects requirements, logs feature requests, and tests branches locally in his own Antigravity environment.
+     - He uses Antigravity digital squads to draft fixes, run tests, and prepare release candidate packages.
+  2. **Layer 2: The Upward Reporting Relay**:
+     - Onim does NOT push to production or deploy to Vercel.
+     - He exports his squad's verified test reports and submits them upward to the Founder.
+  3. **Layer 3: The Sovereign Production Gatekeeper (Founder & Central CoS)**:
+     - **The Iron Law**: The final production call, git tag, and live deployment (`main` branch) ALWAYS remain exclusively on the Founder's side of the table through the Central Chief of Staff.
+     - This gives Onim full autonomy to learn and build, while ensuring zero accidental breakage of live client systems.
+
+
