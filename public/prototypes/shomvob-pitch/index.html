@@ -13,17 +13,18 @@
 
   <style>
     :root {
-      --bg-dark: #0B0F19;
-      --card-dark: #131B2E;
+      --bg-obsidian: #090D16;
+      --card-dark: #111726;
       --card-border: rgba(255, 255, 255, 0.08);
-      --shomvob-cyan: #00F0FF;
-      --shomvob-purple: #8B5CF6;
-      --gro10x-emerald: #10B981;
+      --shomvob-emerald: #1CA752;
+      --shomvob-emerald-light: #22c55e;
+      --gro10x-cyan: #00F0FF;
+      --accent-purple: #8B5CF6;
       --accent-amber: #F59E0B;
     }
     body {
       font-family: 'Space Grotesk', 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
-      background-color: var(--bg-dark);
+      background-color: var(--bg-obsidian);
       color: #F8FAFC;
       overflow: hidden;
       touch-action: pan-y;
@@ -35,21 +36,21 @@
 
     /* Ambient Spotlight & Grid */
     .bg-grid {
-      background-size: 40px 40px;
+      background-size: 36px 36px;
       background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
     }
 
     .spotlight {
-      background: radial-gradient(circle at 50% 10%, rgba(0, 240, 255, 0.12) 0%, rgba(139, 92, 246, 0.06) 45%, transparent 70%);
+      background: radial-gradient(circle at 50% 12%, rgba(28, 167, 82, 0.14) 0%, rgba(0, 240, 255, 0.09) 35%, rgba(139, 92, 246, 0.04) 60%, transparent 75%);
     }
 
     /* Active Slide Animation */
     .slide {
       display: none;
       opacity: 0;
-      transform: translateY(12px) scale(0.99);
+      transform: translateY(14px) scale(0.99);
       transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .slide.active {
@@ -60,37 +61,70 @@
 
     /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0B0F19; }
+    ::-webkit-scrollbar-track { background: #090D16; }
     ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--shomvob-cyan); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--shomvob-emerald); }
+
+    /* Interactive Range Slider Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: #1E293B;
+      height: 6px;
+      border-radius: 3px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #00F0FF;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
   </style>
 </head>
-<body class="bg-[#0B0F19] text-slate-100 h-screen w-screen relative flex flex-col justify-between selection:bg-[#00F0FF] selection:text-black bg-grid">
+<body class="bg-[#090D16] text-slate-100 h-screen w-screen relative flex flex-col justify-between selection:bg-[#1CA752] selection:text-white bg-grid">
 
   <!-- Ambient Spotlight Flare -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 spotlight pointer-events-none z-0"></div>
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[420px] spotlight pointer-events-none z-0"></div>
 
   <!-- ========================================================= -->
   <!-- TOP HEADER & PROGRESS BAR                                 -->
   <!-- ========================================================= -->
-  <header class="relative z-30 px-6 sm:px-10 py-4 flex justify-between items-center border-b border-white/5 bg-[#0B0F19]/80 backdrop-blur-md">
+  <header class="relative z-30 px-5 sm:px-8 py-3.5 flex justify-between items-center border-b border-white/5 bg-[#090D16]/85 backdrop-blur-md">
     
-    <!-- Partner Brand Marks -->
+    <!-- Partner Brand Marks with Official Shomvob Logo -->
     <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2 font-extrabold text-sm sm:text-base tracking-tight">
-        <span class="text-[#00F0FF]">GRO10X</span>
-        <span class="text-gray-500 font-light">×</span>
-        <span class="text-white">SHOMVOB</span>
+      <div class="flex items-center gap-2.5">
+        <span class="text-[#00F0FF] font-extrabold tracking-tight text-base">GRO10X</span>
+        <span class="text-gray-500 font-light text-sm">×</span>
+        <div class="flex items-center gap-2">
+          <img src="/images/shomvob-logo.png" alt="Shomvob Official Logo" class="h-6 w-auto object-contain">
+          <span class="text-white font-extrabold tracking-tight text-base hidden sm:inline">SHOMVOB</span>
+        </div>
       </div>
-      <span class="hidden sm:inline-block text-[10px] mono uppercase font-bold bg-[#8B5CF6]/15 text-[#A78BFA] px-2 py-0.5 rounded-full border border-[#8B5CF6]/30">
+      <span class="hidden md:inline-block text-[10px] mono uppercase font-bold bg-[#1CA752]/15 text-[#1CA752] px-2.5 py-0.5 rounded-full border border-[#1CA752]/30">
         Forbes Asia 100 to Watch Partner
       </span>
     </div>
 
     <!-- Presentation Mode & Timer -->
-    <div class="flex items-center gap-4 text-xs">
+    <div class="flex items-center gap-3 sm:gap-4 text-xs">
+      <!-- Switchboard Direct Shortcut -->
+      <button onclick="goToSlide(11)" class="hidden sm:inline-flex items-center gap-1.5 bg-[#1CA752]/15 hover:bg-[#1CA752]/25 text-[#1CA752] px-2.5 py-1 rounded-xl border border-[#1CA752]/30 font-bold transition text-xs active:scale-95" title="Jump to Switchboard (Press S)">
+        <span>💡 Switchboard</span>
+        <span class="bg-[#1CA752]/30 px-1 rounded text-[10px] mono">[S]</span>
+      </button>
+
       <div class="hidden md:flex items-center gap-2 mono text-gray-400 bg-white/5 px-3 py-1 rounded-xl border border-white/5">
-        <span class="w-2 h-2 rounded-full bg-[#10B981] animate-ping"></span>
+        <span class="w-2 h-2 rounded-full bg-[#1CA752] animate-ping"></span>
         <span id="presentation-timer">00:00</span>
       </div>
 
@@ -98,7 +132,7 @@
       <div class="mono font-bold text-gray-300 bg-white/5 px-3 py-1 rounded-xl border border-white/10 text-xs">
         <span id="slide-num-current" class="text-[#00F0FF]">01</span>
         <span class="text-gray-600">/</span>
-        <span id="slide-num-total" class="text-gray-400">09</span>
+        <span id="slide-num-total" class="text-gray-400">16</span>
       </div>
 
       <!-- Fullscreen Toggle -->
@@ -112,436 +146,381 @@
 
   <!-- Top Slide Progress Line -->
   <div class="w-full bg-white/5 h-1 relative z-30 overflow-hidden">
-    <div id="progress-bar" class="h-full bg-gradient-to-r from-[#00F0FF] via-[#8B5CF6] to-[#10B981] transition-all duration-300" style="width: 11.11%;"></div>
+    <div id="progress-bar" class="h-full bg-gradient-to-r from-[#00F0FF] via-[#1CA752] to-[#8B5CF6] transition-all duration-300" style="width: 6.25%;"></div>
   </div>
 
   <!-- ========================================================= -->
   <!-- SLIDES VIEWPORT CONTAINER                                 -->
   <!-- ========================================================= -->
-  <main class="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-8 overflow-y-auto">
+  <main class="relative z-10 flex-1 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
     <div class="w-full max-w-6xl mx-auto my-auto">
 
       <!-- ======================================================= -->
-      <!-- SLIDE 1: EXECUTIVE TITLE & PARTNERSHIP BRIEFING         -->
+      <!-- SLIDE 01: THE SERIES A CROSSROADS                       -->
       <!-- ======================================================= -->
-      <section class="slide active flex-col items-center text-center justify-center py-6 sm:py-12" id="slide-1">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-6">
-          <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse"></span>
-          Strategic Partnership Briefing • Confidential
+      <section class="slide active flex-col items-center text-center justify-center py-4 sm:py-8" id="slide-1">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1CA752]/10 border border-[#1CA752]/30 text-[#1CA752] text-xs font-bold uppercase tracking-wider mb-4">
+          <span class="w-2 h-2 rounded-full bg-[#1CA752] animate-pulse"></span>
+          01 • STRATEGIC VISION & SERIES A INFLECTION
         </div>
 
-        <h1 class="text-3xl sm:text-6xl font-extrabold tracking-tight text-white leading-[1.15] max-w-4xl mb-6">
-          Powering the Frontline Workforce with <br class="hidden sm:block"/>
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-[#A78BFA] to-[#10B981]">
-            AI Education & Autonomous Intelligence
+        <h1 class="text-2xl sm:text-5xl font-extrabold tracking-tight text-white leading-[1.15] max-w-4xl mb-4">
+          From Bangladesh’s #1 Blue-Collar Job Board to the <br class="hidden sm:block"/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#1CA752] via-[#00F0FF] to-[#8B5CF6]">
+            Frontline Workforce Super-App of South Asia
           </span>
         </h1>
 
-        <p class="text-sm sm:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl mb-8">
-          A high-impact collaboration between <b class="text-white">GRO10X Holdings</b> and <b class="text-[#00F0FF]">Shomvob Technologies</b> to scale Shomvob Academy and supercharge corporate frontline recruitment with autonomous demand scouting.
+        <p class="text-xs sm:text-base text-gray-300 font-normal leading-relaxed max-w-2xl mb-8">
+          Confidential briefing for Rifat Bhai & Shomvob Leadership: Choosing between the linear staffing agency trap and the 15x SaaS recurring revenue multiple.
         </p>
 
-        <!-- Executive Meta Card -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl bg-[#131B2E]/80 backdrop-blur-md border border-white/10 p-4 rounded-2xl text-left text-xs mb-8">
-          <div>
-            <div class="text-[10px] text-gray-400 uppercase mono">Partner Lead</div>
-            <div class="font-bold text-white mt-0.5">Shomvob Technologies Ltd.</div>
-            <div class="text-[10px] text-[#A78BFA]">Forbes Asia 100 to Watch</div>
+        <!-- The 2 Paths Comparison Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-4xl text-left">
+          
+          <!-- Path A: The RPO Trap -->
+          <div class="bg-[#111726]/90 border border-red-500/25 rounded-2xl p-6 relative overflow-hidden group hover:border-red-500/40 transition">
+            <div class="absolute -top-10 -right-10 w-24 h-24 bg-red-500/10 rounded-full blur-2xl"></div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase mono text-red-400">TRADITIONAL TRAJECTORY</span>
+              <span class="text-[11px] mono bg-red-500/20 text-red-300 px-2.5 py-0.5 rounded-full border border-red-500/30">1.5x – 2.5x Multiple</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">The RPO Staffing Agency Trap</h3>
+            <ul class="space-y-2 text-xs text-gray-300">
+              <li class="flex items-start gap-2">
+                <span class="text-red-400">✕</span>
+                <span><b>One-off Commissions:</b> Non-recurring transactional fees vulnerable to hiring freezes.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-red-400">✕</span>
+                <span><b>Heavy Human Recruiter Overhead:</b> Cost scales linearly with worker volume.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-red-400">✕</span>
+                <span><b>Capped Investor Valuation:</b> Institutional VCs price it as a services agency ($2M–$4M cap).</span>
+              </li>
+            </ul>
           </div>
-          <div>
-            <div class="text-[10px] text-gray-400 uppercase mono">Technology Lead</div>
-            <div class="font-bold text-white mt-0.5">GRO10X Innovation Lab</div>
-            <div class="text-[10px] text-[#10B981]">Autonomous Agent Foundry</div>
-          </div>
-          <div>
-            <div class="text-[10px] text-gray-400 uppercase mono">Target Horizon</div>
-            <div class="font-bold text-white mt-0.5">Q4 2026 – Q1 2027</div>
-            <div class="text-[10px] text-[#00F0FF]">50,000 Frontline Learners</div>
-          </div>
-        </div>
 
-        <div class="text-xs text-gray-500 mono flex items-center gap-2">
-          <span>Press</span> <kbd class="px-2 py-0.5 rounded bg-white/10 text-gray-300 font-mono">Space</kbd> <span>or</span> <kbd class="px-2 py-0.5 rounded bg-white/10 text-gray-300 font-mono">→</kbd> <span>to advance</span>
+          <!-- Path B: The Autonomous OS -->
+          <div class="bg-[#111726]/90 border border-[#1CA752]/40 rounded-2xl p-6 relative overflow-hidden group hover:border-[#00F0FF] transition shadow-[0_0_30px_rgba(28,167,82,0.12)]">
+            <div class="absolute -top-10 -right-10 w-24 h-24 bg-[#1CA752]/20 rounded-full blur-2xl"></div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase mono text-[#1CA752]">THE AUTONOMOUS OPERATING SYSTEM</span>
+              <span class="text-[11px] mono bg-[#1CA752]/20 text-[#1CA752] px-2.5 py-0.5 rounded-full border border-[#1CA752]/40 font-bold">10x – 15x SaaS Multiple</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">The Autonomous Workforce OS</h3>
+            <ul class="space-y-2 text-xs text-gray-300">
+              <li class="flex items-start gap-2">
+                <span class="text-[#1CA752]">✓</span>
+                <span><b>High-Margin Recurring SaaS:</b> Enterprise subscriptions for automated screening & matching.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[#1CA752]">✓</span>
+                <span><b>Bundled High-Margin Corridors:</b> Cross-border GCC/Japan placements ($200–$500/worker).</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[#1CA752]">✓</span>
+                <span><b>Series A Unicorn Trajectory:</b> Valued as a scalable AI infrastructure play ($15M–$30M+).</span>
+              </li>
+            </ul>
+          </div>
+
         </div>
       </section>
 
       <!-- ======================================================= -->
-      <!-- SLIDE 2: THE CORE INDUSTRY BOTTLENECK                   -->
+      <!-- SLIDE 02: BUILT ON INSIDER PLUMBING (THE TRACK RECORD) -->
       <!-- ======================================================= -->
       <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-2">
-        <div class="mb-6">
-          <span class="text-xs font-bold uppercase tracking-widest text-[#00F0FF] mono">02 • STRATEGIC FRICTION POINTS</span>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-1">Two-Sided Industry Bottlenecks</h2>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">Why traditional corporate training and manual BD fail Bangladesh's 35M+ deskless workforce.</p>
+        <div class="mb-5 text-center sm:text-left">
+          <span class="text-xs font-bold uppercase tracking-widest text-[#1CA752] mono">02 • FOUNDATIONAL PEDIGREE</span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-1">Deep Institutional Plumbing: Unrivaled Credibility</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">Shomvob’s proprietary moat is anchored by tier-1 global donors and established enterprise sales networks.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
-          <!-- Bottleneck A: Workforce Learning Failure -->
-          <div class="bg-[#131B2E] border border-red-500/25 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-xl">
-                📉
-              </div>
-              <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-red-400 mono">CHALLENGE A • CANDIDATE SIDE</span>
-                <h3 class="text-lg font-bold text-white">Deskless Workers Fail Text-Heavy LMS</h3>
-              </div>
+          <!-- Card 1: UNICEF P2E -->
+          <div class="bg-[#111726] border border-white/10 hover:border-[#00F0FF] rounded-2xl p-5 transition group">
+            <div class="w-10 h-10 rounded-xl bg-[#00F0FF]/15 text-[#00F0FF] flex items-center justify-center text-lg font-bold mb-3">
+              🇺🇳
             </div>
-            
-            <p class="text-xs text-gray-300 leading-relaxed mb-4">
-              Bangladesh's blue and silver-collar workforce (retail associates, delivery riders, hospitality staff, machine operators) drop out of traditional text-heavy corporate e-learning.
-            </p>
-
-            <ul class="space-y-2.5 text-xs text-gray-400">
-              <li class="flex items-start gap-2">
-                <span class="text-red-400 font-bold">✕</span>
-                <span><b>High Dropouts:</b> 80%+ drop out when courses are in formal English or theoretical PDFs.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-red-400 font-bold">✕</span>
-                <span><b>Interview Confidence Deficit:</b> Workers possess skills but freeze during corporate interview rounds.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-red-400 font-bold">✕</span>
-                <span><b>Absence of Visual Micro-Credentials:</b> No lightweight mobile certificate to prove job-readiness on WhatsApp.</span>
-              </li>
-            </ul>
+            <div class="text-[11px] mono text-[#00F0FF] font-bold uppercase">YOUTH UPSKILLING</div>
+            <h3 class="text-base font-bold text-white mt-1">UNICEF P2E Partnership</h3>
+            <div class="text-xl font-extrabold text-white mt-2 mono">$150,000+</div>
+            <div class="text-xs text-gray-400 mt-1">70,000+ Verified Youth Skilling & Career Completions nationwide.</div>
+            <div class="mt-3 pt-3 border-t border-white/5 text-[10px] text-gray-500">
+              Validated curriculum delivery & mobile accessibility.
+            </div>
           </div>
 
-          <!-- Bottleneck B: Manual BD Lead Generation Failure -->
-          <div class="bg-[#131B2E] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-xl">
-                ⏳
-              </div>
-              <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 mono">CHALLENGE B • ENTERPRISE BD SIDE</span>
-                <h3 class="text-lg font-bold text-white">BD Spends 70% of Time Hunting Job Leads</h3>
-              </div>
+          <!-- Card 2: Gates Foundation -->
+          <div class="bg-[#111726] border border-white/10 hover:border-[#1CA752] rounded-2xl p-5 transition group">
+            <div class="w-10 h-10 rounded-xl bg-[#1CA752]/15 text-[#1CA752] flex items-center justify-center text-lg font-bold mb-3">
+              🏛️
             </div>
-            
-            <p class="text-xs text-gray-300 leading-relaxed mb-4">
-              Corporate HR hiring demands in Bangladesh are distributed across hundreds of fragmented Facebook groups, urgent circulars, and offline networks.
-            </p>
+            <div class="text-[11px] mono text-[#1CA752] font-bold uppercase">FINANCIAL EQUITY</div>
+            <h3 class="text-base font-bold text-white mt-1">Gates Foundation</h3>
+            <div class="text-xl font-extrabold text-white mt-2 mono">$550,000+</div>
+            <div class="text-xs text-gray-400 mt-1">Portfolio commitment for female frontline workers & digital inclusion.</div>
+            <div class="mt-3 pt-3 border-t border-white/5 text-[10px] text-gray-500">
+              Institutional governance & gender-parity focus.
+            </div>
+          </div>
 
-            <ul class="space-y-2.5 text-xs text-gray-400">
-              <li class="flex items-start gap-2">
-                <span class="text-amber-400 font-bold">✕</span>
-                <span><b>Manual Scraping Fatigue:</b> BD reps spend hours daily scrolling social posts instead of closing corporate agreements.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-amber-400 font-bold">✕</span>
-                <span><b>Delayed Response:</b> Urgent frontline hiring needs are closed within 48h; manual identification is too slow.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-amber-400 font-bold">✕</span>
-                <span><b>Unstructured Contacts:</b> Phone numbers, vacancy counts, and company names are buried in image flyers.</span>
-              </li>
-            </ul>
+          <!-- Card 3: Roots of Impact -->
+          <div class="bg-[#111726] border border-white/10 hover:border-[#8B5CF6] rounded-2xl p-5 transition group">
+            <div class="w-10 h-10 rounded-xl bg-[#8B5CF6]/15 text-[#8B5CF6] flex items-center justify-center text-lg font-bold mb-3">
+              🌱
+            </div>
+            <div class="text-[11px] mono text-[#8B5CF6] font-bold uppercase">SIINC INCENTIVES</div>
+            <h3 class="text-base font-bold text-white mt-1">Roots of Impact</h3>
+            <div class="text-xl font-extrabold text-white mt-2 mono">$100,000</div>
+            <div class="text-xs text-gray-400 mt-1">Social Impact Incentives verifying real wage increases & formal job placements.</div>
+            <div class="mt-3 pt-3 border-t border-white/5 text-[10px] text-gray-500">
+              Rigorous 3rd-party impact audit methodologies.
+            </div>
+          </div>
+
+          <!-- Card 4: Enterprise KAM Restructuring -->
+          <div class="bg-[#111726] border border-white/10 hover:border-[#F59E0B] rounded-2xl p-5 transition group">
+            <div class="w-10 h-10 rounded-xl bg-[#F59E0B]/15 text-[#F59E0B] flex items-center justify-center text-lg font-bold mb-3">
+              💼
+            </div>
+            <div class="text-[11px] mono text-[#F59E0B] font-bold uppercase">ENTERPRISE SALES</div>
+            <h3 class="text-base font-bold text-white mt-1">10 Key Account Managers</h3>
+            <div class="text-xl font-extrabold text-white mt-2 mono">Direct B2B Mesh</div>
+            <div class="text-xs text-gray-400 mt-1">Restructured enterprise sales team driving high-volume hiring relationships.</div>
+            <div class="mt-3 pt-3 border-t border-white/5 text-[10px] text-gray-500">
+              Retail, manufacturing & logistics direct contracts.
+            </div>
           </div>
 
         </div>
 
-        <div class="bg-black/40 border border-white/10 rounded-2xl p-4 text-center text-xs text-gray-300 max-w-2xl mx-auto">
-          💡 <b>The Opportunity:</b> Combine Shomvob's distribution with GRO10X's autonomous video AI and lead intelligence engines.
+        <div class="mt-6 bg-[#090D16]/90 border border-white/10 rounded-2xl p-4 text-center text-xs text-gray-300">
+          💡 <b>The Strategic Opportunity:</b> The donor credibility and enterprise relationships already exist. By wrapping them in autonomous software, we transition from single-grant dependencies to permanent recurring ARR.
         </div>
       </section>
 
       <!-- ======================================================= -->
-      <!-- SLIDE 3: PILLAR 1 — SHOMVOB AI ACADEMY                  -->
+      <!-- SLIDE 03: THE GLOBAL BENCHMARK (BETTERPLACE & FOUNTAIN) -->
       <!-- ======================================================= -->
       <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-3">
-        <div class="mb-6">
-          <span class="text-xs font-bold uppercase tracking-widest text-[#10B981] mono">03 • STRATEGIC PILLAR 1</span>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-1">Shomvob AI Academy: Visual Micro-Learning</h2>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">Mobile-first, colloquial Bangla micro-courses empowering deskless workers with measurable skills.</p>
+        <div class="mb-5 text-center sm:text-left">
+          <span class="text-xs font-bold uppercase tracking-widest text-[#00F0FF] mono">03 • GLOBAL VALIDATION</span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-1">The Global Playbook: How BetterPlace & Fountain Escaped Job Boards</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">International precedents proving that owning the frontline worker lifecycle unlocks unicorn scale.</p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
           
-          <!-- Track 1: AI CV Mastery -->
-          <div class="bg-[#131B2E] border border-white/10 hover:border-[#00F0FF] rounded-2xl p-5 transition group">
-            <div class="text-3xl mb-3">📄</div>
-            <h3 class="font-bold text-white text-base group-hover:text-[#00F0FF] transition">CV Mastery via Mobile</h3>
-            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
-              Step-by-step video guide teaching workers to generate clean, ATS-compliant CVs on Canva and mobile tools.
+          <!-- BetterPlace Case -->
+          <div class="bg-[#111726] border border-white/10 rounded-2xl p-6">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <span class="text-[11px] mono uppercase text-[#1CA752] font-bold">INDIA & SOUTHEAST ASIA</span>
+                <h3 class="text-xl font-bold text-white mt-0.5">BetterPlace</h3>
+              </div>
+              <div class="text-right">
+                <span class="text-base font-extrabold text-[#1CA752] mono">25M+ Workers</span>
+                <div class="text-[10px] text-gray-400">$100M+ Raised</div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-300 leading-relaxed mb-4">
+              Started as an ID verification tool for blue-collar staff, then scaled into a unified frontline HCM suite: automated onboarding, upskilling micro-courses, shift management, and payroll/credit rails.
             </p>
-            <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[#00F0FF] mono font-bold">
-              3 Modules • 18 Mins Total
+            <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-1.5 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Recurring ARR Share:</span>
+                <span class="text-white font-bold mono">90%+ SaaS Subscriptions</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Key Economic Moat:</span>
+                <span class="text-[#1CA752] font-bold">Worker lifecycle telemetry & retention</span>
+              </div>
             </div>
           </div>
 
-          <!-- Track 2: Customer Care & Service Empathy -->
-          <div class="bg-[#131B2E] border border-white/10 hover:border-[#10B981] rounded-2xl p-5 transition group">
-            <div class="text-3xl mb-3">🤝</div>
-            <h3 class="font-bold text-white text-base group-hover:text-[#10B981] transition">Customer Handling & Care</h3>
-            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
-              Retail, hospitality, and rider de-escalation scripts, phone etiquette, and polite customer engagement in Bangla.
-            </p>
-            <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[#10B981] mono font-bold">
-              4 Modules • 22 Mins Total
+          <!-- Fountain Case -->
+          <div class="bg-[#111726] border border-white/10 rounded-2xl p-6">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <span class="text-[11px] mono uppercase text-[#00F0FF] font-bold">SILICON VALLEY UNICORN</span>
+                <h3 class="text-xl font-bold text-white mt-0.5">Fountain</h3>
+              </div>
+              <div class="text-right">
+                <span class="text-base font-extrabold text-[#00F0FF] mono">$1B+ Valuation</span>
+                <div class="text-[10px] text-gray-400">100M+ Processed</div>
+              </div>
             </div>
-          </div>
-
-          <!-- Track 3: Digital & Smartphone Literacy -->
-          <div class="bg-[#131B2E] border border-white/10 hover:border-[#8B5CF6] rounded-2xl p-5 transition group">
-            <div class="text-3xl mb-3">📱</div>
-            <h3 class="font-bold text-white text-base group-hover:text-[#8B5CF6] transition">Digital Workplace Tools</h3>
-            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
-              Mastering Google Maps, bKash/Nagad merchant payment apps, WhatsApp business chat, and attendance trackers.
+            <p class="text-xs text-gray-300 leading-relaxed mb-4">
+              Replaced slow human resume review with instant mobile-first SMS/WhatsApp workflows, video questionnaires, and automated candidate scoring for Amazon, Deliveroo, and Target.
             </p>
-            <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[#8B5CF6] mono font-bold">
-              3 Modules • 15 Mins Total
-            </div>
-          </div>
-
-          <!-- Track 4: Interview Confidence Priming -->
-          <div class="bg-[#131B2E] border border-white/10 hover:border-[#F59E0B] rounded-2xl p-5 transition group">
-            <div class="text-3xl mb-3">🎯</div>
-            <h3 class="font-bold text-white text-base group-hover:text-[#F59E0B] transition">Interview Psychology</h3>
-            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
-              Eye-contact, grooming, answering salary expectation questions, and real frontline mock interview demonstrations.
-            </p>
-            <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[#F59E0B] mono font-bold">
-              4 Modules • 25 Mins Total
+            <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-1.5 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Time-to-Hire Reduction:</span>
+                <span class="text-white font-bold mono">From 10 Days to &lt;24 Hours</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Key Economic Moat:</span>
+                <span class="text-[#00F0FF] font-bold">High-velocity enterprise applicant conversion</span>
+              </div>
             </div>
           </div>
 
         </div>
 
-        <!-- Joint Venture Commercial Model Badge -->
-        <div class="bg-gradient-to-r from-[#00F0FF]/15 via-[#8B5CF6]/15 to-[#10B981]/15 border border-white/15 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div>
-            <span class="text-xs font-bold text-white">Commercial Architecture:</span>
-            <span class="text-xs text-gray-300 ml-1.5">Low-ticket, high-volume joint venture model (<b>50/50 Revenue Share</b> on certified courses).</span>
+        <div class="bg-gradient-to-r from-[#1CA752]/20 via-[#00F0FF]/20 to-[#8B5CF6]/20 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+          <div class="text-xs text-gray-200">
+            <b>The Synthesis for Shomvob:</b> Shomvob already owns Bangladesh’s frontline trust. Combining it with GRO10X autonomous tooling creates South Asia’s undisputed frontline workforce monopoly.
           </div>
-          <button onclick="goToSlide(4)" class="bg-[#00F0FF] hover:brightness-110 text-black font-extrabold px-4 py-2 rounded-xl text-xs transition shadow shrink-0">
-            View Live Course Preview →
+          <button onclick="goToSlide(4)" class="hidden sm:inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">
+            <span>Explore 3 Engines</span> <span>→</span>
           </button>
         </div>
       </section>
 
       <!-- ======================================================= -->
-      <!-- SLIDE 4: LIVE COURSE SHOWCASE (EMBEDDED YOUTUBE)        -->
+      <!-- SLIDE 04: THE 3 GROWTH ENGINES                          -->
       <!-- ======================================================= -->
       <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-4">
-        <div class="mb-4">
-          <span class="text-xs font-bold uppercase tracking-widest text-[#00F0FF] mono">04 • LIVE PRODUCTION ASSET</span>
-          <h2 class="text-xl sm:text-3xl font-extrabold text-white mt-0.5">Sample AI Academy Course: CV Mastery in AI Era</h2>
-          <p class="text-xs text-gray-400">High-definition interactive video module engineered for Bangla deskless talent.</p>
+        <div class="mb-5 text-center sm:text-left">
+          <span class="text-xs font-bold uppercase tracking-widest text-[#1CA752] mono">04 • THE GROWTH FORMULA</span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-1">The Tri-Engine Architecture: Multiplying Shomvob’s Valuation</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">A structured 3-part growth engine transforming transactional placement into scalable recurring value.</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
           
-          <!-- Left: Responsive YouTube Embed (ID: WK5FHftYFo0) -->
-          <div class="lg:col-span-7 bg-black rounded-3xl overflow-hidden border border-white/15 shadow-2xl aspect-video relative group">
-            <iframe 
-              class="w-full h-full"
-              src="https://www.youtube-nocookie.com/embed/WK5FHftYFo0?rel=0&modestbranding=1" 
-              title="Shomvob AI Academy Preview" 
-              frameborder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-              allowfullscreen>
-            </iframe>
-          </div>
-
-          <!-- Right: Course Syllabus & Outcome -->
-          <div class="lg:col-span-5 space-y-3.5">
-            <div class="bg-[#131B2E] border border-white/10 rounded-2xl p-4">
-              <span class="text-[10px] font-bold uppercase tracking-wider text-[#10B981] mono">COURSE BLUEPRINT</span>
-              <h3 class="text-base font-bold text-white mt-1">CV Mastery in the Age of AI</h3>
-              <p class="text-xs text-gray-300 mt-1 leading-relaxed">
-                Authored by GRO10X Academy Leads specifically for Shomvob frontline talent pool.
+          <!-- Engine 1 -->
+          <div class="bg-[#111726] border border-white/10 hover:border-[#00F0FF] rounded-2xl p-5 transition flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-[#00F0FF]/15 text-[#00F0FF] flex items-center justify-center font-bold text-base mb-3">
+                01
+              </div>
+              <span class="text-[11px] mono uppercase text-[#00F0FF] font-bold">OPERATIONAL VELOCITY</span>
+              <h3 class="text-lg font-bold text-white mt-1">Engine 1: Recruiter Velocity</h3>
+              <p class="text-xs text-gray-300 mt-2 leading-relaxed">
+                Autonomous 90-second video and voice screening that cuts recruiter shortlisting from 7 days to &lt;24 hours. B2B Demand Scout auto-ingests unadvertised hiring queries.
               </p>
-
-              <!-- Modules List -->
-              <div class="space-y-2 mt-3 pt-3 border-t border-white/10 text-xs">
-                <div class="flex items-center justify-between text-gray-300">
-                  <span class="flex items-center gap-2">
-                    <span class="text-[#00F0FF] font-mono">01.</span> Why 80% of CVs are Rejected by HR
-                  </span>
-                  <span class="text-[10px] mono text-gray-400">04:12</span>
-                </div>
-                <div class="flex items-center justify-between text-gray-300">
-                  <span class="flex items-center gap-2">
-                    <span class="text-[#00F0FF] font-mono">02.</span> Step-by-Step Mobile CV Design on Canva
-                  </span>
-                  <span class="text-[10px] mono text-gray-400">08:45</span>
-                </div>
-                <div class="flex items-center justify-between text-gray-300">
-                  <span class="flex items-center gap-2">
-                    <span class="text-[#00F0FF] font-mono">03.</span> Exporting & WhatsApp Sharing to Recruiter
-                  </span>
-                  <span class="text-[10px] mono text-gray-400">05:20</span>
-                </div>
-              </div>
             </div>
-
-            <!-- Digital Credential Badge -->
-            <div class="bg-gradient-to-br from-[#131B2E] to-black border border-[#10B981]/40 rounded-2xl p-3.5 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-[#10B981]/20 border border-[#10B981]/40 flex items-center justify-center text-xl">
-                  🏅
-                </div>
-                <div>
-                  <div class="text-xs font-bold text-white">Verifiable QR Credential</div>
-                  <div class="text-[10px] text-gray-400">Shomvob Certified Frontline Candidate</div>
-                </div>
-              </div>
-              <span class="text-[10px] mono text-[#10B981] font-bold bg-[#10B981]/10 px-2.5 py-1 rounded-lg border border-[#10B981]/30">
-                1-Tap Verify
-              </span>
+            <div class="mt-4 pt-3 border-t border-white/5 text-[11px] text-[#00F0FF] font-bold">
+              • TalentSentry Video Assessor<br>
+              • Autonomous Demand Scout CRM
             </div>
           </div>
 
+          <!-- Engine 2 -->
+          <div class="bg-[#111726] border border-white/10 hover:border-[#1CA752] rounded-2xl p-5 transition flex flex-col justify-between shadow-[0_0_20px_rgba(28,167,82,0.1)]">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-[#1CA752]/15 text-[#1CA752] flex items-center justify-center font-bold text-base mb-3">
+                02
+              </div>
+              <span class="text-[11px] mono uppercase text-[#1CA752] font-bold">HIGH-MARGIN FRONTIERS</span>
+              <h3 class="text-lg font-bold text-white mt-1">Engine 2: Expansion Frontiers</h3>
+              <p class="text-xs text-gray-300 mt-2 leading-relaxed">
+                Unlock high-margin cross-border corridors to GCC & Japan ($200–$500 per placed worker) alongside the "Silent" SME Credit Oracle & WhatsApp Debt Recovery Engine.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-white/5 text-[11px] text-[#1CA752] font-bold">
+              • Cross-Border Trade & Passport<br>
+              • SME Credit Underwriting & Recovery
+            </div>
+          </div>
+
+          <!-- Engine 3 -->
+          <div class="bg-[#111726] border border-white/10 hover:border-[#8B5CF6] rounded-2xl p-5 transition flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-[#8B5CF6]/15 text-[#8B5CF6] flex items-center justify-center font-bold text-base mb-3">
+                03
+              </div>
+              <span class="text-[11px] mono uppercase text-[#8B5CF6] font-bold">COMMUNITY & GRANTS</span>
+              <h3 class="text-lg font-bold text-white mt-1">Engine 3: Organic Ingress</h3>
+              <p class="text-xs text-gray-300 mt-2 leading-relaxed">
+                Shomvob AI Academy & YouTube Creator Network generating zero-CAC candidate inflow. "Shomvob Shuni" audio bots positioning for UNICEF/Gates Phase II ($500k–$1M).
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-white/5 text-[11px] text-[#8B5CF6] font-bold">
+              • YouTube Sponsored Role Guides<br>
+              • "Shomvob Shuni" Dialectal Voice Bot
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-5 text-center">
+          <button onclick="goToSlide(11)" class="inline-flex items-center gap-2 bg-[#1CA752] hover:brightness-110 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition shadow-lg">
+            <span>Open The Strategic Switchboard</span> <span>➔</span>
+          </button>
         </div>
       </section>
 
       <!-- ======================================================= -->
-      <!-- SLIDE 5: PILLAR 2 — GRO10X DEMAND SCOUT                 -->
+      <!-- SLIDE 05: RECRUITER VELOCITY — TALENTSENTRY            -->
       <!-- ======================================================= -->
       <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-5">
-        <div class="mb-5">
-          <span class="text-xs font-bold uppercase tracking-widest text-[#00F0FF] mono">05 • STRATEGIC PILLAR 2</span>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">GRO10X Demand Scout: Autonomous BD Engine</h2>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">Autonomous intelligence agent ingesting corporate hiring signals across Facebook, newspaper circulars, and job posts.</p>
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#00F0FF] mono">05 • OPERATIONAL ACCELERATION</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">Recruiter Velocity: Slashing Time-to-Hire to 24 Hours</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">90-second asynchronous mobile video screening eliminating 85% of manual recruiter phone triage.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            ← Switchboard [S]
+          </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
           
-          <!-- Ingestion Architecture Box -->
-          <div class="lg:col-span-5 space-y-3">
-            <div class="bg-[#131B2E] border border-white/10 rounded-2xl p-4">
-              <span class="text-[10px] font-bold text-[#00F0FF] uppercase mono">AUTONOMOUS SCOUTING AGENT</span>
-              <h3 class="text-sm font-bold text-white mt-1">Real-Time Ingestion Architecture</h3>
-              <p class="text-xs text-gray-300 mt-1.5 leading-relaxed">
-                Monitors 40+ Bangladesh corporate hiring groups 24/7. Extracts employer contact, role urgency, and headcount into Shomvob BD CRM within seconds of posting.
-              </p>
+          <!-- Candidate Mobile Video Frame -->
+          <div class="lg:col-span-5 bg-[#111726] border border-white/10 rounded-2xl p-4 flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-white/5 text-xs text-gray-400 mb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                <span class="font-bold text-white">90-Sec Video Response</span>
+              </div>
+              <span class="mono">Role: Retail Service Crew</span>
+            </div>
+
+            <div class="relative bg-black rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center border border-white/5 group">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 z-10 pointer-events-none"></div>
               
-              <div class="mt-4 space-y-2 text-xs">
-                <div class="flex items-center gap-2 text-gray-300">
-                  <span class="text-[#10B981]">✓</span> Multimodal Gemini Vision parsing of image flyers
-                </div>
-                <div class="flex items-center gap-2 text-gray-300">
-                  <span class="text-[#10B981]">✓</span> Direct extraction of verified HR WhatsApp numbers
-                </div>
-                <div class="flex items-center gap-2 text-gray-300">
-                  <span class="text-[#10B981]">✓</span> 70% reduction in Shomvob BD manual research hours
-                </div>
+              <!-- Avatar Placeholder with Video UI overlay -->
+              <div class="text-center z-0">
+                <div class="text-5xl mb-2">👤</div>
+                <div class="text-xs font-bold text-gray-300">Sumon Mia (Age 22)</div>
+                <div class="text-[10px] text-gray-500">Dhaka Mirpur • SSC Completed</div>
+              </div>
+
+              <!-- Live Telemetry Badges -->
+              <div class="absolute bottom-3 left-3 right-3 z-20 flex justify-between items-center text-[10px] mono">
+                <span class="bg-[#1CA752]/20 text-[#1CA752] border border-[#1CA752]/40 px-2 py-0.5 rounded">Bangla Fluency: 92%</span>
+                <span class="bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/40 px-2 py-0.5 rounded">Eye Contact: 88%</span>
               </div>
             </div>
 
-            <button onclick="simulateDemandScout()" class="w-full bg-[#00F0FF] hover:brightness-110 text-black font-extrabold py-3 rounded-xl text-xs transition shadow flex items-center justify-center gap-2">
-              <span>⚡ Simulate Ingestion Signal</span>
-            </button>
-          </div>
-
-          <!-- Interactive Live Ingestion Terminal / CRM Card -->
-          <div class="lg:col-span-7 bg-[#070A12] border border-[#00F0FF]/30 rounded-3xl p-5 shadow-2xl relative">
-            <div class="flex justify-between items-center pb-3 border-b border-white/10 text-xs">
-              <span class="font-bold text-[#00F0FF] mono flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-ping"></span>
-                SHOMVOB BD FEED • AUTO-SCOUTED
-              </span>
-              <span class="text-[10px] mono text-gray-400">Ingested via Gemini Vision</span>
-            </div>
-
-            <!-- Ingested Leads List -->
-            <div class="space-y-3 mt-4" id="scout-leads-container">
-              
-              <!-- Lead 1 -->
-              <div class="bg-[#131B2E] border border-white/10 p-3.5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="font-bold text-white text-xs">Apex Footwear Ltd.</span>
-                    <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">Urgent (48h)</span>
-                  </div>
-                  <div class="text-[11px] text-gray-300 mt-1">Role: Retail Sales Executive • 18 Vacancies • Bashundhara City</div>
-                  <div class="text-[10px] text-gray-400 mono mt-0.5">Source: Bangladesh Retail HR Circle (Facebook)</div>
-                </div>
-                <div class="flex sm:flex-col items-center sm:items-end gap-1.5 shrink-0">
-                  <a href="tel:+8801711000000" class="bg-[#10B981] hover:brightness-110 text-black font-extrabold px-3 py-1 rounded-lg text-xs transition">
-                    📞 WhatsApp BD
-                  </a>
-                  <span class="text-[10px] mono text-emerald-400">+880 1711-XXXXXX</span>
-                </div>
-              </div>
-
-              <!-- Lead 2 -->
-              <div class="bg-[#131B2E] border border-white/10 p-3.5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="font-bold text-white text-xs">Pathao Logistics Hub</span>
-                    <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Open Roster</span>
-                  </div>
-                  <div class="text-[11px] text-gray-300 mt-1">Role: Warehouse Sorter & Hub Lead • 25 Vacancies • Tejgaon</div>
-                  <div class="text-[10px] text-gray-400 mono mt-0.5">Source: Dhaka Delivery Workforce Network</div>
-                </div>
-                <div class="flex sm:flex-col items-center sm:items-end gap-1.5 shrink-0">
-                  <a href="tel:+8801811000000" class="bg-[#10B981] hover:brightness-110 text-black font-extrabold px-3 py-1 rounded-lg text-xs transition">
-                    📞 WhatsApp BD
-                  </a>
-                  <span class="text-[10px] mono text-emerald-400">+880 1811-XXXXXX</span>
-                </div>
-              </div>
-
+            <div class="mt-3 text-[11px] text-gray-400 italic">
+              "কাস্টমার রাগ করলে আমি প্রথমে মনোযোগ দিয়ে শুনবো, তারপর শান্তভাবে সমস্যার সমাধান দেবো।"
             </div>
           </div>
 
-        </div>
-      </section>
-
-      <!-- ======================================================= -->
-      <!-- SLIDE 6: PRODUCT DEEP-DIVE — TALENTSENTRY               -->
-      <!-- ======================================================= -->
-      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-6">
-        <div class="mb-5">
-          <span class="text-xs font-bold uppercase tracking-widest text-[#8B5CF6] mono">06 • PRODUCT DEEP-DIVE</span>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">TalentSentry: Multimodal Video Interview Assessor</h2>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">Automating 60-second video screening for frontline fluency, warmth, and confidence.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-          
-          <!-- Candidate Workflow & Video Simulator -->
-          <div class="bg-[#131B2E] border border-white/10 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <span class="text-[10px] font-bold text-[#8B5CF6] uppercase mono">CANDIDATE SUBMISSION PORTAL</span>
-            <h3 class="text-base font-bold text-white mt-1">Zero-Friction 60s Video Intro</h3>
-            
-            <!-- Simulated Video Box -->
-            <div class="relative rounded-2xl bg-black border border-white/15 aspect-video overflow-hidden mt-3 mb-3 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80" class="w-full h-full object-cover opacity-80" alt="Candidate Video">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
-              
-              <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg text-[10px] mono text-[#10B981] flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-[#10B981] animate-ping"></span>
-                <span>Spoken Bangla Audio Stream (Live)</span>
+          <!-- TalentSentry Multimodal Rubric -->
+          <div class="lg:col-span-7 bg-[#111726] border border-[#00F0FF]/30 rounded-2xl p-5 shadow-[0_0_25px_rgba(0,240,255,0.08)]">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <span class="text-[11px] mono uppercase text-[#00F0FF] font-bold">TALENTSENTRY AI ENGINE</span>
+                <h3 class="text-lg font-bold text-white">Multimodal Candidate Scoring Dossier</h3>
               </div>
-
-              <div class="absolute bottom-2.5 left-2.5 right-2.5 text-xs text-white">
-                <div class="font-bold">Sumaiya Akhter (সুমিয়া আক্তার)</div>
-                <div class="text-[10px] text-gray-300">Applying for: Shwapno Retail Supervisor • Mirpur</div>
-              </div>
+              <span class="text-xs mono bg-[#1CA752]/20 text-[#1CA752] px-3 py-1 rounded-full border border-[#1CA752]/40 font-bold">Score: 91/100</span>
             </div>
 
-            <p class="text-xs text-gray-300 leading-relaxed">
-              Candidate sends a 60s video intro via Shomvob app or WhatsApp bot. Gemini extracts audio + visual cues simultaneously.
-            </p>
-          </div>
-
-          <!-- AI Multimodal Evaluation Rubric -->
-          <div class="bg-[#131B2E] border border-[#8B5CF6]/30 rounded-3xl p-6 shadow-xl">
-            <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
-              <span class="text-xs font-bold text-white uppercase mono">AI MULTIMODAL TELEMETRY</span>
-              <span class="text-xs font-bold text-[#10B981] mono bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">89/100 FIT</span>
-            </div>
-
-            <div class="space-y-3.5 text-xs">
+            <div class="space-y-3 text-xs">
               <div>
                 <div class="flex justify-between font-bold mb-1">
-                  <span class="text-gray-300">Spoken Bangla Fluency & Diction</span>
-                  <span class="text-[#00F0FF] mono">92%</span>
+                  <span class="text-gray-300">Spoken Bangla Fluency & Clear Diction</span>
+                  <span class="text-[#00F0FF] mono">92% (High)</span>
                 </div>
                 <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
                   <div class="bg-[#00F0FF] h-2 rounded-full" style="width: 92%"></div>
@@ -550,38 +529,41 @@
 
               <div>
                 <div class="flex justify-between font-bold mb-1">
-                  <span class="text-gray-300">Camera Eye-Contact & Warmth</span>
-                  <span class="text-[#10B981] mono">88%</span>
+                  <span class="text-gray-300">Camera Eye-Contact & Customer Warmth</span>
+                  <span class="text-[#1CA752] mono">88%</span>
                 </div>
                 <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                  <div class="bg-[#10B981] h-2 rounded-full" style="width: 88%"></div>
+                  <div class="bg-[#1CA752] h-2 rounded-full" style="width: 88%"></div>
                 </div>
               </div>
 
               <div>
                 <div class="flex justify-between font-bold mb-1">
-                  <span class="text-gray-300">Filler Words Index (Um/Uhh)</span>
+                  <span class="text-gray-300">Filler Words Index (Um/Uhh Hesitation)</span>
                   <span class="text-emerald-400 mono">Very Low (&lt;3%)</span>
                 </div>
                 <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                  <div class="bg-emerald-400 h-2 rounded-full" style="width: 15%"></div>
+                  <div class="bg-emerald-400 h-2 rounded-full" style="width: 12%"></div>
                 </div>
               </div>
 
               <div>
                 <div class="flex justify-between font-bold mb-1">
                   <span class="text-gray-300">Natural Speech vs Script-Reading</span>
-                  <span class="text-[#A78BFA] mono">95% Natural Speech</span>
+                  <span class="text-[#8B5CF6] mono">95% Natural Delivery</span>
                 </div>
                 <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                  <div class="bg-[#A78BFA] h-2 rounded-full" style="width: 95%"></div>
+                  <div class="bg-[#8B5CF6] h-2 rounded-full" style="width: 95%"></div>
                 </div>
               </div>
             </div>
 
             <!-- Recruiter Bookmark Summary -->
-            <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-gray-300 bg-black/40 p-2.5 rounded-xl">
-              💡 <b>Auto-Recommendation:</b> Fast-track candidate to In-Person Panel Interview. Fits customer-facing retail persona.
+            <div class="mt-4 pt-3 border-t border-white/10 text-xs text-gray-300 bg-black/40 p-3 rounded-xl flex items-center justify-between">
+              <div>
+                💡 <b>Auto-Recommendation:</b> Fast-track candidate to In-Person Panel Interview.
+              </div>
+              <span class="bg-[#1CA752] text-black font-extrabold px-3 py-1 rounded text-[11px]">Shortlisted</span>
             </div>
           </div>
 
@@ -589,219 +571,982 @@
       </section>
 
       <!-- ======================================================= -->
-      <!-- SLIDE 7: ENTERPRISE TOOL ECOSYSTEM                      -->
+      <!-- SLIDE 06: B2B DEMAND SCOUT                              -->
+      <!-- ======================================================= -->
+      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-6">
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#00F0FF] mono">06 • ENTERPRISE PIPELINE ENGINE</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">B2B Demand Scout: Autonomous Employer Ingestion</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Autonomous social scraper capturing unadvertised employer hiring queries across top Facebook hiring groups into Shomvob CRM.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            ← Switchboard [S]
+          </button>
+        </div>
+
+        <div class="bg-[#111726] border border-white/10 rounded-2xl p-5 mb-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-white/5">
+            <div class="flex items-center gap-3">
+              <span class="w-3 h-3 rounded-full bg-[#1CA752] animate-ping"></span>
+              <span class="text-xs font-bold text-white mono">LIVE FEED: MONITORING 45+ FACEBOOK HIRING GROUPS</span>
+            </div>
+            <button onclick="injectTestDemandLead()" class="bg-[#00F0FF] hover:brightness-110 text-black font-extrabold px-3.5 py-1.5 rounded-xl text-xs transition active:scale-95 shadow">
+              ⚡ Inject Test Hiring Lead
+            </button>
+          </div>
+
+          <!-- Dynamic Lead Cards List -->
+          <div id="demand-leads-container" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+            
+            <!-- Lead 1 -->
+            <div class="bg-black/40 border border-white/5 p-3 rounded-xl flex flex-wrap items-center justify-between gap-3 hover:border-[#00F0FF]/40 transition">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-white">Daily Fresh Superstore (Uttara Branch)</span>
+                  <span class="text-[10px] mono bg-[#1CA752]/20 text-[#1CA752] px-2 py-0.5 rounded">Verified Employer</span>
+                </div>
+                <div class="text-xs text-gray-300 mt-0.5">"Need 25 Store Cashiers & Shelving Assistants urgently. Immediate joining."</div>
+                <div class="text-[10px] text-gray-500 mt-1">Source: Bangladesh Retail Job Portal • 8 mins ago</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="mono text-xs font-bold text-[#00F0FF]">Headcount: 25</span>
+                <button class="bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition">
+                  1-Click WhatsApp
+                </button>
+              </div>
+            </div>
+
+            <!-- Lead 2 -->
+            <div class="bg-black/40 border border-white/5 p-3 rounded-xl flex flex-wrap items-center justify-between gap-3 hover:border-[#00F0FF]/40 transition">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-white">Apex Express Courier Ltd</span>
+                  <span class="text-[10px] mono bg-[#1CA752]/20 text-[#1CA752] px-2 py-0.5 rounded">High Urgency</span>
+                </div>
+                <div class="text-xs text-gray-300 mt-0.5">"Urgent requirement: 40 Delivery Riders for Gazipur & Narayanganj hubs. Fuel allowance provided."</div>
+                <div class="text-[10px] text-gray-500 mt-1">Source: Dhaka Riders Job Network • 14 mins ago</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="mono text-xs font-bold text-[#00F0FF]">Headcount: 40</span>
+                <button class="bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition">
+                  1-Click WhatsApp
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="text-xs text-gray-400 bg-white/5 border border-white/5 rounded-xl p-3 flex justify-between items-center">
+          <span>🎯 <b>Impact on Shomvob BD Team:</b> Eliminates 70% of manual cold-prospecting; feeds high-intent employer leads directly to 10 KAMs every morning.</span>
+          <span class="text-[#00F0FF] mono font-bold text-xs hidden sm:inline">100% Autonomous Scraper</span>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- SLIDE 07: "SHOMVOB SHUNI" VERNACULAR VOICE BOT          -->
       <!-- ======================================================= -->
       <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-7">
-        <div class="mb-5">
-          <span class="text-xs font-bold uppercase tracking-widest text-[#00F0FF] mono">07 • TECHNOLOGY MESH</span>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">GRO10X Enterprise Suite for Shomvob</h2>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">Four turnkey intelligence modules deployed inside Shomvob's existing operations.</p>
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#1CA752] mono">07 • INCLUSIVE DONOR MOAT</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">"Shomvob Shuni": Vernacular Voice AI for Low-Literacy Workers</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Audio-first WhatsApp conversational agent enabling low-literacy women and rural youth to build digital CVs via voice.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            ← Switchboard [S]
+          </button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
           
-          <!-- Tool 1: Demand Scout -->
-          <div class="bg-[#131B2E] border border-white/10 hover:border-[#00F0FF] p-5 rounded-3xl transition shadow-xl group">
-            <div class="flex justify-between items-start mb-3">
-              <span class="text-3xl">📡</span>
-              <span class="text-[10px] mono uppercase font-bold px-2 py-0.5 rounded bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30">BD Pipeline</span>
+          <!-- Audio Playback Simulation -->
+          <div class="lg:col-span-5 bg-[#111726] border border-white/10 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold mono text-[#1CA752]">WHATSAPP AUDIO VOICE-IN</span>
+              <span class="text-[10px] mono bg-[#1CA752]/20 text-[#1CA752] px-2 py-0.5 rounded">Noakhali Dialect</span>
             </div>
-            <h3 class="text-base font-bold text-white group-hover:text-[#00F0FF] transition">1. Autonomous Demand Scout</h3>
-            <p class="text-xs text-gray-300 mt-1.5 leading-relaxed">
-              Extracts high-intent corporate hiring circulars from Facebook and news sites into Shomvob BD CRM with WhatsApp contact details.
-            </p>
+
+            <!-- Waveform & Player -->
+            <div class="bg-black/50 border border-white/10 rounded-2xl p-4 text-center">
+              <div class="flex items-center justify-center gap-1.5 h-12 mb-3" id="audio-wave-bars">
+                <span class="w-1 bg-[#1CA752] h-4 rounded-full animate-pulse"></span>
+                <span class="w-1 bg-[#1CA752] h-8 rounded-full animate-pulse"></span>
+                <span class="w-1 bg-[#1CA752] h-6 rounded-full animate-pulse"></span>
+                <span class="w-1 bg-[#1CA752] h-10 rounded-full animate-pulse"></span>
+                <span class="w-1 bg-[#1CA752] h-5 rounded-full animate-pulse"></span>
+                <span class="w-1 bg-[#1CA752] h-9 rounded-full animate-pulse"></span>
+                <span class="w-1 bg-[#1CA752] h-4 rounded-full animate-pulse"></span>
+              </div>
+              <button onclick="toggleAudioDemo(this)" class="bg-[#1CA752] hover:brightness-110 text-white font-bold px-4 py-1.5 rounded-xl text-xs transition inline-flex items-center gap-2">
+                <span>▶ Play Worker Voice Note</span>
+              </button>
+              <div class="text-[11px] text-gray-400 mt-2 italic">
+                "আঁই আগে একটা ফ্যাক্টরিতে ৩ বছর হেল্পার আছিলাম, সেলাই মেশিনের কাম জানি..."
+              </div>
+            </div>
+
+            <div class="mt-4 space-y-2 text-xs">
+              <div class="flex justify-between text-gray-300">
+                <span>Dialect Recognition:</span>
+                <span class="text-[#1CA752] font-bold">96% Accuracy</span>
+              </div>
+              <div class="flex justify-between text-gray-300">
+                <span>Synthesized Profile:</span>
+                <span class="text-white font-bold">Garments Senior Machine Operator</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Tool 2: Meet Copilot -->
-          <div class="bg-[#131B2E] border border-white/10 hover:border-[#8B5CF6] p-5 rounded-3xl transition shadow-xl group">
-            <div class="flex justify-between items-start mb-3">
-              <span class="text-3xl">🎙️</span>
-              <span class="text-[10px] mono uppercase font-bold px-2 py-0.5 rounded bg-[#8B5CF6]/15 text-[#A78BFA] border border-[#8B5CF6]/30">Sales Execution</span>
-            </div>
-            <h3 class="text-base font-bold text-white group-hover:text-[#A78BFA] transition">2. Meet Copilot (Live Scribe)</h3>
-            <p class="text-xs text-gray-300 mt-1.5 leading-relaxed">
-              Auto-records and transcribes Shomvob BD client meetings, generating follow-up proposals and action items without manual typing.
+          <!-- Strategic Impact & Donor Positioning -->
+          <div class="lg:col-span-7 bg-[#111726] border border-[#1CA752]/30 rounded-2xl p-6 shadow-[0_0_25px_rgba(28,167,82,0.1)]">
+            <span class="text-[11px] mono uppercase text-[#1CA752] font-bold">DONOR GRANT ACCELERATOR</span>
+            <h3 class="text-xl font-bold text-white mt-1">Unlocking UNICEF P2E 2.0 & Gates Foundation Phase II</h3>
+            <p class="text-xs text-gray-300 mt-2 leading-relaxed">
+              Traditional job portals exclude 65% of Bangladesh's female frontline workforce due to text illiteracy. "Shomvob Shuni" solves this barrier with audio-first conversational AI.
             </p>
-          </div>
 
-          <!-- Tool 3: TalentSentry -->
-          <div class="bg-[#131B2E] border border-white/10 hover:border-[#10B981] p-5 rounded-3xl transition shadow-xl group">
-            <div class="flex justify-between items-start mb-3">
-              <span class="text-3xl">👁️</span>
-              <span class="text-[10px] mono uppercase font-bold px-2 py-0.5 rounded bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">HR Screening</span>
+            <div class="grid grid-cols-2 gap-3 mt-4">
+              <div class="bg-black/40 border border-white/5 p-3 rounded-xl">
+                <div class="text-lg font-bold text-white mono">$500k – $1M</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Non-Dilutive Donor Co-Funding Vector</div>
+              </div>
+              <div class="bg-black/40 border border-white/5 p-3 rounded-xl">
+                <div class="text-lg font-bold text-[#1CA752] mono">4x Expansion</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Rural Female Candidate Pipeline Ingress</div>
+              </div>
             </div>
-            <h3 class="text-base font-bold text-white group-hover:text-[#10B981] transition">3. TalentSentry Video Assessor</h3>
-            <p class="text-xs text-gray-300 mt-1.5 leading-relaxed">
-              Multimodal 60-second video assessment scoring candidate fluency, eye-contact, confidence, and job persona match.
-            </p>
-          </div>
 
-          <!-- Tool 4: Candidate OCR Digester -->
-          <div class="bg-[#131B2E] border border-white/10 hover:border-[#F59E0B] p-5 rounded-3xl transition shadow-xl group">
-            <div class="flex justify-between items-start mb-3">
-              <span class="text-3xl">🪪</span>
-              <span class="text-[10px] mono uppercase font-bold px-2 py-0.5 rounded bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">Compliance</span>
+            <div class="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-gray-400">
+              <span>Ready for immediate integration into Shomvob WhatsApp Business API.</span>
+              <span class="text-[#1CA752] font-bold">100% Audio-Native</span>
             </div>
-            <h3 class="text-base font-bold text-white group-hover:text-[#F59E0B] transition">4. Multimodal NID & Document OCR</h3>
-            <p class="text-xs text-gray-300 mt-1.5 leading-relaxed">
-              Instant camera intake of Bengali Smart National IDs, driving licenses, and academic marksheet authentication.
-            </p>
           </div>
 
         </div>
       </section>
 
       <!-- ======================================================= -->
-      <!-- SLIDE 8: COMMERCIAL PARTNERSHIP FRAMEWORK               -->
+      <!-- SLIDE 08: THE CROSS-BORDER GCC & JAPAN CORRIDOR         -->
       <!-- ======================================================= -->
       <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-8">
-        <div class="mb-5">
-          <span class="text-xs font-bold uppercase tracking-widest text-[#10B981] mono">08 • WIN-WIN ECONOMICS</span>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">Commercial Partnership Framework</h2>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">Zero-risk co-venture structure aligned on revenue generation and operational velocity.</p>
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#F59E0B] mono">08 • HIGH-MARGIN FRONTIER</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">The Cross-Border Corridor: 20x Margin Expansion in GCC & Japan</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">The single highest-margin strategic vector for Shomvob: Transitioning from $10 domestic fees to $200–$500 per placement.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            ← Switchboard [S]
+          </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           
-          <!-- Stream 1: Academy Co-Venture -->
-          <div class="bg-[#131B2E] border border-[#10B981]/40 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <span class="text-[10px] font-bold text-[#10B981] uppercase mono">REVENUE STREAM 1</span>
-            <h3 class="text-lg font-bold text-white mt-1">Shomvob AI Academy Co-Venture</h3>
-            <div class="text-2xl font-black text-[#10B981] mono my-2">50% / 50% Revenue Share</div>
-            
-            <p class="text-xs text-gray-300 leading-relaxed mb-4">
-              On all learner micro-course subscriptions, premium CV building toolkits, and verified digital certificate fees.
+          <!-- Pillar 1 -->
+          <div class="bg-[#111726] border border-white/10 rounded-2xl p-5 hover:border-[#F59E0B] transition">
+            <div class="text-3xl mb-2">🗣️</div>
+            <span class="text-[10px] mono uppercase text-[#F59E0B] font-bold">CONVERSATIONAL COACH</span>
+            <h3 class="text-base font-bold text-white mt-1">Dialectal Gulf Arabic & Japanese Voice AI</h3>
+            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+              Automated daily conversational practice teaching work-specific vocabulary (construction safety, eldercare terminology, hospitality greetings) directly over WhatsApp.
             </p>
-
-            <div class="bg-black/50 p-3.5 rounded-2xl border border-white/10 text-xs space-y-1.5 mono">
-              <div class="flex justify-between text-gray-300">
-                <span>Target Learners Year 1:</span>
-                <span class="text-white font-bold">50,000 Workers</span>
-              </div>
-              <div class="flex justify-between text-gray-300">
-                <span>Average Course Fee:</span>
-                <span class="text-[#00F0FF] font-bold">৳ 499 / Course</span>
-              </div>
-              <div class="flex justify-between text-[#10B981] font-bold border-t border-white/10 pt-1.5">
-                <span>Projected Gross Revenue:</span>
-                <span>৳ 2.49 Crore ($210K USD)</span>
-              </div>
-            </div>
           </div>
 
-          <!-- Stream 2: Enterprise Tool Suite Pilot -->
-          <div class="bg-[#131B2E] border border-[#00F0FF]/40 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <span class="text-[10px] font-bold text-[#00F0FF] uppercase mono">REVENUE STREAM 2</span>
-            <h3 class="text-lg font-bold text-white mt-1">Enterprise Tool Suite (BD & HR)</h3>
-            <div class="text-2xl font-black text-[#00F0FF] mono my-2">30-Day Zero Capex Pilot</div>
-            
-            <p class="text-xs text-gray-300 leading-relaxed mb-4">
-              GRO10X deploys Demand Scout and TalentSentry into Shomvob’s core BD and screening ops with no upfront setup fee.
+          <!-- Pillar 2 -->
+          <div class="bg-[#111726] border border-white/10 rounded-2xl p-5 hover:border-[#00F0FF] transition">
+            <div class="text-3xl mb-2">🛠️</div>
+            <span class="text-[10px] mono uppercase text-[#00F0FF] font-bold">3D WEBGL SIMULATOR</span>
+            <h3 class="text-base font-bold text-white mt-1">Standardized Trade-Test Diagnostics</h3>
+            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+              Standardized interactive tests for electrical wiring, plumbing, and welding diagnostics that eliminate corrupt physical middlemen testing agencies.
             </p>
+          </div>
 
-            <div class="bg-black/50 p-3.5 rounded-2xl border border-white/10 text-xs space-y-1.5 mono">
-              <div class="flex justify-between text-gray-300">
-                <span>Pilot Duration:</span>
-                <span class="text-white font-bold">30 Days (Managed)</span>
-              </div>
-              <div class="flex justify-between text-gray-300">
-                <span>Success KPI:</span>
-                <span class="text-[#00F0FF] font-bold">+50 Qualified BD Leads</span>
-              </div>
-              <div class="flex justify-between text-[#10B981] font-bold border-t border-white/10 pt-1.5">
-                <span>Post-Pilot Model:</span>
-                <span>Monthly Retainer / Seat</span>
-              </div>
-            </div>
+          <!-- Pillar 3 -->
+          <div class="bg-[#111726] border border-white/10 rounded-2xl p-5 hover:border-[#1CA752] transition">
+            <div class="text-3xl mb-2">🛂</div>
+            <span class="text-[10px] mono uppercase text-[#1CA752] font-bold">TAMPER-PROOF IDENTITY</span>
+            <h3 class="text-base font-bold text-white mt-1">Digital Skill Passport</h3>
+            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+              Cryptographically signed QR certificate verified by Saudi, UAE, and Japanese recruiting agencies, proving authentic verified competencies.
+            </p>
           </div>
 
         </div>
 
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-3 text-center text-xs text-gray-300">
-          🤝 <b>Strategic Alignment:</b> Prepares Shomvob with proprietary AI capabilities ahead of next institutional capital round.
+        <div class="bg-[#111726] border border-[#F59E0B]/30 rounded-2xl p-4 flex flex-wrap justify-between items-center gap-3">
+          <div class="text-xs text-gray-200">
+            <span class="text-[#F59E0B] font-bold mono">UNIT ECONOMICS JUMP:</span> Domestic placement yields <b>৳1,000–৳2,500 ($10–$25)</b>. Cross-border certified placement yields <b>৳25,000–৳60,000 ($200–$500)</b> per worker.
+          </div>
+          <button onclick="goToSlide(12)" class="bg-[#F59E0B] hover:brightness-110 text-black font-extrabold px-4 py-2 rounded-xl text-xs transition shadow">
+            Inspect Trade Simulator Deep Dive →
+          </button>
         </div>
       </section>
 
       <!-- ======================================================= -->
-      <!-- SLIDE 9: 14-DAY PILOT ROADMAP & NEXT STEPS              -->
+      <!-- SLIDE 09: THE SME CREDIT ORACLE & DEBT ENGINE           -->
       <!-- ======================================================= -->
       <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-9">
-        <div class="mb-5 text-center max-w-2xl mx-auto">
-          <span class="text-xs font-bold uppercase tracking-widest text-[#00F0FF] mono">09 • EXECUTION TIMELINE</span>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">14-Day Rapid Pilot Roadmap</h2>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">From strategic signoff to live revenue and candidate certifications in two weeks.</p>
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#1CA752] mono">09 • FINTECH DATA ENGINE</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">The "Silent" SME Credit Oracle & WhatsApp Debt Engine</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Monetizing employer payroll and attendance telemetry to underwrite SME credit without balance sheet risk.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            ← Switchboard [S]
+          </button>
         </div>
 
-        <!-- 3-Phase Timeline Matrix -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
           
-          <!-- Phase 1 -->
-          <div class="bg-[#131B2E] border border-white/10 p-5 rounded-3xl relative">
-            <div class="w-8 h-8 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] font-mono font-bold flex items-center justify-center text-sm mb-3">
-              01
-            </div>
-            <div class="text-xs text-gray-400 mono">DAYS 1 – 5</div>
-            <h3 class="text-base font-bold text-white mt-1">Content & Signal Calibration</h3>
-            <ul class="mt-3 space-y-2 text-xs text-gray-300">
-              <li class="flex items-start gap-1.5">
+          <!-- Side 1: Credit Underwriting -->
+          <div class="bg-[#111726] border border-white/10 rounded-2xl p-5">
+            <span class="text-[10px] mono uppercase text-[#00F0FF] font-bold">TELEMETRY-BASED SCORING</span>
+            <h3 class="text-lg font-bold text-white mt-1">Automated SME Credit Risk Oracle</h3>
+            <p class="text-xs text-gray-300 mt-2 leading-relaxed">
+              Shomvob sits on the most predictive SME credit dataset in Bangladesh: on-time salary disbursements, worker turnover velocity, and hiring expansion patterns.
+            </p>
+            <ul class="mt-3 space-y-1.5 text-xs text-gray-400">
+              <li class="flex items-center gap-2">
                 <span class="text-[#00F0FF]">●</span>
-                <span>Produce 3 pilot Academy courses in colloquial Bangla.</span>
+                <span>Partner Bank/NBFI syndication (BRAC Bank, IPDC, City Bank).</span>
               </li>
-              <li class="flex items-start gap-1.5">
+              <li class="flex items-center gap-2">
                 <span class="text-[#00F0FF]">●</span>
-                <span>Configure Demand Scout for top 25 FB hiring groups.</span>
+                <span>Zero balance sheet risk for Shomvob; pure 3%–5% origination fee.</span>
               </li>
             </ul>
           </div>
 
-          <!-- Phase 2 -->
-          <div class="bg-[#131B2E] border border-white/10 p-5 rounded-3xl relative">
-            <div class="w-8 h-8 rounded-xl bg-[#8B5CF6]/20 text-[#A78BFA] font-mono font-bold flex items-center justify-center text-sm mb-3">
-              02
-            </div>
-            <div class="text-xs text-gray-400 mono">DAYS 6 – 10</div>
-            <h3 class="text-base font-bold text-white mt-1">TalentSentry Beta Rollout</h3>
-            <ul class="mt-3 space-y-2 text-xs text-gray-300">
-              <li class="flex items-start gap-1.5">
-                <span class="text-[#A78BFA]">●</span>
-                <span>Deploy video screening beta to 1 anchor employer.</span>
+          <!-- Side 2: Conversational Recovery -->
+          <div class="bg-[#111726] border border-white/10 rounded-2xl p-5">
+            <span class="text-[10px] mono uppercase text-[#1CA752] font-bold">EMPATHETIC COLLECTION</span>
+            <h3 class="text-lg font-bold text-white mt-1">Conversational WhatsApp Debt Recovery</h3>
+            <p class="text-xs text-gray-300 mt-2 leading-relaxed">
+              Replacing aggressive debt-collection calls with polite, conversational WhatsApp reminders equipped with dynamic 1-tap bKash/Nagad installment links.
+            </p>
+            <ul class="mt-3 space-y-1.5 text-xs text-gray-400">
+              <li class="flex items-center gap-2">
+                <span class="text-[#1CA752]">●</span>
+                <span>94.2% on-time repayment rate via friction-free payment links.</span>
               </li>
-              <li class="flex items-start gap-1.5">
-                <span class="text-[#A78BFA]">●</span>
-                <span>Evaluate first 100 candidate video fluency scores.</span>
+              <li class="flex items-center gap-2">
+                <span class="text-[#1CA752]">●</span>
+                <span>Automated rescheduling workflows for genuine business delays.</span>
               </li>
             </ul>
           </div>
 
-          <!-- Phase 3 -->
-          <div class="bg-[#131B2E] border border-[#10B981]/40 p-5 rounded-3xl relative shadow-[0_0_25px_rgba(16,185,129,0.15)]">
-            <div class="w-8 h-8 rounded-xl bg-[#10B981]/20 text-[#10B981] font-mono font-bold flex items-center justify-center text-sm mb-3">
-              03
+        </div>
+
+        <div class="bg-black/40 border border-white/10 rounded-2xl p-4 flex justify-between items-center">
+          <div class="text-xs text-gray-300">
+            💡 <b>Financial Impact:</b> A ৳50 Crore annual SME loan origination generates <b>৳2.0 Crore ($165k+) pure software margin</b> with zero bad-debt liability.
+          </div>
+          <button onclick="goToSlide(13)" class="bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">
+            View Live Chat Simulation →
+          </button>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- SLIDE 10: SHOMVOB AI ACADEMY & YOUTUBE CREATOR NETWORK -->
+      <!-- ======================================================= -->
+      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-10">
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#8B5CF6] mono">10 • MEDIA & COMMUNITY MOAT</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">Shomvob AI Academy: Zero-CAC Ingress via High-Impact Media</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Hard evidence: Turning blue-collar training into an organic viral funnel with corporate brand sponsorships.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            ← Switchboard [S]
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          
+          <!-- YouTube Embedded Evidence -->
+          <div class="lg:col-span-6 bg-[#111726] border border-white/10 rounded-2xl p-4">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-white/5 text-xs text-gray-400">
+              <span class="font-bold text-white flex items-center gap-1.5">
+                <span class="text-red-500">▶</span> Founder’s McDonald’s Service Crew Case
+              </span>
+              <span class="mono text-[#00F0FF]">Live Embed</span>
             </div>
-            <div class="text-xs text-gray-400 mono">DAYS 11 – 14</div>
-            <h3 class="text-base font-bold text-white mt-1">Commercial Review & PR</h3>
-            <ul class="mt-3 space-y-2 text-xs text-gray-300">
-              <li class="flex items-start gap-1.5">
-                <span class="text-[#10B981]">●</span>
-                <span>Review lead conversion metrics & revenue share.</span>
+
+            <!-- YouTube Iframe -->
+            <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-white/10 shadow-lg">
+              <iframe 
+                class="w-full h-full" 
+                src="https://www.youtube.com/embed/WK5FHftYFo0?rel=0&modestbranding=1" 
+                title="Founder Frontline Training Case" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            </div>
+
+            <!-- Verified Analytics Callout -->
+            <div class="grid grid-cols-4 gap-2 mt-3 text-center text-xs">
+              <div class="bg-black/40 p-2 rounded-lg border border-white/5">
+                <div class="font-bold text-white mono">15,012</div>
+                <div class="text-[10px] text-gray-500">Views</div>
+              </div>
+              <div class="bg-black/40 p-2 rounded-lg border border-white/5">
+                <div class="font-bold text-[#1CA752] mono">784.8 hrs</div>
+                <div class="text-[10px] text-gray-500">Watch Time</div>
+              </div>
+              <div class="bg-black/40 p-2 rounded-lg border border-white/5">
+                <div class="font-bold text-[#00F0FF] mono">102k+</div>
+                <div class="text-[10px] text-gray-500">Impressions</div>
+              </div>
+              <div class="bg-black/40 p-2 rounded-lg border border-white/5">
+                <div class="font-bold text-[#8B5CF6] mono">8.1%</div>
+                <div class="text-[10px] text-gray-500">CTR</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Triple Monetization Model -->
+          <div class="lg:col-span-6 bg-[#111726] border border-[#8B5CF6]/30 rounded-2xl p-5 shadow-[0_0_25px_rgba(139,92,246,0.1)]">
+            <span class="text-[11px] mono uppercase text-[#8B5CF6] font-bold">REVENUE & INGRESS TRIPOD</span>
+            <h3 class="text-xl font-bold text-white mt-1">The 3-Way Media Monetization Engine</h3>
+            
+            <div class="mt-4 space-y-3 text-xs">
+              <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                <div class="font-bold text-white flex items-center justify-between">
+                  <span>1. Corporate Brand Sponsorships</span>
+                  <span class="text-[#8B5CF6] mono font-bold">৳1.5L – ৳3.0L / Guide</span>
+                </div>
+                <p class="text-gray-400 mt-1 leading-relaxed">
+                  KFC, Singer, Berger sponsoring official frontline role guides (e.g., "Singer AC Technician Certification").
+                </p>
+              </div>
+
+              <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                <div class="font-bold text-white flex items-center justify-between">
+                  <span>2. Direct AdSense & Social Monetization</span>
+                  <span class="text-[#00F0FF] mono font-bold">Self-Funding Media</span>
+                </div>
+                <p class="text-gray-400 mt-1 leading-relaxed">
+                  High-watch-time educational content generating recurring ad revenue to offset production costs.
+                </p>
+              </div>
+
+              <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                <div class="font-bold text-white flex items-center justify-between">
+                  <span>3. Zero-CAC Qualified Candidate Funnel</span>
+                  <span class="text-[#1CA752] mono font-bold">100% Free Acquisition</span>
+                </div>
+                <p class="text-gray-400 mt-1 leading-relaxed">
+                  Every video viewer is directed to download Shomvob and apply with pre-qualified skills, eliminating Google/Meta ad spend.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- SLIDE 11: THE STRATEGIC SWITCHBOARD (COMMAND CENTER)    -->
+      <!-- ======================================================= -->
+      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-11">
+        <div class="mb-5 text-center">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1CA752]/15 text-[#1CA752] border border-[#1CA752]/30 text-xs font-bold uppercase mono mb-2">
+            💡 EXECUTIVE COMMAND CENTER
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-white">The Strategic Switchboard: Explore All Vectors</h2>
+          <p class="text-xs sm:text-sm text-gray-400 max-w-2xl mx-auto mt-1">
+            Click any strategic card below to drill directly into architectural blueprints and financial simulations. Press <b>[S]</b> anywhere to return here.
+          </p>
+        </div>
+
+        <!-- 6-Card Interactive Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto w-full">
+          
+          <!-- Card 1: Cross-Border -->
+          <div onclick="goToSlide(12)" class="bg-[#111726] border border-white/10 hover:border-[#F59E0B] p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-3xl">✈️</span>
+              <span class="text-[10px] mono bg-[#F59E0B]/20 text-[#F59E0B] px-2 py-0.5 rounded">Deep Dive 12</span>
+            </div>
+            <h3 class="text-base font-bold text-white group-hover:text-[#F59E0B] transition">Cross-Border GCC & Japan Corridor</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Dialectal Voice AI, 3D WebGL trade testing, and tamper-proof digital passports with $200–$500 margins.
+            </p>
+            <div class="mt-3 text-xs text-[#F59E0B] font-bold flex items-center gap-1">
+              <span>Inspect Simulator</span> <span>→</span>
+            </div>
+          </div>
+
+          <!-- Card 2: SME Credit Oracle -->
+          <div onclick="goToSlide(13)" class="bg-[#111726] border border-white/10 hover:border-[#1CA752] p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-3xl">💳</span>
+              <span class="text-[10px] mono bg-[#1CA752]/20 text-[#1CA752] px-2 py-0.5 rounded">Deep Dive 13</span>
+            </div>
+            <h3 class="text-base font-bold text-white group-hover:text-[#1CA752] transition">SME Credit Oracle & Debt Engine</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Monetizing salary logs to underwrite working capital loans with polite conversational WhatsApp recovery bots.
+            </p>
+            <div class="mt-3 text-xs text-[#1CA752] font-bold flex items-center gap-1">
+              <span>Inspect Recovery Chat</span> <span>→</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Media & CTO Decoupling -->
+          <div onclick="goToSlide(14)" class="bg-[#111726] border border-white/10 hover:border-[#8B5CF6] p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-3xl">🎥</span>
+              <span class="text-[10px] mono bg-[#8B5CF6]/20 text-[#8B5CF6] px-2 py-0.5 rounded">Deep Dive 14</span>
+            </div>
+            <h3 class="text-base font-bold text-white group-hover:text-[#8B5CF6] transition">YouTube Media & Sidecar Microservice</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Sponsored career video economics and the decoupled sidecar architecture that protects Naqib's core codebase.
+            </p>
+            <div class="mt-3 text-xs text-[#8B5CF6] font-bold flex items-center gap-1">
+              <span>Inspect Architecture</span> <span>→</span>
+            </div>
+          </div>
+
+          <!-- Card 4: TalentSentry Video Screening -->
+          <div onclick="goToSlide(5)" class="bg-[#111726] border border-white/10 hover:border-[#00F0FF] p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-3xl">⚡</span>
+              <span class="text-[10px] mono bg-[#00F0FF]/20 text-[#00F0FF] px-2 py-0.5 rounded">Slide 05</span>
+            </div>
+            <h3 class="text-base font-bold text-white group-hover:text-[#00F0FF] transition">TalentSentry Video Screening</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              90-second video responses evaluated for Bangla fluency, eye contact, and script hesitation in 24 hours.
+            </p>
+            <div class="mt-3 text-xs text-[#00F0FF] font-bold flex items-center gap-1">
+              <span>Inspect Video Rubric</span> <span>→</span>
+            </div>
+          </div>
+
+          <!-- Card 5: Demand Scout CRM -->
+          <div onclick="goToSlide(6)" class="bg-[#111726] border border-white/10 hover:border-[#00F0FF] p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-3xl">🎯</span>
+              <span class="text-[10px] mono bg-[#00F0FF]/20 text-[#00F0FF] px-2 py-0.5 rounded">Slide 06</span>
+            </div>
+            <h3 class="text-base font-bold text-white group-hover:text-[#00F0FF] transition">B2B Demand Scout Pipeline</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Live automated scraper scanning Facebook corporate groups to feed unadvertised hiring leads to Shomvob KAMs.
+            </p>
+            <div class="mt-3 text-xs text-[#00F0FF] font-bold flex items-center gap-1">
+              <span>Test Live Scraper</span> <span>→</span>
+            </div>
+          </div>
+
+          <!-- Card 6: Shomvob Shuni -->
+          <div onclick="goToSlide(7)" class="bg-[#111726] border border-white/10 hover:border-[#1CA752] p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-3xl">🎙️</span>
+              <span class="text-[10px] mono bg-[#1CA752]/20 text-[#1CA752] px-2 py-0.5 rounded">Slide 07</span>
+            </div>
+            <h3 class="text-base font-bold text-white group-hover:text-[#1CA752] transition">"Shomvob Shuni" Vernacular Bot</h3>
+            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Audio-first WhatsApp voice bot for low-literacy female workers, targeting UNICEF P2E 2.0 and Gates grants.
+            </p>
+            <div class="mt-3 text-xs text-[#1CA752] font-bold flex items-center gap-1">
+              <span>Play Voice Demo</span> <span>→</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-5 text-center flex items-center justify-center gap-3">
+          <button onclick="goToSlide(15)" class="bg-gradient-to-r from-[#1CA752] to-[#00F0FF] hover:brightness-110 text-black font-extrabold px-6 py-2 rounded-xl text-xs transition shadow">
+            Launch Series A ARR & Valuation Simulator ➔
+          </button>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- SLIDE 12: DEEP DIVE — CROSS-BORDER TRADE SIMULATOR      -->
+      <!-- ======================================================= -->
+      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-12">
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#F59E0B] mono">12 • EXPANSION DEEP DIVE</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">Deep Dive: Cross-Border Trade Simulator & Skill Passport</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Replacing arbitrary physical tests with standardized digital verification for GCC and Japanese recruiters.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="inline-flex items-center gap-1 text-xs text-[#F59E0B] bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 px-3 py-1.5 rounded-xl border border-[#F59E0B]/30 font-bold transition">
+            ← Back to Switchboard [S]
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          
+          <!-- Interactive Trade Test Simulation -->
+          <div class="lg:col-span-6 bg-[#111726] border border-white/10 rounded-2xl p-5">
+            <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/5">
+              <span class="text-xs font-bold text-white">Module: Industrial HVAC & TIG Welding</span>
+              <span class="text-[10px] mono bg-[#F59E0B]/20 text-[#F59E0B] px-2 py-0.5 rounded">Standard: ISO-9606</span>
+            </div>
+
+            <!-- Simulated Diagnostic Checklist -->
+            <div class="space-y-2.5 text-xs">
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-[#1CA752]">✓</span>
+                  <span class="text-gray-300">Safety Isolation & Gas Leak Test</span>
+                </div>
+                <span class="text-[#1CA752] mono font-bold">100% Passed</span>
+              </div>
+
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-[#1CA752]">✓</span>
+                  <span class="text-gray-300">Three-Phase Compressor Current Load</span>
+                </div>
+                <span class="text-[#1CA752] mono font-bold">415V Verified</span>
+              </div>
+
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-[#1CA752]">✓</span>
+                  <span class="text-gray-300">TIG Arc Welding Seam Uniformity</span>
+                </div>
+                <span class="text-[#F59E0B] mono font-bold">96% Grade A</span>
+              </div>
+
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-[#00F0FF]">●</span>
+                  <span class="text-gray-300">Basic Arabic Worksite Commands</span>
+                </div>
+                <span class="text-[#00F0FF] mono font-bold">Level 2 Certified</span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs text-gray-400">
+              <span>Eliminates fraudulent local agency certs.</span>
+              <span class="text-[#F59E0B] font-bold">Audit-Proof Logs</span>
+            </div>
+          </div>
+
+          <!-- Digital Skill Passport Preview -->
+          <div class="lg:col-span-6 bg-[#111726] border border-[#F59E0B]/30 rounded-2xl p-5 shadow-[0_0_25px_rgba(245,158,11,0.1)]">
+            <div class="flex justify-between items-center mb-3">
+              <div>
+                <span class="text-[10px] mono uppercase text-[#F59E0B] font-bold">CRYPTOGRAPHIC IDENTITY</span>
+                <h3 class="text-lg font-bold text-white">Shomvob Digital Skill Passport</h3>
+              </div>
+              <div class="w-10 h-10 rounded-lg bg-black border border-white/20 flex items-center justify-center text-lg">
+                📱
+              </div>
+            </div>
+
+            <div class="bg-black/60 rounded-xl p-4 border border-white/10 space-y-2 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Candidate Name:</span>
+                <span class="text-white font-bold">Md. Kamrul Islam</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Verified Trade:</span>
+                <span class="text-[#F59E0B] font-bold">HVAC / Industrial Electrician (L3)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Target Corridor:</span>
+                <span class="text-white">Saudi Arabia (NEOM Infrastructure)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Placement Commission:</span>
+                <span class="text-[#1CA752] font-bold mono">৳42,000 ($350 USD)</span>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-white/10">
+                <span class="text-gray-400">Cryptographic Hash:</span>
+                <span class="text-gray-400 mono text-[10px]">0x7F9B...4D2E (Tamper-Proof)</span>
+              </div>
+            </div>
+
+            <div class="mt-4 text-xs text-gray-300">
+              Saudi and UAE recruiting agencies scan the QR code to instantly verify raw testing logs, candidate video answers, and technical scores.
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- SLIDE 13: DEEP DIVE — SME CREDIT & WHATSAPP RECOVERY    -->
+      <!-- ======================================================= -->
+      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-13">
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#1CA752] mono">13 • FINTECH DEEP DIVE</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">Deep Dive: SME Credit Underwriting & Conversational Recovery</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Replacing adversarial collections with polite, high-converting WhatsApp workflows.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="inline-flex items-center gap-1 text-xs text-[#1CA752] bg-[#1CA752]/10 hover:bg-[#1CA752]/20 px-3 py-1.5 rounded-xl border border-[#1CA752]/30 font-bold transition">
+            ← Back to Switchboard [S]
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          
+          <!-- Underwriting Telemetry Breakdown -->
+          <div class="lg:col-span-5 bg-[#111726] border border-white/10 rounded-2xl p-5">
+            <span class="text-[10px] mono uppercase text-[#00F0FF] font-bold">TELEMETRY DATASET</span>
+            <h3 class="text-base font-bold text-white mt-1">SME Scoring Model</h3>
+            
+            <div class="mt-3 space-y-2 text-xs">
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                <div class="flex justify-between font-bold text-gray-300">
+                  <span>Employer Health Score:</span>
+                  <span class="text-[#1CA752] mono">87 / 100</span>
+                </div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Salary disbursed on time for 11 of the last 12 months.</div>
+              </div>
+
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                <div class="flex justify-between font-bold text-gray-300">
+                  <span>Worker Churn Velocity:</span>
+                  <span class="text-[#00F0FF] mono">&lt; 9% (Stable)</span>
+                </div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Low turnover indicates operational resilience.</div>
+              </div>
+
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                <div class="flex justify-between font-bold text-gray-300">
+                  <span>Recommended Facility:</span>
+                  <span class="text-white mono font-bold">৳450,000</span>
+                </div>
+                <div class="text-[11px] text-gray-400 mt-0.5">30-day working capital payroll bridge.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive WhatsApp Recovery Simulator -->
+          <div class="lg:col-span-7 bg-[#111726] border border-[#1CA752]/30 rounded-2xl p-5 shadow-[0_0_25px_rgba(28,167,82,0.1)]">
+            <div class="flex justify-between items-center mb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-[#1CA752]"></span>
+                <span class="text-xs font-bold text-white">WhatsApp Bot: Shomvob Pay Assistant</span>
+              </div>
+              <span class="text-[10px] mono text-gray-400">Employer: Rahim Enterprise</span>
+            </div>
+
+            <!-- Chat Window -->
+            <div class="bg-[#090D16] border border-white/10 rounded-xl p-3 space-y-2 text-xs font-sans">
+              <!-- Bot Msg -->
+              <div class="bg-[#111726] p-2.5 rounded-xl rounded-tl-none max-w-[85%] border border-white/5">
+                <p class="text-gray-200">
+                  আসসালামু আলাইকুম রহিম ভাই, আশা করি ভালো আছেন। আপনার চলতি মাসের স্টাফ স্যালারি লোন কিস্তির সময় হয়েছে (৳২৫,০০০)।
+                </p>
+                <div class="text-[9px] text-gray-500 text-right mt-1 mono">10:14 AM</div>
+              </div>
+
+              <!-- Employer Msg -->
+              <div class="bg-[#1CA752]/20 p-2.5 rounded-xl rounded-tr-none max-w-[80%] ml-auto border border-[#1CA752]/30 text-white">
+                <p>ভাই, গতকাল পেমেন্ট আসেনি। কালকে পাঠিয়ে দিচ্ছি।</p>
+                <div class="text-[9px] text-gray-400 text-right mt-1 mono">10:18 AM</div>
+              </div>
+
+              <!-- Bot Reply with 1-Tap Link -->
+              <div class="bg-[#111726] p-2.5 rounded-xl rounded-tl-none max-w-[85%] border border-white/5">
+                <p class="text-gray-200">
+                  ধন্যবাদ ভাই! কোনো সমস্যা নেই। কাল দুপুর ২টার মধ্যে ১-ট্যাপে পরিশোধ করতে এই bKash লিংকে ক্লিক করুন:
+                </p>
+                <div class="mt-2">
+                  <span class="bg-[#E2136E] text-white px-2.5 py-1 rounded-lg font-bold text-[11px] inline-block shadow">
+                    Pay ৳25,000 via bKash ➔
+                  </span>
+                </div>
+                <div class="text-[9px] text-gray-500 text-right mt-1 mono">10:19 AM</div>
+              </div>
+            </div>
+
+            <div class="mt-3 text-[11px] text-gray-400 flex justify-between items-center">
+              <span>94.2% on-time resolution with zero toxic collection calls.</span>
+              <span class="text-[#1CA752] font-bold">100% Automated</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- SLIDE 14: DEEP DIVE — YOUTUBE & CTO DECOUPLING SIDECAR -->
+      <!-- ======================================================= -->
+      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-14">
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#8B5CF6] mono">14 • ARCHITECTURE & MEDIA DEEP DIVE</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">Deep Dive: Media Machine & The CTO Decoupling Sidecar</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Zero technical risk for CTO Naqib: Pure decoupled microservice sidecar communicating strictly via clean webhooks.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="inline-flex items-center gap-1 text-xs text-[#8B5CF6] bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/20 px-3 py-1.5 rounded-xl border border-[#8B5CF6]/30 font-bold transition">
+            ← Back to Switchboard [S]
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          
+          <!-- Left: Media Unit Economics -->
+          <div class="lg:col-span-5 bg-[#111726] border border-white/10 rounded-2xl p-5">
+            <span class="text-[10px] mono uppercase text-[#8B5CF6] font-bold">SPONSORSHIP ARITHMETIC</span>
+            <h3 class="text-base font-bold text-white mt-1">Media Network Unit Economics</h3>
+            
+            <div class="mt-3 space-y-2 text-xs">
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 flex justify-between items-center">
+                <span class="text-gray-300">24 Sponsored Guides/Year:</span>
+                <span class="text-white font-bold mono">৳60 Lakhs Gross</span>
+              </div>
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 flex justify-between items-center">
+                <span class="text-gray-300">Average Views per Episode:</span>
+                <span class="text-[#00F0FF] font-bold mono">50,000+ Views</span>
+              </div>
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 flex justify-between items-center">
+                <span class="text-gray-300">Zero-CAC Talent Ingress:</span>
+                <span class="text-[#1CA752] font-bold mono">30,000+ Apps/Yr</span>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-gray-400 mt-3 leading-relaxed">
+              Brand partners sponsor production; Shomvob captures the pre-trained applicant funnel for zero acquisition cost.
+            </p>
+          </div>
+
+          <!-- Right: CTO Decoupling Sidecar Diagram -->
+          <div class="lg:col-span-7 bg-[#111726] border border-[#00F0FF]/30 rounded-2xl p-5 shadow-[0_0_25px_rgba(0,240,255,0.08)]">
+            <span class="text-[10px] mono uppercase text-[#00F0FF] font-bold">ARCHITECTURAL HYGIENE FOR CTO NAQIB</span>
+            <h3 class="text-base font-bold text-white mt-1">The Zero-Impact Sidecar Architecture</h3>
+
+            <!-- Architecture Flow Diagram -->
+            <div class="mt-3 bg-black/60 rounded-xl p-3 border border-white/10 text-xs font-mono space-y-2">
+              <div class="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
+                <div>
+                  <div class="text-white font-bold">SHOMVOB CORE MONOLITH (PostgreSQL / Node)</div>
+                  <div class="text-[10px] text-gray-400">100% UNTOUCHED — Zero code modifications required</div>
+                </div>
+                <span class="text-[#1CA752] font-bold">Protected</span>
+              </div>
+
+              <div class="text-center text-[#00F0FF] text-[11px]">
+                ↕ Asynchronous REST Webhooks / HMAC Event Bus
+              </div>
+
+              <div class="flex items-center justify-between p-2 rounded bg-[#00F0FF]/10 border border-[#00F0FF]/30">
+                <div>
+                  <div class="text-[#00F0FF] font-bold">GRO10X AUTONOMOUS SIDECAR ENGINE</div>
+                  <div class="text-[10px] text-gray-300">TalentSentry Video AI • Demand Scout • Voice Bots</div>
+                </div>
+                <span class="text-[#00F0FF] font-bold">Independent</span>
+              </div>
+            </div>
+
+            <ul class="mt-3 space-y-1 text-xs text-gray-300">
+              <li class="flex items-center gap-1.5">
+                <span class="text-[#1CA752]">✓</span>
+                <span>Zero deployment dependencies or database migrations on Shomvob's main repo.</span>
               </li>
-              <li class="flex items-start gap-1.5">
-                <span class="text-[#10B981]">●</span>
-                <span>Public joint announcement & full rollout execution.</span>
+              <li class="flex items-center gap-1.5">
+                <span class="text-[#1CA752]">✓</span>
+                <span>If the sidecar needs updates, Shomvob's primary job board remains 100% unaffected.</span>
               </li>
             </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- SLIDE 15: LIVE ARR & VALUATION SIMULATOR                -->
+      <!-- ======================================================= -->
+      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-15">
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#1CA752] mono">15 • FINANCIAL MODELING & VALUATION</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">Interactive Valuation Simulator: Modeling Shomvob’s Series A</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Adjust the four growth sliders below to model incremental ARR and institutional Series A valuation live.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            ← Switchboard [S]
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          
+          <!-- 4 Range Sliders -->
+          <div class="lg:col-span-7 bg-[#111726] border border-white/10 rounded-2xl p-5 space-y-4">
+            
+            <!-- Slider 1: Cross-Border -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-gray-300 font-bold">1. Cross-Border Migrants Placed (GCC/Japan):</span>
+                <span class="text-[#F59E0B] mono font-bold" id="val-migrants-label">3,500 workers</span>
+              </div>
+              <input type="range" id="slider-migrants" min="1000" max="25000" step="500" value="3500" oninput="calculateValuation()">
+              <div class="flex justify-between text-[10px] text-gray-500 mt-0.5">
+                <span>1,000</span>
+                <span>Margin: ৳18,000 ($150) / worker</span>
+                <span>25,000</span>
+              </div>
+            </div>
+
+            <!-- Slider 2: SME Loans -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-gray-300 font-bold">2. Annual SME Working Capital Loan Volume:</span>
+                <span class="text-[#1CA752] mono font-bold" id="val-loans-label">৳40.0 Crore</span>
+              </div>
+              <input type="range" id="slider-loans" min="10" max="200" step="5" value="40" oninput="calculateValuation()">
+              <div class="flex justify-between text-[10px] text-gray-500 mt-0.5">
+                <span>৳10 Cr</span>
+                <span>Origination Fee: 4.0%</span>
+                <span>৳200 Cr</span>
+              </div>
+            </div>
+
+            <!-- Slider 3: Sponsored Guides -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-gray-300 font-bold">3. Brand-Sponsored Career Video Guides:</span>
+                <span class="text-[#8B5CF6] mono font-bold" id="val-guides-label">24 guides</span>
+              </div>
+              <input type="range" id="slider-guides" min="12" max="100" step="4" value="24" oninput="calculateValuation()">
+              <div class="flex justify-between text-[10px] text-gray-500 mt-0.5">
+                <span>12 guides</span>
+                <span>Rate: ৳250,000 / guide</span>
+                <span>100 guides</span>
+              </div>
+            </div>
+
+            <!-- Slider 4: AI Video Screening -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-gray-300 font-bold">4. AI Video Screened Candidates:</span>
+                <span class="text-[#00F0FF] mono font-bold" id="val-screening-label">75,000 candidates</span>
+              </div>
+              <input type="range" id="slider-screening" min="20000" max="500000" step="10000" value="75000" oninput="calculateValuation()">
+              <div class="flex justify-between text-[10px] text-gray-500 mt-0.5">
+                <span>20,000</span>
+                <span>Fee: ৳40 / screened candidate</span>
+                <span>500,000</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Dynamic Output Results Card -->
+          <div class="lg:col-span-5 bg-[#111726] border border-[#1CA752]/40 rounded-2xl p-6 shadow-[0_0_30px_rgba(28,167,82,0.15)] flex flex-col justify-between">
+            <div>
+              <span class="text-[10px] mono uppercase text-[#1CA752] font-bold">PROJECTED RECURRING EXPANSION</span>
+              <h3 class="text-lg font-bold text-white mt-1">Incremental Series A Metrics</h3>
+
+              <div class="mt-4 space-y-3">
+                <div class="bg-black/50 p-3 rounded-xl border border-white/5">
+                  <div class="text-xs text-gray-400">Total Incremental ARR:</div>
+                  <div class="text-2xl font-extrabold text-[#1CA752] mono mt-0.5" id="output-arr-bdt">৳8.80 Crore</div>
+                  <div class="text-xs text-gray-400 mono mt-0.5" id="output-arr-usd">≈ $733,000 USD</div>
+                </div>
+
+                <div class="bg-black/50 p-3 rounded-xl border border-white/5">
+                  <div class="text-xs text-gray-400">Series A Valuation Potential (10x–15x):</div>
+                  <div class="text-2xl font-extrabold text-[#00F0FF] mono mt-0.5" id="output-val-usd">$7.3M – $11.0M</div>
+                  <div class="text-[10px] text-gray-500 mt-0.5">Anchored on high-margin software & cross-border revenue</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-white/5 text-[11px] text-gray-400">
+              💡 <i>All simulations based on verified unit economics without balance sheet capital requirements.</i>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- SLIDE 16: THE CO-VENTURE PARTNERSHIP & CHARTER         -->
+      <!-- ======================================================= -->
+      <section class="slide flex-col justify-center py-4 sm:py-8" id="slide-16">
+        <div class="mb-4 text-center sm:text-left flex justify-between items-end">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#1CA752] mono">16 • COMMERCIAL ALIGNMENT & ACTION</span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white mt-0.5">The Co-Venture Partnership: Zero-Capex 30-Day Sprint Charter</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">A risk-free partnership model aligning incentives to deliver rapid operational wins within 30 days.</p>
+          </div>
+          <button onclick="goToSlide(11)" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            ← Switchboard [S]
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-4">
+          
+          <!-- Commercial Framework -->
+          <div class="lg:col-span-5 bg-[#111726] border border-white/10 rounded-2xl p-5">
+            <span class="text-[10px] mono uppercase text-[#00F0FF] font-bold">PARTNERSHIP TERMS</span>
+            <h3 class="text-base font-bold text-white mt-1">Zero-Capex Revenue Share</h3>
+            
+            <ul class="mt-3 space-y-2.5 text-xs text-gray-300">
+              <li class="flex items-start gap-2">
+                <span class="text-[#1CA752] font-bold">✓</span>
+                <span><b>Zero Upfront Engineering Fees:</b> GRO10X assumes all build and deployment costs for the sidecar stack.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[#1CA752] font-bold">✓</span>
+                <span><b>20% – 30% Net Revenue Share:</b> Collected strictly on verified incremental revenue generated. Shomvob keeps 70%–80%.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[#1CA752] font-bold">✓</span>
+                <span><b>Zero IP Lock-In:</b> All candidate data and customer relationships remain 100% Shomvob property.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 30-Day Sprint Milestones -->
+          <div class="lg:col-span-7 bg-[#111726] border border-white/10 rounded-2xl p-5">
+            <span class="text-[10px] mono uppercase text-[#1CA752] font-bold">DAY-1 EXECUTION</span>
+            <h3 class="text-base font-bold text-white mt-1">30-Day Sprint Schedule</h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3 text-xs">
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                <div class="text-[#00F0FF] font-bold mono">WEEK 1</div>
+                <div class="text-white font-bold mt-0.5">Sidecar & Demand Scout</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Connect REST webhooks, activate Facebook BD scraper.</div>
+              </div>
+
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                <div class="text-[#1CA752] font-bold mono">WEEK 2</div>
+                <div class="text-white font-bold mt-0.5">TalentSentry & Voice Pilot</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Deploy video screening + "Shomvob Shuni" voice bot beta.</div>
+              </div>
+
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                <div class="text-[#F59E0B] font-bold mono">WEEK 3</div>
+                <div class="text-white font-bold mt-0.5">Cross-Border & Media</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Shoot pilot sponsored episode + 3D trade test simulator.</div>
+              </div>
+
+              <div class="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                <div class="text-[#8B5CF6] font-bold mono">WEEK 4</div>
+                <div class="text-white font-bold mt-0.5">Commercial Signoff & Deck</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Package telemetry into Shomvob institutional Series A deck.</div>
+              </div>
+            </div>
           </div>
 
         </div>
 
         <!-- Pilot Authorization CTA -->
-        <div class="text-center">
-          <button onclick="authorizePilot()" class="bg-gradient-to-r from-[#00F0FF] via-[#8B5CF6] to-[#10B981] hover:brightness-110 text-black font-extrabold px-8 py-4 rounded-2xl text-sm shadow-2xl transition transform active:scale-95 inline-flex items-center gap-2">
-            <span>🚀 Authorize 14-Day Strategic Pilot</span>
+        <div class="text-center pt-2">
+          <button id="auth-pilot-btn" onclick="authorizePilotAction()" class="bg-gradient-to-r from-[#1CA752] via-[#00F0FF] to-[#8B5CF6] hover:brightness-110 text-black font-extrabold px-8 py-3.5 rounded-2xl text-xs sm:text-sm shadow-2xl transition transform active:scale-95 inline-flex items-center gap-2">
+            <span>🚀 Authorize 30-Day Co-Venture Pilot (Execute LOI)</span>
             <span>→</span>
           </button>
-          <div class="text-[11px] text-gray-400 mt-2 mono">
-            Next Action: Execute Letter of Intent (LOI) & Workspace Provisioning
+          <div id="auth-status-msg" class="text-[11px] text-gray-400 mt-2 mono">
+            Next Action: Execute Letter of Intent (LOI) & Sidecar Provisioning
           </div>
         </div>
       </section>
@@ -812,177 +1557,281 @@
   <!-- ========================================================= -->
   <!-- FLOATING PRESENTATION CONTROLLER DOCK                     -->
   <!-- ========================================================= -->
-  <footer class="relative z-30 px-6 py-3.5 bg-[#0B0F19]/90 backdrop-blur-xl border-t border-white/5 flex flex-wrap justify-between items-center gap-3">
+  <footer class="relative z-30 px-5 sm:px-8 py-3 bg-[#090D16]/90 backdrop-blur-xl border-t border-white/5 flex flex-wrap justify-between items-center gap-3">
     
     <!-- Left Navigation Buttons -->
     <div class="flex items-center gap-2">
-      <button onclick="prevSlide()" class="bg-white/10 hover:bg-white/20 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 active:scale-95">
+      <button onclick="prevSlide()" class="bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 active:scale-95">
         <span>◄</span> <span class="hidden sm:inline">Previous</span>
       </button>
-      <button onclick="nextSlide()" class="bg-[#00F0FF] hover:brightness-110 text-black font-extrabold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow active:scale-95">
+      <button onclick="nextSlide()" class="bg-[#1CA752] hover:brightness-110 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow active:scale-95">
         <span>Next</span> <span>►</span>
       </button>
     </div>
 
-    <!-- Center Slide Thumbnail Dots (Direct Jump) -->
-    <div class="flex items-center gap-1.5" id="slide-dots-bar">
-      <!-- Injected via JS -->
+    <!-- Center Slide Thumbnail Dots (16 Dots with 1-Click Jump) -->
+    <div class="flex items-center gap-1 sm:gap-1.5" id="slide-dots-bar">
+      <!-- 16 dots injected via JavaScript -->
     </div>
 
     <!-- Right Presentation Helpers -->
     <div class="flex items-center gap-2 text-xs text-gray-400">
-      <span class="hidden md:inline mono">Keys: [← / → / Space]</span>
-      <button onclick="toggleFullscreen()" class="bg-white/5 hover:bg-white/15 px-2.5 py-1.5 rounded-lg text-gray-300 transition">
-        ⛶ Fullscreen
+      <button onclick="goToSlide(11)" class="bg-[#1CA752]/20 hover:bg-[#1CA752]/30 text-[#1CA752] px-2.5 py-1 rounded-lg transition font-bold hidden md:inline-flex items-center gap-1">
+        <span>Switchboard</span> <span class="mono text-[10px]">[S]</span>
+      </button>
+      <button onclick="toggleFullscreen()" class="bg-white/5 hover:bg-white/15 px-2.5 py-1 rounded-lg text-gray-300 transition hidden sm:inline-block">
+        ⛶ Fullscreen [F]
       </button>
     </div>
   </footer>
 
   <!-- ========================================================= -->
-  <!-- JAVASCRIPT: SLIDE ENGINE & INTERACTIVE SIMULATORS         -->
+  <!-- JAVASCRIPT: SLIDE ENGINE & SIMULATION LOGIC               -->
   <!-- ========================================================= -->
   <script>
-    const TOTAL_SLIDES = 9;
+    const TOTAL_SLIDES = 16;
     let currentSlide = 1;
 
-    // Timer
-    let startTime = Date.now();
+    // Presentation Timer
+    const startTime = Date.now();
     setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
-      const s = String(elapsed % 60).padStart(2, '0');
+      const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
+      const m = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
+      const s = String(elapsedSec % 60).padStart(2, '0');
       const timerEl = document.getElementById('presentation-timer');
       if (timerEl) timerEl.textContent = `${m}:${s}`;
     }, 1000);
 
-    function updateSlideUI() {
-      // Toggle slide visibility
-      for (let i = 1; i <= TOTAL_SLIDES; i++) {
-        const slide = document.getElementById(`slide-${i}`);
-        if (slide) {
-          if (i === currentSlide) slide.classList.add('active');
-          else slide.classList.remove('active');
-        }
-      }
-
-      // Update counters & progress bar
-      document.getElementById('slide-num-current').textContent = String(currentSlide).padStart(2, '0');
-      document.getElementById('slide-num-total').textContent = String(TOTAL_SLIDES).padStart(2, '0');
-
-      const pct = (currentSlide / TOTAL_SLIDES) * 100;
-      document.getElementById('progress-bar').style.width = `${pct}%`;
-
-      // Update dots
-      renderDots();
-    }
-
-    function renderDots() {
+    // Initialize 16 Thumbnail Dots in Footer
+    function initDots() {
       const container = document.getElementById('slide-dots-bar');
       if (!container) return;
       container.innerHTML = '';
-
       for (let i = 1; i <= TOTAL_SLIDES; i++) {
         const dot = document.createElement('button');
+        dot.className = `w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all duration-200 ${i === currentSlide ? 'bg-[#00F0FF] scale-125 shadow-[0_0_8px_#00F0FF]' : 'bg-white/20 hover:bg-white/40'}`;
+        dot.title = `Go to Slide ${i}`;
         dot.onclick = () => goToSlide(i);
-        dot.className = (i === currentSlide)
-          ? 'w-7 h-2 rounded-full bg-[#00F0FF] transition-all'
-          : 'w-2 h-2 rounded-full bg-white/20 hover:bg-white/50 transition-all';
-        dot.title = `Jump to Slide ${i}`;
         container.appendChild(dot);
       }
     }
 
+    // Go to Specific Slide
     function goToSlide(n) {
-      if (n >= 1 && n <= TOTAL_SLIDES) {
-        currentSlide = n;
-        updateSlideUI();
+      if (n < 1 || n > TOTAL_SLIDES) return;
+
+      const oldSlide = document.getElementById(`slide-${currentSlide}`);
+      if (oldSlide) {
+        oldSlide.classList.remove('active');
+      }
+
+      currentSlide = n;
+
+      const newSlide = document.getElementById(`slide-${currentSlide}`);
+      if (newSlide) {
+        newSlide.classList.add('active');
+      }
+
+      // Update Header Slide Indicators
+      const curNum = document.getElementById('slide-num-current');
+      if (curNum) curNum.textContent = String(currentSlide).padStart(2, '0');
+
+      const progressBar = document.getElementById('progress-bar');
+      if (progressBar) {
+        progressBar.style.width = `${(currentSlide / TOTAL_SLIDES) * 100}%`;
+      }
+
+      // Update Dots
+      const dotsContainer = document.getElementById('slide-dots-bar');
+      if (dotsContainer) {
+        const dots = dotsContainer.children;
+        for (let i = 0; i < dots.length; i++) {
+          if (i + 1 === currentSlide) {
+            dots[i].className = 'w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#00F0FF] scale-125 shadow-[0_0_8px_#00F0FF] transition-all duration-200';
+          } else {
+            dots[i].className = 'w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white/20 hover:bg-white/40 transition-all duration-200';
+          }
+        }
       }
     }
 
     function nextSlide() {
       if (currentSlide < TOTAL_SLIDES) {
-        currentSlide++;
-        updateSlideUI();
+        goToSlide(currentSlide + 1);
+      } else {
+        goToSlide(1);
       }
     }
 
     function prevSlide() {
       if (currentSlide > 1) {
-        currentSlide--;
-        updateSlideUI();
+        goToSlide(currentSlide - 1);
+      } else {
+        goToSlide(TOTAL_SLIDES);
       }
     }
 
-    // Keyboard controls
-    window.addEventListener('keydown', (e) => {
-      const k = e.key;
-      if (k === 'ArrowRight' || k === ' ' || k === 'PageDown') {
-        e.preventDefault();
-        nextSlide();
-      } else if (k === 'ArrowLeft' || k === 'PageUp') {
-        e.preventDefault();
-        prevSlide();
-      } else if (k === 'Home') {
-        e.preventDefault();
-        goToSlide(1);
-      } else if (k === 'End') {
-        e.preventDefault();
-        goToSlide(TOTAL_SLIDES);
-      } else if (k === 'f' || k === 'F') {
-        e.preventDefault();
-        toggleFullscreen();
-      }
-    });
-
-    // Fullscreen toggle
+    // Fullscreen Toggle
     function toggleFullscreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else {
-        document.exitFullscreen().catch(() => {});
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
       }
     }
 
-    // Interactive Simulation on Slide 5 (Demand Scout)
-    function simulateDemandScout() {
-      const container = document.getElementById('scout-leads-container');
-      const companies = [
-        { name: 'Pran-RFL Group', role: 'Distribution Hub Associate', vac: '30 Vacancies', zone: 'Gazipur Industrial Hub', tel: '+880 1912-887766' },
-        { name: 'Chaldal Delivery Network', role: 'Grocery Van Dispatcher', vac: '12 Vacancies', zone: 'Uttara Sector 11', tel: '+880 1744-332211' },
-        { name: 'Aarong Retail Flagship', role: 'Showroom Cashier & Staff', vac: '8 Vacancies', zone: 'Gulshan 2', tel: '+880 1822-998877' }
-      ];
+    // Keyboard Navigation Engine
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-      const lead = companies[Math.floor(Math.random() * companies.length)];
-      const card = document.createElement('div');
-      card.className = 'bg-[#131B2E] border-2 border-[#00F0FF] p-3.5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 animate-pulse';
-      card.innerHTML = `
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        goToSlide(11); // Strategic Switchboard
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(1);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(TOTAL_SLIDES);
+      }
+    });
+
+    // Touch Swipe Gestures for Mobile / Tablet
+    let touchStartX = 0;
+    let touchEndX = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+    document.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 60) {
+        nextSlide();
+      } else if (touchEndX > touchStartX + 60) {
+        prevSlide();
+      }
+    }, false);
+
+    // =========================================================
+    // INTERACTIVE SIMULATORS & WORKFLOWS
+    // =========================================================
+
+    // Simulator 1: Live Demand Scout Lead Injector (Slide 6)
+    const SAMPLE_LEADS = [
+      { company: 'Daraz Hub Mirpur', text: 'Urgent: Need 60 sorters and delivery riders for weekend mega sale.', source: 'BD Logistics Recruiter FB Group', count: 60 },
+      { company: 'Well Food Bakery (Banani)', text: 'Hiring 15 counter sales attendants & barista assistants.', source: 'Hospitality Jobs Bangladesh', count: 15 },
+      { company: 'Transcom Electronics (Badda)', text: 'Looking for 20 showroom customer assistants with basic computer literacy.', source: 'Retail Execs Dhaka', count: 20 },
+      { company: 'Pran-RFL Depot (Tongi)', text: 'Immediate requirement: 80 forklift helpers & inventory loaders.', source: 'Factory Jobs Gazipur', count: 80 }
+    ];
+    let leadIdx = 0;
+
+    function injectTestDemandLead() {
+      const container = document.getElementById('demand-leads-container');
+      if (!container) return;
+
+      const item = SAMPLE_LEADS[leadIdx % SAMPLE_LEADS.length];
+      leadIdx++;
+
+      const el = document.createElement('div');
+      el.className = 'bg-black/50 border border-[#00F0FF]/50 p-3 rounded-xl flex flex-wrap items-center justify-between gap-3 transform translate-y-2 opacity-0 transition-all duration-300';
+      el.innerHTML = `
         <div>
           <div class="flex items-center gap-2">
-            <span class="font-bold text-white text-xs">${lead.name}</span>
-            <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30">JUST INGESTED</span>
+            <span class="text-xs font-bold text-[#00F0FF]">${item.company}</span>
+            <span class="text-[10px] mono bg-[#00F0FF]/20 text-[#00F0FF] px-2 py-0.5 rounded">Just Ingested</span>
           </div>
-          <div class="text-[11px] text-gray-300 mt-1">Role: ${lead.role} • ${lead.vac} • ${lead.zone}</div>
-          <div class="text-[10px] text-gray-400 mono mt-0.5">Source: Facebook Hiring Monitor (Verified Phone)</div>
+          <div class="text-xs text-gray-200 mt-0.5">"${item.text}"</div>
+          <div class="text-[10px] text-gray-500 mt-1">Source: ${item.source} • Just now</div>
         </div>
-        <div class="flex sm:flex-col items-center sm:items-end gap-1.5 shrink-0">
-          <a href="tel:${lead.tel}" class="bg-[#10B981] hover:brightness-110 text-black font-extrabold px-3 py-1 rounded-lg text-xs transition">
-            📞 WhatsApp BD
-          </a>
-          <span class="text-[10px] mono text-emerald-400">${lead.tel}</span>
+        <div class="flex items-center gap-2">
+          <span class="mono text-xs font-bold text-[#1CA752]">Headcount: ${item.count}</span>
+          <button class="bg-[#1CA752] hover:brightness-110 text-black text-[11px] font-bold px-2.5 py-1 rounded-lg transition">
+            1-Click WhatsApp
+          </button>
         </div>
       `;
 
-      container.prepend(card);
-      setTimeout(() => card.classList.remove('animate-pulse'), 1500);
+      container.insertBefore(el, container.firstChild);
+      setTimeout(() => {
+        el.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
     }
 
-    function authorizePilot() {
-      alert("Strategic LOI generated for Shomvob Technologies Ltd. Our Founder & Central Chief of Staff will deliver formal agreement documentation.");
+    // Simulator 2: Audio Demo Player (Slide 7)
+    let isAudioPlaying = false;
+    function toggleAudioDemo(btn) {
+      isAudioPlaying = !isAudioPlaying;
+      if (btn) {
+        btn.innerHTML = isAudioPlaying ? '<span>⏸ Pause Playing</span>' : '<span>▶ Play Worker Voice Note</span>';
+      }
+      const bars = document.querySelectorAll('#audio-wave-bars span');
+      bars.forEach(b => {
+        b.style.animationPlayState = isAudioPlaying ? 'running' : 'paused';
+      });
     }
 
-    // Bootstrap
+    // Simulator 3: Live Series A Valuation Calculator (Slide 15)
+    function calculateValuation() {
+      const migrants = parseInt(document.getElementById('slider-migrants').value, 10);
+      const loans = parseFloat(document.getElementById('slider-loans').value);
+      const guides = parseInt(document.getElementById('slider-guides').value, 10);
+      const screening = parseInt(document.getElementById('slider-screening').value, 10);
+
+      // Labels update
+      document.getElementById('val-migrants-label').textContent = `${migrants.toLocaleString()} workers`;
+      document.getElementById('val-loans-label').textContent = `৳${loans.toFixed(1)} Crore`;
+      document.getElementById('val-guides-label').textContent = `${guides} guides`;
+      document.getElementById('val-screening-label').textContent = `${screening.toLocaleString()} candidates`;
+
+      // Economics:
+      // 1. Migrants margin: ৳18,000 per worker
+      const migrantsBdt = migrants * 18000;
+      // 2. Loans fee: 4.0% of loan volume in BDT
+      const loansBdt = (loans * 10000000) * 0.04;
+      // 3. Sponsored Guides: ৳250,000 per guide
+      const guidesBdt = guides * 250000;
+      // 4. Screening: ৳40 per candidate
+      const screeningBdt = screening * 40;
+
+      const totalBdt = migrantsBdt + loansBdt + guidesBdt + screeningBdt;
+      const totalCrore = (totalBdt / 10000000).toFixed(2);
+      const totalUsd = Math.round(totalBdt / 120);
+
+      const val10x = (totalUsd * 10 / 1000000).toFixed(1);
+      const val15x = (totalUsd * 15 / 1000000).toFixed(1);
+
+      document.getElementById('output-arr-bdt').textContent = `৳${totalCrore} Crore`;
+      document.getElementById('output-arr-usd').textContent = `≈ $${totalUsd.toLocaleString()} USD`;
+      document.getElementById('output-val-usd').textContent = `$${val10x}M – $${val15x}M`;
+    }
+
+    // Simulator 4: Pilot Authorization Action (Slide 16)
+    function authorizePilotAction() {
+      const btn = document.getElementById('auth-pilot-btn');
+      const msg = document.getElementById('auth-status-msg');
+      if (btn) {
+        btn.innerHTML = '<span>✅ 30-Day Sprint Authorized!</span>';
+        btn.className = 'bg-[#1CA752] text-black font-extrabold px-8 py-3.5 rounded-2xl text-xs sm:text-sm shadow-2xl transition cursor-default';
+      }
+      if (msg) {
+        msg.innerHTML = '<span class="text-[#00F0FF]">🟢 Letter of Intent (LOI) Queued for Plabon & Rifat Bhai • Sidecar Provisioning Started</span>';
+      }
+    }
+
+    // Initialize on page load
     window.addEventListener('DOMContentLoaded', () => {
-      updateSlideUI();
+      initDots();
+      calculateValuation();
     });
   </script>
 </body>
