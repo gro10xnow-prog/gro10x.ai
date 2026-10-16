@@ -177,6 +177,14 @@
       "dest": "/public/proposal.html"
     },
     {
+      "src": "/prototypes/bahon(/.*)?",
+      "dest": "/public/prototypes/bahon/index.html"
+    },
+    {
+      "src": "/prototypes/serviq-pilot(/.*)?",
+      "dest": "/public/prototypes/serviq-pilot/index.html"
+    },
+    {
       "src": "/prototypes/(.*)",
       "dest": "/public/prototypes/$1"
     },
