@@ -101,6 +101,10 @@ When creating or refining pre-sales prototypes in `public/prototypes/<slug>/`:
      * **Zero Dead-End Ingress**: Never bury multi-surface experiences behind a single ambiguous redirect (e.g., routing desktop evaluators into a mobile PWA pass).
      * **Hero Simulation Quick-Dock**: The public landing page hero must house a prominent, glassmorphic "Simulation Dock" with direct, 1-click links to all core operational simulation domains.
      * **Canonical `/simulation` Route**: Every enterprise multi-surface platform must mount `/simulation` as a first-class route alias rendering the comprehensive interactive sandbox.
+10. **The "TV-Calibrated, Visual-First Pitch Deck" Invariant (Zero Wall-of-Text)**:
+   - **Audience Psychology ("Less Words, Maximum Impact")**: High-status stakeholders listen to the presenter; they do not read paragraphs on a screen. Every pitch deck slide must follow the **"1 Headline + 1 Giant Visual Anchor + 3 Punchy Highlights"** law. Paragraph text dumps are strictly forbidden.
+   - **Photorealistic AI Visual Anchors**: Core slides must feature life-like, photorealistic imagery capturing authentic local Bangladeshi ground realities (e.g., vehicles on actual Dhaka avenues, local students tapping NFC cards, depot racks, uniformed drivers) rather than generic stock icons.
+   - **Zero Dead White Space on Big Screens**: Decks must be engineered in native 16:9 widescreen (`h-screen`, edge-to-edge) with high-contrast cinematic dark themes (`#070b12`), bold typography (`text-3xl` to `text-5xl` headlines), and glassmorphic stat badges, completely eliminating empty borders on 55"–65" conference displays.
 
 ---
 

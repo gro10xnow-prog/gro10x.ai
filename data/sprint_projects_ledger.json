@@ -275,14 +275,37 @@
       ],
       "charteredDate": "2026-10-17",
       "completedDate": "2026-10-17"
+    },
+    {
+      "id": "PRJ-BAHON-PITCH-PERFECTION",
+      "venture": "Mother OS Pre-Sales & Green Bashundhara Strategic Co-Venture",
+      "engine": "Engine 1 / Engine 4",
+      "port": 3000,
+      "sprint": "Bahon 16-Slide TV-Calibrated Pitch Deck, Photorealistic AI Anchors & Presenter Co-Pilot Suite",
+      "status": "COMPLETED",
+      "pricingType": "Strategic Co-Venture Pre-Sales (100% Equity Alignment)",
+      "creditValuation": 35000,
+      "bdtValuation": 70000,
+      "usdValuation": 577.50,
+      "testsCertified": 24,
+      "artifacts": [
+        "16-Slide TV-Calibrated Interactive Deck (https://gro10x-ai.vercel.app/prototypes/bahon-pitch/)",
+        "Mobile Presenter Co-Pilot Web Application (https://gro10x-ai.vercel.app/prototypes/bahon-pitch/copilot.html)",
+        "6 Custom Photorealistic AI Ground-Truth Visuals (/public/images/bahon/)",
+        "Interactive Fleet Command Center Prototype (https://gro10x-ai.vercel.app/prototypes/bahon/)",
+        "30-Day Managed Pilot Proposal (https://gro10x-ai.vercel.app/p/bahon-fleet)",
+        "Conference TV Presentation Controls (16:9 Fullscreen, Pacing Stopwatch, Bangla Voice Synthesizer)"
+      ],
+      "charteredDate": "2026-10-17",
+      "completedDate": "2026-10-18"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 11,
-    "totalSprintsCompleted": 10,
-    "totalCreditsGenerated": 130000,
-    "totalBdtValuation": 260000,
-    "totalUsdValuation": 2145.00,
-    "totalTestsPassingAcrossHoldings": 1018
+    "totalSprintsChartered": 12,
+    "totalSprintsCompleted": 11,
+    "totalCreditsGenerated": 165000,
+    "totalBdtValuation": 330000,
+    "totalUsdValuation": 2722.50,
+    "totalTestsPassingAcrossHoldings": 1042
   }
 }
