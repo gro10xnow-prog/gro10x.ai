@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>GRO10X × BAHON — Presenter Co-Pilot (Mobile HUD)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #070B12;
+      color: #E2E8F0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .bangla { font-family: 'Hind Siliguri', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glow-green { box-shadow: 0 0 16px rgba(16, 185, 129, 0.4); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 select-none bg-[#070B12]">
+
+  <!-- ========================================================= -->
+  <!-- TOP STICKY CONTROLLER HUD                                 -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-50 bg-[#0A101D]/95 backdrop-blur-md border-b border-white/10 px-4 py-2.5 shadow-2xl">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      
+      <!-- Identity -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#10B981] to-[#06B6D4] flex items-center justify-center text-black font-black text-sm shadow-md">
+          ⚡
+        </div>
+        <div>
+          <div class="text-[11px] font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+            BAHON CO-PILOT
+            <span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></span>
+          </div>
+          <div class="text-[9px] text-gray-400 mono">Arif & Plabon • Bashundhara Pitch</div>
+        </div>
+      </div>
+
+      <!-- Live Presentation Pacing Timer (20 min pitch + 10 min Q&A) -->
+      <div class="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
+        <div class="text-right">
+          <div class="text-[8px] text-gray-400 uppercase mono font-bold">Pitch Timer</div>
+          <div id="timer-display" class="text-sm font-black mono text-[#10B981] leading-none">20:00</div>
+        </div>
+        <button id="timer-btn" onclick="toggleTimer()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition active:scale-90">
+          ▶
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Quick Navigation Tabs -->
+    <div class="max-w-md mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <button onclick="switchTab('script')" id="tab-btn-script" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-[#10B981] text-black transition shrink-0">
+        🎙️ Speaker Notes (1-16)
+      </button>
+      <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        ⚔️ 1-Tap Objections
+      </button>
+      <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        💬 WhatsApp Handoff
+      </button>
+      <a href="/prototypes/bahon-pitch/" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-[#06B6D4] border border-[#06B6D4]/30 transition shrink-0 flex items-center gap-1">
+        📺 TV Deck ↗
+      </a>
+      <a href="/prototypes/bahon/" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-[#10B981] border border-[#10B981]/30 transition shrink-0 flex items-center gap-1">
+        ⚡ Live OS ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN CONTAINER                                            -->
+  <!-- ========================================================= -->
+  <main class="max-w-md mx-auto w-full px-4 pt-3 flex-1">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 1: SLIDE-BY-SLIDE SPEAKER NOTES                       -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-content-script" class="space-y-3">
+      
+      <!-- Quick Navigation Slider -->
+      <div class="bg-[#0D1424] border border-white/10 p-2.5 rounded-2xl flex items-center justify-between">
+        <button onclick="navigateSlide(-1)" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 text-white flex items-center justify-center font-bold text-sm active:scale-95 transition">
+          ←
+        </button>
+        <div class="text-center">
+          <div class="text-[10px] text-gray-400 mono uppercase">Active Slide</div>
+          <div class="text-base font-black mono text-[#10B981]">
+            <span id="current-slide-num">01</span> <span class="text-gray-600">/</span> <span class="text-gray-400">16</span>
+          </div>
+        </div>
+        <button onclick="navigateSlide(1)" class="w-9 h-9 rounded-xl bg-[#10B981] hover:brightness-110 text-black flex items-center justify-center font-bold text-sm active:scale-95 transition">
+          →
+        </button>
+      </div>
+
+      <!-- Slide Quick Jumper Strip -->
+      <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+        <template id="quick-jump-template"></template>
+        <div id="quick-jump-strip" class="flex items-center gap-1"></div>
+      </div>
+
+      <!-- Card Container for Dynamic Slide Note -->
+      <div id="slide-note-card" class="bg-[#0D1424] border border-white/10 rounded-2xl p-4 shadow-xl space-y-3">
+        <!-- Rendered by JavaScript -->
+      </div>
+
+      <!-- Bottom Next Slide Preview Card -->
+      <div id="next-slide-preview" class="bg-black/50 border border-white/5 rounded-xl p-3 text-xs text-gray-400">
+        <!-- Rendered by JavaScript -->
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 2: 1-TAP OBJECTION HANDLING DRAWER                    -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-content-objections" class="hidden space-y-2.5">
+      
+      <div class="text-xs text-gray-400 mono uppercase font-bold tracking-wider mb-2">
+        Instant Executive Rebuttals for Ahmed Ibrahim Sobhan:
+      </div>
+
+      <!-- Objection 1 -->
+      <div class="bg-[#0D1424] border border-white/10 rounded-xl p-3.5 space-y-1.5">
+        <div class="text-xs font-bold text-red-400 flex items-center gap-1.5">
+          <span>⚠️</span>
+          <span>"Our drivers are illiterate; they can't use tech."</span>
+        </div>
+        <div class="text-xs text-gray-200 leading-relaxed font-semibold bg-black/40 p-2.5 rounded-lg border-l-2 border-[#10B981]">
+          "Ahmed bhai, that's exactly why the previous app failed! In our OS, drivers have zero screens and zero smartphones. An industrial IoT soundbox gives loud Bangla voice commands, and weight sensors audit passengers automatically."
+        </div>
+      </div>
+
+      <!-- Objection 2 -->
+      <div class="bg-[#0D1424] border border-white/10 rounded-xl p-3.5 space-y-1.5">
+        <div class="text-xs font-bold text-red-400 flex items-center gap-1.5">
+          <span>⚠️</span>
+          <span>"What if drivers cut the wires or tamper with the device?"</span>
+        </div>
+        <div class="text-xs text-gray-200 leading-relaxed font-semibold bg-black/40 p-2.5 rounded-lg border-l-2 border-[#10B981]">
+          "The unit is hardwired directly inside the sealed 72V traction battery bay. If a wire is severed or lid opened, an optical tamper switch trips: the vehicle safely slows down within 2 seconds, and an instant siren triggers at Gate 1."
+        </div>
+      </div>
+
+      <!-- Objection 3 -->
+      <div class="bg-[#0D1424] border border-white/10 rounded-xl p-3.5 space-y-1.5">
+        <div class="text-xs font-bold text-red-400 flex items-center gap-1.5">
+          <span>⚠️</span>
+          <span>"Isn't this redundant? We already have line supervisors."</span>
+        </div>
+        <div class="text-xs text-gray-200 leading-relaxed font-semibold bg-black/40 p-2.5 rounded-lg border-l-2 border-[#10B981]">
+          "Supervisors only see 50 meters in front of Gate 1. They have zero visibility into Blocks I through P where 17% of fare cash is pocketed in unlogged rides. Command Center audits all 3,346 acres simultaneously."
+        </div>
+      </div>
+
+      <!-- Objection 4 -->
+      <div class="bg-[#0D1424] border border-white/10 rounded-xl p-3.5 space-y-1.5">
+        <div class="text-xs font-bold text-red-400 flex items-center gap-1.5">
+          <span>⚠️</span>
+          <span>"Software projects take 6 to 9 months; we need this now."</span>
+        </div>
+        <div class="text-xs text-gray-200 leading-relaxed font-semibold bg-black/40 p-2.5 rounded-lg border-l-2 border-[#10B981]">
+          "The system is already built and live on our servers tonight. For the 30-day pilot, we install on 15 vehicles overnight without disturbing daylight routes. By Day 7, the live screen is mounted in your office."
+        </div>
+      </div>
+
+      <!-- Objection 5 -->
+      <div class="bg-[#0D1424] border border-white/10 rounded-xl p-3.5 space-y-1.5">
+        <div class="text-xs font-bold text-red-400 flex items-center gap-1.5">
+          <span>⚠️</span>
+          <span>"Why spend money on cards? Why not bKash QR codes?"</span>
+        </div>
+        <div class="text-xs text-gray-200 leading-relaxed font-semibold bg-black/40 p-2.5 rounded-lg border-l-2 border-[#10B981]">
+          "bKash takes 45 seconds to scan, enter PIN, and wait for SMS while cars back up at Gate 1, and charges 1.5% MDR. Green Pass takes 0.6 seconds, works offline, and gives Tanvir Bashundhara ৳1.20 Crore upfront cash float!"
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 3: WHATSAPP EXECUTIVE HANDOFF                         -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-content-whatsapp" class="hidden space-y-3">
+      
+      <div class="text-xs text-gray-400 mono uppercase font-bold tracking-wider">
+        Post-Meeting WhatsApp Dispatch for Ahmed Ibrahim Sobhan:
+      </div>
+
+      <div class="bg-[#0D1424] border border-white/10 rounded-2xl p-4 space-y-3">
+        <div class="text-xs text-gray-300 leading-relaxed font-mono bg-black/60 p-3 rounded-xl border border-white/5 whitespace-pre-wrap select-all" id="whatsapp-text">Dear Ahmed bhai,
+
+Thank you for hosting Arif and myself tonight at Bashundhara R/A. It was a privilege discussing your vision of scaling Bahon from 16 shuttles to 1,000 smart eco-EVs.
+
+Here are the direct executive access links we reviewed on the screen tonight:
+
+⚡ Live Bahon Command Center Prototype:
+👉 https://gro10x-ai.vercel.app/prototypes/bahon/
+(Real-time telemetry, 12 geofenced gates, dynamic zone dispatch across Blocks A–P)
+
+📋 Official 30-Day Managed Pilot Proposal (৳60,000 BDT):
+👉 https://gro10x-ai.vercel.app/p/bahon-fleet
+(Includes overnight install on 15 vehicles, live 55" screen in your office by Day 7, and full audit of recovered cash on Day 30)
+
+📺 Complete 16-Slide Visual Executive Deck:
+👉 https://gro10x-ai.vercel.app/prototypes/bahon-pitch/
+
+We are ready to mobilize engineering immediately upon your go-ahead.
+
+Warm regards,
+Firoz Uddin Ahmed (Plabon) & Arif
+GRO10X Holdings</div>
+
+        <button onclick="copyWhatsApp()" id="copy-btn" class="w-full bg-[#10B981] hover:brightness-110 text-black font-extrabold py-2.5 rounded-xl text-xs transition active:scale-95 shadow-lg flex items-center justify-center gap-2">
+          <span>📋 Copy Message to Clipboard</span>
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT LOGIC & SLIDE DATABASE                         -->
+  <!-- ========================================================= -->
+  <script>
+    const slideDatabase = [
+      {
+        num: 1,
+        title: "The 'Green Bashundhara' Mandate",
+        takeaway: "Set the vision: Scaling 16 shuttles to 1,000 EVs cannot be run on paper clipboards.",
+        stat: "1,000 ECO-EV TARGET",
+        talkingPoints: [
+          "Acknowledge Ahmed bhai's bold green township vision announced in March 2026.",
+          "Frame GRO10X not as an app developer, but as the industrial operating system partner.",
+          "Promise: Tonight we show how software recovers its own cost in 15 days."
+        ]
+      },
+      {
+        num: 2,
+        title: "Scale of the Township",
+        takeaway: "Highlight the massive captive mobility market: ৳1.20 Crore daily spend across 3,346 acres.",
+        stat: "৳1.20 CR / DAY SPEND",
+        talkingPoints: [
+          "274,000 residents + 51,500 university students moving through 12 gates every single day.",
+          "Show why manual management inevitably breaks at this scale.",
+          "Mention 6 upcoming MRT stations that will flood Gate 1 and Kuril with passengers."
+        ]
+      },
+      {
+        num: 3,
+        title: "Why the Previous App Failed (The Wedge)",
+        takeaway: "Dissect Seegma Intellect's 1.0-star failure: Smartphone apps do NOT work in three-wheelers.",
+        stat: "1.0 ★ APP STORE FAILURE",
+        talkingPoints: [
+          "Direct contrast: Drivers turn off phones, pocket cash, and ignore digital bookings.",
+          "Low-cost smartphones overheat, crack, and run out of mobile data in Dhaka sun.",
+          "Solution: Hardwired automotive IoT that drivers cannot switch off."
+        ]
+      },
+      {
+        num: 4,
+        title: "Pain Point 1 — The Invisible Cash Sieve",
+        takeaway: "Hit the money nerve: 17% cash leakage is losing ৳14.28L to ৳23.76L every month.",
+        stat: "৳14.28L – ৳23.76L / MO LEAKAGE",
+        talkingPoints: [
+          "Explain how drivers drop passengers mid-route between Gate 1 and Block D/E unlogged.",
+          "Skimming: charging ৳20 for a ৳10 declared segment.",
+          "This leaked cash alone easily pays for the entire GRO10X hardware + software stack."
+        ]
+      },
+      {
+        num: 5,
+        title: "Pain Point 2 — The Hoarding Crisis",
+        takeaway: "Show why residents in Blocks I–P wait 25+ minutes: Gate 1 cherry-picking.",
+        stat: "25+ MINUTE WAIT TIMES",
+        talkingPoints: [
+          "75% of shuttles idle outside Gate 1 & NSU chasing quick ৳10 rides.",
+          "Blocks J, L, M, N, P are deserted; residents complain to the Society committee.",
+          "Command Center uses algorithmic quotas to enforce fair vehicle distribution."
+        ]
+      },
+      {
+        num: 6,
+        title: "Pain Point 3 — The 2:00 PM Blackout",
+        takeaway: "Explain why the fleet stalls during school rush and why DESCO peak charging hurts.",
+        stat: "41.5% POWER BILL SPREAD",
+        talkingPoints: [
+          "Lead-acid batteries die right at 2:00 PM when Playpen and ISD schools dismiss.",
+          "Unmanaged charging between 5 PM and 11 PM incurs DESCO peak penalty rate (৳18.43/kWh).",
+          "Off-peak LFP battery swapping saves 41.5% on the electric bill."
+        ]
+      },
+      {
+        num: 7,
+        title: "Pain Point 4 — Perimeter Infiltration & Theft",
+        takeaway: "Highlight security risk: 12 un-geofenced pocket gates and ৳60,000 battery theft risk.",
+        stat: "12 UNGEOFENCED GATES",
+        talkingPoints: [
+          "Rogue unauthorized rickshaws enter through Kuratoli & Evercare pocket gates.",
+          "Battery packs worth ৳60,000 are stolen and sold outside township borders.",
+          "Bahon virtual tripwire cuts the motor and triggers alarms if borders are breached."
+        ]
+      },
+      {
+        num: 8,
+        title: "The Solution — The Bahon Enterprise OS",
+        takeaway: "Present the 4 pillars: Hardware GPS, Green Pass NFC, Smart BMS, and Gate Interlock.",
+        stat: "SUB-SECOND TELEMETRY",
+        talkingPoints: [
+          "Click the button on screen to launch the live Command Center prototype.",
+          "Explain that this is built and running live today, not a PowerPoint concept.",
+          "Engineered specifically for the harsh climate and operating conditions of Dhaka."
+        ]
+      },
+      {
+        num: 9,
+        title: "The Cash Numbers — Instant Revenue Recovery",
+        takeaway: "Walk through the scaling table: 50 EVs recover ৳7.14L/mo; 200 EVs recover ৳23.76L/mo.",
+        stat: "+৳7.14L TO ৳23.76L / MO RECOVERED",
+        talkingPoints: [
+          "Conservative baseline: 40 trips per day @ ৳35 average fare.",
+          "100% cashless audit trail deposits directly into Society bank account.",
+          "Annual net gain on 200 vehicles exceeds ৳2.85 Crore."
+        ]
+      },
+      {
+        num: 10,
+        title: "Zero-Smartphone Boarding — The 'Green Pass'",
+        takeaway: "Introduce the closed-loop RFID card: 2-second boarding and ৳1.20 Crore upfront cash float.",
+        stat: "৳1.20 CR UPFRONT FLOAT",
+        talkingPoints: [
+          "Students and residents tap a physical card; loud speaker says 'ভাড়া সফল—২০ টাকা'.",
+          "0% MDR: No bKash 1.5% deduction; Bashundhara keeps 100% of the money.",
+          "40,000 cards @ ৳300 initial balance generates ৳1.20 Crore upfront liquidity."
+        ]
+      },
+      {
+        num: 11,
+        title: "Solving Driver Illiteracy",
+        takeaway: "Demonstrate hands-free operation: Drivers never touch a screen; 100% loud voice prompts.",
+        stat: "0 SMARTPHONES REQUIRED",
+        talkingPoints: [
+          "Tap the 'Play Live Audio' buttons on the slide to show the Bangla voice prompts.",
+          "Automatic seat load sensors detect passenger occupancy without driver input.",
+          "Zero driver training friction: if they can drive, they can operate with this system."
+        ]
+      },
+      {
+        num: 12,
+        title: "Tamper-Proof Telematics & E-Lock Interlock",
+        takeaway: "Assure security: Cut the wire and the vehicle slows to a safe stop within 2 seconds.",
+        stat: "< 2.0s GATE SHUTDOWN",
+        talkingPoints: [
+          "Sealed in 72V controller bay with optical tamper sensor.",
+          "Regenerative deceleration prevents accidents while immobilizing unauthorized driving.",
+          "48-hour internal battery backup continues GPS tracking even if battery is removed."
+        ]
+      },
+      {
+        num: 13,
+        title: "90-Second Battery Swapping & DESCO Arbitrage",
+        takeaway: "Showcase the smart depot: 90-second LFP swaps and 41.5% off-peak power arbitrage.",
+        stat: "90-SEC SWAP · 41.5% SAVINGS",
+        talkingPoints: [
+          "2,500+ cycle LFP battery packs outlast lead-acid by 5 years.",
+          "Automated smart chargers only draw power between 11 PM and 7 AM at ৳9.09/kWh.",
+          "Keeps 100% of shuttles on the road through the 2 PM school rush."
+        ]
+      },
+      {
+        num: 14,
+        title: "Algorithmic Block Balancing",
+        takeaway: "Guarantee service quality: <5-minute pickups for residents in Blocks I through P.",
+        stat: "< 5 MINUTE PICKUP GUARANTEE",
+        talkingPoints: [
+          "System enforces minimum 12-shuttle quota in eastern sectors.",
+          "Voice dispatch orders idling drivers at Gate 1 to move to starved zones.",
+          "Eliminates resident complaints and makes the township feel like a world-class smart city."
+        ]
+      },
+      {
+        num: 15,
+        title: "Commercial ROI — Self-Funding in 15 Days",
+        takeaway: "Deliver the clincher: ৳1 invested generates ৳6.50 in recovered cash and electricity savings.",
+        stat: "< 15-DAY PAYBACK",
+        talkingPoints: [
+          "Show the ROI scorecard: ৳10.74L monthly net value created on 50 shuttles.",
+          "Hardware investment is fully recouped in less than 15 days.",
+          "Zero risk: The savings fund the pilot from week two onwards."
+        ]
+      },
+      {
+        num: 16,
+        title: "The 30-Day Managed Pilot",
+        takeaway: "Close the deal: 15 vehicles live in 7 days for ৳60,000 BDT with zero route disruption.",
+        stat: "৳60,000 BDT TOTAL PILOT",
+        talkingPoints: [
+          "Overnight installation ensures zero daytime revenue loss for drivers.",
+          "By Day 7: A live 55-inch Command Screen is mounted on Ahmed bhai's office wall.",
+          "By Day 30: Full forensic audit report delivered with rollout roadmap for 1,000 EVs.",
+          "Ask for immediate acceptance to schedule technician mobilization tomorrow morning."
+        ]
+      }
+    ];
+
+    let activeSlideIndex = 0;
+
+    // Render Slide Note
+    function renderSlideNote(index) {
+      const data = slideDatabase[index];
+      const card = document.getElementById('slide-note-card');
+      const numDisplay = document.getElementById('current-slide-num');
+      const nextCard = document.getElementById('next-slide-preview');
+
+      numDisplay.textContent = data.num < 10 ? `0${data.num}` : `${data.num}`;
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <span class="text-xs font-black uppercase text-[#10B981] mono tracking-wider">Slide ${data.num} of 16</span>
+          <span class="text-[10px] mono font-bold bg-[#10B981]/15 text-[#10B981] px-2 py-0.5 rounded border border-[#10B981]/30">${data.stat}</span>
+        </div>
+
+        <h3 class="text-base font-extrabold text-white heading-font">${data.title}</h3>
+
+        <div class="bg-black/50 border border-white/5 p-3 rounded-xl">
+          <div class="text-[9px] text-[#06B6D4] font-bold uppercase mono mb-0.5">One-Sentence Core Takeaway:</div>
+          <div class="text-xs text-white font-semibold italic">"${data.takeaway}"</div>
+        </div>
+
+        <div class="space-y-1.5 pt-1">
+          <div class="text-[9px] text-gray-400 font-bold uppercase mono">Key Talking Points for Arif & Plabon:</div>
+          ${data.talkingPoints.map(p => `
+            <div class="flex items-start gap-2 text-xs text-gray-300">
+              <span class="text-[#10B981] font-bold mt-0.5">›</span>
+              <span>${p}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // Next slide preview
+      if (index < slideDatabase.length - 1) {
+        const next = slideDatabase[index + 1];
+        nextCard.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-gray-400 uppercase mono">Up Next: Slide ${next.num}</span>
+            <span class="text-[10px] text-[#10B981] font-bold">${next.stat}</span>
+          </div>
+          <div class="text-xs font-bold text-gray-200 mt-0.5">${next.title}</div>
+        `;
+      } else {
+        nextCard.innerHTML = `
+          <div class="text-xs font-bold text-[#10B981] text-center">Final Slide: Close on ৳60K Pilot Acceptance!</div>
+        `;
+      }
+
+      // Update quick jump strip
+      updateQuickStrip(index);
+    }
+
+    function updateQuickStrip(activeIndex) {
+      const container = document.getElementById('quick-jump-strip');
+      container.innerHTML = '';
+      slideDatabase.forEach((s, idx) => {
+        const btn = document.createElement('button');
+        btn.textContent = s.num;
+        btn.className = `w-7 h-7 rounded-lg text-xs font-bold mono transition shrink-0 ${
+          idx === activeIndex 
+            ? 'bg-[#10B981] text-black shadow-md scale-110' 
+            : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+        }`;
+        btn.onclick = () => {
+          activeSlideIndex = idx;
+          renderSlideNote(activeSlideIndex);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function navigateSlide(direction) {
+      const newIndex = activeSlideIndex + direction;
+      if (newIndex >= 0 && newIndex < slideDatabase.length) {
+        activeSlideIndex = newIndex;
+        renderSlideNote(activeSlideIndex);
+      }
+    }
+
+    // Pacing Timer Logic (20 min countdown)
+    let timerSeconds = 20 * 60;
+    let timerRunning = false;
+    let timerInterval = null;
+
+    function toggleTimer() {
+      const btn = document.getElementById('timer-btn');
+      if (timerRunning) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        btn.textContent = '▶';
+        btn.className = 'w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition';
+      } else {
+        timerInterval = setInterval(() => {
+          if (timerSeconds > 0) {
+            timerSeconds--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            btn.textContent = '▶';
+          }
+        }, 1000);
+        timerRunning = true;
+        btn.textContent = '⏸';
+        btn.className = 'w-7 h-7 rounded-lg bg-[#10B981] text-black font-bold flex items-center justify-center text-xs transition';
+      }
+    }
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timer-display');
+      const mins = Math.floor(timerSeconds / 60);
+      const secs = timerSeconds % 60;
+      display.textContent = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+      if (timerSeconds <= 300) { // Under 5 mins
+        display.className = 'text-sm font-black mono text-red-400 animate-pulse';
+      } else if (timerSeconds <= 600) { // Under 10 mins
+        display.className = 'text-sm font-black mono text-amber-400';
+      } else {
+        display.className = 'text-sm font-black mono text-[#10B981]';
+      }
+    }
+
+    // Tab Switcher
+    function switchTab(tabId) {
+      ['script', 'objections', 'whatsapp'].forEach(t => {
+        const content = document.getElementById(`tab-content-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tabId) {
+          content.classList.remove('hidden');
+          btn.className = 'tab-btn text-xs font-bold px-3 py-1 rounded-full bg-[#10B981] text-black transition shrink-0';
+        } else {
+          content.classList.add('hidden');
+          btn.className = 'tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0';
+        }
+      });
+    }
+
+    // Copy WhatsApp
+    function copyWhatsApp() {
+      const text = document.getElementById('whatsapp-text').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.innerHTML = '<span>✅ Copied to Clipboard!</span>';
+        btn.classList.add('bg-white', 'text-black');
+        setTimeout(() => {
+          btn.innerHTML = '<span>📋 Copy Message to Clipboard</span>';
+          btn.classList.remove('bg-white', 'text-black');
+          btn.classList.add('bg-[#10B981]', 'text-black');
+        }, 2500);
+      }).catch(err => {
+        alert("Clipboard error: " + err);
+      });
+    }
+
+    // Initial render
+    renderSlideNote(activeSlideIndex);
+  </script>
+</body>
+</html>

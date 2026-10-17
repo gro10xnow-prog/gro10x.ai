@@ -575,6 +575,12 @@ app.get(['/prototypes/ryze-ai-star', '/prototypes/ryze-ai-star/'], (req, res) =>
 app.get(['/prototypes/bahon', '/prototypes/bahon/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/bahon/index.html'));
 });
+app.get(['/prototypes/bahon-pitch', '/prototypes/bahon-pitch/', '/prototypes/bahon/pitch', '/prototypes/bahon/pitch.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/bahon-pitch/index.html'));
+});
+app.get(['/prototypes/bahon-pitch/copilot', '/prototypes/bahon-pitch/copilot.html', '/prototypes/bahon/copilot', '/prototypes/bahon/copilot.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/bahon-pitch/copilot.html'));
+});
 
 // Shomvob Strategic Partnership Pitch Deck Prototype
 app.get(['/prototypes/shomvob-pitch', '/prototypes/shomvob-pitch/'], (req, res) => {

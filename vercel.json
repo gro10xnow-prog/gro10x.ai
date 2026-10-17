@@ -189,6 +189,26 @@
       "dest": "/public/prototypes/shomvob-pitch/index.html"
     },
     {
+      "src": "/prototypes/bahon-pitch/copilot(.*)",
+      "dest": "/public/prototypes/bahon-pitch/copilot.html"
+    },
+    {
+      "src": "/prototypes/bahon-pitch/?$",
+      "dest": "/public/prototypes/bahon-pitch/index.html"
+    },
+    {
+      "src": "/prototypes/bahon-pitch/index(.*)",
+      "dest": "/public/prototypes/bahon-pitch/index.html"
+    },
+    {
+      "src": "/prototypes/bahon/copilot(.*)",
+      "dest": "/public/prototypes/bahon-pitch/copilot.html"
+    },
+    {
+      "src": "/prototypes/bahon/pitch(.*)",
+      "dest": "/public/prototypes/bahon-pitch/index.html"
+    },
+    {
       "src": "/prototypes/bahon(/.*)?",
       "dest": "/public/prototypes/bahon/index.html"
     },
