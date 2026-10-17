@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>MOHAMMAD SADMAN BASHIR // PRIVATE MOTORING ARCHIVE — 4K Framed Print</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,64 +32,67 @@
     .mono { font-family: 'Space Mono', monospace; }
     .heading-font { font-family: 'Space Grotesk', sans-serif; }
 
-    /* Printable Canvas Dimensions (16:9 4K scaled for screen and print) */
+    /* Printable Canvas Dimensions */
     .poster-canvas {
       width: 100%;
       max-width: 1720px;
-      aspect-ratio: 16 / 9;
       background: radial-gradient(circle at 75% 30%, #151C2C 0%, #080A0F 65%, #040508 100%);
       box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(229, 184, 105, 0.25);
       position: relative;
-      overflow: hidden;
     }
 
-    /* Custom Chamfered Tech Frame Moulding (Matching Inspiration) */
-    .tech-frame-container {
-      position: relative;
-      background: linear-gradient(135deg, rgba(229,184,105,0.4) 0%, rgba(0,240,255,0.3) 50%, rgba(229,184,105,0.2) 100%);
-      padding: 6px;
-      border-radius: 28px;
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.25), inset 0 0 25px rgba(229, 184, 105, 0.2);
+    /* On Large Desktop screens, apply 16:9 proportional scaling without clipping */
+    @media (min-width: 1200px) {
+      .poster-canvas {
+        min-height: 860px;
+      }
     }
-    .tech-frame-inner {
-      background: #07090E;
-      border-radius: 22px;
-      overflow: hidden;
-      position: relative;
-    }
-    .neon-gold-border {
-      border: 3px solid rgba(229, 184, 105, 0.85);
-      box-shadow: 0 0 20px rgba(229, 184, 105, 0.4), inset 0 0 15px rgba(0, 240, 255, 0.2);
+
+    /* Print styles */
+    @media print {
+      body {
+        background: #040508 !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .poster-canvas {
+        width: 100% !important;
+        max-width: none !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-6 bg-[#040508] bg-grid">
+<body class="min-h-screen flex flex-col items-center justify-center p-2.5 sm:p-5 lg:p-6 bg-[#040508]">
 
   <!-- ========================================================= -->
-  <!-- TOP TOOLBAR & CONTROLS (HIDDEN ON PRINT / EXPORT)        -->
+  <!-- TOP TOOLBAR & CONTROLS (RESPONSIVE TOUCH-FRIENDLY BAR)   -->
   <!-- ========================================================= -->
-  <header class="no-print w-full max-w-[1720px] mb-4 flex flex-wrap justify-between items-center gap-3 bg-[#0D111A]/90 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-white/10">
-    <div class="flex items-center gap-3">
-      <div class="w-3 h-3 rounded-full bg-[#E5B869] animate-pulse"></div>
+  <header class="no-print w-full max-w-[1720px] mb-3 sm:mb-4 flex flex-col sm:flex-row justify-between items-center gap-3 bg-[#0D111A]/90 backdrop-blur-md px-4 sm:px-6 py-3 rounded-2xl border border-white/10">
+    <div class="flex items-center gap-2.5 self-start sm:self-center">
+      <div class="w-3 h-3 rounded-full bg-[#E5B869] animate-pulse flex-shrink-0"></div>
       <div>
-        <span class="text-xs font-bold uppercase mono text-[#E5B869]">MOHAMMAD SADMAN BASHIR // BIRTHDAY EDITION</span>
-        <span class="text-gray-400 text-xs ml-2 hidden sm:inline">16:9 4K Ultra-HD Phygital Commemorative Frame</span>
+        <span class="text-xs font-bold uppercase mono text-[#E5B869]">MOHAMMAD SADMAN BASHIR // BIRTHDAY COMMEMORATION</span>
+        <span class="text-gray-400 text-xs ml-2 hidden md:inline">16:9 4K Ultra-HD Phygital Collector's Frame</span>
       </div>
     </div>
 
     <!-- Actions -->
-    <div class="flex items-center gap-2.5">
-      <a href="/prototypes/sadman-garage/" class="bg-[#10B981]/20 hover:bg-[#10B981]/30 text-[#10B981] border border-[#10B981]/40 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
-        <span>🚗 Launch 3D Digital Twin</span>
+    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+      <a href="/prototypes/sadman-garage/" class="bg-[#10B981]/20 hover:bg-[#10B981]/30 text-[#10B981] border border-[#10B981]/40 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 active:scale-95">
+        <span>🚗 Launch 3D Garage</span>
       </a>
-      <button onclick="exportHighResPNG()" id="btn-export-png" class="bg-gradient-to-r from-[#E5B869] to-[#D49E45] hover:brightness-110 text-black px-4 py-2 rounded-xl text-xs font-extrabold transition shadow-lg flex items-center gap-2">
+      <button onclick="exportHighResPNG()" id="btn-export-png" class="bg-gradient-to-r from-[#E5B869] to-[#D49E45] hover:brightness-110 text-black px-4 py-2 rounded-xl text-xs font-extrabold transition shadow-lg flex items-center gap-1.5 active:scale-95">
         <span>📥 Export 300 DPI Print PNG</span>
       </button>
-      <button onclick="window.print()" class="bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+      <button onclick="window.print()" class="bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 active:scale-95">
         <span>🖨️ Save PDF</span>
       </button>
       <a href="/prototypes/" class="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-3 py-2 rounded-xl text-xs transition">
-        ← Showroom Hub
+        ← Hub
       </a>
     </div>
   </header>
@@ -97,55 +100,53 @@
   <!-- ========================================================= -->
   <!-- 16:9 ULTRA-HD PHYSICAL PRINT CANVAS                       -->
   <!-- ========================================================= -->
-  <div id="capture-poster" class="poster-canvas rounded-3xl flex flex-col md:flex-row relative z-10 border border-[#E5B869]/30">
+  <div id="capture-poster" class="poster-canvas rounded-2xl sm:rounded-3xl flex flex-col lg:flex-row relative z-10 border border-[#E5B869]/30">
 
     <!-- Subtle Metallic Frame Border Glow -->
-    <div class="absolute inset-0 pointer-events-none rounded-3xl border-2 border-[#E5B869]/20 z-30"></div>
-    <div class="absolute top-4 left-4 text-[10px] mono text-[#E5B869]/60 uppercase tracking-widest z-30">
+    <div class="absolute inset-0 pointer-events-none rounded-2xl sm:rounded-3xl border-2 border-[#E5B869]/20 z-30"></div>
+    <div class="absolute top-3.5 left-5 text-[10px] mono text-[#E5B869]/60 uppercase tracking-widest z-30 hidden sm:block">
       ARCHIVE REF // MSB-2026-1017-BASHIR-CLICKS
     </div>
-    <div class="absolute bottom-4 left-4 text-[10px] mono text-gray-500 uppercase tracking-widest z-30 hidden sm:block">
+    <div class="absolute bottom-3.5 left-5 text-[10px] mono text-gray-500 uppercase tracking-widest z-30 hidden xl:block">
       PHYGITAL TWIN TOKEN VERIFIED • GRO10X FOUNDRY LAB
     </div>
 
     <!-- ======================================================= -->
     <!-- LEFT 60%: HIGH-RESOLUTION VISUAL MOTORING CANVAS        -->
     <!-- ======================================================= -->
-    <div class="w-full md:w-[60%] h-full relative p-6 sm:p-10 flex flex-col justify-between overflow-hidden">
+    <div class="poster-left-col w-full lg:w-[60%] relative p-4 sm:p-6 lg:p-8 flex flex-col justify-between">
       
-      <!-- Ambient Lighting & Reflections (Smooth 100px Gaussian Blur) -->
-      <div class="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-[#00F0FF]/[0.05] rounded-full filter blur-[120px] pointer-events-none"></div>
-      <div class="absolute -bottom-32 right-1/4 w-[500px] h-[500px] bg-[#E5B869]/[0.05] rounded-full filter blur-[120px] pointer-events-none"></div>
+      <!-- Ambient Lighting & Reflections (Smooth 120px Gaussian Blur) -->
+      <div class="absolute -top-32 left-1/4 w-[480px] h-[480px] bg-[#00F0FF]/[0.05] rounded-full filter blur-[120px] pointer-events-none"></div>
+      <div class="absolute -bottom-32 right-1/4 w-[480px] h-[480px] bg-[#E5B869]/[0.05] rounded-full filter blur-[120px] pointer-events-none"></div>
 
       <!-- Top Visual Header -->
-      <div class="relative z-20">
-        <div class="flex items-center gap-3">
-          <span class="px-3 py-1 rounded-full bg-[#E5B869]/15 border border-[#E5B869]/30 text-[#E5B869] text-xs font-bold mono tracking-widest uppercase">
+      <div class="relative z-20 mb-2 sm:mb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-0.5 rounded-full bg-[#E5B869]/15 border border-[#E5B869]/30 text-[#E5B869] text-[10px] sm:text-xs font-bold mono tracking-widest uppercase">
             PRIVATE COLLECTION // 01 OF 01
           </span>
-          <span class="text-xs text-gray-400 mono hidden sm:inline">
-            LOCATION: DHAKA • DESERT & ASPHALT
+          <span class="text-[10px] sm:text-xs text-gray-400 mono hidden sm:inline">
+            DHAKA • DESERT & ASPHALT
           </span>
         </div>
-        <h1 class="cinzel text-3xl sm:text-5xl font-black text-white tracking-wider mt-3 leading-tight drop-shadow-md">
+        <h1 class="cinzel text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white tracking-wider mt-1.5 leading-tight drop-shadow-md">
           SADMAN'S DREAM GARAGE
         </h1>
-        <p class="text-xs sm:text-sm text-gray-300 font-medium tracking-wide mt-1">
+        <p class="text-[11px] sm:text-xs text-gray-300 font-medium tracking-wide mt-0.5">
           High-Horsepower V8 & V12 Motoring Archive // Curated for Mohammad Sadman Bashir
         </p>
       </div>
 
-      <!-- Centerpiece Caricature in Sci-Fi Chamfered Bezel Frame (Matching Inspiration) -->
-      <div class="relative z-10 flex-1 flex flex-col justify-center items-center my-2">
-        
-        <!-- Sci-Fi / Cybernetic Double-Bezel Frame Container -->
-        <div class="w-full relative p-[3px] rounded-3xl bg-gradient-to-r from-[#E5B869] via-[#00F0FF] to-[#E5B869] shadow-[0_0_40px_rgba(0,240,255,0.35)]">
+      <!-- Centerpiece Caricature in Sci-Fi Chamfered Bezel Frame -->
+      <div class="relative z-10 flex flex-col justify-center items-center my-1 sm:my-2">
+        <div class="w-full relative p-[2px] sm:p-[3px] rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#E5B869] via-[#00F0FF] to-[#E5B869] shadow-[0_0_35px_rgba(0,240,255,0.3)]">
           
           <!-- Outer Chamfer Bezel -->
-          <div class="bg-[#090D16] p-2.5 sm:p-3 rounded-[22px] relative overflow-hidden border border-[#E5B869]/40">
+          <div class="bg-[#090D16] p-1.5 sm:p-2.5 rounded-[18px] sm:rounded-[22px] relative overflow-hidden border border-[#E5B869]/40">
             
             <!-- Inner Glowing Neon Inset Frame -->
-            <div class="relative w-full aspect-[16/9] max-h-[460px] rounded-2xl overflow-hidden border-2 border-[#00F0FF]/80 shadow-[inset_0_0_25px_rgba(0,240,255,0.3)]">
+            <div class="relative w-full aspect-[16/10] sm:aspect-[16/9] max-h-[300px] sm:max-h-[340px] xl:max-h-[380px] rounded-xl sm:rounded-2xl overflow-hidden border-2 border-[#00F0FF]/80 shadow-[inset_0_0_20px_rgba(0,240,255,0.3)]">
               
               <!-- Google Flow Caricature Artwork -->
               <img 
@@ -154,24 +155,24 @@
                 class="w-full h-full object-cover object-center transform scale-[1.01]"
               />
 
-              <!-- Bottom Glass Cinematic Nameplate Overlay (Deeper Smooth Gradient + Margin Fix) -->
-              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black via-black/85 via-black/45 to-transparent p-5 sm:p-6 pt-16 flex flex-col justify-end">
-                <div class="flex items-center gap-2 mb-1.5 drop-shadow-md">
-                  <span class="text-base sm:text-lg font-extrabold text-white uppercase tracking-wider cinzel">
+              <!-- Bottom Glass Cinematic Nameplate Overlay (Smooth 4-Stop Deep Gradient) -->
+              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black via-black/85 via-black/45 to-transparent p-3 sm:p-5 pt-12 sm:pt-14 flex flex-col justify-end">
+                <div class="flex items-center gap-1.5 sm:gap-2 mb-1 drop-shadow-md">
+                  <span class="text-sm sm:text-base lg:text-lg font-extrabold text-white uppercase tracking-wider cinzel">
                     MOHAMMAD SADMAN BASHIR
                   </span>
-                  <span class="text-sm text-red-500 animate-pulse">❤️</span>
-                  <span class="text-base sm:text-lg font-extrabold text-[#E5B869] uppercase tracking-wider cinzel">
+                  <span class="text-xs text-red-500 animate-pulse">❤️</span>
+                  <span class="text-sm sm:text-base lg:text-lg font-extrabold text-[#E5B869] uppercase tracking-wider cinzel">
                     ANIKA
                   </span>
                 </div>
-                <p class="text-xs sm:text-[13px] text-gray-100 leading-relaxed font-medium drop-shadow max-w-2xl mb-3.5">
+                <p class="text-[10px] sm:text-xs text-gray-100 leading-relaxed font-medium drop-shadow max-w-2xl mb-2 sm:mb-2.5">
                   Behind every great photograph (<span class="text-[#E5B869] font-mono font-bold">@bashir_bhai_clicks</span>) and every adrenaline-fueled highway pull is a partnership defined by endless deadlines, big laughs, and boundless ambition.
                 </p>
-                <div class="flex flex-wrap items-center gap-2 text-[10px] mono text-gray-200">
-                  <span class="bg-black/85 px-2.5 py-1 rounded-lg border border-white/20 shadow">🎂 October 17 Milestone</span>
-                  <span class="bg-black/85 px-2.5 py-1 rounded-lg border border-white/20 text-[#00F0FF] shadow">🏎️ High-Speed Duo</span>
-                  <span class="bg-black/85 px-2.5 py-1 rounded-lg border border-white/20 text-[#E5B869] shadow">📸 Lens & Horizon</span>
+                <div class="flex flex-wrap items-center gap-1.5 text-[9px] sm:text-[10px] mono text-gray-200">
+                  <span class="bg-black/85 px-2 py-0.5 rounded border border-white/20 shadow">🎂 October 17 Milestone</span>
+                  <span class="bg-black/85 px-2 py-0.5 rounded border border-white/20 text-[#00F0FF] shadow">🏎️ High-Speed Duo</span>
+                  <span class="bg-black/85 px-2 py-0.5 rounded border border-white/20 text-[#E5B869] shadow">📸 Lens & Horizon</span>
                 </div>
               </div>
 
@@ -181,52 +182,53 @@
 
         </div>
 
-        <!-- 5 Hero Fleet Cards with Cinematic Turntable Renders & Accurate Specs (No Emojis) -->
-        <div class="w-full grid grid-cols-5 gap-2 sm:gap-3 mt-3.5">
+        <!-- 5 Hero Fleet Cards with Real Vehicle Renders & Accurate Specs -->
+        <!-- Responsive: 2 cols on mobile phones, 3 cols on tablet, 5 cols on desktop -->
+        <div class="poster-car-grid w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5 mt-2.5 sm:mt-3">
           
           <!-- Car 1: Nissan Patrol Safari -->
-          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-md">
-            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-white/10 bg-black">
+          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 text-center transition group shadow-md flex flex-col justify-between">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1 border border-white/10 bg-black">
               <img src="/images/cars/nissan-patrol.jpg" alt="Nissan Patrol Safari" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
             </div>
             <div class="text-[10px] sm:text-[11px] font-black text-white uppercase truncate tracking-wide">Patrol Safari</div>
-            <div class="text-[9px] sm:text-[10px] mono font-bold text-[#E5B869] mt-0.5">4.8L TB48 / TURBO</div>
+            <div class="text-[8px] sm:text-[9px] mono font-bold text-[#E5B869] mt-0.5">4.8L TB48 / TURBO</div>
           </div>
 
           <!-- Car 2: 300SL Gullwing -->
-          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-md">
-            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-white/10 bg-black">
+          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 text-center transition group shadow-md flex flex-col justify-between">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1 border border-white/10 bg-black">
               <img src="/images/cars/mercedes-300sl.jpg" alt="1954 Mercedes-Benz 300SL" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
             </div>
             <div class="text-[10px] sm:text-[11px] font-black text-white uppercase truncate tracking-wide">300SL Gullwing</div>
-            <div class="text-[9px] sm:text-[10px] mono font-bold text-gray-300 mt-0.5">1954 SILVER LEGEND</div>
+            <div class="text-[8px] sm:text-[9px] mono font-bold text-gray-300 mt-0.5">1954 SILVER LEGEND</div>
           </div>
 
-          <!-- Car 3: Lamborghini Huracán EVO (Corrected Model) -->
-          <div class="bg-black/60 border border-[#00F0FF]/40 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-[0_0_12px_rgba(0,240,255,0.2)]">
-            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-[#00F0FF]/30 bg-black">
+          <!-- Car 3: Lamborghini Huracán EVO -->
+          <div class="bg-black/60 border border-[#00F0FF]/40 rounded-xl p-1.5 text-center transition group shadow-[0_0_12px_rgba(0,240,255,0.2)] flex flex-col justify-between">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1 border border-[#00F0FF]/30 bg-black">
               <img src="/images/cars/lamborghini.jpg" alt="Lamborghini Huracán EVO" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
             </div>
             <div class="text-[10px] sm:text-[11px] font-black text-[#00F0FF] uppercase truncate tracking-wide">Huracán EVO</div>
-            <div class="text-[9px] sm:text-[10px] mono font-bold text-[#00F0FF] mt-0.5">5.2L V10 / 640HP</div>
+            <div class="text-[8px] sm:text-[9px] mono font-bold text-[#00F0FF] mt-0.5">5.2L V10 / 640HP</div>
           </div>
 
           <!-- Car 4: Mustang GT 5.0 -->
-          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-md">
-            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-white/10 bg-black">
+          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 text-center transition group shadow-md flex flex-col justify-between">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1 border border-white/10 bg-black">
               <img src="/images/cars/mustang-gt.jpg" alt="Ford Mustang GT 5.0" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
             </div>
             <div class="text-[10px] sm:text-[11px] font-black text-white uppercase truncate tracking-wide">Mustang GT 5.0</div>
-            <div class="text-[9px] sm:text-[10px] mono font-bold text-red-400 mt-0.5">COYOTE V8 DETROIT</div>
+            <div class="text-[8px] sm:text-[9px] mono font-bold text-red-400 mt-0.5">COYOTE V8 DETROIT</div>
           </div>
 
           <!-- Car 5: Mercedes-AMG G63 -->
-          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-md">
-            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-white/10 bg-black">
+          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 text-center transition group shadow-md flex flex-col justify-between">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1 border border-white/10 bg-black">
               <img src="/images/cars/mercedes-g63.jpg" alt="Mercedes-AMG G63" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
             </div>
             <div class="text-[10px] sm:text-[11px] font-black text-white uppercase truncate tracking-wide">AMG G63</div>
-            <div class="text-[9px] sm:text-[10px] mono font-bold text-[#10B981] mt-0.5">TWIN-TURBO V8 AWD</div>
+            <div class="text-[8px] sm:text-[9px] mono font-bold text-[#10B981] mt-0.5">TWIN-TURBO V8 AWD</div>
           </div>
 
         </div>
@@ -234,9 +236,9 @@
       </div>
 
       <!-- Bottom Visual Footer Specs -->
-      <div class="relative z-20 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10 text-[11px] mono text-gray-400">
+      <div class="relative z-20 flex flex-wrap items-center justify-between gap-2 pt-2.5 mt-2 border-t border-white/10 text-[9px] sm:text-[10px] mono text-gray-400">
         <div>
-          FLEET POWER: <span class="text-white font-bold">2,600+ COMBINED BHP</span> • TRANSMISSIONS: <span class="text-white font-bold">RAW DUAL-CLUTCH & MECHANICAL 4WD</span>
+          FLEET POWER: <span class="text-white font-bold">2,600+ COMBINED BHP</span> • TRANSMISSIONS: <span class="text-white font-bold">DUAL-CLUTCH & MECHANICAL 4WD</span>
         </div>
         <div class="text-[#E5B869] font-bold">
           EST. DHAKA 2026 // EDITION COMMEMORATIVE
@@ -248,7 +250,7 @@
     <!-- ======================================================= -->
     <!-- RIGHT 40%: LUXURY DARK-GLASS EDITORIAL DOSSIER         -->
     <!-- ======================================================= -->
-    <div class="w-full md:w-[40%] h-full bg-[#090D16]/95 border-t md:border-t-0 md:border-l border-[#E5B869]/30 p-6 sm:p-10 flex flex-col justify-between relative overflow-hidden backdrop-blur-2xl">
+    <div class="poster-right-col w-full lg:w-[40%] bg-[#090D16]/95 border-t lg:border-t-0 lg:border-l border-[#E5B869]/30 p-4 sm:p-6 lg:p-7 flex flex-col justify-between relative backdrop-blur-2xl">
       
       <!-- Luxury Watermark Insignia Background -->
       <div class="absolute -right-12 -bottom-12 text-[180px] font-black text-white/[0.015] cinzel pointer-events-none select-none">
@@ -257,106 +259,106 @@
 
       <!-- Top Dossier Header -->
       <div>
-        <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
           <div>
-            <div class="text-[10px] mono uppercase text-[#E5B869] font-bold tracking-widest">
+            <div class="text-[9px] sm:text-[10px] mono uppercase text-[#E5B869] font-bold tracking-widest">
               OFFICIAL DRIVER PROFILE // REF #0017
             </div>
-            <h2 class="cinzel text-xl sm:text-2xl font-black text-white mt-0.5 tracking-wide">
+            <h2 class="cinzel text-lg sm:text-xl font-black text-white mt-0.5 tracking-wide">
               MOHAMMAD SADMAN BASHIR
             </h2>
-            <div class="text-xs font-semibold text-gray-400 italic mt-0.5">
+            <div class="text-[11px] font-semibold text-gray-400 italic">
               "Living Life on Deadlines"
             </div>
           </div>
-          <div class="w-12 h-12 rounded-xl bg-black border border-[#E5B869]/40 flex items-center justify-center text-center">
-            <span class="cinzel text-sm font-bold text-[#E5B869]">MSB</span>
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black border border-[#E5B869]/40 flex items-center justify-center text-center flex-shrink-0">
+            <span class="cinzel text-xs sm:text-sm font-bold text-[#E5B869]">MSB</span>
           </div>
         </div>
 
         <!-- Personal Dossier Specs Grid -->
-        <div class="grid grid-cols-2 gap-2.5 mb-5 text-xs">
+        <div class="grid grid-cols-2 gap-2 mb-2.5 text-xs">
           
-          <div class="bg-black/50 border border-white/5 p-3 rounded-xl flex flex-col justify-between">
-            <div class="text-[10px] mono text-gray-400 uppercase tracking-wider font-semibold">BLOOD GROUP</div>
-            <div class="text-base font-extrabold text-red-400 mono mt-1 leading-snug">A+ (Rh Positive)</div>
-            <div class="text-[9px] text-gray-400 mt-0.5">Pure Octane Fueled</div>
+          <div class="bg-black/50 border border-white/5 p-2 sm:p-2.5 rounded-xl flex flex-col justify-between">
+            <div class="text-[9px] mono text-gray-400 uppercase tracking-wider font-semibold">BLOOD GROUP</div>
+            <div class="text-sm sm:text-base font-extrabold text-red-400 mono mt-0.5 leading-snug">A+ (Rh Positive)</div>
+            <div class="text-[8px] text-gray-400 mt-0.5">Pure Octane Fueled</div>
           </div>
 
-          <div class="bg-black/50 border border-white/5 p-3 rounded-xl flex flex-col justify-between">
-            <div class="text-[10px] mono text-gray-400 uppercase tracking-wider font-semibold">ALUMNUS</div>
-            <div class="text-xs sm:text-sm font-bold text-white mt-1 leading-snug break-words">BAF Shaheen College</div>
-            <div class="text-[9px] text-gray-400 mt-0.5">Aviation Heritage</div>
+          <div class="bg-black/50 border border-white/5 p-2 sm:p-2.5 rounded-xl flex flex-col justify-between">
+            <div class="text-[9px] mono text-gray-400 uppercase tracking-wider font-semibold">ALUMNUS</div>
+            <div class="text-xs sm:text-sm font-bold text-white mt-0.5 leading-snug break-words">BAF Shaheen College</div>
+            <div class="text-[8px] text-gray-400 mt-0.5">Aviation Heritage</div>
           </div>
 
-          <div class="bg-black/50 border border-white/5 p-3 rounded-xl flex flex-col justify-between">
-            <div class="text-[10px] mono text-gray-400 uppercase tracking-wider font-semibold">SIGNATURE LENS</div>
-            <div class="text-xs sm:text-sm font-bold text-[#E5B869] mono mt-1 leading-snug break-all">@bashir_bhai_clicks</div>
-            <div class="text-[9px] text-gray-400 mt-0.5">Automotive & Life</div>
+          <div class="bg-black/50 border border-white/5 p-2 sm:p-2.5 rounded-xl flex flex-col justify-between">
+            <div class="text-[9px] mono text-gray-400 uppercase tracking-wider font-semibold">SIGNATURE LENS</div>
+            <div class="text-xs sm:text-sm font-bold text-[#E5B869] mono mt-0.5 leading-snug break-all">@bashir_bhai_clicks</div>
+            <div class="text-[8px] text-gray-400 mt-0.5">Automotive & Life</div>
           </div>
 
-          <div class="bg-black/50 border border-white/5 p-3 rounded-xl flex flex-col justify-between">
-            <div class="text-[10px] mono text-gray-400 uppercase tracking-wider font-semibold">CELEBRATION DATE</div>
-            <div class="text-sm font-bold text-[#10B981] mono mt-1 leading-snug">OCTOBER 17</div>
-            <div class="text-[9px] text-gray-400 mt-0.5">Annual Milestone</div>
+          <div class="bg-black/50 border border-white/5 p-2 sm:p-2.5 rounded-xl flex flex-col justify-between">
+            <div class="text-[9px] mono text-gray-400 uppercase tracking-wider font-semibold">CELEBRATION DATE</div>
+            <div class="text-xs sm:text-sm font-bold text-[#10B981] mono mt-0.5 leading-snug">OCTOBER 17</div>
+            <div class="text-[8px] text-gray-400 mt-0.5">Annual Milestone</div>
           </div>
 
         </div>
 
         <!-- Warm Loving Birthday Inscription -->
-        <div class="bg-gradient-to-br from-[#111726]/90 to-black/90 border border-[#E5B869]/30 rounded-2xl p-4 sm:p-5 mb-5 shadow-lg relative">
-          <div class="text-[10px] mono text-[#E5B869] uppercase font-bold tracking-wider mb-2 flex items-center justify-between">
+        <div class="bg-gradient-to-br from-[#111726]/90 to-black/90 border border-[#E5B869]/30 rounded-2xl p-3 sm:p-4 mb-2.5 shadow-md relative">
+          <div class="text-[9px] sm:text-[10px] mono text-[#E5B869] uppercase font-bold tracking-wider mb-1.5 flex items-center justify-between">
             <span>DEDICATION & BIRTHDAY HOMAGE</span>
             <span>❤️ 10.17</span>
           </div>
-          <p class="text-xs sm:text-sm text-gray-200 leading-relaxed font-sans italic">
+          <p class="text-[11px] sm:text-xs text-gray-200 leading-relaxed font-sans italic">
             "Happy Birthday, Sadman! Here’s to a brother who lives life on high revs and impossible deadlines. From late-night city sprints to timeless memories framed behind the lens, your energy and heart inspire us all. May your road ahead always be clear, your garage forever echoing with roaring engines, and every journey filled with love and laughter."
           </p>
-          <div class="mt-3 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
+          <div class="mt-2 pt-2 border-t border-white/10 flex justify-between items-center text-[10px] sm:text-[11px]">
             <span class="text-gray-400">Gifted with all our love,</span>
             <span class="text-[#E5B869] font-bold">Anika & Plabon</span>
           </div>
         </div>
       </div>
 
-      <!-- Fleet Telemetry / Garage Specs Matrix (Eliminates Right Panel Dead Void) -->
-      <div class="bg-black/75 border border-white/15 rounded-2xl p-4 my-2.5 shadow-lg">
-        <div class="flex items-center justify-between text-[10px] mono text-[#00F0FF] font-bold uppercase tracking-widest mb-2.5">
+      <!-- Fleet Telemetry / Garage Specs Matrix -->
+      <div class="bg-black/75 border border-white/15 rounded-2xl p-3 sm:p-3.5 my-2 shadow-lg">
+        <div class="flex items-center justify-between text-[9px] sm:text-[10px] mono text-[#00F0FF] font-bold uppercase tracking-widest mb-2">
           <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse"></span>
             FLEET TELEMETRY MATRIX
           </span>
           <span class="text-[#E5B869]">5 ACTIVE CURATIONS</span>
         </div>
-        <div class="grid grid-cols-4 gap-2 text-center">
-          <div class="bg-white/5 rounded-xl p-2.5 border border-white/5">
-            <div class="text-[9px] mono text-gray-400 uppercase font-semibold">POWER</div>
-            <div class="text-sm sm:text-base font-black text-[#E5B869] mono mt-0.5">2,600+</div>
-            <div class="text-[8px] mono text-gray-500">BHP COMBINED</div>
+        <div class="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
+          <div class="bg-white/5 rounded-xl p-2 border border-white/5">
+            <div class="text-[8px] mono text-gray-400 uppercase font-semibold">POWER</div>
+            <div class="text-xs sm:text-sm font-black text-[#E5B869] mono mt-0.5">2,600+</div>
+            <div class="text-[7px] mono text-gray-500">BHP</div>
           </div>
-          <div class="bg-white/5 rounded-xl p-2.5 border border-white/5">
-            <div class="text-[9px] mono text-gray-400 uppercase font-semibold">CYLINDERS</div>
-            <div class="text-sm sm:text-base font-black text-[#00F0FF] mono mt-0.5">42</div>
-            <div class="text-[8px] mono text-gray-500">PISTON COUNT</div>
+          <div class="bg-white/5 rounded-xl p-2 border border-white/5">
+            <div class="text-[8px] mono text-gray-400 uppercase font-semibold">CYLINDERS</div>
+            <div class="text-xs sm:text-sm font-black text-[#00F0FF] mono mt-0.5">42</div>
+            <div class="text-[7px] mono text-gray-500">COUNT</div>
           </div>
-          <div class="bg-white/5 rounded-xl p-2.5 border border-white/5">
-            <div class="text-[9px] mono text-gray-400 uppercase font-semibold">TOP SPEED</div>
-            <div class="text-sm sm:text-base font-black text-white mono mt-0.5">350</div>
-            <div class="text-[8px] mono text-gray-500">KM/H MAX</div>
+          <div class="bg-white/5 rounded-xl p-2 border border-white/5">
+            <div class="text-[8px] mono text-gray-400 uppercase font-semibold">SPEED</div>
+            <div class="text-xs sm:text-sm font-black text-white mono mt-0.5">350</div>
+            <div class="text-[7px] mono text-gray-500">KM/H</div>
           </div>
-          <div class="bg-white/5 rounded-xl p-2.5 border border-white/5">
-            <div class="text-[9px] mono text-gray-400 uppercase font-semibold">PEAK TORQUE</div>
-            <div class="text-sm sm:text-base font-black text-[#10B981] mono mt-0.5">3,100+</div>
-            <div class="text-[8px] mono text-gray-500">NM TOTAL</div>
+          <div class="bg-white/5 rounded-xl p-2 border border-white/5">
+            <div class="text-[8px] mono text-gray-400 uppercase font-semibold">TORQUE</div>
+            <div class="text-xs sm:text-sm font-black text-[#10B981] mono mt-0.5">3,100+</div>
+            <div class="text-[7px] mono text-gray-500">NM</div>
           </div>
         </div>
       </div>
 
       <!-- Scannable Dynamic QR Code & Digital Twin Gateway -->
-      <div class="bg-black/85 border border-[#00F0FF]/30 rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_20px_rgba(0,240,255,0.15)]">
+      <div class="bg-black/85 border border-[#00F0FF]/30 rounded-2xl p-3 sm:p-3.5 flex items-center gap-3 sm:gap-3.5 shadow-[0_0_20px_rgba(0,240,255,0.15)]">
         
         <!-- Generated Dynamic SVG QR Code targeting Live URL -->
-        <div class="w-20 h-20 bg-white p-1.5 rounded-xl flex-shrink-0 flex items-center justify-center shadow-lg border border-white/20">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white p-1 rounded-xl flex-shrink-0 flex items-center justify-center shadow-lg border border-white/20">
           <img 
             src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://gro10x-ai.vercel.app/prototypes/sadman-garage/&bgcolor=ffffff&color=000000&margin=0" 
             alt="Scan QR for 3D Garage" 
@@ -365,16 +367,16 @@
         </div>
 
         <div class="flex-1">
-          <div class="text-[10px] mono text-[#00F0FF] font-bold uppercase tracking-wider">
+          <div class="text-[9px] sm:text-[10px] mono text-[#00F0FF] font-bold uppercase tracking-wider">
             DIGITAL TWIN GATEWAY
           </div>
           <div class="text-xs font-bold text-white mt-0.5">
             Scan to Enter 3D Interactive Garage
           </div>
-          <p class="text-[10px] text-gray-300 mt-1 leading-snug">
-            Explore Sadman's 5 hero cars in 3D WebGL, listen to V8/V12 revving audio engines, and customize neon underglow.
+          <p class="text-[9px] sm:text-[10px] text-gray-300 mt-0.5 leading-snug">
+            Explore 5 hero cars in 3D WebGL, listen to V8/V12 revving audio engines, and customize neon underglow.
           </p>
-          <a href="/prototypes/sadman-garage/" class="text-[10px] mono text-[#E5B869] font-bold hover:underline mt-1 inline-block">
+          <a href="/prototypes/sadman-garage/" class="text-[9px] sm:text-[10px] mono text-[#E5B869] font-bold hover:underline mt-1 inline-block">
             gro10x-ai.vercel.app/prototypes/sadman-garage/ ➔
           </a>
         </div>
@@ -391,7 +393,7 @@
     <span id="export-toast-msg">Generating 300 DPI Ultra-HD Canvas...</span>
   </div>
 
-  <!-- High-Res PNG Export Script -->
+  <!-- High-Res PNG Export Script with Canonical 4K Desktop Staging -->
   <script>
     async function exportHighResPNG() {
       const toast = document.getElementById('export-toast');
@@ -400,34 +402,86 @@
       
       if (toast) {
         toast.classList.remove('hidden');
-        toastMsg.textContent = 'Rendering 4K Canvas at 300 DPI... Please wait 3 seconds.';
+        toastMsg.textContent = 'Rendering unclipped 4K master canvas (3840×2160)... Please wait 3 seconds.';
       }
       if (btn) btn.disabled = true;
 
       try {
-        const element = document.getElementById('capture-poster');
-        const canvas = await html2canvas(element, {
-          scale: 2.5, // Ultra-high resolution 4K frame export
+        const originalElement = document.getElementById('capture-poster');
+        
+        // Create an off-screen clone with canonical 1920x1080 desktop layout
+        // so that regardless of mobile or laptop screen size, it renders 100% complete without clipping!
+        const clone = originalElement.cloneNode(true);
+        clone.id = 'export-clone-canvas';
+        clone.style.width = '1920px';
+        clone.style.minWidth = '1920px';
+        clone.style.maxWidth = '1920px';
+        clone.style.height = '1080px';
+        clone.style.minHeight = '1080px';
+        clone.style.maxHeight = '1080px';
+        clone.style.position = 'fixed';
+        clone.style.top = '-10000px';
+        clone.style.left = '-10000px';
+        clone.style.zIndex = '-99999';
+        clone.style.overflow = 'visible';
+        clone.style.transform = 'none';
+        clone.style.margin = '0';
+        clone.classList.remove('flex-col');
+        clone.classList.add('flex-row');
+
+        // Force desktop 60/40 widths and 5-col car grid inside the clone
+        const leftCol = clone.querySelector('.poster-left-col');
+        if (leftCol) {
+          leftCol.style.width = '60%';
+          leftCol.classList.remove('w-full');
+          leftCol.classList.add('w-[60%]');
+        }
+        const rightCol = clone.querySelector('.poster-right-col');
+        if (rightCol) {
+          rightCol.style.width = '40%';
+          rightCol.classList.remove('w-full', 'border-t');
+          rightCol.classList.add('w-[40%]', 'border-l');
+        }
+        const carGrid = clone.querySelector('.poster-car-grid');
+        if (carGrid) {
+          carGrid.classList.remove('grid-cols-2', 'sm:grid-cols-3');
+          carGrid.classList.add('grid-cols-5');
+        }
+
+        document.body.appendChild(clone);
+
+        // Wait a tick for fonts/layout to settle
+        await new Promise(r => setTimeout(r, 200));
+
+        // Render at scale 2.0 (1920x1080 * 2 = 3840x2160 true 4K Ultra-HD)
+        const canvas = await html2canvas(clone, {
+          scale: 2.0,
+          width: 1920,
+          height: 1080,
           useCORS: true,
           backgroundColor: '#040508',
-          logging: false
+          logging: false,
+          windowWidth: 1920,
+          windowHeight: 1080
         });
+
+        document.body.removeChild(clone);
 
         const image = canvas.toDataURL('image/png', 1.0);
         const link = document.createElement('a');
-        link.download = 'MOHAMMAD_SADMAN_BASHIR_DREAM_GARAGE_4K_FRAME.png';
+        link.download = 'MOHAMMAD_SADMAN_BASHIR_DREAM_GARAGE_4K_300DPI_FRAME.png';
         link.href = image;
         link.click();
 
         if (toastMsg) {
-          toastMsg.textContent = '✅ 4K Ultra-HD Print PNG Downloaded!';
+          toastMsg.textContent = '✅ True 4K Ultra-HD (3840×2160) Print PNG Downloaded!';
         }
         setTimeout(() => {
           if (toast) toast.classList.add('hidden');
         }, 4000);
       } catch (err) {
         console.error('Export Error:', err);
-        if (toastMsg) toastMsg.textContent = '⚠️ Please use Ctrl+P / Cmd+P to Save PDF directly!';
+        if (toastMsg) toastMsg.textContent = '⚠️ Export issue. Please use Ctrl+P / Cmd+P to Save PDF directly!';
         setTimeout(() => {
           if (toast) toast.classList.add('hidden');
         }, 5000);
