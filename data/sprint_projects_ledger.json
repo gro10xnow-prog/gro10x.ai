@@ -228,14 +228,38 @@
       ],
       "charteredDate": "2026-10-15",
       "completedDate": "2026-10-17"
+    },
+    {
+      "id": "PRJ-SADMAN-DREAM-GARAGE",
+      "venture": "Foundry Lab & Bespoke Phygital Twins",
+      "engine": "Engine 4 (Foundry Lab)",
+      "port": 3000,
+      "sprint": "Sadman's Dream Garage 3D Showroom & 4K Phygital Commemorative Frame",
+      "status": "COMPLETED",
+      "pricingType": "Internal R&D / Bespoke Phygital Product Pilot",
+      "creditValuation": 15000,
+      "bdtValuation": 30000,
+      "usdValuation": 247.5,
+      "testsCertified": 24,
+      "artifacts": [
+        "Interactive 3D WebGL Showroom with Three.js r128 (https://gro10x-ai.vercel.app/prototypes/sadman-garage/)",
+        "Printable 16:9 4K Ultra-HD Commemorative Wall Frame (https://gro10x-ai.vercel.app/prototypes/sadman-garage/poster)",
+        "Dynamic GLTF 3D CAD Ingress (Nissan Patrol, Lamborghini, AMG G63)",
+        "Need For Speed Ambient Soundtrack Engine (https://gro10x-ai.vercel.app/audio/sadman-garage-theme.mp3)",
+        "5 Google Flow Photorealistic Turntable Car Assets",
+        "Scannable Dynamic Digital Twin QR Code Gateway",
+        "Web Audio Synthesizer Engine for Real-Time Exhaust Revs"
+      ],
+      "charteredDate": "2026-10-16",
+      "completedDate": "2026-10-17"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 9,
-    "totalSprintsCompleted": 8,
-    "totalCreditsGenerated": 108750,
-    "totalBdtValuation": 217500,
-    "totalUsdValuation": 1794.37,
-    "totalTestsPassingAcrossHoldings": 966
+    "totalSprintsChartered": 10,
+    "totalSprintsCompleted": 9,
+    "totalCreditsGenerated": 123750,
+    "totalBdtValuation": 247500,
+    "totalUsdValuation": 2041.87,
+    "totalTestsPassingAcrossHoldings": 990
   }
 }
