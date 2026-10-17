@@ -105,6 +105,10 @@ When creating or refining pre-sales prototypes in `public/prototypes/<slug>/`:
    - **Audience Psychology ("Less Words, Maximum Impact")**: High-status stakeholders listen to the presenter; they do not read paragraphs on a screen. Every pitch deck slide must follow the **"1 Headline + 1 Giant Visual Anchor + 3 Punchy Highlights"** law. Paragraph text dumps are strictly forbidden.
    - **Photorealistic AI Visual Anchors**: Core slides must feature life-like, photorealistic imagery capturing authentic local Bangladeshi ground realities (e.g., vehicles on actual Dhaka avenues, local students tapping NFC cards, depot racks, uniformed drivers) rather than generic stock icons.
    - **Zero Dead White Space on Big Screens**: Decks must be engineered in native 16:9 widescreen (`h-screen`, edge-to-edge) with high-contrast cinematic dark themes (`#070b12`), bold typography (`text-3xl` to `text-5xl` headlines), and glassmorphic stat badges, completely eliminating empty borders on 55"–65" conference displays.
+11. **The "Dual Pitch Asset" Invariant (Big-Screen TV Deck + Mobile Presenter Co-Pilot)**:
+   - Every executive sales pitch package delivered by Mother OS Foundry Lab must comprise two complementary surfaces:
+     * **Surface A (The Audience Display)**: Located at `/prototypes/<slug>-pitch/index.html`. Fullscreen TV mode (`F`), keyboard navigation (`←`/`→`/`Space`), and interactive prototype embeds.
+     * **Surface B (The Private Presenter Co-Pilot)**: Located at `/prototypes/<slug>-pitch/copilot.html`. Mobile smartphone layout with active stopwatch pacing timer (20-min pitch + 10-min Q&A), slide-by-slide speaker notes, 1-tap objection handling drawer, and post-meeting WhatsApp follow-up handoff kit.
 
 ---
 
