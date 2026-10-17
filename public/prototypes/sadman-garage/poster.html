@@ -85,9 +85,9 @@
       <a href="/prototypes/sadman-garage/" class="bg-[#10B981]/20 hover:bg-[#10B981]/30 text-[#10B981] border border-[#10B981]/40 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 active:scale-95">
         <span>🚗 Launch 3D Garage</span>
       </a>
-      <button onclick="exportHighResPNG()" id="btn-export-png" class="bg-gradient-to-r from-[#E5B869] to-[#D49E45] hover:brightness-110 text-black px-4 py-2 rounded-xl text-xs font-extrabold transition shadow-lg flex items-center gap-1.5 active:scale-95">
-        <span>📥 Export 300 DPI Print PNG</span>
-      </button>
+      <a href="/images/sadman-garage-4k-print-master.png" download="MOHAMMAD_SADMAN_BASHIR_DREAM_GARAGE_4K_300DPI_PRINT_MASTER.png" id="btn-export-png" class="bg-gradient-to-r from-[#E5B869] to-[#D49E45] hover:brightness-110 text-black px-4 py-2 rounded-xl text-xs font-extrabold transition shadow-lg flex items-center gap-1.5 active:scale-95 cursor-pointer">
+        <span>📥 Export 300 DPI Print Master PNG (3840×2160)</span>
+      </a>
       <button onclick="window.print()" class="bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 active:scale-95">
         <span>🖨️ Save PDF</span>
       </button>
@@ -397,120 +397,31 @@
     <span id="export-toast-msg">Generating 300 DPI Ultra-HD Canvas...</span>
   </div>
 
-  <!-- High-Res PNG Export Script with Canonical 4K Desktop Staging -->
+  <!-- High-Res PNG Export Script with Canonical 4K Master Direct Download -->
   <script>
-    async function exportHighResPNG() {
+    function exportHighResPNG() {
       const toast = document.getElementById('export-toast');
       const toastMsg = document.getElementById('export-toast-msg');
-      const btn = document.getElementById('btn-export-png');
       
-      if (toast) {
+      if (toast && toastMsg) {
         toast.classList.remove('hidden');
-        toastMsg.textContent = 'Rendering unclipped 4K master canvas (3840×2160)... Please wait 3 seconds.';
+        toastMsg.textContent = '🚀 Downloading 100% Unclipped 4K Master Canvas (3840×2160)...';
       }
-      if (btn) btn.disabled = true;
 
-      try {
-        const originalElement = document.getElementById('capture-poster');
-        
-        // Create an off-screen clone with canonical 1920x1080 desktop layout
-        // so that regardless of mobile or laptop screen size, it renders 100% complete without clipping!
-        const clone = originalElement.cloneNode(true);
-        clone.id = 'export-clone-canvas';
-        clone.style.width = '1920px';
-        clone.style.minWidth = '1920px';
-        clone.style.maxWidth = '1920px';
-        clone.style.height = '1080px';
-        clone.style.minHeight = '1080px';
-        clone.style.maxHeight = '1080px';
-        clone.style.position = 'fixed';
-        clone.style.top = '-10000px';
-        clone.style.left = '-10000px';
-        clone.style.zIndex = '-99999';
-        clone.style.overflow = 'visible';
-        clone.style.transform = 'none';
-        clone.style.margin = '0';
-        clone.classList.add('flex-col');
-        clone.classList.remove('flex-row');
+      const link = document.createElement('a');
+      link.href = '/images/sadman-garage-4k-print-master.png';
+      link.download = 'MOHAMMAD_SADMAN_BASHIR_DREAM_GARAGE_4K_300DPI_PRINT_MASTER.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-        // Force desktop 60/40 widths and 5-col car grid inside the clone
-        const posterBody = clone.querySelector('.poster-body');
-        if (posterBody) {
-          posterBody.classList.remove('flex-col');
-          posterBody.classList.add('flex-row');
-        }
-        const leftCol = clone.querySelector('.poster-left-col');
-        if (leftCol) {
-          leftCol.style.width = '60%';
-          leftCol.classList.remove('w-full');
-          leftCol.classList.add('w-[60%]');
-        }
-        const rightCol = clone.querySelector('.poster-right-col');
-        if (rightCol) {
-          rightCol.style.width = '40%';
-          rightCol.style.display = 'flex';
-          rightCol.style.flexDirection = 'column';
-          rightCol.style.justifyContent = 'space-between';
-          rightCol.classList.remove('w-full', 'border-t');
-          rightCol.classList.add('w-[40%]', 'border-l');
-        }
-        const carGrid = clone.querySelector('.poster-car-grid');
-        if (carGrid) {
-          carGrid.classList.remove('grid-cols-2', 'sm:grid-cols-3');
-          carGrid.classList.add('grid-cols-5');
-          const lastCar = carGrid.children[4];
-          if (lastCar) {
-            lastCar.classList.remove('col-span-2');
-            lastCar.classList.add('col-span-1');
-          }
-        }
-        const footer = clone.querySelector('.poster-footer');
-        if (footer) {
-          footer.style.whiteSpace = 'nowrap';
-          footer.classList.remove('flex-col');
-          footer.classList.add('flex-row', 'justify-between');
-        }
+      setTimeout(() => {
+        if (toastMsg) toastMsg.textContent = '✅ True 4K Ultra-HD (3840×2160) 300 DPI Print Master PNG Downloaded!';
+      }, 500);
 
-        document.body.appendChild(clone);
-
-        // Wait a tick for fonts/layout to settle
-        await new Promise(r => setTimeout(r, 200));
-
-        // Render at scale 2.0 -> Exactly 3840 x 2160 (True 4K Ultra-HD 300 DPI Canvas)
-        const canvas = await html2canvas(clone, {
-          scale: 2.0,
-          width: 1920,
-          height: 1080,
-          useCORS: true,
-          backgroundColor: '#040508',
-          logging: false,
-          windowWidth: 1920,
-          windowHeight: 1080
-        });
-
-        document.body.removeChild(clone);
-
-        const image = canvas.toDataURL('image/png', 1.0);
-        const link = document.createElement('a');
-        link.download = 'MOHAMMAD_SADMAN_BASHIR_DREAM_GARAGE_4K_300DPI_FRAME.png';
-        link.href = image;
-        link.click();
-
-        if (toastMsg) {
-          toastMsg.textContent = '✅ True 4K Ultra-HD (3840×2160) Print PNG Downloaded!';
-        }
-        setTimeout(() => {
-          if (toast) toast.classList.add('hidden');
-        }, 4000);
-      } catch (err) {
-        console.error('Export Error:', err);
-        if (toastMsg) toastMsg.textContent = '⚠️ Export issue. Please use Ctrl+P / Cmd+P to Save PDF directly!';
-        setTimeout(() => {
-          if (toast) toast.classList.add('hidden');
-        }, 5000);
-      } finally {
-        if (btn) btn.disabled = false;
-      }
+      setTimeout(() => {
+        if (toast) toast.classList.add('hidden');
+      }, 4000);
     }
   </script>
 </body>
