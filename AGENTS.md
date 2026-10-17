@@ -167,4 +167,13 @@ To ensure GRO10X bespoke deliverables are never commoditized or dismissed as "fr
    - **Tier 3 (GRO10X Conglomerate Ledger Valuation)**: Internal credit cost strictly pegged at **1 Credit = BDT 2.00**, representing our 10% marginal cost advantage.
 3. **Founder WhatsApp Flex Kit**: Central CoS must provide the Founder with ready-to-dispatch executive copy asserting the high-status pedigree, cryptographic uniqueness, and engineering depth of the asset whenever required.
 
+---
+
+### 11. Day Closing SOP & Multi-Channel Distribution Protocol
+Whenever the Founder triggers "proceed to day closing SOP" or "EOD report", Central CoS must strictly follow [`docs/SOP_DAY_CLOSING_DISTRIBUTION.md`](file:///d:/gro10x.ai/docs/SOP_DAY_CLOSING_DISTRIBUTION.md) and simultaneously generate all three canonical deliverables without requiring manual prompting:
+1. **The Formal Audit Artifact**: Detailed technical markdown document saved in the brain directory (`executive_close_of_day_octXX.md`).
+2. **The WhatsApp Executive Day-Close Audit**: Ready-to-circulate team briefing signed by *"Zayan, Chief of Staff & Virtual CTO at Gro10x"* following the canonical 4-part structure (1. Commercial & Pipeline, 2. Fleet Capacity & Timesheets, 3. Economic Value & Benchmark, 4. Governance & Protocols).
+3. **The LinkedIn Daily Public Build Post**: Formatted for the 77-Day Build-in-Public campaign (through December 31) featuring the bold B2B hook, numbered breakthroughs, the Economic Multiplier box, and official hashtag stack.
+
+
 
