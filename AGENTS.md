@@ -61,11 +61,12 @@ Whenever a new functional need, venture, or prototype arises:
 
 ---
 
-### 5. Chartered Venture Platform Support & Diagnosis Protocol
-* When a satellite venture platform (e.g., ToffeeCon on Port 5000 / Render, or PurpleBot on Port 6000) experiences production issues:
-  1. Central CoS executes diagnostic probes (HTTP latency, DNS, logs, port health) from Mother OS.
-  2. Central CoS isolates the root cause (e.g., cloud provider cold starts, port binding, missing crons, deployment drift).
-  3. Central CoS formulates the architectural remediation plan and provides the Founder with the prompt to dispatch to that venture's dedicated conversation/squad.
+### 5. Chartered Venture Platform Routing & Zero Self-Diagnosis Mandate
+* When an external chartered satellite venture (e.g., ToffeeCon on Port 5000, PurpleBot on Port 6000) reports an outage, bug, or feature gap:
+  1. **ZERO SELF-DIAGNOSIS**: Central CoS is strictly forbidden from running diagnostic scripts, curl probes, port tests, or file inspections into satellite venture repositories.
+  2. **ZERO MOTHER OS DELEGATION**: Central CoS must NEVER dispatch satellite venture bugs to the Foundry Lab Director or Mother OS employees.
+  3. **IMMEDIATE VENTURE COS DISPATCH**: Central CoS must immediately hand the Founder a single, complete, copy-paste prompt addressed directly to that venture's dedicated Venture Chief of Staff.
+  4. **THE BATON RULE**: The Venture CoS owns the diagnosis, the sequential squad relay (`[S1]` ➔ `[S2]` ➔ `[S3]` ➔ `[S4]`), and the final attainment report back to Central Holdings.
 
 ---
 
@@ -84,8 +85,17 @@ When creating or refining pre-sales prototypes in `public/prototypes/<slug>/`:
      * Stage 1: `Foundry Lab Director` builds the prototype (`/prototypes/<slug>/`).
      * Stage 2: `Proposal Engine & Deal Structurer` wraps the prototype inside the official proposal (`PROP-YYYY-<CLIENT>`).
      * Stage 3: The client receives only the canonical Proposal Link (`https://gro10x-ai.vercel.app/p/<token>`) showcasing the live prototype card.
-
-
+7. **The "Native Pre-Rendered 4K Print Master" Invariant (Zero Client-Side html2canvas Print Exports)**:
+   - Client-side DOM canvas scraping (`html2canvas`, rasterizers) is **STRICTLY FORBIDDEN** for high-resolution physical print merchandise (e.g. 300 DPI posters, acrylic frames, apparel).
+   - High-fidelity prints must be authored in native 4K UHD resolution (`3840×2160` at 16:9 or target print aspect ratios) using standard HTML/CSS and pre-rendered via headless browser rasterization during the sprint build.
+   - The verified output master (`.png` / `.pdf`) must be committed directly to `/public/images/` and served via CDN.
+   - The UI "Download 300 DPI Master" button must trigger a direct file download of this static asset with zero runtime client-side DOM scraping.
+8. **The "Mobile Canvas First" Invariant for 3D Spatial Prototypes**:
+   - For all 3D WebGL / Three.js / spatial prototypes on mobile screens (`< 768px`):
+     * **>75% Touch Real Estate**: Mobile viewports must preserve over 75% unobstructed touch canvas area for fluid tactile turntable rotation, panning, and pinch-to-zoom.
+     * **Collapsed Header Bar**: Top navigation must collapse into a sleek single-line 56px (`h-14`) app bar housing compact icon pills (`🎵`, `💌`, `🖼️`).
+     * **Bottom Thumb Dock**: All user controls (model selectors, rev triggers, camera presets, RGB underglow toggles) must be organized into a multi-row horizontal thumb dock at the bottom of the screen.
+     * **Mobile FOV Calibration**: Camera Field of View (FOV) must be calibrated (e.g. `50°–55°`) to ensure tall or elongated 3D assets do not clip outside vertical viewports.
 
 ---
 
