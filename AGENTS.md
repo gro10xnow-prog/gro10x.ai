@@ -96,6 +96,11 @@ When creating or refining pre-sales prototypes in `public/prototypes/<slug>/`:
      * **Collapsed Header Bar**: Top navigation must collapse into a sleek single-line 56px (`h-14`) app bar housing compact icon pills (`🎵`, `💌`, `🖼️`).
      * **Bottom Thumb Dock**: All user controls (model selectors, rev triggers, camera presets, RGB underglow toggles) must be organized into a multi-row horizontal thumb dock at the bottom of the screen.
      * **Mobile FOV Calibration**: Camera Field of View (FOV) must be calibrated (e.g. `50°–55°`) to ensure tall or elongated 3D assets do not clip outside vertical viewports.
+9. **The "Multi-Surface Simulation Dock" Invariant for Enterprise Demo Platforms**:
+   - For enterprise platforms featuring multi-role or multi-surface capabilities (e.g., attendee check-in gates, synced multi-screen walls, talent audition booths, virtual stages):
+     * **Zero Dead-End Ingress**: Never bury multi-surface experiences behind a single ambiguous redirect (e.g., routing desktop evaluators into a mobile PWA pass).
+     * **Hero Simulation Quick-Dock**: The public landing page hero must house a prominent, glassmorphic "Simulation Dock" with direct, 1-click links to all core operational simulation domains.
+     * **Canonical `/simulation` Route**: Every enterprise multi-surface platform must mount `/simulation` as a first-class route alias rendering the comprehensive interactive sandbox.
 
 ---
 
@@ -142,4 +147,16 @@ The financial operating system powering the GRO10X Conglomerate Gigafactory:
    - **Postpaid Monthly Reconciliation**: Invoiced at end-of-month based on actual credit consumption across active seats, API calls, and automations.
 4. **Investor & Unicorn Governance**:
    - Every completed sprint, engineering man-hour, and digital squad output is mapped to credit velocity, establishing an audited asset ledger for institutional venture capital diligence.
+
+---
+
+### 10. Commercial Valuation & Social Proof Flex Dossier Mandate
+To ensure GRO10X bespoke deliverables are never commoditized or dismissed as "free gifts" or trivial demos:
+1. **Dual-Asset Economic Appraisal**: Every delivered technology prototype, spatial twin, or phygital artifact must be accompanied by an itemized **Commercial Valuation & Social Proof Dossier**.
+2. **Three-Tier Rate Card Calibration**:
+   - **Tier 1 (Global Creative Tech Agency Baseline)**: \$1,200 – \$2,500+ USD (~৳1,45,000 – ৳3,00,000 BDT) for high-end WebGL shaders, real-time procedural audio, and headless 4K print pipelines.
+   - **Tier 2 (Dhaka Boutique Software House Rate)**: ৳45,000 – ৳75,000 BDT for bespoke spatial tools and full-stack interactive portals.
+   - **Tier 3 (GRO10X Conglomerate Ledger Valuation)**: Internal credit cost strictly pegged at **1 Credit = BDT 2.00**, representing our 10% marginal cost advantage.
+3. **Founder WhatsApp Flex Kit**: Central CoS must provide the Founder with ready-to-dispatch executive copy asserting the high-status pedigree, cryptographic uniqueness, and engineering depth of the asset whenever required.
+
 
