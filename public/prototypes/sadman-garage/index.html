@@ -42,16 +42,25 @@
 
     /* Glass Panels */
     .glass-panel {
-      background: rgba(11, 15, 25, 0.82);
+      background: rgba(11, 15, 25, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .glass-panel-gold {
-      background: rgba(16, 20, 32, 0.88);
+      background: rgba(16, 20, 32, 0.90);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(229, 184, 105, 0.35);
+    }
+
+    /* Hide scrollbar for mobile chips */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
 
     /* Custom Scrollbar for Spec Panels */
@@ -62,49 +71,57 @@
 </head>
 <body class="bg-[#07090E] text-white w-screen h-screen relative flex flex-col justify-between selection:bg-[#E5B869] selection:text-black">
 
-  <!-- 3D WebGL Canvas Viewport -->
+  <!-- 3D WebGL Canvas Viewport (Primary Visual Layer) -->
   <div id="canvas-container" class="absolute inset-0 z-0"></div>
 
   <!-- ========================================================= -->
-  <!-- TOP NAVIGATION & STATUS BAR                               -->
+  <!-- COMPACT TOP APP BAR (Single-Row on Mobile, Rich on Desktop) -->
   <!-- ========================================================= -->
-  <header class="relative z-30 px-4 sm:px-8 py-3.5 flex flex-wrap justify-between items-center gap-3 bg-[#07090E]/85 backdrop-blur-md border-b border-white/5">
+  <header class="relative z-30 px-3 sm:px-8 py-2.5 sm:py-3.5 flex justify-between items-center bg-[#07090E]/85 backdrop-blur-md border-b border-white/5 h-14 sm:h-auto">
     
-    <!-- Title & Commemorative Badge -->
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-black border border-[#E5B869]/40 flex items-center justify-center flex-shrink-0">
-        <span class="cinzel text-xs font-black text-[#E5B869]">MSB</span>
+    <!-- Title & Brand Mark -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-black border border-[#E5B869]/40 flex items-center justify-center flex-shrink-0">
+        <span class="cinzel text-[10px] sm:text-xs font-black text-[#E5B869]">MSB</span>
       </div>
       <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white heading-font">
-            SADMAN'S DREAM GARAGE
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <h1 class="text-xs sm:text-base font-extrabold tracking-tight text-white heading-font truncate max-w-[140px] sm:max-w-none">
+            Sadman's Garage
           </h1>
-          <span class="text-[10px] mono uppercase font-bold bg-[#E5B869]/20 text-[#E5B869] px-2 py-0.5 rounded-full border border-[#E5B869]/40">
+          <span class="hidden sm:inline-block text-[10px] mono uppercase font-bold bg-[#E5B869]/20 text-[#E5B869] px-2 py-0.5 rounded-full border border-[#E5B869]/40">
             3D DIGITAL TWIN
           </span>
         </div>
-        <div class="text-[11px] text-gray-400 mt-0.5">
+        <div class="hidden sm:block text-[11px] text-gray-400 mt-0.5">
           Curated for Mohammad Sadman Bashir (<span class="text-gray-300 mono">@bashir_bhai_clicks</span>) • Birthday Edition
         </div>
       </div>
     </div>
 
-      <button id="btn-theme-music" onclick="toggleThemeMusic()" class="bg-gradient-to-r from-red-600/30 to-amber-600/30 hover:from-red-600/50 hover:to-amber-600/50 text-amber-300 border border-amber-500/40 px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 active:scale-95 shadow">
+    <!-- Header Actions (Compact Icons on Mobile, Labeled Pills on Desktop) -->
+    <div class="flex items-center gap-1.5 sm:gap-2.5 text-xs">
+      <!-- 🎵 Music Toggle -->
+      <button id="btn-theme-music" onclick="toggleThemeMusic()" class="h-8 sm:h-auto bg-gradient-to-r from-red-600/30 to-amber-600/30 hover:from-red-600/50 hover:to-amber-600/50 text-amber-300 border border-amber-500/40 px-2.5 sm:px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 active:scale-95 shadow" title="Toggle NFS OST Soundtrack">
         <span id="music-icon" class="animate-pulse">🎵</span>
-        <span id="music-label">NFS Garage OST: OFF</span>
+        <span id="music-label" class="hidden sm:inline">NFS OST: OFF</span>
       </button>
 
-      <button onclick="openDedicationModal()" class="bg-[#E5B869]/20 hover:bg-[#E5B869]/30 text-[#E5B869] border border-[#E5B869]/40 px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 active:scale-95 shadow">
-        <span>❤️ Birthday Letter</span>
+      <!-- 💌 Birthday Letter Modal -->
+      <button onclick="openDedicationModal()" class="h-8 sm:h-auto bg-[#E5B869]/20 hover:bg-[#E5B869]/30 text-[#E5B869] border border-[#E5B869]/40 px-2.5 sm:px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 active:scale-95 shadow" title="Birthday Letter">
+        <span>💌</span>
+        <span class="hidden sm:inline">Letter</span>
       </button>
 
-      <a href="/prototypes/sadman-garage/poster" class="bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5">
-        <span>🖼️ 4K Framed Poster</span>
+      <!-- 🖼️ 4K Framed Poster Link -->
+      <a href="/prototypes/sadman-garage/poster" class="h-8 sm:h-auto bg-white/10 hover:bg-white/20 text-white border border-white/15 px-2.5 sm:px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5" title="4K Printable Framed Poster">
+        <span>🖼️</span>
+        <span class="hidden sm:inline">4K Poster</span>
       </a>
 
-      <a href="/prototypes/" class="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-3 py-1.5 rounded-xl transition hidden sm:inline-block">
-        ← Showroom Hub
+      <!-- Showroom Hub (Desktop only) -->
+      <a href="/prototypes/" class="hidden md:inline-flex bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-3 py-1.5 rounded-xl transition">
+        ← Showroom
       </a>
     </div>
   </header>
@@ -113,11 +130,9 @@
   <audio id="garage-ost" src="/audio/sadman-garage-theme.mp3" loop preload="auto"></audio>
 
   <!-- ========================================================= -->
-  <!-- FLOATING CAR SELECTOR & TECHNICAL SPECIFICATION PANEL     -->
+  <!-- DESKTOP LEFT: LIVE VEHICLE SELECTOR STACK (Hidden on Mobile) -->
   <!-- ========================================================= -->
-  
-  <!-- Left Side: Live Vehicle Selector Stack -->
-  <div class="absolute left-4 sm:left-8 top-20 z-20 w-72 sm:w-80 glass-panel rounded-3xl p-4 sm:p-5 shadow-2xl">
+  <div class="hidden md:block absolute left-4 sm:left-8 top-20 z-20 w-72 sm:w-80 glass-panel rounded-3xl p-4 sm:p-5 shadow-2xl">
     <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
       <span class="text-[10px] mono text-[#E5B869] font-bold uppercase tracking-wider">HERO FLEET SELECTOR</span>
       <span class="text-[10px] mono text-gray-400" id="car-index-display">01 / 05</span>
@@ -188,7 +203,7 @@
 
     </div>
 
-    <!-- Live Sound Rev Engine Trigger -->
+    <!-- Live Sound Rev Engine Trigger (Desktop) -->
     <div class="pt-3 border-t border-white/10">
       <button onclick="triggerEngineRev()" id="btn-engine-rev" class="w-full bg-gradient-to-r from-red-600 via-amber-600 to-yellow-500 hover:brightness-110 text-white font-extrabold py-2.5 px-4 rounded-2xl text-xs transition shadow-xl flex items-center justify-center gap-2 active:scale-95">
         <span id="rev-icon">🔊</span>
@@ -200,8 +215,10 @@
     </div>
   </div>
 
-  <!-- Right Side: Active Vehicle Telemetry Dossier -->
-  <div class="absolute right-4 sm:right-8 top-20 z-20 w-72 sm:w-80 glass-panel rounded-3xl p-4 sm:p-5 shadow-2xl hidden md:block">
+  <!-- ========================================================= -->
+  <!-- DESKTOP RIGHT: ACTIVE VEHICLE TELEMETRY DOSSIER           -->
+  <!-- ========================================================= -->
+  <div class="hidden md:block absolute right-4 sm:right-8 top-20 z-20 w-72 sm:w-80 glass-panel rounded-3xl p-4 sm:p-5 shadow-2xl">
     <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
       <span class="text-[10px] mono text-[#00F0FF] font-bold uppercase tracking-wider">TELEMETRY DOSSIER</span>
       <span class="text-[10px] mono text-[#10B981]" id="spec-status">60 FPS VERIFIED</span>
@@ -248,9 +265,87 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- BOTTOM CONTROLLER DOCK (NEON, CAMERA, & SOUND CONTROLS)   -->
+  <!-- MOBILE BOTTOM DECK: HORIZONTAL CAR CHIPS & DOCKED CONTROLS -->
   <!-- ========================================================= -->
-  <footer class="relative z-30 px-4 sm:px-8 py-3 bg-[#07090E]/90 backdrop-blur-xl border-t border-white/5 flex flex-wrap justify-between items-center gap-3">
+  <div class="block md:hidden absolute bottom-0 inset-x-0 z-20 p-2.5 pointer-events-none">
+    <div class="glass-panel rounded-2xl p-2.5 shadow-2xl border border-white/10 pointer-events-auto space-y-2">
+      
+      <!-- Row 1: Header / Quick Rev Trigger -->
+      <div class="flex items-center justify-between gap-2 px-1">
+        <div class="flex items-center gap-1.5 truncate">
+          <span class="text-xs font-black text-white heading-font truncate" id="mobile-car-name">Patrol Safari TB48</span>
+          <span class="text-[10px] mono text-[#E5B869] font-bold" id="mobile-car-power">400HP</span>
+        </div>
+        <button onclick="triggerEngineRev()" id="btn-mobile-rev" class="flex-shrink-0 bg-gradient-to-r from-red-600 via-amber-600 to-yellow-500 hover:brightness-110 text-white font-extrabold px-3 py-1.5 rounded-xl text-[11px] shadow-lg flex items-center gap-1 active:scale-95 transition">
+          <span id="mobile-rev-icon">🔊</span>
+          <span id="mobile-rev-label">Rev</span>
+        </button>
+      </div>
+
+      <!-- Row 2: Sleek Horizontal Car Chips Strip (1-Tap Switch) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar" id="mobile-car-chips">
+        
+        <!-- Chip 0: Patrol -->
+        <button onclick="switchCar(0)" class="mobile-car-chip flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[#E5B869] bg-[#E5B869]/25 text-white shadow-[0_0_12px_rgba(229,184,105,0.4)] text-xs font-bold transition active:scale-95" data-car="0">
+          <span>🚙</span>
+          <span>Patrol</span>
+        </button>
+
+        <!-- Chip 1: 300SL -->
+        <button onclick="switchCar(1)" class="mobile-car-chip flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/10 bg-black/50 text-gray-400 text-xs font-bold transition active:scale-95" data-car="1">
+          <span>🏎️</span>
+          <span>300SL</span>
+        </button>
+
+        <!-- Chip 2: Huracán -->
+        <button onclick="switchCar(2)" class="mobile-car-chip flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/10 bg-black/50 text-gray-400 text-xs font-bold transition active:scale-95" data-car="2">
+          <span>⚡</span>
+          <span>Huracán</span>
+        </button>
+
+        <!-- Chip 3: Mustang -->
+        <button onclick="switchCar(3)" class="mobile-car-chip flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/10 bg-black/50 text-gray-400 text-xs font-bold transition active:scale-95" data-car="3">
+          <span>🐎</span>
+          <span>Mustang</span>
+        </button>
+
+        <!-- Chip 4: G63 -->
+        <button onclick="switchCar(4)" class="mobile-car-chip flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/10 bg-black/50 text-gray-400 text-xs font-bold transition active:scale-95" data-car="4">
+          <span>🦾</span>
+          <span>G63</span>
+        </button>
+
+      </div>
+
+      <!-- Row 3: Compact Underglow Dots & Camera Controls -->
+      <div class="pt-1.5 border-t border-white/5 flex items-center justify-between text-xs">
+        <!-- Neon Underglow 5 Dots -->
+        <div class="flex items-center gap-1">
+          <span class="text-[9px] mono text-gray-400 uppercase mr-0.5">NEON:</span>
+          <button onclick="setNeonUnderglow('#10B981', this)" class="neon-pill w-4 h-4 rounded-full bg-[#10B981] border border-white shadow-[0_0_8px_#10B981]" title="Emerald"></button>
+          <button onclick="setNeonUnderglow('#00F0FF', this)" class="neon-pill w-4 h-4 rounded-full bg-[#00F0FF] border border-transparent shadow-[0_0_8px_#00F0FF]" title="Cyan"></button>
+          <button onclick="setNeonUnderglow('#A855F7', this)" class="neon-pill w-4 h-4 rounded-full bg-[#A855F7] border border-transparent shadow-[0_0_8px_#A855F7]" title="Purple"></button>
+          <button onclick="setNeonUnderglow('#F59E0B', this)" class="neon-pill w-4 h-4 rounded-full bg-[#F59E0B] border border-transparent shadow-[0_0_8px_#F59E0B]" title="Amber"></button>
+          <button onclick="setNeonUnderglow('#FFFFFF', this)" class="neon-pill w-4 h-4 rounded-full bg-[#FFFFFF] border border-transparent shadow-[0_0_8px_#FFFFFF]" title="White"></button>
+          <button onclick="setNeonUnderglow(null, this)" class="neon-pill px-1.5 py-0.5 rounded bg-white/10 text-[9px] text-gray-400" title="Off">OFF</button>
+        </div>
+
+        <!-- Compact Camera Presets -->
+        <div class="flex items-center gap-1">
+          <button onclick="setCameraView('hero')" class="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold">Hero</button>
+          <button onclick="setCameraView('side')" class="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 text-[10px] font-bold">Side</button>
+          <button onclick="setCameraView('top')" class="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 text-[10px] font-bold">Top</button>
+          <button onclick="toggleAutoRotate()" id="btn-mobile-rotate" class="px-2 py-0.5 rounded-lg bg-[#E5B869]/20 text-[#E5B869] border border-[#E5B869]/30 text-[10px] font-bold">🔄</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- DESKTOP BOTTOM CONTROLLER DOCK (Hidden on Mobile)         -->
+  <!-- ========================================================= -->
+  <footer class="hidden md:flex relative z-30 px-4 sm:px-8 py-3 bg-[#07090E]/90 backdrop-blur-xl border-t border-white/5 flex-wrap justify-between items-center gap-3">
     
     <!-- Neon Underglow Customizer -->
     <div class="flex items-center gap-2">
@@ -310,7 +405,7 @@
       </div>
 
       <div class="text-[11px] mono uppercase text-[#E5B869] font-bold tracking-widest mb-1">
-        Curated with Love for Mohammad Sadman Bashir on his Birthday — Gifted by Anika & Plabon
+        Curated with Love for Mohammad Sadman Bashir on his Birthday — Gifted by Mahsina & Plabon
       </div>
       <h2 class="cinzel text-2xl sm:text-3xl font-black text-white tracking-wide">
         FOR MOHAMMAD SADMAN BASHIR
@@ -328,7 +423,7 @@
         </p>
         <div class="pt-3 border-t border-white/10 flex justify-between items-center text-xs not-italic font-sans">
           <span class="text-gray-400">Gifted with all our love,</span>
-          <span class="text-[#E5B869] font-extrabold text-sm">Anika & Plabon</span>
+          <span class="text-[#E5B869] font-extrabold text-sm">Mahsina & Plabon</span>
         </div>
       </div>
 
@@ -398,6 +493,7 @@
       {
         id: 0,
         name: "Nissan Patrol Super Safari TB48",
+        shortName: "Patrol",
         tagline: "The Unstoppable Desert Sovereign",
         engine: "4.8L TB48DE Turbo / 5.6L V8",
         power: "400+ BHP / 560 Nm",
@@ -414,6 +510,7 @@
       {
         id: 1,
         name: "1954 Mercedes-Benz 300SL Gullwing",
+        shortName: "300SL",
         tagline: "The Timeless Silver Legend",
         engine: "3.0L M198 Inline-6",
         power: "215 BHP / 275 Nm",
@@ -429,6 +526,7 @@
       {
         id: 2,
         name: "Lamborghini Huracán EVO / Centenario",
+        shortName: "Huracán",
         tagline: "Naturally Aspirated V10/V12 Apex",
         engine: "5.2L NA V10 / 6.5L V12",
         power: "640 BHP / 600 Nm",
@@ -445,13 +543,14 @@
       {
         id: 3,
         name: "Ford Mustang GT 5.0",
+        shortName: "Mustang",
         tagline: "Raw American Detroit Muscle",
         engine: "5.0L Coyote V8",
         power: "480 BHP / 569 Nm",
         drivetrain: "6-Speed Manual RWD",
         tone: "Crossplane V8 Burble & Roar",
         desc: "Aggressive front splitter, functional hood heat extractors, active valve performance exhaust, and an unmistakable American roar.",
-        colorBody: 0x1E3A8A, // Deep Kona Blue
+        colorBody: 0xB91C1C, // Race Red
         colorRoof: 0xFFFFFF, // White Racing Stripes
         soundType: "v8_muscle",
         type: "muscle",
@@ -460,17 +559,17 @@
       {
         id: 4,
         name: "Mercedes-AMG G63 G-Wagon",
+        shortName: "G63",
         tagline: "The Boxy Obsidian Luxury Beast",
         engine: "4.0L Biturbo V8",
         power: "577 BHP / 850 Nm",
         drivetrain: "Triple-Locking Differential AWD",
         tone: "AMG Biturbo V8 Growl & Pop",
         desc: "Unmistakable silhouette, side-exiting dual AMG chrome exhaust tips, flared arches, and unmatched luxury status on city streets.",
-        colorBody: 0x0F1115, // Obsidian Night Black
+        colorBody: 0x111317, // Obsidian Night Black
         colorRoof: 0x242830, // Matte accents
         soundType: "v8_amg",
         type: "g_wagon",
-        modelUrl: "/models/mercedes-g63.glb",
         image: "/images/cars/mercedes-g63.jpg"
       }
     ];
@@ -479,8 +578,8 @@
     let scene, camera, renderer, controls;
     let carRootGroup, underglowMesh, underglowLight;
     let autoRotate = true;
-    const modelCache = {};
     let gltfLoader = null;
+    const modelCache = {};
 
     // Web Audio Synthesizer Engine
     let audioCtx = null;
@@ -496,9 +595,16 @@
       scene.background = new THREE.Color(0x07090E);
       scene.fog = new THREE.FogExp2(0x07090E, 0.025);
 
-      // 2. Camera
-      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-      camera.position.set(5.5, 2.4, 6.2);
+      // 2. Camera (Mobile gets a slightly wider FOV and optimized distance)
+      const isMobile = width < 768;
+      const fov = isMobile ? 52 : 45;
+      camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 100);
+      
+      if (isMobile) {
+        camera.position.set(4.8, 2.2, 5.8);
+      } else {
+        camera.position.set(5.5, 2.4, 6.2);
+      }
 
       // 3. Renderer
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
@@ -515,7 +621,7 @@
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.maxPolarAngle = Math.PI / 2 - 0.03; // Don't go below floor
-      controls.minDistance = 3.5;
+      controls.minDistance = 3.0;
       controls.maxDistance = 14;
       controls.target.set(0, 0.65, 0);
 
@@ -545,7 +651,6 @@
       scene.add(ambient);
 
       // Overhead Softbox Light (Key Light)
-      const softbox = new THREE.RectAreaLight ? null : null; // Fallback to Spot/Directional
       const mainSpot = new THREE.SpotLight(0xffffff, 3.5);
       mainSpot.position.set(0, 7.5, 0);
       mainSpot.angle = Math.PI / 3;
@@ -649,50 +754,39 @@
               const targetScale = 4.5 / (maxDim || 1);
 
               model.scale.setScalar(targetScale);
-              // Center in X and Z, and ground on floor (y=0)
               model.position.x = -center.x * targetScale;
-              model.position.y = -box.min.y * targetScale;
               model.position.z = -center.z * targetScale;
-
-              // High-grade automotive metallic lacquer paint shader
-              const carPaintMat = new THREE.MeshPhysicalMaterial({
-                color: data.colorBody || 0xF3F4F6,
-                metalness: 0.7,
-                roughness: 0.22,
-                clearcoat: 0.9,
-                clearcoatRoughness: 0.1,
-                reflectivity: 0.85,
-                side: THREE.DoubleSide
-              });
+              model.position.y = -box.min.y * targetScale;
 
               model.traverse(function(node) {
                 if (node.isMesh) {
                   node.castShadow = true;
                   node.receiveShadow = true;
-                  node.material = carPaintMat;
+                  if (node.material) {
+                    node.material.envMapIntensity = 1.35;
+                  }
                 }
               });
 
               modelCache[data.modelUrl] = model;
 
+              // Replace procedural with loaded GLTF
               if (currentCarIndex === index) {
                 while(carRootGroup.children.length > 0){
                   carRootGroup.remove(carRootGroup.children[0]);
                 }
-                carRootGroup.add(model.clone(true));
+                carRootGroup.add(model);
               }
             },
             undefined,
             function(err) {
-              console.warn("GLB load failed, keeping procedural geometry:", err);
+              console.warn("GLTF Load fallback:", err);
             }
           );
-          return;
         }
+      } else {
+        buildProceduralCar(data);
       }
-
-      // Procedural car assembler
-      buildProceduralCar(data);
     }
 
     function buildProceduralCar(data) {
@@ -727,14 +821,12 @@
       // Build model according to silhouette type
       if (data.type === "suv") {
         // Nissan Patrol Super Safari
-        // Main Lower Body
         const lowerGeo = new THREE.BoxGeometry(2.1, 0.85, 4.4);
         const lower = new THREE.Mesh(lowerGeo, bodyMat);
         lower.position.y = 0.85;
         lower.castShadow = true;
         car.add(lower);
 
-        // Upper Cabin
         const cabinGeo = new THREE.BoxGeometry(1.9, 0.8, 2.7);
         const cabinMat = new THREE.MeshStandardMaterial({ color: data.colorRoof, metalness: 0.6, roughness: 0.3 });
         const cabin = new THREE.Mesh(cabinGeo, cabinMat);
@@ -742,45 +834,38 @@
         cabin.castShadow = true;
         car.add(cabin);
 
-        // Windows
         const winGeo = new THREE.BoxGeometry(1.92, 0.65, 2.5);
         const win = new THREE.Mesh(winGeo, glassMat);
         win.position.set(0, 1.6, -0.3);
         car.add(win);
 
-        // Roof Rack
         const rackGeo = new THREE.BoxGeometry(1.7, 0.08, 2.4);
         const rack = new THREE.Mesh(rackGeo, chromeMat);
         rack.position.set(0, 2.05, -0.3);
         car.add(rack);
 
-        // Rear Spare Wheel
         const spareGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.28, 24);
         const spare = new THREE.Mesh(spareGeo, wheelMat);
         spare.rotation.x = Math.PI / 2;
         spare.position.set(0, 1.0, -2.35);
         car.add(spare);
 
-        // Big All-Terrain Wheels
         addWheels(car, 0.45, 0.32, 1.05, 1.35, 0.45, wheelMat, chromeMat);
 
       } else if (data.type === "coupe") {
         // 1954 300SL Gullwing
-        // Curvaceous Lower Body
         const bodyGeo = new THREE.BoxGeometry(1.85, 0.55, 4.2);
         const body = new THREE.Mesh(bodyGeo, bodyMat);
         body.position.y = 0.55;
         body.castShadow = true;
         car.add(body);
 
-        // Curved Cockpit Dome
         const domeGeo = new THREE.SphereGeometry(1.1, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
         const dome = new THREE.Mesh(domeGeo, glassMat);
         dome.scale.set(0.78, 0.55, 1.3);
         dome.position.set(0, 0.75, -0.2);
         car.add(dome);
 
-        // Chrome Bumpers
         const bFront = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.1, 0.15), chromeMat);
         bFront.position.set(0, 0.45, 2.15);
         car.add(bFront);
@@ -789,19 +874,16 @@
         bRear.position.set(0, 0.45, -2.15);
         car.add(bRear);
 
-        // Classic Wire Wheels
         addWheels(car, 0.36, 0.22, 0.92, 1.25, 0.36, wheelMat, chromeMat);
 
       } else if (data.type === "hypercar") {
-        // Lamborghini Centenario
-        // Ultra-low Wedge Base
+        // Lamborghini Huracán / Centenario
         const wedgeGeo = new THREE.BoxGeometry(2.0, 0.45, 4.6);
         const wedge = new THREE.Mesh(wedgeGeo, bodyMat);
         wedge.position.y = 0.4;
         wedge.castShadow = true;
         car.add(wedge);
 
-        // Low cockpit canopy
         const canopyGeo = new THREE.ConeGeometry(1.2, 2.4, 4);
         const canopy = new THREE.Mesh(canopyGeo, glassMat);
         canopy.rotation.y = Math.PI / 4;
@@ -810,73 +892,61 @@
         canopy.position.set(0, 0.72, -0.2);
         car.add(canopy);
 
-        // Aero Cyan Wing & Splitter
         const wingMat = new THREE.MeshStandardMaterial({ color: data.colorRoof, metalness: 0.9, roughness: 0.1 });
         const wing = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.05, 0.45), wingMat);
         wing.position.set(0, 0.85, -2.15);
         car.add(wing);
 
-        // Rear Aggressive Diffuser
         const diff = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.2, 0.2), wingMat);
         diff.position.set(0, 0.25, -2.35);
         car.add(diff);
 
-        // Low Profile Big Rims
         addWheels(car, 0.36, 0.28, 1.02, 1.35, 0.36, wheelMat, chromeMat);
 
       } else if (data.type === "muscle") {
         // Ford Mustang GT 5.0
-        // Muscular Hood & Body
         const musGeo = new THREE.BoxGeometry(1.95, 0.65, 4.5);
         const mus = new THREE.Mesh(musGeo, bodyMat);
         mus.position.y = 0.6;
         mus.castShadow = true;
         car.add(mus);
 
-        // Fastback Roofline
         const roofGeo = new THREE.BoxGeometry(1.65, 0.55, 2.2);
         const roofMat = new THREE.MeshStandardMaterial({ color: 0x1A1C22, roughness: 0.3 });
         const roof = new THREE.Mesh(roofGeo, roofMat);
         roof.position.set(0, 1.15, -0.4);
         car.add(roof);
 
-        // Dual White Racing Stripes on Hood
         const stripeGeo = new THREE.BoxGeometry(0.35, 0.02, 4.48);
         const stripe = new THREE.Mesh(stripeGeo, new THREE.MeshBasicMaterial({ color: 0xFFFFFF }));
         stripe.position.set(0, 0.93, 0);
         car.add(stripe);
 
-        // American V8 Wheels
         addWheels(car, 0.38, 0.25, 0.98, 1.32, 0.38, wheelMat, chromeMat);
 
       } else if (data.type === "g_wagon") {
         // Mercedes-AMG G63 Boxy Beast
-        // Iconic High Box Body
         const gBodyGeo = new THREE.BoxGeometry(2.0, 1.25, 4.3);
         const gBody = new THREE.Mesh(gBodyGeo, bodyMat);
         gBody.position.y = 1.15;
         gBody.castShadow = true;
         car.add(gBody);
 
-        // Windows all around
         const winGGeo = new THREE.BoxGeometry(2.02, 0.55, 2.8);
         const winG = new THREE.Mesh(winGGeo, glassMat);
         winG.position.set(0, 1.45, -0.3);
         car.add(winG);
 
-        // Vertical Panamericana Grille
         const grill = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.45, 0.1), chromeMat);
         grill.position.set(0, 1.0, 2.18);
         car.add(grill);
 
-        // Side Exhaust Dual Pipes
         const pipeGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.25, 12);
         const pipeL = new THREE.Mesh(pipeGeo, chromeMat);
         pipeL.rotation.z = Math.PI / 2;
         pipeL.position.set(-1.05, 0.4, -0.4);
         car.add(pipeL);
 
-        // Big AMG Offroad Wheels
         addWheels(car, 0.45, 0.3, 1.05, 1.35, 0.45, wheelMat, chromeMat);
       }
 
@@ -888,10 +958,10 @@
       const rimGeo = new THREE.CylinderGeometry(radius * 0.65, radius * 0.65, width + 0.02, 16);
 
       const positions = [
-        [-posX, posY, posZ],  // Front Left
-        [posX, posY, posZ],   // Front Right
-        [-posX, posY, -posZ], // Rear Left
-        [posX, posY, -posZ]   // Rear Right
+        [-posX, posY, posZ],
+        [posX, posY, posZ],
+        [-posX, posY, -posZ],
+        [posX, posY, -posZ]
       ];
 
       positions.forEach(([x, y, z]) => {
@@ -910,31 +980,64 @@
     function switchCar(index) {
       loadCarModel(index);
 
-      // Highlight active button
+      // 1. Update Desktop Vehicle Selector buttons
       const buttons = document.querySelectorAll('.car-btn');
       buttons.forEach(btn => {
         const bIdx = parseInt(btn.getAttribute('data-car'), 10);
         if (bIdx === index) {
           btn.className = "car-btn w-full text-left p-2 rounded-2xl border border-[#E5B869] bg-[#E5B869]/15 text-white transition flex items-center justify-between group active:scale-98";
-          btn.querySelector('span:last-child').textContent = "Active";
-          btn.querySelector('span:last-child').className = "text-xs text-[#E5B869] font-bold ml-1";
+          const statusSpan = btn.querySelector('span:last-child');
+          if (statusSpan) {
+            statusSpan.textContent = "Active";
+            statusSpan.className = "text-xs text-[#E5B869] font-bold ml-1";
+          }
         } else {
           btn.className = "car-btn w-full text-left p-2 rounded-2xl border border-white/10 hover:border-white/30 bg-black/40 text-gray-300 transition flex items-center justify-between group active:scale-98";
-          btn.querySelector('span:last-child').textContent = "View";
-          btn.querySelector('span:last-child').className = "text-xs text-gray-500 font-bold group-hover:text-white ml-1";
+          const statusSpan = btn.querySelector('span:last-child');
+          if (statusSpan) {
+            statusSpan.textContent = "View";
+            statusSpan.className = "text-xs text-gray-500 font-bold group-hover:text-white ml-1";
+          }
+        }
+      });
+
+      // 2. Update Mobile Vehicle Selector Chips
+      const chips = document.querySelectorAll('.mobile-car-chip');
+      chips.forEach(chip => {
+        const cIdx = parseInt(chip.getAttribute('data-car'), 10);
+        if (cIdx === index) {
+          chip.className = "mobile-car-chip flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[#E5B869] bg-[#E5B869]/25 text-white shadow-[0_0_12px_rgba(229,184,105,0.4)] text-xs font-bold transition active:scale-95";
+        } else {
+          chip.className = "mobile-car-chip flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/10 bg-black/50 text-gray-400 text-xs font-bold transition active:scale-95";
         }
       });
     }
 
     function updateUI(data) {
-      document.getElementById('car-index-display').textContent = `0${data.id + 1} / 05`;
-      document.getElementById('spec-car-name').textContent = data.name;
-      document.getElementById('spec-car-tagline').textContent = data.tagline;
-      document.getElementById('spec-engine').textContent = data.engine;
-      document.getElementById('spec-power').textContent = data.power;
-      document.getElementById('spec-drivetrain').textContent = data.drivetrain;
-      document.getElementById('spec-tone').textContent = data.tone;
-      document.getElementById('spec-description').textContent = data.desc;
+      const idxDisplay = document.getElementById('car-index-display');
+      if (idxDisplay) idxDisplay.textContent = `0${data.id + 1} / 05`;
+
+      // Desktop Spec fields
+      const elName = document.getElementById('spec-car-name');
+      if (elName) elName.textContent = data.name;
+      const elTag = document.getElementById('spec-car-tagline');
+      if (elTag) elTag.textContent = data.tagline;
+      const elEng = document.getElementById('spec-engine');
+      if (elEng) elEng.textContent = data.engine;
+      const elPow = document.getElementById('spec-power');
+      if (elPow) elPow.textContent = data.power;
+      const elDrive = document.getElementById('spec-drivetrain');
+      if (elDrive) elDrive.textContent = data.drivetrain;
+      const elTone = document.getElementById('spec-tone');
+      if (elTone) elTone.textContent = data.tone;
+      const elDesc = document.getElementById('spec-description');
+      if (elDesc) elDesc.textContent = data.desc;
+
+      // Mobile Spec quick labels
+      const mobName = document.getElementById('mobile-car-name');
+      if (mobName) mobName.textContent = data.shortName || data.name;
+      const mobPower = document.getElementById('mobile-car-power');
+      if (mobPower) mobPower.textContent = data.power ? data.power.split('/')[0].trim() : '400HP';
 
       const badge = document.getElementById('spec-model-mode');
       if (badge) {
@@ -961,21 +1064,39 @@
         underglowLight.color = col;
       }
 
-      // Highlight active pill
-      document.querySelectorAll('.neon-pill').forEach(p => p.classList.remove('border-white'));
-      if (btn && colorHex) btn.classList.add('border-white');
+      // Highlight active pill across all neon selectors (desktop & mobile)
+      document.querySelectorAll('.neon-pill').forEach(p => {
+        p.classList.remove('border-white');
+        const title = p.getAttribute('title');
+        if (btn && btn.getAttribute('title') === title && colorHex) {
+          p.classList.add('border-white');
+        }
+      });
     }
 
     // Camera Presets
     function setCameraView(preset) {
+      const isMobile = window.innerWidth < 768;
       if (preset === 'hero') {
-        gsapAnimateCamera(5.5, 2.4, 6.2);
+        if (isMobile) {
+          gsapAnimateCamera(4.8, 2.2, 5.8);
+        } else {
+          gsapAnimateCamera(5.5, 2.4, 6.2);
+        }
       } else if (preset === 'side') {
-        gsapAnimateCamera(7.0, 1.2, 0);
+        if (isMobile) {
+          gsapAnimateCamera(6.2, 1.2, 0);
+        } else {
+          gsapAnimateCamera(7.0, 1.2, 0);
+        }
       } else if (preset === 'top') {
-        gsapAnimateCamera(0.1, 8.5, 0.1);
+        gsapAnimateCamera(0.1, isMobile ? 8.0 : 8.5, 0.1);
       } else if (preset === 'rear') {
-        gsapAnimateCamera(-3.5, 1.8, -5.5);
+        if (isMobile) {
+          gsapAnimateCamera(-3.2, 1.6, -5.0);
+        } else {
+          gsapAnimateCamera(-3.5, 1.8, -5.5);
+        }
       }
     }
 
@@ -1000,6 +1121,15 @@
       if (btn) {
         btn.textContent = autoRotate ? "🔄 360° Spin: ON" : "⏸️ Spin: OFF";
       }
+      const mobBtn = document.getElementById('btn-mobile-rotate');
+      if (mobBtn) {
+        mobBtn.textContent = autoRotate ? "🔄" : "⏸️";
+        if (autoRotate) {
+          mobBtn.className = "px-2 py-0.5 rounded-lg bg-[#E5B869]/20 text-[#E5B869] border border-[#E5B869]/30 text-[10px] font-bold";
+        } else {
+          mobBtn.className = "px-2 py-0.5 rounded-lg bg-white/5 text-gray-400 border border-white/10 text-[10px] font-bold";
+        }
+      }
     }
 
     // Web Audio Synthesizer: Procedural V8 & V12 Exhaust Sound
@@ -1009,12 +1139,20 @@
       const icon = document.getElementById('rev-icon');
       const label = document.getElementById('rev-label');
 
+      const mobBtn = document.getElementById('btn-mobile-rev');
+      const mobIcon = document.getElementById('mobile-rev-icon');
+      const mobLabel = document.getElementById('mobile-rev-label');
+
       if (isRevving) return;
       isRevving = true;
 
       if (btn) btn.classList.add('brightness-125', 'scale-98');
       if (icon) icon.textContent = "🔥";
       if (label) label.textContent = `REVVING ${data.engine.toUpperCase()}...`;
+
+      if (mobBtn) mobBtn.classList.add('brightness-125', 'scale-98');
+      if (mobIcon) mobIcon.textContent = "🔥";
+      if (mobLabel) mobLabel.textContent = "Revving!";
 
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1023,12 +1161,10 @@
 
         const t = audioCtx.currentTime;
 
-        // Sound Characteristics depending on soundType
         const isV12 = data.soundType === "v12_scream";
-        const baseFreq = isV12 ? 95 : 55; // V12 revs higher
+        const baseFreq = isV12 ? 95 : 55;
         const peakFreq = isV12 ? 380 : 190;
 
-        // Primary Engine Oscillator (Sawtooth for raw mechanical growl)
         const osc = audioCtx.createOscillator();
         osc.type = isV12 ? 'sawtooth' : 'triangle';
         osc.frequency.setValueAtTime(baseFreq, t);
@@ -1036,21 +1172,18 @@
         osc.frequency.exponentialRampToValueAtTime(peakFreq * 1.15, t + 1.2);
         osc.frequency.exponentialRampToValueAtTime(baseFreq, t + 2.5);
 
-        // Sub-Bass rumble oscillator (Deep V8 displacement)
         const subOsc = audioCtx.createOscillator();
         subOsc.type = 'sine';
         subOsc.frequency.setValueAtTime(baseFreq / 2, t);
         subOsc.frequency.exponentialRampToValueAtTime(peakFreq / 2, t + 0.6);
         subOsc.frequency.exponentialRampToValueAtTime(baseFreq / 2, t + 2.5);
 
-        // Resonant Low-Pass Filter
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(isV12 ? 1400 : 800, t);
         filter.frequency.exponentialRampToValueAtTime(isV12 ? 3800 : 2200, t + 0.6);
         filter.frequency.exponentialRampToValueAtTime(isV12 ? 1200 : 700, t + 2.5);
 
-        // Volume Gain Envelope
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0.01, t);
         gain.gain.linearRampToValueAtTime(0.18, t + 0.2);
@@ -1067,18 +1200,22 @@
         osc.stop(t + 2.9);
         subOsc.stop(t + 2.9);
 
-        // Throttle back visual state
         setTimeout(() => {
           isRevving = false;
           if (btn) btn.classList.remove('brightness-125', 'scale-98');
           if (icon) icon.textContent = "🔊";
           if (label) label.textContent = "START ENGINE & REV SOUND";
+
+          if (mobBtn) mobBtn.classList.remove('brightness-125', 'scale-98');
+          if (mobIcon) mobIcon.textContent = "🔊";
+          if (mobLabel) mobLabel.textContent = "Rev";
         }, 2900);
 
       } catch (e) {
         console.warn("Audio unavailable:", e);
         isRevving = false;
         if (label) label.textContent = "START ENGINE & REV SOUND";
+        if (mobLabel) mobLabel.textContent = "Rev";
       }
     }
 
@@ -1125,7 +1262,7 @@
       if (isMusicPlaying) {
         audio.pause();
         isMusicPlaying = false;
-        if (label) label.textContent = "NFS Garage OST: OFF";
+        if (label) label.textContent = "NFS OST: OFF";
         if (btn) {
           btn.classList.remove('from-amber-600/50', 'to-red-600/50', 'border-amber-400');
           btn.classList.add('from-red-600/30', 'to-amber-600/30', 'border-amber-500/40');
@@ -1135,7 +1272,7 @@
         audio.volume = 0.55;
         audio.play().then(() => {
           isMusicPlaying = true;
-          if (label) label.textContent = "NFS Garage OST: PLAYING";
+          if (label) label.textContent = "NFS OST: PLAYING";
           if (btn) {
             btn.classList.remove('from-red-600/30', 'to-amber-600/30', 'border-amber-500/40');
             btn.classList.add('from-amber-600/50', 'to-red-600/50', 'border-amber-400');
@@ -1162,7 +1299,6 @@
     function animate() {
       requestAnimationFrame(animate);
 
-      // Auto rotation of car turntable if enabled
       if (autoRotate && carRootGroup) {
         carRootGroup.rotation.y += 0.0035;
       }
