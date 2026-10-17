@@ -113,9 +113,9 @@
     <!-- ======================================================= -->
     <div class="w-full md:w-[60%] h-full relative p-6 sm:p-10 flex flex-col justify-between overflow-hidden">
       
-      <!-- Ambient Lighting & Reflections -->
-      <div class="absolute top-0 left-1/4 w-96 h-96 bg-[#00F0FF]/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-[#E5B869]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <!-- Ambient Lighting & Reflections (Smooth 100px Gaussian Blur) -->
+      <div class="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-[#00F0FF]/[0.05] rounded-full filter blur-[120px] pointer-events-none"></div>
+      <div class="absolute -bottom-32 right-1/4 w-[500px] h-[500px] bg-[#E5B869]/[0.05] rounded-full filter blur-[120px] pointer-events-none"></div>
 
       <!-- Top Visual Header -->
       <div class="relative z-20">
@@ -154,24 +154,24 @@
                 class="w-full h-full object-cover object-center transform scale-[1.01]"
               />
 
-              <!-- Bottom Glass Cinematic Nameplate Overlay (Matching Inspiration) -->
-              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 sm:p-5 flex flex-col justify-end">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm sm:text-base font-extrabold text-white uppercase tracking-wider cinzel">
+              <!-- Bottom Glass Cinematic Nameplate Overlay (Deeper Smooth Gradient + Margin Fix) -->
+              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black via-black/85 via-black/45 to-transparent p-5 sm:p-6 pt-16 flex flex-col justify-end">
+                <div class="flex items-center gap-2 mb-1.5 drop-shadow-md">
+                  <span class="text-base sm:text-lg font-extrabold text-white uppercase tracking-wider cinzel">
                     MOHAMMAD SADMAN BASHIR
                   </span>
-                  <span class="text-xs text-red-500 animate-pulse">❤️</span>
-                  <span class="text-sm sm:text-base font-extrabold text-[#E5B869] uppercase tracking-wider cinzel">
+                  <span class="text-sm text-red-500 animate-pulse">❤️</span>
+                  <span class="text-base sm:text-lg font-extrabold text-[#E5B869] uppercase tracking-wider cinzel">
                     ANIKA
                   </span>
                 </div>
-                <p class="text-[11px] sm:text-xs text-gray-200 mt-1 leading-snug line-clamp-2 max-w-2xl font-medium">
+                <p class="text-xs sm:text-[13px] text-gray-100 leading-relaxed font-medium drop-shadow max-w-2xl mb-3.5">
                   Behind every great photograph (<span class="text-[#E5B869] font-mono font-bold">@bashir_bhai_clicks</span>) and every adrenaline-fueled highway pull is a partnership defined by endless deadlines, big laughs, and boundless ambition.
                 </p>
-                <div class="mt-2 flex flex-wrap items-center gap-2 text-[10px] mono text-gray-300">
-                  <span class="bg-black/60 px-2 py-0.5 rounded border border-white/15">🎂 October 17 Milestone</span>
-                  <span class="bg-black/60 px-2 py-0.5 rounded border border-white/15 text-[#00F0FF]">🏎️ High-Speed Duo</span>
-                  <span class="bg-black/60 px-2 py-0.5 rounded border border-white/15 text-[#E5B869]">📸 Lens & Horizon</span>
+                <div class="flex flex-wrap items-center gap-2 text-[10px] mono text-gray-200">
+                  <span class="bg-black/85 px-2.5 py-1 rounded-lg border border-white/20 shadow">🎂 October 17 Milestone</span>
+                  <span class="bg-black/85 px-2.5 py-1 rounded-lg border border-white/20 text-[#00F0FF] shadow">🏎️ High-Speed Duo</span>
+                  <span class="bg-black/85 px-2.5 py-1 rounded-lg border border-white/20 text-[#E5B869] shadow">📸 Lens & Horizon</span>
                 </div>
               </div>
 
@@ -181,42 +181,52 @@
 
         </div>
 
-        <!-- 5 Hero Fleet Badges Stack Below Picture (Matching Inspiration) -->
+        <!-- 5 Hero Fleet Cards with Cinematic Turntable Renders & Accurate Specs (No Emojis) -->
         <div class="w-full grid grid-cols-5 gap-2 sm:gap-3 mt-3.5">
           
-          <!-- Car 1: Nissan Patrol -->
-          <div class="bg-black/50 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-2 text-center transition">
-            <div class="text-xl sm:text-2xl mb-0.5">🚙</div>
-            <div class="text-[9px] sm:text-[10px] font-bold text-white uppercase truncate">Patrol Safari</div>
-            <div class="text-[8px] mono text-[#E5B869]">4.8L V8 / 400HP</div>
+          <!-- Car 1: Nissan Patrol Safari -->
+          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-md">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-white/10 bg-black">
+              <img src="/images/cars/nissan-patrol.jpg" alt="Nissan Patrol Safari" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            </div>
+            <div class="text-[10px] sm:text-[11px] font-black text-white uppercase truncate tracking-wide">Patrol Safari</div>
+            <div class="text-[9px] sm:text-[10px] mono font-bold text-[#E5B869] mt-0.5">4.8L TB48 / TURBO</div>
           </div>
 
           <!-- Car 2: 300SL Gullwing -->
-          <div class="bg-black/50 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-2 text-center transition">
-            <div class="text-xl sm:text-2xl mb-0.5">🏎️</div>
-            <div class="text-[9px] sm:text-[10px] font-bold text-white uppercase truncate">300SL Gullwing</div>
-            <div class="text-[8px] mono text-gray-400">1954 Silver Legend</div>
+          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-md">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-white/10 bg-black">
+              <img src="/images/cars/mercedes-300sl.jpg" alt="1954 Mercedes-Benz 300SL" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            </div>
+            <div class="text-[10px] sm:text-[11px] font-black text-white uppercase truncate tracking-wide">300SL Gullwing</div>
+            <div class="text-[9px] sm:text-[10px] mono font-bold text-gray-300 mt-0.5">1954 SILVER LEGEND</div>
           </div>
 
-          <!-- Car 3: Centenario -->
-          <div class="bg-black/50 border border-[#00F0FF]/40 rounded-xl p-2 text-center transition shadow-[0_0_12px_rgba(0,240,255,0.15)]">
-            <div class="text-xl sm:text-2xl mb-0.5">⚡</div>
-            <div class="text-[9px] sm:text-[10px] font-bold text-[#00F0FF] uppercase truncate">Centenario</div>
-            <div class="text-[8px] mono text-[#00F0FF]">6.5L V12 / 770HP</div>
+          <!-- Car 3: Lamborghini Huracán EVO (Corrected Model) -->
+          <div class="bg-black/60 border border-[#00F0FF]/40 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-[0_0_12px_rgba(0,240,255,0.2)]">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-[#00F0FF]/30 bg-black">
+              <img src="/images/cars/lamborghini.jpg" alt="Lamborghini Huracán EVO" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            </div>
+            <div class="text-[10px] sm:text-[11px] font-black text-[#00F0FF] uppercase truncate tracking-wide">Huracán EVO</div>
+            <div class="text-[9px] sm:text-[10px] mono font-bold text-[#00F0FF] mt-0.5">5.2L V10 / 640HP</div>
           </div>
 
-          <!-- Car 4: Mustang GT -->
-          <div class="bg-black/50 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-2 text-center transition">
-            <div class="text-xl sm:text-2xl mb-0.5">🐎</div>
-            <div class="text-[9px] sm:text-[10px] font-bold text-white uppercase truncate">Mustang GT 5.0</div>
-            <div class="text-[8px] mono text-red-400">V8 Coyote Detroit</div>
+          <!-- Car 4: Mustang GT 5.0 -->
+          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-md">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-white/10 bg-black">
+              <img src="/images/cars/mustang-gt.jpg" alt="Ford Mustang GT 5.0" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            </div>
+            <div class="text-[10px] sm:text-[11px] font-black text-white uppercase truncate tracking-wide">Mustang GT 5.0</div>
+            <div class="text-[9px] sm:text-[10px] mono font-bold text-red-400 mt-0.5">COYOTE V8 DETROIT</div>
           </div>
 
-          <!-- Car 5: AMG G-Wagon -->
-          <div class="bg-black/50 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-2 text-center transition">
-            <div class="text-xl sm:text-2xl mb-0.5">🦾</div>
-            <div class="text-[9px] sm:text-[10px] font-bold text-white uppercase truncate">AMG G63</div>
-            <div class="text-[8px] mono text-[#10B981]">Twin-Turbo V8</div>
+          <!-- Car 5: Mercedes-AMG G63 -->
+          <div class="bg-black/60 border border-white/10 hover:border-[#E5B869]/50 rounded-xl p-1.5 sm:p-2 text-center transition group shadow-md">
+            <div class="w-full aspect-[16/9] rounded-lg overflow-hidden mb-1.5 border border-white/10 bg-black">
+              <img src="/images/cars/mercedes-g63.jpg" alt="Mercedes-AMG G63" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            </div>
+            <div class="text-[10px] sm:text-[11px] font-black text-white uppercase truncate tracking-wide">AMG G63</div>
+            <div class="text-[9px] sm:text-[10px] mono font-bold text-[#10B981] mt-0.5">TWIN-TURBO V8 AWD</div>
           </div>
 
         </div>
@@ -309,21 +319,36 @@
         </div>
       </div>
 
-      <!-- Mini 3D Car Cutout Vignettes (Matching Inspiration: Gullwing + Patrol) -->
-      <div class="flex items-center justify-between px-2 -mb-1">
-        <div class="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition">
-          <span class="text-3xl filter drop-shadow-[0_4px_12px_rgba(0,240,255,0.4)]">🏎️</span>
-          <div class="text-[9px] mono text-gray-300">
-            <span class="text-[#E5B869] font-bold block">300SL GULLWING</span>
-            <span class="text-gray-400">Classics Fleet</span>
-          </div>
+      <!-- Fleet Telemetry / Garage Specs Matrix (Eliminates Right Panel Dead Void) -->
+      <div class="bg-black/75 border border-white/15 rounded-2xl p-4 my-2.5 shadow-lg">
+        <div class="flex items-center justify-between text-[10px] mono text-[#00F0FF] font-bold uppercase tracking-widest mb-2.5">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse"></span>
+            FLEET TELEMETRY MATRIX
+          </span>
+          <span class="text-[#E5B869]">5 ACTIVE CURATIONS</span>
         </div>
-        <div class="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition">
-          <div class="text-[9px] mono text-gray-300 text-right">
-            <span class="text-[#00F0FF] font-bold block">NISSAN PATROL</span>
-            <span class="text-gray-400">Safari Edition</span>
+        <div class="grid grid-cols-4 gap-2 text-center">
+          <div class="bg-white/5 rounded-xl p-2.5 border border-white/5">
+            <div class="text-[9px] mono text-gray-400 uppercase font-semibold">POWER</div>
+            <div class="text-sm sm:text-base font-black text-[#E5B869] mono mt-0.5">2,600+</div>
+            <div class="text-[8px] mono text-gray-500">BHP COMBINED</div>
           </div>
-          <span class="text-3xl filter drop-shadow-[0_4px_12px_rgba(229,184,105,0.4)]">🚙</span>
+          <div class="bg-white/5 rounded-xl p-2.5 border border-white/5">
+            <div class="text-[9px] mono text-gray-400 uppercase font-semibold">CYLINDERS</div>
+            <div class="text-sm sm:text-base font-black text-[#00F0FF] mono mt-0.5">42</div>
+            <div class="text-[8px] mono text-gray-500">PISTON COUNT</div>
+          </div>
+          <div class="bg-white/5 rounded-xl p-2.5 border border-white/5">
+            <div class="text-[9px] mono text-gray-400 uppercase font-semibold">TOP SPEED</div>
+            <div class="text-sm sm:text-base font-black text-white mono mt-0.5">350</div>
+            <div class="text-[8px] mono text-gray-500">KM/H MAX</div>
+          </div>
+          <div class="bg-white/5 rounded-xl p-2.5 border border-white/5">
+            <div class="text-[9px] mono text-gray-400 uppercase font-semibold">PEAK TORQUE</div>
+            <div class="text-sm sm:text-base font-black text-[#10B981] mono mt-0.5">3,100+</div>
+            <div class="text-[8px] mono text-gray-500">NM TOTAL</div>
+          </div>
         </div>
       </div>
 
