@@ -254,14 +254,35 @@
       ],
       "charteredDate": "2026-10-16",
       "completedDate": "2026-10-17"
+    },
+    {
+      "id": "PRJ-TOFFEECON-INGRESS-FIX",
+      "venture": "ToffeeCon 2026 Platform",
+      "engine": "Engine 4 Satellite #1",
+      "port": 5000,
+      "sprint": "P0 Ingress Remediation, /simulation Route Aliasing & 4-Pillar Quick-Dock Overhaul",
+      "status": "COMPLETED",
+      "pricingType": "Commercial Enterprise SLA Maintenance",
+      "creditValuation": 3750,
+      "bdtValuation": 7500,
+      "usdValuation": 61.88,
+      "testsCertified": 20,
+      "artifacts": [
+        "Canonical /simulation, /index, /index.html Route Aliasing (server/server.js)",
+        "Overhauled Landing Hero with 4-Pillar Simulation Quick-Dock (client/public/landing.html)",
+        "Sub-1.3s Render Cloud SLA Latency Benchmark Suite",
+        "Executive WhatsApp Dispatch Link Kit for Banglalink Leadership"
+      ],
+      "charteredDate": "2026-10-17",
+      "completedDate": "2026-10-17"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 10,
-    "totalSprintsCompleted": 9,
-    "totalCreditsGenerated": 126250,
-    "totalBdtValuation": 252500,
-    "totalUsdValuation": 2083.12,
-    "totalTestsPassingAcrossHoldings": 998
+    "totalSprintsChartered": 11,
+    "totalSprintsCompleted": 10,
+    "totalCreditsGenerated": 130000,
+    "totalBdtValuation": 260000,
+    "totalUsdValuation": 2145.00,
+    "totalTestsPassingAcrossHoldings": 1018
   }
 }
