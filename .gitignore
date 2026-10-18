@@ -25,6 +25,7 @@ archive/
 *.pdf
 !public/assets/**/*.pdf
 !public/reports/*.pdf
+!public/docs/*.pdf
 Screenshot*.png
 /image_*.png
 /*.wav
