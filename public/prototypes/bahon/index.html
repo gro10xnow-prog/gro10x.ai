@@ -56,16 +56,16 @@
     ::-webkit-scrollbar-thumb:hover { background: var(--bahon-green); }
 
     /* Map roads styling */
-    .road-main { stroke: #334155; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
-    .road-secondary { stroke: #1e293b; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
-    .road-accent { stroke: rgba(16, 185, 129, 0.25); stroke-width: 2; stroke-dasharray: 6 4; }
-    .block-boundary { fill: rgba(15, 23, 42, 0.5); stroke: rgba(255, 255, 255, 0.07); stroke-width: 1.5; }
+    .road-main { stroke: #1e293b; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+    .road-secondary { stroke: #1e293b; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    .road-accent { stroke: rgba(16, 185, 129, 0.35); stroke-width: 2; stroke-dasharray: 6 4; }
+    .block-boundary { fill: rgba(15, 23, 42, 0.65); stroke: rgba(255, 255, 255, 0.08); stroke-width: 1.5; }
     .block-boundary:hover { fill: rgba(16, 185, 129, 0.08); stroke: rgba(16, 185, 129, 0.3); }
 
     /* Vehicle Pin Transitions */
     .vehicle-marker {
-      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
+      will-change: transform;
     }
     .vehicle-marker:hover {
       filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.9));
@@ -288,47 +288,57 @@
             <text x="630" y="465" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK L</text>
 
             <!-- Eastern Extension: Blocks M, N, O, P -->
-            <rect x="730" y="80" width="190" height="180" rx="16" class="block-boundary" />
-            <circle cx="825" cy="160" r="45" fill="url(#solarGlow)" />
-            <text x="825" y="160" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK M</text>
-            <text x="825" y="185" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">🔋 Solar Depot Beta</text>
+            <rect x="730" y="80" width="180" height="110" rx="16" class="block-boundary" />
+            <circle cx="820" cy="135" r="45" fill="url(#solarGlow)" />
+            <text x="820" y="130" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK M</text>
+            <text x="820" y="152" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">🔋 Solar Depot Beta</text>
 
-            <rect x="730" y="280" width="190" height="170" rx="16" class="block-boundary" />
-            <text x="825" y="365" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK N & O</text>
+            <rect x="730" y="220" width="180" height="140" rx="16" class="block-boundary" />
+            <text x="820" y="295" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK N & O</text>
 
-            <rect x="730" y="470" width="190" height="150" rx="16" class="block-boundary" />
-            <text x="825" y="545" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK P (300ft)</text>
+            <rect x="730" y="390" width="180" height="140" rx="16" class="block-boundary" />
+            <text x="820" y="465" fill="#64748b" font-size="16" font-weight="bold" text-anchor="middle">BLOCK P (300ft)</text>
           </g>
 
           <!-- ============================================== -->
           <!-- ROAD NETWORK (AVENUES & MAIN ARTERIES)         -->
           <!-- ============================================== -->
           <g id="map-roads">
-            <!-- East-West Spine Road 1 (Gate 1 ➔ Avenue 1) -->
-            <path d="M 20 205 L 940 205" class="road-main" />
-            <path d="M 20 205 L 940 205" class="road-accent" />
+            <!-- East-West Spine Road 1 (Avenue 1: Gate 1 ➔ Avenue 1 to Avenue 5) -->
+            <path d="M 50 205 L 930 205" class="road-main" />
+            <path d="M 50 205 L 930 205" class="road-accent" />
 
-            <!-- East-West Spine Road 2 (Avenue 2) -->
-            <path d="M 20 375 L 940 375" class="road-main" />
-            <path d="M 20 375 L 940 375" class="road-accent" />
+            <!-- East-West Spine Road 2 (Avenue 2: Evercare ➔ Avenue 5) -->
+            <path d="M 50 375 L 930 375" class="road-main" />
+            <path d="M 50 375 L 930 375" class="road-accent" />
 
-            <!-- East-West Spine Road 3 (Avenue 3 / Madani link) -->
-            <path d="M 20 545 L 940 545" class="road-main" />
+            <!-- East-West Spine Road 3 (Avenue 3: NSU/IUB ➔ 300ft Gate 2) -->
+            <path d="M 50 545 L 945 545" class="road-main" />
+            <path d="M 50 545 L 945 545" class="road-accent" />
 
-            <!-- North-South Avenue 1 (Between A/B & E/F) -->
-            <path d="M 210 50 L 210 630" class="road-main" />
-            <path d="M 210 50 L 210 630" class="road-accent" />
+            <!-- West Gate 1 Feeder Avenue (Connecting Gate 1 at y=205 to Ave 2 and Ave 3) -->
+            <path d="M 50 205 L 50 545" class="road-main" />
+            <path d="M 50 205 L 50 545" class="road-accent" />
+
+            <!-- North-South Avenue 1 (Between A/B, E/F, I/J) -->
+            <path d="M 210 65 L 210 615" class="road-main" />
+            <path d="M 210 65 L 210 615" class="road-accent" />
 
             <!-- North-South Avenue 2 (Central Boulevard) -->
-            <path d="M 370 50 L 370 630" class="road-main" />
-            <path d="M 370 50 L 370 630" class="road-accent" />
+            <path d="M 370 65 L 370 615" class="road-main" />
+            <path d="M 370 65 L 370 615" class="road-accent" />
 
             <!-- North-South Avenue 3 -->
-            <path d="M 550 50 L 550 630" class="road-main" />
+            <path d="M 550 65 L 550 615" class="road-main" />
+            <path d="M 550 65 L 550 615" class="road-accent" />
 
             <!-- North-South Avenue 4 (Connecting to Block M/N/P) -->
-            <path d="M 715 50 L 715 630" class="road-main" />
-            <path d="M 715 50 L 715 630" class="road-accent" />
+            <path d="M 715 65 L 715 615" class="road-main" />
+            <path d="M 715 65 L 715 615" class="road-accent" />
+
+            <!-- North-South Avenue 5 (Eastern Perimeter Road connecting to 300ft Gate) -->
+            <path d="M 930 65 L 930 545" class="road-main" />
+            <path d="M 930 65 L 930 545" class="road-accent" />
           </g>
 
           <!-- ============================================== -->
@@ -649,7 +659,65 @@
       });
     }
 
-    // 2. FLEET SIMULATION DATA (28 VEHICLES)
+    // 2. ROAD NETWORK GRAPH (STRICTLY CONSTRAINED TO ROADWAYS)
+    // Every node is an intersection or terminal on paved roads. No diagonal paths exist.
+    const ROAD_NODES = {
+      // Gate 1 & West Avenue (x = 50)
+      'N_W_1': { id: 'N_W_1', x: 50, y: 205, neighbors: ['N_1_1', 'N_W_2'] },
+      'N_W_2': { id: 'N_W_2', x: 50, y: 375, neighbors: ['N_W_1', 'N_1_2', 'N_W_3'] },
+      'N_W_3': { id: 'N_W_3', x: 50, y: 545, neighbors: ['N_W_2', 'N_1_3'] },
+
+      // Avenue 1 (x = 210)
+      'N_1_T': { id: 'N_1_T', x: 210, y: 65, neighbors: ['N_1_1'] },
+      'N_1_1': { id: 'N_1_1', x: 210, y: 205, neighbors: ['N_1_T', 'N_W_1', 'N_2_1', 'N_1_2'] },
+      'N_1_2': { id: 'N_1_2', x: 210, y: 375, neighbors: ['N_1_1', 'N_W_2', 'N_2_2', 'N_1_3'] },
+      'N_1_3': { id: 'N_1_3', x: 210, y: 545, neighbors: ['N_1_2', 'N_W_3', 'N_2_3', 'N_1_B'] },
+      'N_1_B': { id: 'N_1_B', x: 210, y: 615, neighbors: ['N_1_3'] },
+
+      // Avenue 2 Central Boulevard (x = 370)
+      'N_2_T': { id: 'N_2_T', x: 370, y: 65, neighbors: ['N_2_1'] },
+      'N_2_1': { id: 'N_2_1', x: 370, y: 205, neighbors: ['N_2_T', 'N_1_1', 'N_3_1', 'N_2_2'] },
+      'N_2_2': { id: 'N_2_2', x: 370, y: 375, neighbors: ['N_2_1', 'N_1_2', 'N_3_2', 'N_2_3'] },
+      'N_2_3': { id: 'N_2_3', x: 370, y: 545, neighbors: ['N_2_2', 'N_1_3', 'N_3_3', 'N_2_B'] },
+      'N_2_B': { id: 'N_2_B', x: 370, y: 615, neighbors: ['N_2_3'] },
+
+      // Avenue 3 (x = 550)
+      'N_3_T': { id: 'N_3_T', x: 550, y: 65, neighbors: ['N_3_1'] },
+      'N_3_1': { id: 'N_3_1', x: 550, y: 205, neighbors: ['N_3_T', 'N_2_1', 'N_4_1', 'N_3_2'] },
+      'N_3_2': { id: 'N_3_2', x: 550, y: 375, neighbors: ['N_3_1', 'N_2_2', 'N_4_2', 'N_3_3'] },
+      'N_3_3': { id: 'N_3_3', x: 550, y: 545, neighbors: ['N_3_2', 'N_2_3', 'N_4_3', 'N_3_B'] },
+      'N_3_B': { id: 'N_3_B', x: 550, y: 615, neighbors: ['N_3_3'] },
+
+      // Avenue 4 (x = 715)
+      'N_4_T': { id: 'N_4_T', x: 715, y: 65, neighbors: ['N_4_1'] },
+      'N_4_1': { id: 'N_4_1', x: 715, y: 205, neighbors: ['N_4_T', 'N_3_1', 'N_5_1', 'N_4_2'] },
+      'N_4_2': { id: 'N_4_2', x: 715, y: 375, neighbors: ['N_4_1', 'N_3_2', 'N_5_2', 'N_4_3'] },
+      'N_4_3': { id: 'N_4_3', x: 715, y: 545, neighbors: ['N_4_2', 'N_3_3', 'N_5_3', 'N_4_B'] },
+      'N_4_B': { id: 'N_4_B', x: 715, y: 615, neighbors: ['N_4_3'] },
+
+      // Avenue 5 East Perimeter (x = 930)
+      'N_5_T': { id: 'N_5_T', x: 930, y: 65, neighbors: ['N_5_1'] },
+      'N_5_1': { id: 'N_5_1', x: 930, y: 205, neighbors: ['N_5_T', 'N_4_1', 'N_5_2'] },
+      'N_5_2': { id: 'N_5_2', x: 930, y: 375, neighbors: ['N_5_1', 'N_4_2', 'N_5_3'] },
+      'N_5_3': { id: 'N_5_3', x: 930, y: 545, neighbors: ['N_5_2', 'N_4_3', 'GATE_2'] },
+
+      // 300ft Gate 2 Terminal (x = 945, y = 545)
+      'GATE_2': { id: 'GATE_2', x: 945, y: 545, neighbors: ['N_5_3'] }
+    };
+
+    // Extract all unique road segments
+    const ROAD_EDGES = [];
+    const visitedEdges = new Set();
+    for (const [fromId, node] of Object.entries(ROAD_NODES)) {
+      for (const toId of node.neighbors) {
+        const edgeKey = [fromId, toId].sort().join('--');
+        if (!visitedEdges.has(edgeKey)) {
+          visitedEdges.add(edgeKey);
+          ROAD_EDGES.push({ from: fromId, to: toId });
+        }
+      }
+    }
+
     const DRIVER_NAMES = [
       { en: 'Kalam Mia', bn: 'কালাম মিয়া' },
       { en: 'Rafiqul Islam', bn: 'রফিকুল ইসলাম' },
@@ -663,44 +731,40 @@
       { en: 'Kabir Hossain', bn: 'কবীর হোসেন' }
     ];
 
-    const WAYPOINTS = [
-      { x: 50, y: 205 },    // Gate 1
-      { x: 210, y: 205 },   // Ave 1 / Road 1
-      { x: 370, y: 205 },   // Central Blvd
-      { x: 550, y: 205 },   // Block D
-      { x: 715, y: 205 },   // Block M Ave
-      { x: 825, y: 205 },   // East Ave
-      { x: 210, y: 375 },   // Near Evercare
-      { x: 370, y: 375 },   // Central Evercare
-      { x: 550, y: 375 },   // Block H
-      { x: 715, y: 375 },   // Block N
-      { x: 210, y: 545 },   // Near NSU
-      { x: 370, y: 545 },   // Block K
-      { x: 715, y: 545 },   // Block P
-      { x: 940, y: 545 }    // 300ft Gate
-    ];
+    function getNearestBlockName(x, y) {
+      if (x < 210) return y < 290 ? 'Block A' : (y < 460 ? 'Block E' : 'Block I');
+      if (x < 370) return y < 290 ? 'Block B' : (y < 460 ? 'Block F' : 'Block J');
+      if (x < 550) return y < 290 ? 'Block C' : (y < 460 ? 'Block G' : 'Block K');
+      if (x < 715) return y < 290 ? 'Block D' : (y < 460 ? 'Block H' : 'Block L');
+      return y < 290 ? 'Block M' : (y < 460 ? 'Block N & O' : 'Block P');
+    }
 
     const FLEET = [];
     for (let i = 1; i <= 28; i++) {
       const numStr = i < 10 ? `00${i}` : (i < 100 ? `0${i}` : `${i}`);
-      const driver = DRIVER_NAMES[i % DRIVER_NAMES.length];
+      const driver = DRIVER_NAMES[(i - 1) % DRIVER_NAMES.length];
       
       let status = 'transit';
-      let battery = Math.floor(Math.random() * 55) + 45; // 45% - 99%
-      let speed = Math.floor(Math.random() * 8) + 14;     // 14-22 km/h
+      let battery = Math.floor(Math.random() * 50) + 48; // 48% - 98%
+      let speed = Math.floor(Math.random() * 8) + 16;     // 16-24 km/h
 
       if (i % 6 === 0) {
         status = 'charging';
-        battery = Math.floor(Math.random() * 14) + 8; // <20%
+        battery = Math.floor(Math.random() * 12) + 8; // <20%
         speed = 8;
       } else if (i % 5 === 0) {
         status = 'idle';
         speed = 0;
       }
 
-      // Random starting position on map road grid
-      const p1 = WAYPOINTS[i % WAYPOINTS.length];
-      const p2 = WAYPOINTS[(i + 1) % WAYPOINTS.length];
+      // Pick a random road edge to place the vehicle strictly on the road
+      const edge = ROAD_EDGES[(i * 3) % ROAD_EDGES.length];
+      const fromNode = ROAD_NODES[edge.from];
+      const toNode = ROAD_NODES[edge.to];
+      const progress = ((i * 7) % 10) / 10; // 0.0 to 0.9
+
+      const x = fromNode.x + (toNode.x - fromNode.x) * progress;
+      const y = fromNode.y + (toNode.y - fromNode.y) * progress;
 
       FLEET.push({
         id: `BHN-${numStr}`,
@@ -708,17 +772,19 @@
         status: status,
         battery: battery,
         speed: speed,
-        x: p1.x + (p2.x - p1.x) * (Math.random() * 0.8 + 0.1),
-        y: p1.y + (p2.y - p1.y) * (Math.random() * 0.8 + 0.1),
-        targetX: p2.x,
-        targetY: p2.y,
+        fromNodeId: edge.from,
+        toNodeId: edge.to,
+        progress: progress,
+        x: x,
+        y: y,
         trips: Math.floor(Math.random() * 15) + 12,
         fare: Math.floor(Math.random() * 1200) + 1800,
-        currentBlock: ['Block A', 'Block C', 'Block D', 'Block E', 'Block I', 'Block M', 'Block P'][i % 7]
+        currentBlock: getNearestBlockName(x, y),
+        el: null
       });
     }
 
-    let selectedVehicleId = 'BHN-042'; // default highlight
+    let selectedVehicleId = 'BHN-001'; // Default active vehicle
     let currentFilter = 'all';
 
     // 3. RENDER VEHICLES ON SVG MAP
@@ -749,16 +815,17 @@
           ${v.status === 'transit' ? `<circle cx="0" cy="0" r="14" fill="${color}" opacity="0.3" class="pulse-halo" />` : ''}
           
           <!-- Outer Circle Badge -->
-          <circle cx="0" cy="0" r="10" fill="#070b12" stroke="${color}" stroke-width="2.5" />
+          <circle cx="0" cy="0" r="9" fill="#070b12" stroke="${color}" stroke-width="2.5" />
           
           <!-- Inner Dot -->
-          <circle cx="0" cy="0" r="4" fill="${color}" />
+          <circle cx="0" cy="0" r="3.5" fill="${color}" />
 
           <!-- Vehicle ID Tag (visible on desktop) -->
           <rect x="-24" y="-23" width="48" height="13" rx="3" fill="#070b12" stroke="${color}" stroke-width="1" />
           <text x="0" y="-14" fill="#ffffff" font-size="8" font-family="Space Mono" font-weight="bold" text-anchor="middle">${v.id.replace('BHN-0', 'B')}</text>
         `;
 
+        v.el = g;
         container.appendChild(g);
 
         if (isSelected) {
@@ -772,28 +839,67 @@
       });
     }
 
-    // 4. ANIMATE VEHICLE MOVEMENTS ALONG GRID
+    // 4. ANIMATE VEHICLES STRICTLY ALONG ROAD NETWORK
     function animateVehicles() {
       FLEET.forEach(v => {
         if (v.status === 'transit' || v.status === 'charging') {
-          const dx = v.targetX - v.x;
-          const dy = v.targetY - v.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const fromNode = ROAD_NODES[v.fromNodeId];
+          const toNode = ROAD_NODES[v.toNodeId];
 
-          if (dist < 4) {
-            // Pick next random waypoint on road
-            const nextWp = WAYPOINTS[Math.floor(Math.random() * WAYPOINTS.length)];
-            v.targetX = nextWp.x;
-            v.targetY = nextWp.y;
-          } else {
-            const step = (v.speed / 20) * 0.9;
-            v.x += (dx / dist) * step;
-            v.y += (dy / dist) * step;
+          if (fromNode && toNode) {
+            const dx = toNode.x - fromNode.x;
+            const dy = toNode.y - fromNode.y;
+            const edgeDist = Math.hypot(dx, dy) || 1;
+            
+            // Advance progress strictly along this road line
+            const step = (v.speed / 20) * 0.45;
+            v.progress += step / edgeDist;
+
+            if (v.progress >= 1.0) {
+              v.progress = 0.0;
+              const prevFrom = v.fromNodeId;
+              v.fromNodeId = v.toNodeId;
+              
+              // Arrived at intersection: choose next connecting road
+              const atNode = ROAD_NODES[v.fromNodeId];
+              const neighbors = atNode.neighbors;
+              // Avoid immediate 180° turnaround if alternative road options exist
+              const options = neighbors.length > 1 
+                ? neighbors.filter(nid => nid !== prevFrom) 
+                : neighbors;
+
+              v.toNodeId = options[Math.floor(Math.random() * options.length)];
+              v.x = atNode.x;
+              v.y = atNode.y;
+            } else {
+              // Exact interpolated position on road line (never diagonal!)
+              v.x = fromNode.x + dx * v.progress;
+              v.y = fromNode.y + dy * v.progress;
+            }
+
+            v.currentBlock = getNearestBlockName(v.x, v.y);
+
+            // Update SVG position directly for smooth 60fps performance
+            if (v.el) {
+              v.el.setAttribute('transform', `translate(${v.x}, ${v.y})`);
+            }
+
+            // Sync selection ring
+            if (v.id === selectedVehicleId) {
+              const ring = document.getElementById('selection-ring');
+              if (ring) {
+                ring.setAttribute('cx', v.x);
+                ring.setAttribute('cy', v.y);
+              }
+              const blkEl = document.getElementById('vehicle-block');
+              if (blkEl) {
+                blkEl.textContent = `Zone: ${v.currentBlock} Avenue`;
+              }
+            }
           }
         }
       });
 
-      renderFleet();
       requestAnimationFrame(animateVehicles);
     }
 
@@ -906,7 +1012,8 @@
 
     // Bootstrap
     window.addEventListener('DOMContentLoaded', () => {
-      selectVehicle('BHN-042');
+      renderFleet();
+      selectVehicle('BHN-001');
       animateVehicles();
     });
   </script>
