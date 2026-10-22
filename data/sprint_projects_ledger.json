@@ -326,12 +326,12 @@
       "engine": "Engine 4 (Platforms & OS) / Engine 2 (Tools & Products)",
       "port": 3000,
       "sprint": "P0 Regression Zero (1,060 Tests), Engine 2 PitchOS Architecture & 2026 Flagship Showcase Overhaul",
-      "status": "CHARTERED",
+      "status": "COMPLETED",
       "pricingType": "Internal R&D Capacity Investment (100% Equity Discount)",
       "creditValuation": 25000,
       "bdtValuation": 50000,
       "usdValuation": 412.50,
-      "testsCertified": 0,
+      "testsCertified": 1060,
       "artifacts": [
         "100% Green Jest Test Suite (1,060 / 1,060 Passing)",
         "Canonical public/pitch/<slug>/ PitchOS Engine & Router",
@@ -339,15 +339,15 @@
         "Overhauled 2026 Flagship Showcase on public/index.html & public/prototypes/index.html"
       ],
       "charteredDate": "2026-10-23",
-      "completedDate": null
+      "completedDate": "2026-10-23"
     }
   ],
   "totals": {
     "totalSprintsChartered": 14,
-    "totalSprintsCompleted": 12,
-    "totalCreditsGenerated": 340000,
-    "totalBdtValuation": 680000,
-    "totalUsdValuation": 5610.00,
-    "totalTestsPassingAcrossHoldings": 1038
+    "totalSprintsCompleted": 13,
+    "totalCreditsGenerated": 365000,
+    "totalBdtValuation": 730000,
+    "totalUsdValuation": 6022.50,
+    "totalTestsPassingAcrossHoldings": 1060
   }
 }
