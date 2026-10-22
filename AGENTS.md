@@ -184,6 +184,82 @@ Whenever the Founder triggers "proceed to day opening SOP" or "morning briefing"
 3. **P0 Triage Queue Before New Features**: All critical regressions, database errors, or service degradations discovered in the morning sweep are prioritized and remediated **BEFORE** touching any new feature sprint or commercial prototype.
 4. **Publish Morning Readiness Matrix**: Central CoS synthesizes all venture receipts into the unified Conglomerate Morning Fleet Readiness Board (🟢 Nominal / 🟡 Degraded / 🔴 Incident).
 
+---
+
+### 13. The 5 Immutable Conglomerate Engines & Engine 2 "Tools & Products" Taxonomy
+To preserve architectural discipline, prevent entity fragmentation, and maintain clear investor governance:
+1. **The 5 Canonical Engines Invariant (Zero Engine Proliferation)**:
+   - The conglomerate structure is permanently and immutably capped at exactly **5 Engines**:
+     * **Engine 1: Agent10x.ai (`Agent X`)**: Autonomous Digital Workforce, multi-agent mesh, profile intelligence.
+     * **Engine 2: Bespoke Agency Services & Solutions (`Agency Bespoke Service`)**: Enterprise retainers, custom engineering, and one-off high-impact products.
+     * **Engine 3: Commerce10x.ai (`Commerce X`)**: Dynamic Commerce Engine, affiliate attribution, and phygital retail.
+     * **Engine 4: Platforms & Operating Systems**: Core infrastructure, Mother OS, multi-tenant container orchestration, and township operating systems.
+     * **Engine 5: Media10x (`Media X`)**: Content distribution, viral broadcast, creator networks, and multi-channel media.
+   - **Strict Prohibition**: Central CoS, Venture CoS, and digital leads are strictly forbidden from proposing or creating additional engines.
+2. **Engine 2 "Tools & Products" Sub-Division**:
+   - One-off high-impact client deliverables—including **Interactive Web Presentations & Presenter Co-Pilots (PitchOS)**, **Interactive Commercial Proposals (`/p/<token>`)**, and **Bespoke ROI & Spatial Calculators**—are formally classified under **Engine 2: Tools & Products**.
+   - **Clean Directory Segregation**:
+     * `public/prototypes/<slug>/`: Reserved strictly for functional MVPs and 3D spatial twins.
+     * `public/p/<token>/`: Reserved for official commercial proposals and legal contracts.
+     * `public/pitch/<slug>/`: Reserved for Engine 2 Interactive Presentations & Smartphone Presenter Co-Pilots.
+
+---
+
+### 14. Dual Quotation & Multi-Tier Partner Negotiation Protocol
+When collaborating with event agencies, production partners, or tier-2 intermediaries (e.g., Rishka, Madman):
+1. **The Information Asymmetry Law (Zero Marginal Cost Disclosure)**:
+   - Never reveal internal profit margins, low marginal server costs, or token compute rates to intermediary partners.
+   - Position GRO10X deliverables as heavy, capital-intensive, high-value proprietary deep tech (dedicated GPU clusters, specialized neural voice models, fail-safe edge staging).
+2. **The Gimmick Hardware Elimination Mandate**:
+   - Pre-emptively identify and advise against high-risk physical hardware gimmicks (e.g., 100 rented smartphones, battery docks, Wi-Fi radio choking in crowded halls).
+   - Pivot client attention toward zero-liability, high-impact software and AI showstoppers (real-time multimodal voice cloning, panoramic LED stage controllers, and sub-second optical entry gates).
+3. **The Dual Quotation Architecture**:
+   - Every multi-tier agency pitch must produce two synchronized, pre-rendered A4 PDF masters:
+     * **Version A (Internal B2B Estimate)**: Issued to the partner showing pure software IP, cloud infrastructure, AI tokens, and technical direction.
+     * **Version B (Official Partner-Branded Client Quotation)**: Branded 100% under the partner agency's letterhead and design system, incorporating their hardware procurement, edge rig, and production markup, ready for immediate client submission.
+4. **Native Headless Chromium PDF Compilation**:
+   - Both documents must be compiled directly from print-calibrated A4 HTML/CSS templates using headless Chrome to guarantee 300 DPI single-page geometry, active hyperlinks to live staging prototypes, and authentic typography matching partner branding.
+
+---
+
+### 15. Mother OS Canonical Squad Directory & Anti-Bottleneck Routing Mandate
+To maintain high-velocity execution, prevent single-agent hallucination, and respect specialized domain craftsmanship:
+1. **Anti-Bottleneck Law (Strict Prohibition on Rapid Prototyper Overuse)**:
+   - Central CoS is **STRICTLY FORBIDDEN** from defaulting all Mother OS tasks to the `Rapid Prototyper`.
+   - The `Rapid Prototyper` is reserved **ONLY** for experimental, unclosed pre-sales 3D proofs-of-concept.
+2. **The 11 Canonical Mother OS Digital Employee Disciplines**:
+   - **`[1] Pitch & Presentation Systems Lead`**: Owns PitchOS, TV presentation decks, smartphone presenter co-pilots, and boardroom visual systems (`public/pitch/`).
+   - **`[2] Proposal Engine & Deal Structurer`**: Owns commercial proposals, pricing tiers, contract agreements, and quotation PDFs (`public/p/`, `public/proposals/`).
+   - **`[3] Portal & Frontend Engineer`**: Owns public websites, landing pages, multi-engine workspace UI, client dashboards, and design system tokens (`public/`, `public/workspace/`, `public/css/`).
+   - **`[4] Backend & Data Layer Engineer`**: Owns core Express routes, database schemas, Supabase/SQLite integrity, and API performance (`server.js`, `src/routes/`, `src/services/db.js`).
+   - **`[5] Bot & Automation Engineer`**: Owns Telegram bots (`@purplemanosbot`, `@Digivault20bot`), cron jobs, notification bridges, and webhook ingress (`src/services/bot/`).
+   - **`[6] QA & Automation Lead`**: Owns test harnesses, regression certification, Jest suites, and sub-second mock fixtures (`tests/`, `scripts/`).
+   - **`[7] Client Operations & CRM Lead`**: Owns client onboarding, project handover cockpits, and lead lifecycle tracking (`src/routes/clients.js`, `src/routes/leads.js`).
+   - **`[8] Corporate Training Director`**: Owns enterprise curriculum PDFs, BPO upskilling modules, and practical syllabus designs (e.g., Serviq AI Workforce).
+   - **`[9] Head of People Onboarding`**: Owns internal apprentice onboarding, role credentials, and staff directory management (`src/routes/team.js`).
+   - **`[10] Finance Executive & Billing Lead`**: Owns double-entry credit ledgers, bKash/Stripe reconciliations, and invoicing (`src/routes/invoices.js`, `data/sprint_projects_ledger.json`).
+   - **`[11] Rapid Prototyper`**: Reserved strictly for raw, exploratory pre-sales MVPs and 3D proof-of-concept sandboxes (`public/prototypes/`).
+3. **Mandatory Routing Verification**:
+   - Before issuing any delegation directive, Central CoS must cross-reference this directory and address the copy-paste prompt explicitly to the dedicated domain specialist.
+
+---
+
+### 16. Engine 2 "PitchOS" Product Funnel & Telegram Ingress Invariant
+For all productized micro-SaaS and bespoke tools commercialized under Engine 2:
+1. **Dual-Surface Showcase Invariant**:
+   - Every pitch product page must visually contrast **Surface A (The Audience TV Display)** against **Surface B (The Private Presenter Co-Pilot)** with active live links to production demos (e.g. Bahon, Shomvob).
+2. **Three-Tier Transparent Pricing Standard**:
+   - Rate cards must publish clear, unpadded tiers pegged to GRO10X Credits (1 Credit = BDT 2.00):
+     * Standard Conversion (Up to 12 slides): ৳25,000 BDT (12,500 Credits) — 24h SLA.
+     * Interactive Enterprise (Up to 20 slides + live ROI calculator): ৳45,000 BDT (22,500 Credits) — 48h SLA.
+     * Venture Boardroom Flagship (Unlimited + spatial twins + custom AI art): ৳75,000 BDT (37,500 Credits).
+3. **Instant Telegram Ingress & Founder Handoff**:
+   - Order modals must submit to `POST /api/pitch/intake`.
+   - The backend must generate an atomic tracking reference (`PITCH-YYYY-XXXX`), persist to `data/pitch_intakes.json`, and immediately dispatch an urgent Markdown lead alert to the Founder's Telegram bot with a 1-tap WhatsApp deep-link.
+4. **Mandatory Test Coverage**:
+   - Every product intake route must be certified by an automated test suite (`tests/pitchos_intake.test.js`) verifying route rendering, validation rejections, atomic storage, and ledger retrieval.
+
+
 
 
 
