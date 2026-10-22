@@ -75,13 +75,15 @@ router.all(['/click/:shortCode', '/r/:shortCode'], asyncHandler(async (req, res)
   const resolved = await recordClickAndResolve(shortCode);
   if (!resolved) return fail(res, 'Referral link not found', 404);
 
-  // Set 30-day attribution cookie
-  res.cookie('dce_ref', resolved.shortCode, {
+  // Set 30-day attribution cookies (dce_ref and gro10x_aff_ref)
+  const cookieOpts = {
     maxAge: 30 * 24 * 60 * 60 * 1000,
     httpOnly: false,
     sameSite: 'lax',
     path: '/'
-  });
+  };
+  res.cookie('dce_ref', resolved.shortCode, cookieOpts);
+  res.cookie('gro10x_aff_ref', resolved.shortCode, cookieOpts);
 
   if (req.query.redirect === 'true' && resolved.destinationUrl) {
     return res.redirect(resolved.destinationUrl);
@@ -97,12 +99,14 @@ router.post('/click', asyncHandler(async (req, res) => {
   const resolved = await recordClickAndResolve(shortCode);
   if (!resolved) return fail(res, 'Referral link not found', 404);
 
-  res.cookie('dce_ref', resolved.shortCode, {
+  const cookieOpts = {
     maxAge: 30 * 24 * 60 * 60 * 1000,
     httpOnly: false,
     sameSite: 'lax',
     path: '/'
-  });
+  };
+  res.cookie('dce_ref', resolved.shortCode, cookieOpts);
+  res.cookie('gro10x_aff_ref', resolved.shortCode, cookieOpts);
 
   return ok(res, resolved);
 }));

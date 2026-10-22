@@ -340,14 +340,36 @@
       ],
       "charteredDate": "2026-10-23",
       "completedDate": "2026-10-23"
+    },
+    {
+      "id": "PRJ-PITCHOS-INBOUND-FUNNEL",
+      "venture": "Mother OS (Engine 2: Tools & Products)",
+      "engine": "Engine 2: Bespoke Agency Services & Solutions",
+      "port": 3000,
+      "sprint": "PitchOS Commercial Inbound Intake Funnel, Dual-Surface Preview & Telegram Lead Pipeline",
+      "status": "COMPLETED",
+      "pricingType": "Productized Micro-SaaS Ingress",
+      "creditValuation": 30000,
+      "bdtValuation": 60000,
+      "usdValuation": 495.00,
+      "testsCertified": 7,
+      "artifacts": [
+        "High-Converting PitchOS Landing Page & Live Dual-Surface Comparison (public/pitch/index.html)",
+        "Interactive Deck Intake Form & File Upload Pipeline",
+        "API Route POST /api/pitch/intake with Lead Validation & Telegram Alert",
+        "3-Tier Commercial Pricing Matrix (৳25k / ৳45k / ৳75k)",
+        "Automated Test Coverage Suite (tests/pitchos_intake.test.js)"
+      ],
+      "charteredDate": "2026-10-23",
+      "completedDate": "2026-10-23"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 14,
-    "totalSprintsCompleted": 13,
-    "totalCreditsGenerated": 365000,
-    "totalBdtValuation": 730000,
-    "totalUsdValuation": 6022.50,
-    "totalTestsPassingAcrossHoldings": 1060
+    "totalSprintsChartered": 15,
+    "totalSprintsCompleted": 14,
+    "totalCreditsGenerated": 395000,
+    "totalBdtValuation": 790000,
+    "totalUsdValuation": 6517.50,
+    "totalTestsPassingAcrossHoldings": 1067
   }
 }

@@ -84,6 +84,7 @@ const catalogRoutes = require('./catalog');
 const webhooksRoutes = require('./webhooks');
 const meetCopilotRoutes = require('./meet-copilot');
 const platformsRoutes = require('./platforms');
+const pitchRoutes = require('./pitch');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -217,6 +218,7 @@ router.use('/catalog', catalogRoutes);
 router.use('/public/proposals', proposalsRoutes);
 router.use('/webhooks', webhooksRoutes);
 router.use('/platforms', platformsRoutes);
+router.use('/pitch', pitchRoutes);
 
 // Public Client Phone Check (used by chat widget — rate-limited & safe)
 router.get('/public/client-check', asyncHandler(async (req, res) => {
