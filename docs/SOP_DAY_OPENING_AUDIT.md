@@ -14,7 +14,7 @@ GRO10X operates 6 autonomous conglomerate ventures. Rather than operating reacti
 
 ---
 
-## 🗺️ The 6 Conglomerate Ventures Roster
+## 🗺️ The 7 Conglomerate Ventures Roster
 
 | Code | Venture Entity | Lead Discipline | Canonical Host / Port |
 | :---: | :--- | :--- | :--- |
@@ -24,6 +24,7 @@ GRO10X operates 6 autonomous conglomerate ventures. Rather than operating reacti
 | **`[V4]`** | **ToffeeCon 2026** | Venture CoS (`D:\Toffeecon`) | Port 5000 / Render Cloud (`toffeecon-2026.onrender.com`) |
 | **`[V5]`** | **Agent10x.ai** | Venture CoS | Specialized Autonomous Bot & Agent Mesh |
 | **`[V6]`** | **Commerce10x.ai** | Venture CoS | Digital Commerce Engine (DCE) & Affiliate Ingress |
+| **`[V7]`** | **GRO10X Capital (Capital10x)** | Venture CoS (`D:\gro10x-capital`) | `https://capital.gro10x.ai` (Port 3000 / Next.js) |
 
 ---
 

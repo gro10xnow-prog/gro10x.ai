@@ -362,14 +362,36 @@
       ],
       "charteredDate": "2026-10-23",
       "completedDate": "2026-10-23"
+    },
+    {
+      "id": "PRJ-CAPITAL-GENESIS-S0",
+      "venture": "GRO10X Capital (Capital10x)",
+      "engine": "Engine 6: Fintech & Capital Markets",
+      "port": 3000,
+      "sprint": "Sprint 0: 360° Forensic Audit, 26-Table Supabase Schema Sync & Squad Indexing",
+      "status": "COMPLETED",
+      "pricingType": "Proprietary Venture Equity R&D",
+      "creditValuation": 50000,
+      "bdtValuation": 100000,
+      "usdValuation": 825.00,
+      "testsCertified": 36,
+      "artifacts": [
+        "Next.js 16 App Router & Turbopack Core (D:\\gro10x-capital)",
+        "26-Table Supabase Schema with Zero-Floating Point NUMERIC Invariants (teujfcjoyxzmsyoyxfcy)",
+        "3-Bot Telegram Mesh & Webhooks (@gro10xmanbot, @gro10xcapbot, @gro10xbizbot)",
+        "15-Tab Executive Admin Hub, Secondary P2P Market & Work Order Ledger (/track/maats-cottage)",
+        "Venture Constitution AGENTS.md with Immutable [S1]-[S4] Roster"
+      ],
+      "charteredDate": "2026-10-23",
+      "completedDate": "2026-10-23"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 15,
-    "totalSprintsCompleted": 14,
-    "totalCreditsGenerated": 395000,
-    "totalBdtValuation": 790000,
-    "totalUsdValuation": 6517.50,
-    "totalTestsPassingAcrossHoldings": 1067
+    "totalSprintsChartered": 16,
+    "totalSprintsCompleted": 15,
+    "totalCreditsGenerated": 445000,
+    "totalBdtValuation": 890000,
+    "totalUsdValuation": 7342.50,
+    "totalTestsPassingAcrossHoldings": 1103
   }
 }

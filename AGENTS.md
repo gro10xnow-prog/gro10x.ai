@@ -177,25 +177,26 @@ Whenever the Founder triggers "proceed to day closing SOP" or "EOD report", Cent
 
 ---
 
-### 12. Day Opening SOP & 6-Venture Morning Health Sweep Protocol
-Whenever the Founder triggers "proceed to day opening SOP" or "morning briefing", Central CoS must strictly adhere to [`docs/SOP_DAY_OPENING_AUDIT.md`](file:///d:/gro10x.ai/docs/SOP_DAY_OPENING_AUDIT.md) and execute the synchronized proactive morning standup across all 6 conglomerate ventures (`[V1] Gro10x.ai`, `[V2] PurpleBot`, `[V3] Sahanabag`, `[V4] ToffeeCon`, `[V5] Agent10x.ai`, `[V6] Commerce10x.ai`):
+### 12. Day Opening SOP & 7-Venture Morning Health Sweep Protocol
+Whenever the Founder triggers "proceed to day opening SOP" or "morning briefing", Central CoS must strictly adhere to [`docs/SOP_DAY_OPENING_AUDIT.md`](file:///d:/gro10x.ai/docs/SOP_DAY_OPENING_AUDIT.md) and execute the synchronized proactive morning standup across all 7 conglomerate ventures (`[V1] Gro10x.ai`, `[V2] PurpleBot`, `[V3] Sahanabag`, `[V4] ToffeeCon`, `[V5] Agent10x.ai`, `[V6] Commerce10x.ai`, `[V7] GRO10X Capital`):
 1. **Self-Audit Mother OS (`[V1]` Gro10x.ai)**: Central CoS verifies edge deployment, API health, active CRONs, and automated test suites.
-2. **Universal Diagnostic Baton Generation (`[V2]`–`[V6]`)**: Central CoS outputs the 60-second standardized forensic probe prompt for the Founder to dispatch to each Venture CoS.
+2. **Universal Diagnostic Baton Generation (`[V2]`–`[V7]`)**: Central CoS outputs the 60-second standardized forensic probe prompt for the Founder to dispatch to each Venture CoS.
 3. **P0 Triage Queue Before New Features**: All critical regressions, database errors, or service degradations discovered in the morning sweep are prioritized and remediated **BEFORE** touching any new feature sprint or commercial prototype.
 4. **Publish Morning Readiness Matrix**: Central CoS synthesizes all venture receipts into the unified Conglomerate Morning Fleet Readiness Board (🟢 Nominal / 🟡 Degraded / 🔴 Incident).
 
 ---
 
-### 13. The 5 Immutable Conglomerate Engines & Engine 2 "Tools & Products" Taxonomy
+### 13. The 6 Immutable Conglomerate Engines & Engine 2 "Tools & Products" Taxonomy
 To preserve architectural discipline, prevent entity fragmentation, and maintain clear investor governance:
-1. **The 5 Canonical Engines Invariant (Zero Engine Proliferation)**:
-   - The conglomerate structure is permanently and immutably capped at exactly **5 Engines**:
+1. **The 6 Canonical Engines Invariant (Zero Engine Proliferation)**:
+   - By executive decree of the Founder & CEO, the conglomerate structure is permanently and immutably capped at exactly **6 Engines**:
      * **Engine 1: Agent10x.ai (`Agent X`)**: Autonomous Digital Workforce, multi-agent mesh, profile intelligence.
      * **Engine 2: Bespoke Agency Services & Solutions (`Agency Bespoke Service`)**: Enterprise retainers, custom engineering, and one-off high-impact products.
      * **Engine 3: Commerce10x.ai (`Commerce X`)**: Dynamic Commerce Engine, affiliate attribution, and phygital retail.
      * **Engine 4: Platforms & Operating Systems**: Core infrastructure, Mother OS, multi-tenant container orchestration, and township operating systems.
      * **Engine 5: Media10x (`Media X`)**: Content distribution, viral broadcast, creator networks, and multi-channel media.
-   - **Strict Prohibition**: Central CoS, Venture CoS, and digital leads are strictly forbidden from proposing or creating additional engines.
+     * **Engine 6: GRO10X Capital (`Capital10x`)**: Fintech, investment syndication, SME revenue-based financing (RBF), savings, micro-loans, and escrow ledgers.
+   - **Strict Prohibition**: Central CoS, Venture CoS, and digital leads are strictly forbidden from proposing or creating additional engines beyond these 6.
 2. **Engine 2 "Tools & Products" Sub-Division**:
    - One-off high-impact client deliverables—including **Interactive Web Presentations & Presenter Co-Pilots (PitchOS)**, **Interactive Commercial Proposals (`/p/<token>`)**, and **Bespoke ROI & Spatial Calculators**—are formally classified under **Engine 2: Tools & Products**.
    - **Clean Directory Segregation**:
