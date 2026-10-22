@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>GRO10X × SHOMVOB — Mobile Presenter Co-Pilot</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #080C14;
+      color: #E2E8F0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bangla {
+      font-family: 'Hind Siliguri', sans-serif;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Hide scrollbars but allow scrolling */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 select-none">
+
+  <!-- ========================================================= -->
+  <!-- STICKY TOP HUD & CONTROLLER                              -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-50 bg-[#0B101B]/95 backdrop-blur-md border-b border-white/10 px-4 py-3 shadow-2xl">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      
+      <!-- Brand & Mode -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#1CA752] to-[#00F0FF] flex items-center justify-center text-black font-black text-xs shadow-md">
+          G10
+        </div>
+        <div>
+          <div class="text-[11px] font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+            PRESENTER CO-PILOT
+            <span class="w-1.5 h-1.5 rounded-full bg-[#1CA752] animate-pulse"></span>
+          </div>
+          <div class="text-[9px] text-gray-400 mono">Shomvob Pitch • Plabon</div>
+        </div>
+      </div>
+
+      <!-- Live Pitch Pacing Timer -->
+      <div class="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
+        <div class="text-right">
+          <div class="text-[9px] text-gray-400 uppercase mono font-bold">Pacing Timer</div>
+          <div id="timer-display" class="text-sm font-black mono text-[#00F0FF] leading-none">25:00</div>
+        </div>
+        <button id="timer-btn" onclick="toggleTimer()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition active:scale-90">
+          ▶
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Quick Navigation Pills -->
+    <div class="max-w-md mx-auto mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <button onclick="switchTab('script')" id="tab-btn-script" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-[#1CA752] text-black transition shrink-0">
+        🎙️ Script (1-17)
+      </button>
+      <button onclick="switchTab('faq')" id="tab-btn-faq" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        ⚔️ Executive FAQs
+      </button>
+      <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        💬 WhatsApp Handoff
+      </button>
+      <a href="/prototypes/shomvob-pitch/" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-[#00F0FF] border border-[#00F0FF]/30 transition shrink-0 flex items-center gap-1">
+        📺 Live Deck ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN CONTAINER                                            -->
+  <!-- ========================================================= -->
+  <main class="max-w-md mx-auto w-full px-4 pt-4 flex-1">
+
+    <!-- ======================================================= -->
+    <!-- TAB 1: SLIDE-BY-SLIDE PRESENTER SCRIPT                  -->
+    <!-- ======================================================= -->
+    <section id="tab-content-script" class="space-y-4">
+      
+      <!-- Quick Slide Selector Slider / Buttons -->
+      <div class="bg-[#111726] border border-white/10 p-3 rounded-2xl flex items-center justify-between">
+        <button onclick="navigateSlide(-1)" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 text-white flex items-center justify-center font-bold text-sm active:scale-95 transition">
+          ←
+        </button>
+        <div class="text-center">
+          <div class="text-[10px] mono text-[#1CA752] font-bold uppercase tracking-wider">CURRENT SLIDE FOCUS</div>
+          <div id="slide-indicator" class="text-base font-black text-white">Slide 01 of 17</div>
+        </div>
+        <button onclick="navigateSlide(1)" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 text-white flex items-center justify-center font-bold text-sm active:scale-95 transition">
+          →
+        </button>
+      </div>
+
+      <!-- Slide Detail Container -->
+      <div id="script-cards-container">
+        <!-- Dynamically populated or rendered via JS -->
+      </div>
+
+      <!-- Jump Shortcut Bar -->
+      <div class="bg-black/60 p-2.5 rounded-2xl border border-white/10 flex items-center justify-between text-xs text-gray-300">
+        <span class="font-bold text-gray-400">TV Shortcuts:</span>
+        <button onclick="jumpTo(1)" class="px-2 py-1 bg-white/5 rounded-lg hover:text-white">01 Intro</button>
+        <button onclick="jumpTo(7)" class="px-2 py-1 bg-[#1CA752]/20 text-[#34D399] rounded-lg font-bold">07 Audio</button>
+        <button onclick="jumpTo(11)" class="px-2 py-1 bg-white/10 rounded-lg text-white font-bold">11 Switch</button>
+        <button onclick="jumpTo(15)" class="px-2 py-1 bg-white/5 rounded-lg text-[#00F0FF]">15 SME</button>
+        <button onclick="jumpTo(16)" class="px-2 py-1 bg-gradient-to-r from-[#1CA752]/30 to-[#00F0FF]/30 rounded-lg text-white font-bold">16 ARR</button>
+      </div>
+
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- TAB 2: EXECUTIVE FAQ BATTLECARDS                        -->
+    <!-- ======================================================= -->
+    <section id="tab-content-faq" class="hidden space-y-3.5">
+      <div class="bg-gradient-to-r from-[#1CA752]/20 via-[#00F0FF]/20 to-transparent p-3.5 rounded-2xl border border-white/10 mb-2">
+        <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+          <span>⚔️</span> Rifat Bhai & Hasib Bhai Objection Battlecard
+        </h3>
+        <p class="text-[11px] text-gray-300 mt-1">
+          Direct, respectful, bulletproof responses to the 5 most probable tough questions during the pitch.
+        </p>
+      </div>
+
+      <!-- FAQ 1: Tech Workload -->
+      <div class="bg-[#111726] border border-white/10 rounded-2xl p-4 cursor-pointer" onclick="toggleFaq(1)">
+        <div class="flex justify-between items-start gap-2">
+          <div class="font-bold text-sm text-white flex items-center gap-2">
+            <span class="text-[#00F0FF]">Q1:</span>
+            <span>"নাকিব ভাই ও ইন্টারনাল ডেভেলপারদের কি অতিরিক্ত খাটতে হবে?"</span>
+          </div>
+          <span id="faq-arrow-1" class="text-xs text-gray-400">▼</span>
+        </div>
+        <div id="faq-ans-1" class="hidden mt-3 pt-3 border-t border-white/5 text-xs text-gray-300 space-y-2 bangla leading-relaxed">
+          <p class="text-white font-semibold">
+            <b>এক লাইনের উত্তর:</b> "না হাসিব ভাই, নাকিব ভাইয়ের বর্তমান কোডবেসে এক লাইনও হাত দেওয়া লাগবে না।"
+          </p>
+          <ul class="list-disc pl-4 space-y-1 text-gray-300">
+            <li><b>ডিকাপলড আর্কিটেকচার:</b> পুরো এআই ইঞ্জিন (ট্যালেন্ট-সেন্ট্রি, ভয়েস অ্যাসিস্ট্যান্ট, ডিমান্ড স্ক্র্যাপার) চলবে গ্রো-টেন-এক্সের ক্লাউডে।</li>
+            <li><b>জিরো মাইগ্রেশন:</b> শম্ভবের প্রোডাকশন পোস্টগ্রেস ডাটাবেজে কোনো স্কিমা চেঞ্জ বা ডাউনটাইম রিস্ক নেই। শুধু নিরাপদ এইচটিটিপিএস ওয়েবহুক।</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- FAQ 2: Offline Placement vs AI -->
+      <div class="bg-[#111726] border border-white/10 rounded-2xl p-4 cursor-pointer" onclick="toggleFaq(2)">
+        <div class="flex justify-between items-start gap-2">
+          <div class="font-bold text-sm text-white flex items-center gap-2">
+            <span class="text-[#1CA752]">Q2:</span>
+            <span>"আমরা তো অলরেডি এসএমই রিক্রুট করছি, এআই যোগ করে কী লাভ?"</span>
+          </div>
+          <span id="faq-arrow-2" class="text-xs text-gray-400">▼</span>
+        </div>
+        <div id="faq-ans-2" class="hidden mt-3 pt-3 border-t border-white/5 text-xs text-gray-300 space-y-2 bangla leading-relaxed">
+          <p class="text-white font-semibold">
+            <b>এক লাইনের উত্তর:</b> "ভ্যালুয়েশন মাল্টিপল ১.৫x থেকে ১৫x এ নেওয়া।"
+          </p>
+          <ul class="list-disc pl-4 space-y-1 text-gray-300">
+            <li><b>আরপিও ক্যাপ:</b> ট্র্যাডিশনাল স্টাফিং এজেন্সির ভ্যালুয়েশন ভিসিরা ২x-এর বেশি দেয় না, কারণ সেলস বাড়াতে গেলে রিক্রুটার বাড়াতে হয়।</li>
+            <li><b>সাস মাল্টিপল:</b> বেটারপ্লেস ($৭০০M+) বা ফাউন্টেন ($১B+) প্রমাণ করেছে যে সফটওয়্যার-ড্রিভেন ভেরিফিকেশনে ভিসিরা ১০x–১৫x মাল্টিপল দেয়। সিরিজ-এ তোলায় এটাই হবে আমাদের সবচেয়ে বড় অস্ত্র।</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- FAQ 3: KAM Motivation -->
+      <div class="bg-[#111726] border border-white/10 rounded-2xl p-4 cursor-pointer" onclick="toggleFaq(3)">
+        <div class="flex justify-between items-start gap-2">
+          <div class="font-bold text-sm text-white flex items-center gap-2">
+            <span class="text-[#F59E0B]">Q3:</span>
+            <span>"১০ জন কেএএম কেন নিছক জব পোস্ট বাদ দিয়ে এআই ডেক পিচ করবে?"</span>
+          </div>
+          <span id="faq-arrow-3" class="text-xs text-gray-400">▼</span>
+        </div>
+        <div id="faq-ans-3" class="hidden mt-3 pt-3 border-t border-white/5 text-xs text-gray-300 space-y-2 bangla leading-relaxed">
+          <p class="text-white font-semibold">
+            <b>এক লাইনের উত্তর:</b> "কারণ প্রতিটি সফল ডিলে কেএএম প্রতি মাসে ৯,০০০ টাকা ফিক্সড ক্যাশ ইনসেন্টিভ পাবে।"
+          </p>
+          <ul class="list-disc pl-4 space-y-1 text-gray-300">
+            <li><b>৫০% ডিরেক্ট সেলস ইনসেন্টিভ:</b> শম্ভবের ৩০% কাটের অর্ধেক (১৫% গ্রস) সরাসরি কেএএম-এর অ্যাকাউন্টে ঢুকবে। ৫টা ক্লায়েন্ট ক্লোজ করলেই তার বেসিক স্যালারির দ্বিগুণ কমিশন।</li>
+            <li><b>নেভার ফ্লাই ব্লাইন্ড:</b> কেএএমদের মুখস্থ লেকচার দিতে হবে না। ২৪ ঘণ্টার মধ্যে গ্রো-টেন-এক্স ক্লায়েন্টের লোগো ও পেইন-পয়েন্ট দিয়ে রেডিমেড ইন্টারঅ্যাকটিভ প্রোটোটাইপ বানিয়ে দেবে।</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- FAQ 4: Rural Women & Low Literacy -->
+      <div class="bg-[#111726] border border-white/10 rounded-2xl p-4 cursor-pointer" onclick="toggleFaq(4)">
+        <div class="flex justify-between items-start gap-2">
+          <div class="font-bold text-sm text-white flex items-center gap-2">
+            <span class="text-[#8B5CF6]">Q4:</span>
+            <span>"গ্রামের গার্মেন্টস আপুরা কি সত্যিই হোয়াটসঅ্যাপ ভয়েস দিয়ে ফরম পূরণ করবে?"</span>
+          </div>
+          <span id="faq-arrow-4" class="text-xs text-gray-400">▼</span>
+        </div>
+        <div id="faq-ans-4" class="hidden mt-3 pt-3 border-t border-white/5 text-xs text-gray-300 space-y-2 bangla leading-relaxed">
+          <p class="text-white font-semibold">
+            <b>এক লাইনের উত্তর:</b> "তারা অলরেডি বাড়ি কথা বলার জন্য টেক্সটের চেয়ে ১০ গুণ বেশি ভয়েস নোট পাঠায়।"
+          </p>
+          <ul class="list-disc pl-4 space-y-1 text-gray-300">
+            <li><b>ন্যাচারাল বিহেভিয়ার:</b> আমরা নতুন কোনো অ্যাপ ডাউনলোড করতে বলছি না। হোয়াটসঅ্যাপ বা ইমোতে যেমন কথা বলে, শম্ভব শুনির সাথে ঠিক তেমনই কথা বলবে।</li>
+            <li><b>ডোনার গ্র্যান্ট আনলক:</b> এটাই ইউনিসেফ P2E এবং গেটস ফাউন্ডেশনের জেন্ডার ইনক্লুশন উইন্ডো থেকে $500k–$1M গ্র্যান্ট টেনে আনবে।</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- FAQ 5: GRO10X's Cut -->
+      <div class="bg-[#111726] border border-white/10 rounded-2xl p-4 cursor-pointer" onclick="toggleFaq(5)">
+        <div class="flex justify-between items-start gap-2">
+          <div class="font-bold text-sm text-white flex items-center gap-2">
+            <span class="text-white">Q5:</span>
+            <span>"গ্রো-টেন-এক্সের ব্যবসায়িক স্বার্থ কী? তোমরা কী পাচ্ছ?"</span>
+          </div>
+          <span id="faq-arrow-5" class="text-xs text-gray-400">▼</span>
+        </div>
+        <div id="faq-ans-5" class="hidden mt-3 pt-3 border-t border-white/5 text-xs text-gray-300 space-y-2 bangla leading-relaxed">
+          <p class="text-white font-semibold">
+            <b>এক লাইনের উত্তর:</b> "আমরা শম্ভবের সাথে লং-টার্ম সিরিজ-এ ইক্যুইটি ভ্যালুয়েশন ও রেভিনিউ শেয়ারে পার্টনার হচ্ছি।"
+          </p>
+          <ul class="list-disc pl-4 space-y-1 text-gray-300">
+            <li><b>সাকসেস-অ্যালাইনড:</b> পাইলট টেস্টে শম্ভবের কোনো খরচ নেই। এসএমই ডিলের ৭০% গ্রো-টেন-এক্সের ডেলিভারি কস্ট কভার করবে, আর শম্ভবের ৩০% হলো পিওর নিট মার্জিন।</li>
+            <li><b>নো ভেন্ডর ডায়নামিক:</b> আমি শম্ভবের স্ট্র্যাটেজি জানি বলেই এটা কোনো সফটওয়্যার সেলস পিচ না, এটা একটি কো-ভেঞ্চার গ্রোথ ইঞ্জিন।</li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- TAB 3: WHATSAPP GROUP HANDOFF MESSAGE                   -->
+    <!-- ======================================================= -->
+    <section id="tab-content-whatsapp" class="hidden space-y-4">
+      <div class="bg-gradient-to-r from-emerald-950/60 to-black p-4 rounded-2xl border border-emerald-500/30">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-bold text-emerald-400 mono">WHATSAPP EXECUTIVE BRIEF</span>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">1-Tap Copy</span>
+        </div>
+        <p class="text-xs text-gray-300">
+          Paste directly into your 3-person WhatsApp group with Rifat Bhai & Hasib Bhai right before the meeting.
+        </p>
+      </div>
+
+      <!-- Copyable Box -->
+      <div class="relative bg-black/80 border border-white/10 rounded-2xl p-4 text-xs font-mono text-gray-200 leading-relaxed whitespace-pre-wrap select-text" id="whatsapp-text">Good morning Rifat Bhai & Hasib Bhai,
+
+Ahead of today’s strategic co-venture partnership alignment at 12:00 PM BST (Baridhara DOHS), sharing the canonical interactive presentation system and financial simulator:
+
+🔗 Live Executive Deck:
+https://gro10x-ai.vercel.app/prototypes/shomvob-pitch/
+
+Key Strategic Pillars for Today’s Discussion:
+1. Transforming Shomvob from an RPO staffing agency into South Asia’s frontline workforce super-app (10x–15x Series A SaaS multiple).
+2. Voice-first vernacular AI ("Shomvob Shuni") unlocking new non-dilutive grant channels from UNICEF P2E and Gates Foundation.
+3. High-margin cross-border corridors (GCC & Japan: $200–$500 net margin per certified worker).
+4. 2,500 SME Transformation Alliance: 30% recurring software revenue share to Shomvob (with 50% direct recurring cash commission for your 10 KAMs).
+5. Zero-risk 30-day sprint charter (100% decoupled microservice architecture — zero code changes to Naqib Bhai’s core production stack).
+
+Plabon is arriving shortly. Looking forward to a landmark co-venture milestone today.
+
+Warm regards,
+Zayan
+Executive Operations & Partnerships | GRO10X Holdings</div>
+
+      <button onclick="copyWhatsApp()" id="copy-btn" class="w-full bg-[#1CA752] hover:bg-[#168541] text-white font-extrabold py-3.5 rounded-2xl text-sm transition shadow-xl active:scale-95 flex items-center justify-center gap-2">
+        <span id="copy-icon">📋</span>
+        <span id="copy-label">Copy WhatsApp Message to Clipboard</span>
+      </button>
+
+      <div class="p-3 bg-white/5 rounded-xl border border-white/5 text-[11px] text-gray-400">
+        💡 <b>Tactical Advice:</b> Send this to the WhatsApp group ~15-20 minutes before walking into the room. Hasib Bhai and Rifat Bhai will have it open on their phones while you project on the big screen!
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- SCRIPT ENGINE                                             -->
+  <!-- ========================================================= -->
+  <script>
+    const SLIDES_DATA = [
+      {
+        num: 1,
+        title: "The Strategic Inflection Point & Series A Vision",
+        cue: "Start standing, looking at both Rifat & Hasib Bhai. Don't touch the laptop yet.",
+        time: "0:00 - 1:30",
+        scriptBn: "রিফাত ভাই, হাসিব ভাই—আজকে আমি কোনো আউটসাইড ভেন্ডর বা থার্ড পার্টি এজেন্সি হিসেবে আসি নাই। শম্ভবের প্রতিটি রিক্রুটার কল, ইউনিসেফের মিটিং, আর কেএএম টিমের ফিল্ড স্ট্রাগল আমি নিজ হাতে লিড করেছি। শম্ভব এখন যে পয়েন্টে দাঁড়িয়ে আছে, সেটা একটা ডিফেইনিং মোমেন্ট।",
+        scriptEn: "Are we going to remain a traditional RPO staffing agency where scaling revenue requires hiring more recruiters—capping our valuation at 1.5x–2.5x? Or do we become the BetterPlace or Fountain of South Asia, commanding a 10x–15x SaaS multiple at Series A?",
+        trap: "Avoid overly technical or robotic engineering jargon. Speak as their former project lead."
+      },
+      {
+        num: 2,
+        title: "Our Proven Track Record Together",
+        cue: "Point to the 4 stats on the big screen: UNICEF, Gates, Campus, 10 KAMs.",
+        time: "1:30 - 3:00",
+        scriptBn: "আমাদের এই পার্টনারশিপ কোনো হাইপোথিসিস না। আমরা একসাথে ইউনিসেফের P2E ফ্রেমওয়ার্ক বানিয়েছি, বিল অ্যান্ড মেলিন্ডা গেটস ফাউন্ডেশনের মাইলস্টোন আনলক করেছি, ক্যাম্পাস-টু-ক্যারিয়ার স্কেল করেছি, এবং ১০ জনের সেলস টিমকে রি-স্ট্রাকচার করেছি।",
+        scriptEn: "We already have donor credibility and dominant domestic employer trust. Now we infuse software intelligence to turn transactional recruiter hustle into high-margin recurring cash flows.",
+        trap: "Don't dwell too long on the past—pivot swiftly to the future leap."
+      },
+      {
+        num: 3,
+        title: "Shomvob AI Academy: 5 High-Demand Career Tracks",
+        cue: "Point out the 5 visual cards: Retail, Delivery, RMG/Care, CV, Overseas.",
+        time: "3:00 - 5:00",
+        scriptBn: "ফ্রন্টলাইন ওয়ার্কাররা লম্বা টেক্সট পড়ে না। তাই আমরা পাঁচটা হাই-ডিমান্ড ক্যারিয়ার ট্র্যাক ডিজাইন করেছি: রিটেইল ক্যাশিয়ার, ডেলিভারি রাইডার, গার্মেন্টস ও কেয়ার, ডিজিটাল সিভি, এবং ওভারসিজ প্রি-ডিপার্চার।",
+        scriptEn: "When Shwapno, Unimart, or Pathao receives candidates who finished our 15-minute interactive video track with a verified QR badge, Shomvob is no longer selling raw manpower—we are selling certified, plug-and-play productivity.",
+        trap: "Remind them that employers sponsor these video micro-courses."
+      },
+      {
+        num: 4,
+        title: "Empirical Video Traction (McDonald's Case Study)",
+        cue: "Show the real YouTube embed. Mention the 15,012 views and 784.8 watch hours.",
+        time: "5:00 - 6:30",
+        scriptBn: "ভিডিও কন্টেন্ট দিয়ে ফ্রন্টলাইন ক্যান্ডিডেট আকর্ষণ করা যায় কি না—তার প্রমাণ আমাদের ম্যাকডোনাল্ডস ভিডিও কেস স্টাডি। জিরো পেইড মার্কেটিংয়ে ১৫,০১২ ভিউ, ৭৮৪ ঘণ্টার ওয়াচ-টাইম এবং ৮.১% সিটিআর পেয়েছি।",
+        scriptEn: "The unit economics are self-funding: brand partners pay for production and branding, while Shomvob acquires pre-trained applicants at zero cost per lead.",
+        trap: "Emphasize zero ad spend ($0 CAC)."
+      },
+      {
+        num: 5,
+        title: "TalentSentry: 90-Second Video Pre-Screening",
+        cue: "Walk through the 3-metric rubric: Fluency, Eye Contact, Hesitation.",
+        time: "6:30 - 8:00",
+        scriptBn: "আমাদের রিক্রুটাররা সারাদিন ফোনে কল করে টায়ার্ড হয়ে যায়, তবু ১০ জনের মধ্যে ৫ জন ইন্টারভিউতেই আসে না। ট্যালেন্ট-সেন্ট্রি এটা ২৪ ঘণ্টায় অটোমেট করে ফেলে।",
+        scriptEn: "Candidates submit 90-second WhatsApp video intros. AI scores spoken Bengali fluency, confidence, and script hesitation—pushing only the top 10% to recruiter dashboards in under 24 hours.",
+        trap: "Preempt fear of bias: clarify that humans make the final hiring call."
+      },
+      {
+        num: 6,
+        title: "B2B Demand Scout: Real-Time Lead Ingress",
+        cue: "Click 'Inject Live Corporate Job Post' button on the big screen once to demonstrate live lead intake.",
+        time: "8:00 - 9:30",
+        scriptBn: "হাসিব ভাই, আপনার ১০ জন কেএএম কার কাছে যাবে? পুরনো বিডিজবসের সার্কুলার দেখে কোল্ড কল করবে? একদম না।",
+        scriptEn: "Demand Scout scans unadvertised hiring posts across corporate social channels and logistics groups, generating verified leads for our KAM team by 9:00 AM every morning.",
+        trap: "Make sure you test clicking the Inject Lead button on the TV screen."
+      },
+      {
+        num: 7,
+        title: "'Shomvob Shuni': Vernacular Voice Assistant",
+        cue: "CRITICAL: Click 'Play Live Sample Voice Note'. Let Salma Akter's voice fill the room for 5 seconds.",
+        time: "9:30 - 11:30",
+        scriptBn: "রিফাত ভাই, শুনুন সালমা কী বলছে। আমাদের দেশের ৬৫% গার্মেন্টস আপু বা হেল্পার টাইপ করে সিভি বানাতে পারে না। কিন্তু তারা হোয়াটসঅ্যাপে কথা বলতে পারে।",
+        scriptEn: "Shomvob Shuni turns dialectal spoken Bangla into a structured candidate CV. This is our golden ticket to unlock UNICEF P2E 2.0 and new $500k–$1M Gates Foundation gender inclusion grants.",
+        trap: "Don't speak over the audio. Let them hear Salma clearly."
+      },
+      {
+        num: 8,
+        title: "The Cross-Border Corridor (GCC & Japan)",
+        cue: "Highlight the unit economics callout: ৳25,000–৳60,000 ($200–$500) per placement.",
+        time: "11:30 - 13:00",
+        scriptBn: "দেশের ভেতরে একটা ডেলিভারি রাইডার বা হেল্পার প্লেসমেন্টে আমাদের রেভিনিউ ১,০০০ থেকে ২,৫০০ টাকা। কিন্তু মিডল ইস্ট বা জাপানে একজন সার্টিফাইড টেকনিশিয়ান প্লেসমেন্টে মার্জিন ২৫,০০০ থেকে ৬০,০০০ টাকা।",
+        scriptEn: "We bridge the trust deficit with conversational Gulf Arabic/Japanese coaching, mobile 3D trade testing, and tamper-proof digital skill passports.",
+        trap: "Stress that we don't handle physical flights; we license digital screening & certification."
+      },
+      {
+        num: 9,
+        title: "The 'Silent' SME Credit Oracle & Debt Engine",
+        cue: "Explain salary log underwriting and conversational WhatsApp recovery.",
+        time: "13:00 - 14:30",
+        scriptBn: "শম্ভবের ডাটাবেজে লাখ লাখ কর্মীর ভেরিফাইড কাজের হিস্ট্রি এবং পেরোল লগ আছে। ব্যাংক বা এনবিএফআই এদের চেনে না, কিন্তু আমরা চিনি।",
+        scriptEn: "We originate working capital loans for SMEs with zero balance sheet risk, taking a 3%–5% fee. Collections are managed politely over WhatsApp voice bots.",
+        trap: "Emphasize: Shomvob is NOT lending its own money; NBFI partners fund the loans."
+      },
+      {
+        num: 10,
+        title: "Global Benchmarks: BetterPlace & Fountain",
+        cue: "Direct their eyes to BetterPlace ($700M+) and Fountain ($1B+).",
+        time: "14:30 - 16:00",
+        scriptBn: "গ্লোবাল ইনভেস্টররা কী দেখে? বেটারপ্লেস আইডি ভেরিফিকেশন থেকে শুরু করে আজ $৭০০ মিলিয়নের ফ্রন্টলাইন এইচসিএম জায়ান্ট। ফাউন্টেন শুধু অটোমেটেড ওয়ার্কফ্লো বানিয়ে ইউনিকর্ন।",
+        scriptEn: "Shomvob has the domestic brand equity. By layering autonomous software on top, we position Shomvob as South Asia's undisputed workforce leader.",
+        trap: "This slide builds investor greed. Pause to let the numbers sink in."
+      },
+      {
+        num: 11,
+        title: "The Strategic Switchboard (Command Center)",
+        cue: "Show the 8 cards. Tell Rifat Bhai and Hasib Bhai they can pick any area to inspect.",
+        time: "16:00 - 17:00",
+        scriptBn: "রিফাত ভাই, হাসিব ভাই—এখানে আমাদের পুরো ইকোসিস্টেমের ৮টি মডিউলের সুইচবোর্ড আছে। আপনারা যেটা দেখতে চান, আমরা সেটার ভেতরে ঢুকতে পারি। যেকোনো সময় 'S' চাপলে এখানে ফিরে আসা যাবে।",
+        scriptEn: "We have complete blueprints for 3D Trade Tests (12), Debt Bot (13), Clean Tech Arch (14), and our 2,500 SME Transformation Alliance (15).",
+        trap: "Offer to jump directly to Slide 15 (SME Alliance) or Slide 16 (Valuation Simulator)."
+      },
+      {
+        num: 12,
+        title: "Deep Dive: 3D Trade Tests & Digital Skill Passport",
+        cue: "Show the 3D trade simulator preview and cryptographically signed QR passport.",
+        time: "Deep Dive (Optional)",
+        scriptBn: "উপসাগরীয় দেশগুলোর রিক্রুটাররা কেন দালালদের ওপর নির্ভর করে? কারণ তাদের কাছে প্রার্থীর বাস্তব দক্ষতার প্রুফ থাকে না। আমাদের ৩ডি টেস্ট সেই মধ্যস্বত্বভোগীদের চিরতরে বাদ দেয়।",
+        scriptEn: "Real-time electrical wiring, HVAC inspection, and safety checks done directly on mobile devices.",
+        trap: "Keep it under 60 seconds unless Rifat Bhai asks detailed questions."
+      },
+      {
+        num: 13,
+        title: "Deep Dive: SME Credit Risk Engine & WhatsApp Recovery",
+        cue: "Show the WhatsApp gentle reminder message flow with 94% on-time recovery rate.",
+        time: "Deep Dive (Optional)",
+        scriptBn: "এখানে দেখুন কীভাবে আমাদের বট অত্যন্ত বিনয়ী ভাষায় ব্যবসায়িক ক্যাশফ্লোর সাথে মিলিয়ে কিস্তি সংগ্রহ করে। কোনো লিগ্যাল জটিলতা বা হ্যারাসমেন্ট ছাড়া।",
+        scriptEn: "Pre-screened against Shomvob's proprietary payroll frequency telemetry.",
+        trap: "Reiterate that Shomvob takes zero credit default liability."
+      },
+      {
+        num: 14,
+        title: "Clean Integration: Zero Code Changes for Naqib's Stack",
+        cue: "Look directly at Hasib Bhai (COO). Walk through the microservice flow.",
+        time: "17:00 - 18:30",
+        scriptBn: "হাসিব ভাই, সবচেয়ে গুরুত্বপূর্ণ অংশ: নাকিব ভাইয়ের বিদ্যমান কোডবেসে এক লাইন কোডও চেঞ্জ করতে হবে না। শম্ভবের কোর পোস্টগ্রেস ইঞ্জিন ১০০% সুরক্ষিত থাকবে।",
+        scriptEn: "We connect via asynchronous, secure HMAC REST webhooks. If the AI engine is updated, Shomvob's primary production platform remains completely insulated.",
+        trap: "This completely defuses their biggest operational objection."
+      },
+      {
+        num: 15,
+        title: "The 2,500 SME AI Transformation Alliance",
+        cue: "CRITICAL REVENUE SLIDE: Break down the 30% cut & 50% KAM incentive.",
+        time: "18:30 - 21:00",
+        scriptBn: "শম্ভবের ২৫০০ এসএমই ক্লায়েন্টকে আমরা এআই ও এফিশিয়েন্সি অটোমেশন দেব। প্রতি ডিলের ৩০% রেকারিং পাবে শম্ভব, যার ৫০% সরাসরি যাবে কেএএম টিমের পকেটে! অর্থাৎ প্রতি ক্লায়েন্টে কেএএম পাবে ৯,০০০ টাকা প্রতি মাসে!",
+        scriptEn: "We build custom pitch decks and interactive prototypes within 24 hours for every single client visit. Your 10 KAMs will never walk into a client meeting blind.",
+        trap: "Highlight the ৳1.8 Crore ARR opportunity on just 4% of SME accounts (100 clients)."
+      },
+      {
+        num: 16,
+        title: "Interactive Valuation Simulator: Series A ARR",
+        cue: "CRITICAL: Ask Rifat Bhai to call out numbers or tweak the sliders live on the big screen.",
+        time: "21:00 - 23:30",
+        scriptBn: "রিফাত ভাই, আসুন একসাথে হিসাব করি। যদি আমরা বছরে ৩৫০০ মাইগ্র্যান্ট পাঠাই, ৪০ কোটি টাকার এসএমই লোন দিই, ২৪টা ক্যারিয়ার গাইড স্পনসর করাই, আর ৭৫,০০০ ভিডিও স্ক্রিন করি—শম্ভবের ইনক্রিমেন্টাল অ্যানুয়াল রেকারিং রেভিনিউ দাঁড়ায় ৮.৮০ কোটি টাকা ($৭৩৩,০০০ USD)।",
+        scriptEn: "At standard 10x–15x SaaS multiples, that single incremental revenue stream injects $7.3M – $11.0M into Shomvob's Series A post-money valuation.",
+        trap: "Let Rifat Bhai touch the sliders if he wants to play with the numbers!"
+      },
+      {
+        num: 17,
+        title: "The Co-Venture Partnership & 30-Day Sprint Charter",
+        cue: "Click 'Authorize 30-Day Sprint Pilot' button on the big screen. Bring the pen/agreement forward.",
+        time: "23:30 - 25:00",
+        scriptBn: "এটা শুরু করতে শম্ভবের এক টাকাও আপফ্রন্ট ফি দিতে হবে না। কোনো ক্যাশ রিস্ক নেই। আগামী ৩০ দিনের একটি স্ট্রাকচার্ড চার্টার: উইক ১-এ ডিমান্ড স্কাউট ও সালমা ভয়েস টেস্ট, উইক ২-এ ভিডিও স্ক্রিনিং, উইক ৩-এ প্রথম পেইড ক্লায়েন্ট ক্লোজ, আর উইক ৪-এ সিরিজ-এ ডেকের জয়েন্ট মেট্রিক্স।",
+        scriptEn: "We are ready to deploy starting Monday morning. Let's sign the 30-day charter today and build South Asia's frontline workforce super-app together.",
+        trap: "The Close: Stop talking once you ask for the charter. Let them respond."
+      }
+    ];
+
+    let currentSlideIdx = 0;
+    let timerSeconds = 25 * 60;
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    function renderSlide(idx) {
+      if (idx < 0) idx = 0;
+      if (idx >= SLIDES_DATA.length) idx = SLIDES_DATA.length - 1;
+      currentSlideIdx = idx;
+
+      const slide = SLIDES_DATA[idx];
+      document.getElementById('slide-indicator').textContent = `Slide ${String(slide.num).padStart(2, '0')} of ${SLIDES_DATA.length}`;
+
+      const container = document.getElementById('script-cards-container');
+      container.innerHTML = `
+        <div class="bg-[#111726] border border-white/10 rounded-3xl p-5 shadow-2xl space-y-4">
+          
+          <!-- Slide Header -->
+          <div class="flex items-start justify-between gap-2 border-b border-white/5 pb-3">
+            <div>
+              <span class="text-[10px] mono uppercase text-[#1CA752] font-bold tracking-wider">STAGE ${slide.time}</span>
+              <h2 class="text-lg font-bold text-white mt-0.5 leading-snug">${slide.title}</h2>
+            </div>
+            <span class="text-xs font-black mono bg-white/10 text-gray-200 px-2.5 py-1 rounded-xl shrink-0">
+              #${slide.num}
+            </span>
+          </div>
+
+          <!-- Physical Room / TV Cue -->
+          <div class="bg-black/50 p-3 rounded-2xl border border-amber-500/30 flex items-start gap-2.5">
+            <span class="text-sm">👁️</span>
+            <div>
+              <div class="text-[10px] mono uppercase text-amber-400 font-bold">Physical TV & Room Cue</div>
+              <div class="text-xs text-gray-200 mt-0.5">${slide.cue}</div>
+            </div>
+          </div>
+
+          <!-- Bangla Spoken Script -->
+          <div class="bg-[#090D16] p-4 rounded-2xl border border-[#1CA752]/30 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] mono uppercase text-[#1CA752] font-bold">WHAT TO SAY (SPOKEN BANGLA)</span>
+              <span class="text-[10px] text-gray-400">Natural Founder Tone</span>
+            </div>
+            <p class="text-sm sm:text-base text-gray-100 bangla leading-relaxed font-medium">
+              "${slide.scriptBn}"
+            </p>
+          </div>
+
+          <!-- English Commercial Punchline -->
+          <div class="bg-black/40 p-3.5 rounded-2xl border border-[#00F0FF]/30 space-y-1.5">
+            <span class="text-[10px] mono uppercase text-[#00F0FF] font-bold">COMMERCIAL PUNCHLINE (ENGLISH)</span>
+            <p class="text-xs sm:text-sm text-gray-300 italic leading-relaxed">
+              "${slide.scriptEn}"
+            </p>
+          </div>
+
+          <!-- Tactical Trap Warning -->
+          <div class="bg-red-950/30 border border-red-500/20 p-3 rounded-xl text-xs text-red-300 flex items-center gap-2">
+            <span class="text-red-400 font-bold">⚠️ Trap:</span>
+            <span>${slide.trap}</span>
+          </div>
+
+        </div>
+      `;
+    }
+
+    function navigateSlide(dir) {
+      renderSlide(currentSlideIdx + dir);
+    }
+
+    function jumpTo(slideNum) {
+      renderSlide(slideNum - 1);
+    }
+
+    function switchTab(tabId) {
+      document.getElementById('tab-content-script').classList.add('hidden');
+      document.getElementById('tab-content-faq').classList.add('hidden');
+      document.getElementById('tab-content-whatsapp').classList.add('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = 'tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0';
+      });
+
+      const activeContent = document.getElementById(`tab-content-${tabId}`);
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (activeContent) activeContent.classList.remove('hidden');
+      if (activeBtn) activeBtn.className = 'tab-btn text-xs font-bold px-3 py-1 rounded-full bg-[#1CA752] text-black transition shrink-0';
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timer-btn');
+      if (isTimerRunning) {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        btn.textContent = '▶';
+        btn.classList.remove('bg-red-500/50');
+      } else {
+        isTimerRunning = true;
+        btn.textContent = '⏸';
+        btn.classList.add('bg-red-500/50');
+        timerInterval = setInterval(() => {
+          if (timerSeconds > 0) {
+            timerSeconds--;
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timer-display').textContent = 
+              `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+          } else {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            btn.textContent = '↺';
+          }
+        }, 1000);
+      }
+    }
+
+    function toggleFaq(id) {
+      const ans = document.getElementById(`faq-ans-${id}`);
+      const arrow = document.getElementById(`faq-arrow-${id}`);
+      if (!ans) return;
+      if (ans.classList.contains('hidden')) {
+        ans.classList.remove('hidden');
+        if (arrow) arrow.textContent = '▲';
+      } else {
+        ans.classList.add('hidden');
+        if (arrow) arrow.textContent = '▼';
+      }
+    }
+
+    function copyWhatsApp() {
+      const text = document.getElementById('whatsapp-text').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const lbl = document.getElementById('copy-label');
+        const icon = document.getElementById('copy-icon');
+        lbl.textContent = 'Copied to Clipboard! Ready to Paste';
+        icon.textContent = '✅';
+        setTimeout(() => {
+          lbl.textContent = 'Copy WhatsApp Message to Clipboard';
+          icon.textContent = '📋';
+        }, 3000);
+      }).catch(err => {
+        alert('Please manually select and copy text.');
+      });
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSlide(0);
+    });
+  </script>
+</body>
+</html>

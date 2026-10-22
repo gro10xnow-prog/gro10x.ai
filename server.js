@@ -472,12 +472,15 @@ app.get(['/delivery', '/delivery/'], (req, res) => {
 });
 app.use('/delivery', express.static(path.join(__dirname, 'public/delivery')));
 
-// Interactive 3D Multi-Angle Spatial Engine & Product Lab (Redirects to Showroom)
+// Interactive 3D Multi-Angle Spatial Engine & Product Lab
 app.get(['/3d-viewer', '/3d-viewer/'], (req, res) => {
-  res.redirect(302, '/prototypes/3d-spatial-viewer/');
+  res.sendFile(path.join(__dirname, 'public/prototypes/3d-spatial-viewer/index.html'));
+});
+app.get(['/prototypes/3d-spatial-viewer', '/prototypes/3d-spatial-viewer/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/3d-spatial-viewer/index.html'));
 });
 app.get(['/real3d', '/real3d/', '/kids-3d', '/kids-3d/', '/3d-viewer/kids'], (req, res) => {
-  res.redirect(302, '/prototypes/3d-spatial-viewer/real3d.html');
+  res.sendFile(path.join(__dirname, 'public/prototypes/3d-spatial-viewer/real3d.html'));
 });
 app.use('/3d-viewer', express.static(path.join(__dirname, 'public/prototypes/3d-spatial-viewer')));
 
@@ -551,6 +554,24 @@ app.get(['/dce/digivault', '/dce-digivault'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/dce/digivault.html'));
 });
 
+// PitchOS Canonical Pitch Deck Catalog & Suites (Engine 2)
+app.get(['/pitch', '/pitch/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/index.html'));
+});
+app.get(['/pitch/bahon', '/pitch/bahon/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/bahon/index.html'));
+});
+app.get(['/pitch/bahon/copilot', '/pitch/bahon/copilot.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/bahon/copilot.html'));
+});
+app.get(['/pitch/shomvob', '/pitch/shomvob/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/shomvob/index.html'));
+});
+app.get(['/pitch/shomvob/copilot', '/pitch/shomvob/copilot.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/shomvob/copilot.html'));
+});
+app.use('/pitch', express.static(path.join(__dirname, 'public/pitch')));
+
 // Central Prototype Showroom & Staged Client Prototypes
 app.get(['/prototypes', '/prototypes/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/index.html'));
@@ -575,16 +596,20 @@ app.get(['/prototypes/ryze-ai-star', '/prototypes/ryze-ai-star/'], (req, res) =>
 app.get(['/prototypes/bahon', '/prototypes/bahon/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/bahon/index.html'));
 });
+// Backwards Compatibility Redirects: bahon-pitch & shomvob-pitch -> /pitch/
 app.get(['/prototypes/bahon-pitch', '/prototypes/bahon-pitch/', '/prototypes/bahon/pitch', '/prototypes/bahon/pitch.html'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/prototypes/bahon-pitch/index.html'));
+  res.redirect(302, '/pitch/bahon/');
 });
 app.get(['/prototypes/bahon-pitch/copilot', '/prototypes/bahon-pitch/copilot.html', '/prototypes/bahon/copilot', '/prototypes/bahon/copilot.html'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/prototypes/bahon-pitch/copilot.html'));
+  res.redirect(302, '/pitch/bahon/copilot');
 });
 
 // Shomvob Strategic Partnership Pitch Deck Prototype
 app.get(['/prototypes/shomvob-pitch', '/prototypes/shomvob-pitch/'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/prototypes/shomvob-pitch/index.html'));
+  res.redirect(302, '/pitch/shomvob/');
+});
+app.get(['/prototypes/shomvob-pitch/copilot', '/prototypes/shomvob-pitch/copilot.html'], (req, res) => {
+  res.redirect(302, '/pitch/shomvob/copilot');
 });
 
 // Sadman's Dream Garage & Phygital Twin Prototype
@@ -634,8 +659,10 @@ app.get('/r/:shortCode', async (req, res) => {
     const { recordClickAndResolve } = require('./src/services/dce-affiliates');
     const result = await recordClickAndResolve(req.params.shortCode);
     if (result && result.destinationUrl) {
-      // Set attribution cookie for 30 days
-      res.cookie('dce_ref', result.shortCode, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: false });
+      // Set attribution cookies for 30 days (dce_ref and gro10x_aff_ref)
+      const cookieOpts = { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: false, sameSite: 'lax', path: '/' };
+      res.cookie('dce_ref', result.shortCode, cookieOpts);
+      res.cookie('gro10x_aff_ref', result.shortCode, cookieOpts);
       return res.redirect(result.destinationUrl);
     }
   } catch (e) {}

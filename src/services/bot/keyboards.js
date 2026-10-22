@@ -51,11 +51,17 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
 
   // ── Tier 3: Command & Governance (Admin, CXO, Engine Leads) ──
   if (tier >= 3) {
+    const isExec = emp && (emp.department === 'Executive' || emp.role === 'Managing Director');
+    const midRows = isExec
+      ? [[{ text: '⚡ Executive Flash' }, { text: '✍️ Pending Approvals' }]]
+      : [
+          [{ text: '⚡ Executive Flash' }, { text: '✍️ Pending Approvals' }],
+          [{ text: '🚀 Engine 2 Flash' }, { text: '⚡ Pod Status' }]
+        ];
     return {
       keyboard: [
         transitRow,
-        [{ text: '⚡ Executive Flash' }, { text: '✍️ Pending Approvals' }],
-        [{ text: '🚀 Engine 2 Flash' }, { text: '⚡ Pod Status' }],
+        ...midRows,
         attendanceRow
       ],
       resize_keyboard: true

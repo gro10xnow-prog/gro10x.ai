@@ -106,10 +106,9 @@ describe('🏛️ Unified Web Workspace (/workspace) Routing & Architecture', ()
     expect(res.headers.location).toBe('/workspace?engineId=engine3#deliverables');
   });
 
-  test('10. GET /dce returns 302 redirecting to /workspace?engineId=engine3#pnl', async () => {
+  test('10. GET /dce returns 200 serving standalone DCE OS dashboard', async () => {
     const res = await request(server).get('/dce');
-    expect(res.status).toBe(302);
-    expect(res.headers.location).toBe('/workspace?engineId=engine3#pnl');
+    expect(res.status).toBe(200);
   });
 
   test('11. Canonical public commerce endpoints remain 200 OK', async () => {

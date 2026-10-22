@@ -82,7 +82,9 @@ describe('Engine 2: Operational Onboarding & Project Lock-In Workflow Tests', ()
       expect(res.body.proposal.status).toBe('Accepted');
       expect(res.body.clientId).toBeDefined();
       expect(res.body.specId).toMatch(/^SPEC-/);
-      expect(res.body.onboardingUrl).toContain('/client#lockin?specId=');
+      expect(res.body.onboardingUrl).toContain('/client');
+      expect(res.body.onboardingUrl).toContain('#lockin');
+      expect(res.body.onboardingUrl).toContain(res.body.specId);
 
       clientId = res.body.clientId;
       specId = res.body.specId;

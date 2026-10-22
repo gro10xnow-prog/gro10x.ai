@@ -24,7 +24,19 @@ const upload = multer({
 });
 
 
-const fallbackReviews = [];
+const fallbackReviews = [
+  {
+    id: 'REV-SAMPLE01',
+    project_id: 'PRJ-SAMPLE01',
+    project_name: 'OmniFlow AI Enterprise Suite',
+    client: 'Chillox Bangladesh',
+    client_id: 'CLI-ORG-001',
+    status: 'active',
+    active_version: 'v2',
+    versions: ['v1', 'v2'],
+    created_at: new Date().toISOString()
+  }
+];
 
 function mapReview(r) {
   if (!r) return null;

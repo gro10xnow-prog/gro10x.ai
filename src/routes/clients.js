@@ -449,21 +449,37 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
   const parsedSpentNum = typeof rawSpent === 'number' ? rawSpent : parseFloat(String(rawSpent || 0).replace(/[^0-9.]/g, '')) || 0;
   const formattedSpent = parsedSpentNum > 0 ? `৳${parsedSpentNum.toLocaleString()}` : (rawSpent && String(rawSpent).startsWith('৳') ? String(rawSpent) : '৳0');
 
-  // Check for existing client by exact or case-insensitive name match to prevent duplication
+  // Check for existing client by ID first, then case-insensitive name match
   let existingClient = null;
 
   if (isSupabaseConfigured()) {
     try {
-      const { data: matched } = await supabase
-        .from('clients')
-        .select('*')
-        .ilike('name', cleanName)
-        .maybeSingle();
-      if (matched) existingClient = matched;
+      if (newClient.id) {
+        const { data: byId } = await supabase.from('clients').select('*').eq('id', newClient.id).maybeSingle();
+        if (byId) existingClient = byId;
+      }
+      if (!existingClient) {
+        const { data: matched } = await supabase
+          .from('clients')
+          .select('*')
+          .ilike('name', cleanName)
+          .maybeSingle();
+        if (matched && (!newClient.id || matched.id === newClient.id)) {
+          existingClient = matched;
+        }
+      }
     } catch (e) {}
   } else {
     const db = await readDB();
-    existingClient = (db.clients || []).find(c => (c.name || '').trim().toLowerCase() === cleanName.toLowerCase());
+    if (newClient.id) {
+      existingClient = (db.clients || []).find(c => c.id === newClient.id);
+    }
+    if (!existingClient) {
+      const matched = (db.clients || []).find(c => (c.name || '').trim().toLowerCase() === cleanName.toLowerCase());
+      if (matched && (!newClient.id || matched.id === newClient.id)) {
+        existingClient = matched;
+      }
+    }
   }
 
   if (existingClient) {
@@ -841,7 +857,28 @@ router.post('/:id/pocs', requireAuth, requireClientOwnership, async (req, res) =
     }
 
     if (!client) {
-      return res.status(404).json({ ok: false, error: `Client '${id}' not found.` });
+      // Auto-provision client stub if registering POC
+      client = {
+        id,
+        name: req.body.client_name || req.user?.name || `Client ${id}`,
+        category: 'General',
+        status: 'Active Retainer',
+        pocs: []
+      };
+      if (isSupabaseConfigured()) {
+        try {
+          await supabase.from('clients').insert([client]);
+        } catch (e) {}
+      }
+      const dbFresh = await readDB();
+      dbFresh.clients = dbFresh.clients || [];
+      const foundIdx = dbFresh.clients.findIndex(c => c.id === id);
+      if (foundIdx === -1) {
+        dbFresh.clients.push(client);
+        try { writeDB(dbFresh); } catch (e) {}
+      } else {
+        client = dbFresh.clients[foundIdx];
+      }
     }
 
     // Merge or append POC

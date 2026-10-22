@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>GRO10X × BAHON — Green Bashundhara 16-Slide Executive TV Pitch Deck</title>
+
+  <!-- Typography: Space Grotesk (Headlines), Plus Jakarta Sans (Body), Space Mono (Data), Hind Siliguri (Bangla) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --bahon-green: #10B981;
+      --bahon-green-glow: rgba(16, 185, 129, 0.4);
+      --bahon-cyan: #06B6D4;
+      --bahon-amber: #F59E0B;
+      --bahon-red: #EF4444;
+      --bg-dark: #070B12;
+      --card-dark: #0D1424;
+      --card-border: rgba(255, 255, 255, 0.08);
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', 'Space Grotesk', 'Hind Siliguri', sans-serif;
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      overflow: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'Space Mono', monospace; }
+    .bangla { font-family: 'Hind Siliguri', sans-serif; }
+
+    /* Ambient Spotlight & Grid */
+    .bg-radar {
+      background-size: 36px 36px;
+      background-image: 
+        linear-gradient(to right, rgba(16, 185, 129, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(16, 185, 129, 0.035) 1px, transparent 1px);
+    }
+
+    .spotlight {
+      background: radial-gradient(circle at 50% 12%, rgba(16, 185, 129, 0.16) 0%, rgba(6, 182, 212, 0.09) 35%, rgba(15, 23, 42, 0) 70%);
+    }
+
+    /* Active Slide Animation for TV */
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(10px) scale(0.995);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      height: 100%;
+    }
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Custom Glass Panel */
+    .glass-panel {
+      background: rgba(13, 20, 36, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    .glass-panel-green {
+      background: rgba(16, 185, 129, 0.06);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    /* Range Slider Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: #1E293B;
+      height: 8px;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #10B981;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.8);
+      transition: transform 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    /* Audio wave bars */
+    @keyframes wavePulse {
+      0%, 100% { height: 6px; }
+      50% { height: 26px; }
+    }
+    .wave-bar {
+      width: 4px;
+      background: #10B981;
+      border-radius: 9999px;
+      height: 6px;
+      transition: height 0.1s ease;
+    }
+    .wave-active {
+      animation: wavePulse 0.7s ease-in-out infinite alternate;
+    }
+  </style>
+</head>
+<body class="bg-[#070B12] text-slate-100 h-screen w-screen relative flex flex-col justify-between selection:bg-[#10B981] selection:text-black bg-radar">
+
+  <!-- Ambient Spotlight Flare -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[420px] spotlight pointer-events-none z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP HEADER & PROGRESS HUD (TV-CALIBRATED)                 -->
+  <!-- ========================================================= -->
+  <header class="relative z-30 px-6 sm:px-10 py-3 flex justify-between items-center border-b border-white/10 bg-[#070B12]/90 backdrop-blur-md">
+    
+    <!-- Partner Brand Marks -->
+    <div class="flex items-center gap-3 sm:gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#10B981] to-[#06B6D4] flex items-center justify-center text-black font-black text-sm shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+          ⚡
+        </div>
+        <span class="text-[#10B981] font-black tracking-tight text-lg heading-font">BAHON</span>
+        <span class="text-gray-600 font-light text-base">|</span>
+        <span class="text-xs text-gray-300 font-bold bangla">বাহন কমান্ড</span>
+      </div>
+
+      <div class="hidden md:flex items-center gap-2 pl-3 border-l border-white/10 text-xs">
+        <span class="text-gray-400">Pitch for:</span>
+        <span class="text-white font-bold">Ahmed Ibrahim Sobhan</span>
+        <span class="text-[10px] mono bg-[#10B981]/15 text-[#10B981] px-2 py-0.5 rounded border border-[#10B981]/30">Tanvir Bashundhara Group</span>
+      </div>
+    </div>
+
+    <!-- Center Slide Counter Pill -->
+    <div class="flex items-center gap-2 bg-[#0D1424] px-4 py-1.5 rounded-full border border-white/10 shadow-lg">
+      <span class="text-xs text-gray-400 mono">SLIDE</span>
+      <span id="slide-num-pill" class="text-sm font-black mono text-[#10B981]">01</span>
+      <span class="text-xs text-gray-600 mono">/</span>
+      <span class="text-xs text-gray-400 mono">16</span>
+    </div>
+
+    <!-- Right TV Action Controls -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Direct Link to Live Command Center -->
+      <a href="/prototypes/bahon/" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 bg-[#10B981]/15 hover:bg-[#10B981]/30 text-[#10B981] border border-[#10B981]/40 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+        <span>⚡ Command Center</span>
+        <span class="text-[10px] mono">↗</span>
+      </a>
+
+      <!-- Direct Link to Proposal -->
+      <a href="/p/bahon-fleet" target="_blank" class="hidden lg:inline-flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-gray-200 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+        <span>📋 ৳60K Pilot</span>
+      </a>
+
+      <!-- Mobile Co-Pilot Link -->
+      <a href="/prototypes/bahon-pitch/copilot.html" target="_blank" class="inline-flex items-center gap-1.5 bg-[#06B6D4]/15 hover:bg-[#06B6D4]/30 text-[#06B6D4] border border-[#06B6D4]/40 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+        <span>📱 Co-Pilot</span>
+      </a>
+
+      <!-- Fullscreen Toggle -->
+      <button onclick="toggleFullscreen()" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition" title="Toggle TV Fullscreen (F)">
+        <span id="fullscreen-icon" class="text-sm">⛶</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN SLIDES STACK (16:9 TV VIEWPORT)                      -->
+  <!-- ========================================================= -->
+  <main class="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-8 max-w-7xl mx-auto w-full overflow-hidden">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 01: THE "GREEN BASHUNDHARA" MANDATE                 -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-1" class="slide active flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#10B981]/15 border border-[#10B981]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#10B981] mono uppercase tracking-wider w-fit">
+          <span class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+          Green Bashundhara Strategic Vision
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Scaling from 16 Shuttles to <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#10B981] via-[#06B6D4] to-white">1,000 Smart EVs</span>
+        </h1>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#10B981]/20 via-[#06B6D4]/10 to-transparent border-l-4 border-[#10B981] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Bashundhara Group Target</div>
+          <div class="text-2xl sm:text-3xl font-black text-white tracking-tight mono">1,000 ECO-EV MANDATE</div>
+        </div>
+
+        <!-- 3 Punchy Bullets (< 10 words) -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>World-Class Zero-Emission Green City Vision</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>Industrial Operating System Required for 1,000 Vehicles</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Eliminating Manual Paper Clipboards & Cash Sieve</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 group shadow-2xl">
+        <img 
+          src="/images/bahon/hero-bahon-gate1.png" 
+          alt="Bahon EV Fleet at Bashundhara Gate 1" 
+          class="w-full h-full object-cover object-center transform group-hover:scale-105 transition duration-700"
+          onerror="this.onerror=null; this.src='/images/og-preview.png';"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#070B12] via-[#070B12]/40 to-transparent"></div>
+        
+        <!-- Live HUD Telemetry Badge -->
+        <div class="absolute bottom-4 left-4 right-4 bg-[#070B12]/85 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-[#10B981] animate-ping"></div>
+            <div>
+              <div class="text-xs font-bold text-white">Bashundhara Gate 1 • Kuril 300-Ft Corridor</div>
+              <div class="text-[10px] mono text-gray-400">Autonomous Telematics Ingress // Active</div>
+            </div>
+          </div>
+          <span class="text-xs font-black mono text-[#10B981] bg-[#10B981]/15 px-2.5 py-1 rounded-lg border border-[#10B981]/30">
+            PHASE 1 READY
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 02: SCALE OF THE TOWNSHIP                           -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-2" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#06B6D4]/15 border border-[#06B6D4]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#06B6D4] mono uppercase tracking-wider w-fit">
+          Township Mobility Volume
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          3,346 Acres. 12 Gates. <span class="text-[#06B6D4]">300,000+ Daily Trips.</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#06B6D4]/20 via-[#10B981]/10 to-transparent border-l-4 border-[#06B6D4] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Estimated Daily Captive Spend</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-amber-400">৳1.20 CRORE / DAY</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>274,200 High-Income Township Residents</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>51,500 Daily University Commuters (NSU, IUB, AIUB)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-purple-400 shrink-0"></span>
+            <span>6 Upcoming MRT Line-1 Stations Surrounding Perimeter</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: Interactive GIS Gate & Block Topology (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">BASHUNDHARA R/A — BLOCKS A TO P TOPOLOGY</span>
+          <span class="text-[10px] mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">12 GEOFENCED GATES</span>
+        </div>
+
+        <!-- High-Tech Schematic Grid of Gates -->
+        <div class="grid grid-cols-3 gap-2.5 my-auto">
+          <div class="bg-black/50 border border-[#10B981]/40 rounded-xl p-3 text-center">
+            <div class="text-xs font-bold text-[#10B981]">Gate 1 (Kuril)</div>
+            <div class="text-lg font-black mono text-white mt-1">42%</div>
+            <div class="text-[10px] text-gray-400">Main Arterial Volume</div>
+          </div>
+          <div class="bg-black/50 border border-white/10 rounded-xl p-3 text-center">
+            <div class="text-xs font-bold text-gray-300">Gate 2 (300-Ft)</div>
+            <div class="text-lg font-black mono text-white mt-1">24%</div>
+            <div class="text-[10px] text-gray-400">Expressway Ingress</div>
+          </div>
+          <div class="bg-black/50 border border-white/10 rounded-xl p-3 text-center">
+            <div class="text-xs font-bold text-gray-300">Gate 3 (Evercare)</div>
+            <div class="text-lg font-black mono text-white mt-1">16%</div>
+            <div class="text-[10px] text-gray-400">Healthcare Corridor</div>
+          </div>
+          <div class="bg-black/50 border border-amber-500/40 rounded-xl p-3 text-center">
+            <div class="text-xs font-bold text-amber-400">Pocket Gates (4-8)</div>
+            <div class="text-lg font-black mono text-amber-400 mt-1">12%</div>
+            <div class="text-[10px] text-gray-400">Unmonitored Infiltration</div>
+          </div>
+          <div class="bg-black/50 border border-cyan-500/40 rounded-xl p-3 text-center">
+            <div class="text-xs font-bold text-[#06B6D4]">Block I to P (East)</div>
+            <div class="text-lg font-black mono text-white mt-1">1,820 Ac</div>
+            <div class="text-[10px] text-gray-400">Rapid Growth Zone</div>
+          </div>
+          <div class="bg-black/50 border border-purple-500/40 rounded-xl p-3 text-center">
+            <div class="text-xs font-bold text-purple-400">University Cluster</div>
+            <div class="text-lg font-black mono text-purple-300 mt-1">51.5K</div>
+            <div class="text-[10px] text-gray-400">NSU / IUB / AIUB</div>
+          </div>
+        </div>
+
+        <div class="text-[11px] mono text-gray-400 text-center bg-black/40 py-2 rounded-xl border border-white/5">
+          Without central IoT telematics, managing this massive geography with paper clipboards is impossible.
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 03: WHY THE PREVIOUS APP FAILED (THE WEDGE)         -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-3" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-red-500/15 border border-red-500/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-red-400 mono uppercase tracking-wider w-fit">
+          The Competitive Dissection
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Why Smartphone Apps Fail in <span class="text-red-400">Three-Wheeler Fleets</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-red-500/20 via-orange-500/10 to-transparent border-l-4 border-red-500 p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Previous App Result (Seegma Intellect)</div>
+          <div class="text-2xl sm:text-3xl font-black text-white tracking-tight mono text-red-400">1.0 ★ APP STORE RATING</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+            <span>Smartphone Reliance Broke Down in Daily Ground Reality</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Drivers Toggle Off Phones to Take Direct Cash</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>Hardwired IoT Telematics is the Only Operational Answer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 group shadow-2xl">
+        <img 
+          src="/images/bahon/app-failure-contrast.png" 
+          alt="Smartphone Failure vs Rugged IoT Soundbox" 
+          class="w-full h-full object-cover object-center transform group-hover:scale-105 transition duration-700"
+          onerror="this.onerror=null; this.src='/images/og-preview.png';"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#070B12] via-black/40 to-transparent"></div>
+
+        <div class="absolute bottom-4 left-4 right-4 bg-black/85 backdrop-blur-md p-3.5 rounded-2xl border border-red-500/30 flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-red-400">Real Resident Review:</div>
+            <div class="text-[11px] text-gray-200 italic">"The app is useless. Drivers turn off phones and demand ৳50 cash."</div>
+          </div>
+          <span class="text-xs font-bold bg-red-500/20 text-red-400 px-3 py-1 rounded-lg border border-red-500/40">
+            ELIMINATED
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 04: PAIN POINT 1 — THE INVISIBLE CASH SIEVE        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-4" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-amber-400 mono uppercase tracking-wider w-fit">
+          Pain Point 01 • Financial Leakage
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Where Did <span class="text-amber-400">17% of the Farebox</span> Go Today?
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-amber-500/20 via-red-500/10 to-transparent border-l-4 border-amber-500 p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Monthly Cash Leakage on 200 EVs</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-amber-400">৳14.28L – ৳23.76L / MO</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Unlogged Pick-and-Drop Hops Between Gate 1 & Interior</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-red-400 shrink-0"></span>
+            <span>Fare Tier Skimming (Collecting ৳20, Declaring ৳10)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>End-of-Day Collusion at Paper Collection Booths</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 group shadow-2xl">
+        <img 
+          src="/images/bahon/cash-leakage-waterfall.png" 
+          alt="Cash Leakage Sieve Recovered into Society Bank Account" 
+          class="w-full h-full object-cover object-center transform group-hover:scale-105 transition duration-700"
+          onerror="this.onerror=null; this.src='/images/og-preview.png';"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#070B12] via-black/40 to-transparent"></div>
+
+        <div class="absolute bottom-4 left-4 right-4 bg-black/85 backdrop-blur-md p-3.5 rounded-2xl border border-amber-500/30 flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-white">Bahon Automated Fare Audit Ledger</div>
+            <div class="text-[10px] mono text-gray-400">100% Closed-Loop NFC Replaces Paper Slips</div>
+          </div>
+          <span class="text-xs font-black mono text-[#10B981] bg-[#10B981]/15 px-3 py-1 rounded-lg border border-[#10B981]/30">
+            RECOVERABLE DAY 1
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 05: PAIN POINT 2 — THE HOARDING CRISIS              -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-5" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-red-500/15 border border-red-500/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-red-400 mono uppercase tracking-wider w-fit">
+          Pain Point 02 • Route Imbalance
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Bunching at Gate 1 While <span class="text-red-400">Blocks I–P Starve</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-red-500/20 via-amber-500/10 to-transparent border-l-4 border-red-500 p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Average Wait Time in Eastern Blocks</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-red-400">25+ MINUTE DELAYS</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+            <span>Gate 1 Cherry-Picking: Drivers Idle for Short ৳10 Hops</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Peripheral Route Desertion: Blocks J, L, M, N, P Left Empty</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>Deadhead Anxiety Solved with Automated Geofence Dispatch</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: Heatmap Simulation (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">GROUND FLEET DISPERSION ANALYSIS</span>
+          <span class="text-[10px] mono text-red-400 bg-red-500/15 px-2 py-0.5 rounded border border-red-500/30">75% VEHICLES BUNCHED</span>
+        </div>
+
+        <!-- Heatmap comparison bars -->
+        <div class="space-y-4 my-auto">
+          <div>
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span class="text-red-400">Gate 1 & NSU Cluster (Current Manual Setup)</span>
+              <span class="mono text-red-400">75% Fleet Congested</span>
+            </div>
+            <div class="w-full bg-black/60 rounded-full h-4 overflow-hidden border border-white/10">
+              <div class="bg-gradient-to-r from-red-500 to-amber-500 h-full rounded-full w-[75%] animate-pulse"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span class="text-amber-400">Blocks D, E, F (Middle Blocks)</span>
+              <span class="mono text-amber-400">18% Fleet Active</span>
+            </div>
+            <div class="w-full bg-black/60 rounded-full h-4 overflow-hidden border border-white/10">
+              <div class="bg-amber-500 h-full rounded-full w-[18%]"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span class="text-gray-400">Blocks I through P (Eastern New Residential)</span>
+              <span class="mono text-red-500">7% ONLY (Severe Starvation)</span>
+            </div>
+            <div class="w-full bg-black/60 rounded-full h-4 overflow-hidden border border-white/10">
+              <div class="bg-red-600 h-full rounded-full w-[7%]"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-black/50 p-3 rounded-xl border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+          <span>Bahon Command rebalances vehicles dynamically via audio dispatch.</span>
+          <span class="mono text-[#10B981] font-bold">&lt; 5 Min Guarantee</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 06: PAIN POINT 3 — THE 2:00 PM BLACKOUT             -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-6" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-amber-400 mono uppercase tracking-wider w-fit">
+          Pain Point 03 • Power & Charging Crisis
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Fleet Shutdown During <span class="text-amber-400">School Dismissal</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border-l-4 border-amber-500 p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">DESCO Peak vs Off-Peak Cost Spread</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-amber-400">41.5% POWER BILL SPREAD</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-red-400 shrink-0"></span>
+            <span>Vehicles Stalled Mid-Day: Lead-Acid Depleted at 2:00 PM</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>DESCO Peak Tariff Trap: ৳18.43 vs ৳9.09 LT-D3 Super Off-Peak</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>Playpen / ISD / NSU Rush Hours Stranded Without Rides</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: Tariff Curve & Shift Timeline (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">DESCO TARIFF ARBITRAGE OPPORTUNITY</span>
+          <span class="text-[10px] mono text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30">SAVE ৳4,200/EV/MO</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 my-auto">
+          <div class="bg-red-950/40 border border-red-500/30 p-4 rounded-2xl">
+            <div class="text-xs font-bold text-red-400 uppercase mono">Peak Hours (5 PM – 11 PM)</div>
+            <div class="text-2xl font-black mono text-white mt-1">৳18.43<span class="text-xs text-gray-400 font-normal">/kWh</span></div>
+            <div class="text-[11px] text-gray-300 mt-2">Unmanaged charging burns Society budget at maximum penalty rates.</div>
+          </div>
+
+          <div class="bg-emerald-950/40 border border-[#10B981]/40 p-4 rounded-2xl">
+            <div class="text-xs font-bold text-[#10B981] uppercase mono">Off-Peak (11 PM – 7 AM)</div>
+            <div class="text-2xl font-black mono text-[#10B981] mt-1">৳9.09<span class="text-xs text-gray-400 font-normal">/kWh</span></div>
+            <div class="text-[11px] text-gray-300 mt-2">Smart LFP Swapping charges overnight, locking in a 41.5% cost reduction.</div>
+          </div>
+        </div>
+
+        <div class="bg-black/60 p-3 rounded-xl border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+          <span>90-second swapping keeps 100% fleet on the road through school rush.</span>
+          <span class="mono text-[#10B981] font-bold">Zero Mid-Day Blackout</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 07: PAIN POINT 4 — PERIMETER INFILTRATION & THEFT   -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-7" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-red-500/15 border border-red-500/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-red-400 mono uppercase tracking-wider w-fit">
+          Pain Point 04 • Security & Asset Theft
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Rogue Rickshaws & <span class="text-red-400">৳60,000 Battery Asset Theft</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-red-500/20 via-orange-500/10 to-transparent border-l-4 border-red-500 p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Uncontrolled Perimeter Ingress Points</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-red-400">12 UNGEOFENCED GATES</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+            <span>Unauthorized Rogue Three-Wheelers Infiltrate Pocket Gates</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Traffic Congestion, Reckless Driving & Resident Overcharging</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>High Battery Theft Risk: ৳60K Packs Stolen Across Borders</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: Perimeter Gate Tripwire Diagram (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">BAHON PERIMETER GEOFENCE INTERLOCK</span>
+          <span class="text-[10px] mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">VIRTUAL TRIPWIRE ACTIVE</span>
+        </div>
+
+        <div class="space-y-3 my-auto">
+          <div class="bg-black/50 border border-white/10 p-3 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🚨</span>
+              <div>
+                <div class="text-xs font-bold text-white">Geofence Perimeter Breach</div>
+                <div class="text-[10px] text-gray-400">Vehicle crosses Gate 1 without dispatch clearance</div>
+              </div>
+            </div>
+            <span class="text-xs mono text-red-400 font-bold">&lt; 2.0s Engine Cutoff</span>
+          </div>
+
+          <div class="bg-black/50 border border-white/10 p-3 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🔋</span>
+              <div>
+                <div class="text-xs font-bold text-white">BMS Telemetry Tamper Trip</div>
+                <div class="text-[10px] text-gray-400">Unauthorized cable disconnect or battery bay opening</div>
+              </div>
+            </div>
+            <span class="text-xs mono text-amber-400 font-bold">Instant SMS & Siren</span>
+          </div>
+
+          <div class="bg-black/50 border border-white/10 p-3 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🛡️</span>
+              <div>
+                <div class="text-xs font-bold text-white">Rogue Vehicle Blacklist</div>
+                <div class="text-[10px] text-gray-400">Non-registered vehicles blocked at digital boom barriers</div>
+              </div>
+            </div>
+            <span class="text-xs mono text-[#10B981] font-bold">100% Gated Township</span>
+          </div>
+        </div>
+
+        <div class="bg-[#10B981]/10 p-3 rounded-xl border border-[#10B981]/30 text-xs text-white flex items-center justify-between">
+          <span>Complete physical asset protection for Bashundhara's multi-crore EV investment.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 08: THE SOLUTION — THE BAHON ENTERPRISE OS          -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-8" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#10B981]/15 border border-[#10B981]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#10B981] mono uppercase tracking-wider w-fit">
+          The Solution • GRO10X Architecture
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          One Command Screen. <span class="text-[#10B981]">Complete Citywide Control.</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#10B981]/20 via-[#06B6D4]/10 to-transparent border-l-4 border-[#10B981] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Real-Time Ingress Latency</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-[#10B981]">SUB-SECOND TELEMETRY</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>9–90V Hardwired Waterproof GPS (Zero Phone Reliance)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>Dual-Rail Farebox: Closed-Loop Green Pass + Smart Soundbox</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-purple-400 shrink-0"></span>
+            <span>Smart BMS Hub & Perimeter Boom Barrier Interlock</span>
+          </div>
+        </div>
+
+        <!-- Live Launcher Button -->
+        <div class="pt-2">
+          <a href="/prototypes/bahon/" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-[#10B981] to-[#06B6D4] hover:brightness-110 text-black font-extrabold px-6 py-3 rounded-2xl text-sm transition shadow-[0_0_25px_rgba(16,185,129,0.4)]">
+            <span>⚡ Launch Live Bahon Command Center</span>
+            <span class="text-xs">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: 4-Pillar Architectural HUD (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">BAHON ENTERPRISE STACK SPECIFICATION</span>
+          <span class="text-[10px] mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">4 CORE PILLARS</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 my-auto">
+          <div class="bg-black/50 border border-[#10B981]/30 p-3.5 rounded-2xl">
+            <div class="text-2xl mb-1">🛰️</div>
+            <div class="text-xs font-bold text-[#10B981] uppercase mono">Pillar 1: Hardware GPS</div>
+            <div class="text-[11px] text-gray-300 mt-1">Direct wire to 60V/72V EV battery. 10s ping interval, offline caching, ignition detection.</div>
+          </div>
+
+          <div class="bg-black/50 border border-[#06B6D4]/30 p-3.5 rounded-2xl">
+            <div class="text-2xl mb-1">💳</div>
+            <div class="text-xs font-bold text-[#06B6D4] uppercase mono">Pillar 2: Green Pass NFC</div>
+            <div class="text-[11px] text-gray-300 mt-1">2-second tap-and-go boarding. Bangla voice announcement. Zero app or smartphone.</div>
+          </div>
+
+          <div class="bg-black/50 border border-amber-500/30 p-3.5 rounded-2xl">
+            <div class="text-2xl mb-1">🔋</div>
+            <div class="text-xs font-bold text-amber-400 uppercase mono">Pillar 3: Smart BMS</div>
+            <div class="text-[11px] text-gray-300 mt-1">LFP pack health, temperature, voltage per cell. Automatic DESCO off-peak schedule.</div>
+          </div>
+
+          <div class="bg-black/50 border border-purple-500/30 p-3.5 rounded-2xl">
+            <div class="text-2xl mb-1">🛡️</div>
+            <div class="text-xs font-bold text-purple-400 uppercase mono">Pillar 4: Gate Interlock</div>
+            <div class="text-[11px] text-gray-300 mt-1">Integration with 12 Bashundhara security gates. Automated anti-theft immobilizer.</div>
+          </div>
+        </div>
+
+        <div class="text-[11px] mono text-gray-400 text-center bg-black/40 py-2 rounded-xl border border-white/5">
+          Already built & running live at <span class="text-[#10B981]">gro10x-ai.vercel.app/prototypes/bahon/</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 09: THE CASH NUMBERS — REVENUE RECOVERY             -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-9" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#10B981]/15 border border-[#10B981]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#10B981] mono uppercase tracking-wider w-fit">
+          Financial Impact • The Cold Math
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Converting Leaked Cash into <span class="text-[#10B981]">Society Revenue</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#10B981]/20 via-[#06B6D4]/10 to-transparent border-l-4 border-[#10B981] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Net Monthly Cash Recovery (50 to 200 EVs)</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-[#10B981]">+৳7.14L TO ৳23.76L / MO</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>40 Trips/Day @ ৳35 Average Fare per Vehicle</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>100% Cashless Audit Trail: Zero Unrecorded Rides</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Direct Deposit into Tanvir Bashundhara Society Account</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: 3-Tier Financial Comparison Table (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">SCALING FINANCIAL MODEL (BANGLADESH REALITY)</span>
+          <span class="text-[10px] mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">AUDITED ROI</span>
+        </div>
+
+        <div class="space-y-3 my-auto">
+          <!-- Tier 1: 50 EVs -->
+          <div class="bg-black/60 border border-white/10 hover:border-[#10B981]/50 p-3.5 rounded-2xl transition">
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-xs font-bold text-white uppercase mono">Tier 1: 50 Shuttles (Immediate Pilot)</span>
+                <div class="text-[11px] text-gray-400">Monthly Gross Farebox: ৳21,00,000</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm sm:text-base font-black mono text-[#10B981]">+৳7,14,000 / mo</div>
+                <div class="text-[9px] mono text-gray-400">17% Recovered Cash</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tier 2: 100 EVs -->
+          <div class="bg-black/60 border border-white/10 hover:border-[#06B6D4]/50 p-3.5 rounded-2xl transition">
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-xs font-bold text-white uppercase mono">Tier 2: 100 Shuttles (Core Township)</span>
+                <div class="text-[11px] text-gray-400">Monthly Gross Farebox: ৳42,00,000</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm sm:text-base font-black mono text-[#06B6D4]">+৳14,28,000 / mo</div>
+                <div class="text-[9px] mono text-gray-400">17% Recovered Cash</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tier 3: 200 EVs -->
+          <div class="bg-[#10B981]/10 border border-[#10B981]/40 p-3.5 rounded-2xl transition">
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-xs font-black text-[#10B981] uppercase mono">Tier 3: 200 EVs (Full Phase 1)</span>
+                <div class="text-[11px] text-gray-300">Monthly Gross Farebox: ৳84,00,000</div>
+              </div>
+              <div class="text-right">
+                <div class="text-base sm:text-xl font-black mono text-white">+৳23,76,000 / mo</div>
+                <div class="text-[9px] mono text-[#10B981]">৳2.85 Crore / Year Net Gain</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 text-[11px] mono text-gray-400 text-center">
+          The software and telematics hardware pay for themselves in less than 15 days of recovered leakage.
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 10: ZERO-SMARTPHONE BOARDING — THE "GREEN PASS"      -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-10" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#10B981]/15 border border-[#10B981]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#10B981] mono uppercase tracking-wider w-fit">
+          Passenger Experience • The Cashless Flywheel
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          2-Second Tap-and-Go + <span class="text-[#10B981]">৳1.20 Crore Float</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#10B981]/20 via-[#06B6D4]/10 to-transparent border-l-4 border-[#10B981] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Upfront Working Capital Float</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-amber-400">৳1.20 CRORE UPFRONT FLOAT</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>0.6-Second RFID/NFC Tap: Instant Boarding (Zero App)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>0% MDR on Closed-Loop Card: Bashundhara Keeps 100% Fare</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>40,000 Cards @ ৳300 Pre-Charge Self-Funds All Fleet IoT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 group shadow-2xl">
+        <img 
+          src="/images/bahon/green-pass-nfc-tap.png" 
+          alt="Student Tapping Bashundhara Green Pass Card" 
+          class="w-full h-full object-cover object-center transform group-hover:scale-105 transition duration-700"
+          onerror="this.onerror=null; this.src='/images/og-preview.png';"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#070B12] via-black/30 to-transparent"></div>
+
+        <div class="absolute bottom-4 left-4 right-4 bg-black/85 backdrop-blur-md p-3.5 rounded-2xl border border-[#10B981]/40 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">💳</span>
+            <div>
+              <div class="text-xs font-bold text-white">Bashundhara Green Pass (Closed-Loop RFID)</div>
+              <div class="text-[10px] mono text-[#10B981]">Instant Audio Confirmation: "ভাড়া গ্রহণ করা হয়েছে—৳২০"</div>
+            </div>
+          </div>
+          <span class="text-xs font-bold bg-[#10B981]/20 text-[#10B981] px-3 py-1 rounded-lg border border-[#10B981]/40">
+            0% MDR
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 11: SOLVING DRIVER ILLITERACY                       -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-11" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#06B6D4]/15 border border-[#06B6D4]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#06B6D4] mono uppercase tracking-wider w-fit">
+          Driver Operations • Human Engineering
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Drivers Never Touch a Screen. <span class="text-[#06B6D4]">100% Voice-Guided.</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#06B6D4]/20 via-[#10B981]/10 to-transparent border-l-4 border-[#06B6D4] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Driver Digital Literacy Requirement</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-[#10B981]">0 SMARTPHONES REQUIRED</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>Rugged Dashboard IoT Soundbox with Clear Bangla Audio</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>Automatic Passenger Seat Load Sensor (Occupancy Audit)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Zero Typing, Zero Distracted Driving, Zero Mobile Recharges</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: Interactive Audio Simulator (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">VEHICLE IOT AUDIO DISPATCH SIMULATOR</span>
+          <span class="text-[10px] mono text-[#06B6D4] bg-[#06B6D4]/15 px-2 py-0.5 rounded border border-[#06B6D4]/30">TEST LIVE AUDIO</span>
+        </div>
+
+        <div class="space-y-3 my-auto">
+          <!-- Voice Prompt 1 -->
+          <div class="bg-black/60 border border-white/10 p-3.5 rounded-2xl flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-white bangla text-sm">"ভাড়া সফল হয়েছে—২০ টাকা"</div>
+              <div class="text-[10px] mono text-gray-400">Green Pass Tap Trigger • Passenger Confirmation</div>
+            </div>
+            <button onclick="playVoiceDemo('fare')" class="bg-[#10B981]/20 hover:bg-[#10B981]/30 text-[#10B981] border border-[#10B981]/40 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+              <span>🔊 Play</span>
+            </button>
+          </div>
+
+          <!-- Voice Prompt 2 -->
+          <div class="bg-black/60 border border-white/10 p-3.5 rounded-2xl flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-amber-300 bangla text-sm">"ব্লক এল-এ যাত্রী অপেক্ষা করছে, এগিয়ে যান"</div>
+              <div class="text-[10px] mono text-gray-400">Algorithmic Rebalancing Trigger • End Hoarding</div>
+            </div>
+            <button onclick="playVoiceDemo('dispatch')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+              <span>🔊 Play</span>
+            </button>
+          </div>
+
+          <!-- Voice Prompt 3 -->
+          <div class="bg-black/60 border border-white/10 p-3.5 rounded-2xl flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-red-400 bangla text-sm">"গেট ১ অতিক্রম—অননুমোদিত রুট সতর্কতা"</div>
+              <div class="text-[10px] mono text-gray-400">Geofence Perimeter Alert • Safe Engine Lockout</div>
+            </div>
+            <button onclick="playVoiceDemo('alert')" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+              <span>🔊 Play</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-black/40 p-3 rounded-xl border border-white/5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div id="wave-1" class="wave-bar"></div>
+            <div id="wave-2" class="wave-bar"></div>
+            <div id="wave-3" class="wave-bar"></div>
+            <div id="wave-4" class="wave-bar"></div>
+            <span class="text-xs text-gray-400 ml-2">High-decibel industrial speaker (audible over traffic)</span>
+          </div>
+          <span class="text-xs mono text-[#06B6D4] font-bold">100% Hands-Free</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 12: TAMPER-PROOF TELEMATICS & E-LOCK INTERLOCK      -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-12" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-red-500/15 border border-red-500/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-red-400 mono uppercase tracking-wider w-fit">
+          Physical Asset Protection
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Cut the Wire, the Vehicle <span class="text-red-400">Safely Stops</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-red-500/20 via-amber-500/10 to-transparent border-l-4 border-red-500 p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Tamper Response & Auto-Immobilizer</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-red-400">&lt; 2.0s GATE SHUTDOWN</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+            <span>Hardwired Inside Sealed 60V/72V Battery Compartment</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Safe Regenerative Deceleration (No Sudden Wheel Lock)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>Instant Alarm Sent to Bashundhara Gate Security Station</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: Hardware Schematic (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">HARDWARE WIRING & INTERLOCK SCHEMATIC</span>
+          <span class="text-[10px] mono text-red-400 bg-red-500/15 px-2 py-0.5 rounded border border-red-500/30">IP67 WATERPROOF</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 my-auto">
+          <div class="bg-black/60 border border-white/10 p-3 rounded-xl">
+            <div class="text-xs mono font-bold text-[#10B981]">Main Power Feed</div>
+            <div class="text-sm font-black text-white mt-0.5">9V – 90V DC Direct</div>
+            <div class="text-[10px] text-gray-400 mt-1">Direct wire to traction pack. Internal backup battery holds 48-hr ping if main disconnected.</div>
+          </div>
+
+          <div class="bg-black/60 border border-white/10 p-3 rounded-xl">
+            <div class="text-xs mono font-bold text-[#06B6D4]">Regen Controller Relay</div>
+            <div class="text-sm font-black text-white mt-0.5">Dual High-Side Switch</div>
+            <div class="text-[10px] text-gray-400 mt-1">Interlocks motor throttle signal. Restricts speed to 5 km/h before smooth safe standstill.</div>
+          </div>
+
+          <div class="bg-black/60 border border-white/10 p-3 rounded-xl">
+            <div class="text-xs mono font-bold text-amber-400">Optical Bay Tamper</div>
+            <div class="text-sm font-black text-white mt-0.5">Micro-Switch + Photodiode</div>
+            <div class="text-[10px] text-gray-400 mt-1">Opening battery compartment lid instantly logs breach to central dashboard.</div>
+          </div>
+
+          <div class="bg-black/60 border border-white/10 p-3 rounded-xl">
+            <div class="text-xs mono font-bold text-purple-400">Offline Flash Ring</div>
+            <div class="text-sm font-black text-white mt-0.5">64,000 Waypoint Buffer</div>
+            <div class="text-[10px] text-gray-400 mt-1">Zero data loss even in underground parking or cellular dead spots.</div>
+          </div>
+        </div>
+
+        <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 text-[11px] mono text-gray-400 text-center">
+          Engineered specifically for Bangladesh humidity, dust, and pressure washing.
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 13: 90-SECOND BATTERY SWAPPING & DESCO ARBITRAGE    -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-13" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#10B981]/15 border border-[#10B981]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#10B981] mono uppercase tracking-wider w-fit">
+          Energy Infrastructure • Continuous Operation
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Eliminating Blackouts with <span class="text-[#10B981]">Off-Peak Charging</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#10B981]/20 via-[#06B6D4]/10 to-transparent border-l-4 border-[#10B981] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Turnaround Time & Energy Savings</div>
+          <div class="text-2xl sm:text-3xl font-black text-white tracking-tight mono text-[#10B981]">90-SEC SWAP · 41.5% SAVINGS</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>2,500+ Cycle LFP Packs (5-Year Lifespan vs 8 Months Lead-Acid)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>Automated 5–11 PM Peak Lockout (Charges on ৳9.09 Tariff)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>6:00 AM to 11:00 PM Continuous Fleet Availability</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 group shadow-2xl">
+        <img 
+          src="/images/bahon/depot-battery-swap.png" 
+          alt="Smart Solar Depot Battery Swapping Rack" 
+          class="w-full h-full object-cover object-center transform group-hover:scale-105 transition duration-700"
+          onerror="this.onerror=null; this.src='/images/og-preview.png';"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#070B12] via-black/40 to-transparent"></div>
+
+        <div class="absolute bottom-4 left-4 right-4 bg-black/85 backdrop-blur-md p-3.5 rounded-2xl border border-[#10B981]/40 flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-white">Smart Solar Swapping Depot (Bashundhara Central)</div>
+            <div class="text-[10px] mono text-[#10B981]">LFP Thermal Management • Zero Fire Hazard Chemistry</div>
+          </div>
+          <span class="text-xs font-bold bg-[#10B981]/20 text-[#10B981] px-3 py-1 rounded-lg border border-[#10B981]/40">
+            90-SEC FAST SWAP
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 14: ALGORITHMIC BLOCK BALANCING                     -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-14" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#06B6D4]/15 border border-[#06B6D4]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#06B6D4] mono uppercase tracking-wider w-fit">
+          Resident Satisfaction • Service Level Guarantee
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Guaranteed &lt;5-Minute Pickups in <span class="text-[#06B6D4]">Blocks I through P</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#06B6D4]/20 via-[#10B981]/10 to-transparent border-l-4 border-[#06B6D4] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Township SLA Standard</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-[#06B6D4]">&lt; 5 MINUTE PICKUP</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>Automated Sector Quotas (Minimum 12 Shuttles in East Blocks)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>Eliminates Gate 1 Hoarding via Automated Audio Rebalancing</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Equal Premium Mobility Access for All 3,346 Acres</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: Zone Balancing Visualizer (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">DYNAMIC ZONE LOAD BALANCER</span>
+          <span class="text-[10px] mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">ACTIVE DISPATCH</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 my-auto">
+          <!-- Zone West -->
+          <div class="bg-black/60 border border-[#10B981]/30 p-3.5 rounded-2xl">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold text-white">Zone West (Blocks A–D)</span>
+              <span class="text-[10px] mono text-[#10B981] font-bold">BALANCED</span>
+            </div>
+            <div class="text-xl font-black mono text-white">28 Vehicles</div>
+            <div class="text-[11px] text-gray-400 mt-1">Avg Wait: <span class="text-[#10B981] font-bold">2.4 mins</span></div>
+          </div>
+
+          <!-- Zone Central -->
+          <div class="bg-black/60 border border-[#10B981]/30 p-3.5 rounded-2xl">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold text-white">Zone Central (Blocks E–H)</span>
+              <span class="text-[10px] mono text-[#10B981] font-bold">BALANCED</span>
+            </div>
+            <div class="text-xl font-black mono text-white">32 Vehicles</div>
+            <div class="text-[11px] text-gray-400 mt-1">Avg Wait: <span class="text-[#10B981] font-bold">3.1 mins</span></div>
+          </div>
+
+          <!-- Zone East -->
+          <div class="bg-black/60 border border-[#06B6D4]/40 p-3.5 rounded-2xl">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold text-[#06B6D4]">Zone East (Blocks I–M)</span>
+              <span class="text-[10px] mono text-[#06B6D4] font-bold">PROTECTED</span>
+            </div>
+            <div class="text-xl font-black mono text-[#06B6D4]">24 Vehicles</div>
+            <div class="text-[11px] text-gray-400 mt-1">Avg Wait: <span class="text-[#06B6D4] font-bold">4.2 mins</span></div>
+          </div>
+
+          <!-- Zone Far East -->
+          <div class="bg-black/60 border border-purple-500/30 p-3.5 rounded-2xl">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold text-purple-300">Zone Far East (Blocks N–P)</span>
+              <span class="text-[10px] mono text-purple-300 font-bold">EXPANDING</span>
+            </div>
+            <div class="text-xl font-black mono text-white">16 Vehicles</div>
+            <div class="text-[11px] text-gray-400 mt-1">Avg Wait: <span class="text-purple-400 font-bold">4.8 mins</span></div>
+          </div>
+        </div>
+
+        <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 text-[11px] mono text-gray-400 text-center">
+          Bashundhara residents get Uber-like reliability without paying surge fares.
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 15: COMMERCIAL ROI — SELF-FUNDING IN 15 DAYS        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-15" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#10B981]/15 border border-[#10B981]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#10B981] mono uppercase tracking-wider w-fit">
+          Executive Decision • The Investment Equation
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          ৳1 Invested Yields <span class="text-[#10B981]">৳6.50 in Recovered Cash</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#10B981]/20 via-[#06B6D4]/10 to-transparent border-l-4 border-[#10B981] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Full Hardware Payback Period</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-[#10B981]">&lt; 15-DAY PAYBACK</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>Hardware Paid Entirely by Eliminating 17% Cash Leakage</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>Zero Long-Term Burden on Tanvir Bashundhara Capital Budget</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>6.5x Cash Return Over 90 Days of Commercial Deployment</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: ROI Scorecard (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs mono font-bold text-gray-300">COMMERCIAL ROI SCORECARD (50-SHUTTLE PILOT)</span>
+          <span class="text-[10px] mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">6.5X CAPITAL RETURN</span>
+        </div>
+
+        <div class="space-y-3 my-auto">
+          <div class="bg-black/50 border border-white/10 p-3 rounded-xl flex items-center justify-between">
+            <span class="text-xs text-gray-300 font-semibold">Monthly Farebox Leakage Recovered</span>
+            <span class="mono text-sm font-black text-[#10B981]">+৳7,14,000 / mo</span>
+          </div>
+
+          <div class="bg-black/50 border border-white/10 p-3 rounded-xl flex items-center justify-between">
+            <span class="text-xs text-gray-300 font-semibold">DESCO Off-Peak Power Arbitrage Savings</span>
+            <span class="mono text-sm font-black text-[#06B6D4]">+৳2,10,000 / mo</span>
+          </div>
+
+          <div class="bg-black/50 border border-white/10 p-3 rounded-xl flex items-center justify-between">
+            <span class="text-xs text-gray-300 font-semibold">Reduced Battery Degradation (BMS Cooling)</span>
+            <span class="mono text-sm font-black text-amber-400">+৳1,50,000 / mo</span>
+          </div>
+
+          <div class="bg-[#10B981]/15 border border-[#10B981]/50 p-3.5 rounded-2xl flex items-center justify-between">
+            <span class="text-xs text-white font-extrabold uppercase">Total Monthly Net Value Created</span>
+            <span class="mono text-base sm:text-xl font-black text-[#10B981]">৳10,74,000 / mo</span>
+          </div>
+        </div>
+
+        <div class="bg-black/40 p-2.5 rounded-xl border border-white/5 text-[11px] mono text-gray-400 text-center">
+          Investing in GRO10X Bahon OS is a pure revenue-generating asset, not a cost center.
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 16: THE 30-DAY MANAGED PILOT                        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-16" class="slide flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10">
+      <!-- Left Content (45%) -->
+      <div class="w-full lg:w-[45%] flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 bg-[#10B981]/15 border border-[#10B981]/30 px-3.5 py-1 rounded-full text-xs font-extrabold text-[#10B981] mono uppercase tracking-wider w-fit">
+          Immediate Action • Low-Risk Entry
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight heading-font">
+          Live on 15 Vehicles in 7 Days with <span class="text-[#10B981]">Zero Disruption</span>
+        </h2>
+
+        <!-- Massive Stat Pill -->
+        <div class="bg-gradient-to-r from-[#10B981]/20 via-[#06B6D4]/10 to-transparent border-l-4 border-[#10B981] p-4 rounded-r-2xl">
+          <div class="text-[11px] mono text-gray-400 uppercase font-bold">Commercial Pilot Anchor</div>
+          <div class="text-2xl sm:text-4xl font-black text-white tracking-tight mono text-[#10B981]">৳60,000 BDT TOTAL PILOT</div>
+        </div>
+
+        <!-- 3 Punchy Bullets -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+            <span>Overnight Installation: Zero Daytime Route Revenue Loss</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0"></span>
+            <span>Live 55" Command Screen in Managing Director's Office by Day 7</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm sm:text-base text-gray-200 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Full Forensic Audit & 1,000-Vehicle Scale Masterplan on Day 30</span>
+          </div>
+        </div>
+
+        <!-- Call to Action Buttons -->
+        <div class="pt-2 flex flex-wrap items-center gap-3">
+          <a href="/p/bahon-fleet" target="_blank" class="bg-[#10B981] hover:brightness-110 text-black font-extrabold px-6 py-3 rounded-2xl text-sm transition shadow-[0_0_25px_rgba(16,185,129,0.5)]">
+            📋 Accept 30-Day Pilot (৳60,000)
+          </a>
+          <a href="/prototypes/bahon/" target="_blank" class="bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-3 rounded-2xl text-sm transition border border-white/15">
+            ⚡ Explore Command Center
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Visual Anchor: 7-Day Rollout Gantt & MD Office (55%) -->
+      <div class="w-full lg:w-[55%] h-[280px] sm:h-[400px] lg:h-[460px] relative rounded-3xl overflow-hidden glass-panel border border-white/10 group shadow-2xl">
+        <img 
+          src="/images/bahon/md-office-command-screen.png" 
+          alt="55-inch Command Screen Mounted in Managing Director's Office" 
+          class="w-full h-full object-cover object-center transform group-hover:scale-105 transition duration-700"
+          onerror="this.onerror=null; this.src='/images/og-preview.png';"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#070B12] via-black/40 to-transparent"></div>
+
+        <div class="absolute bottom-4 left-4 right-4 bg-black/85 backdrop-blur-md p-3.5 rounded-2xl border border-[#10B981]/40 flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-white">7-Day Deployment Guarantee</div>
+            <div class="text-[10px] mono text-[#10B981]">15 Units Installed Overnight • Day 7 Live Executive Screen</div>
+          </div>
+          <span class="text-xs font-black mono text-black bg-[#10B981] px-3 py-1 rounded-lg shadow">
+            READY TONIGHT
+          </span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM CONTROLLER & NAVIGATION DOCK (TV-CALIBRATED)       -->
+  <!-- ========================================================= -->
+  <footer class="relative z-30 px-6 sm:px-10 py-3 border-t border-white/10 bg-[#070B12]/95 backdrop-blur-md flex items-center justify-between">
+    
+    <!-- Left: Prev Button -->
+    <div class="flex items-center gap-2">
+      <button onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 border border-white/10 transition active:scale-95">
+        <span>←</span>
+        <span class="hidden sm:inline">Previous</span>
+      </button>
+
+      <span class="text-[11px] mono text-gray-500 hidden md:inline">Use [←] / [→] keys or Spacebar</span>
+    </div>
+
+    <!-- Center: Interactive Slide Dots (1-16) -->
+    <div class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto py-1 max-w-md sm:max-w-none">
+      <template id="dot-template">
+        <button class="slide-dot w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white/20 hover:bg-white/50 transition-all"></button>
+      </template>
+      <div id="slide-dots-container" class="flex items-center gap-1 sm:gap-1.5"></div>
+    </div>
+
+    <!-- Right: Next Button -->
+    <div class="flex items-center gap-2">
+      <button onclick="nextSlide()" class="px-5 py-2 rounded-xl bg-[#10B981] hover:brightness-110 text-black font-extrabold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+        <span>Next</span>
+        <span>→</span>
+      </button>
+    </div>
+
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT SLIDE ENGINE & CONTROLLER                      -->
+  <!-- ========================================================= -->
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 16;
+    let audioCtx = null;
+
+    // Build Slide Dots
+    const dotsContainer = document.getElementById('slide-dots-container');
+    for (let i = 1; i <= totalSlides; i++) {
+      const dot = document.createElement('button');
+      dot.className = `slide-dot w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${i === 1 ? 'bg-[#10B981] scale-125' : 'bg-white/20 hover:bg-white/50'}`;
+      dot.title = `Jump to Slide ${i}`;
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
+    }
+
+    function updateSlide() {
+      // Toggle active slide
+      for (let i = 1; i <= totalSlides; i++) {
+        const slideEl = document.getElementById(`slide-${i}`);
+        if (slideEl) {
+          if (i === currentSlide) {
+            slideEl.classList.add('active');
+          } else {
+            slideEl.classList.remove('active');
+          }
+        }
+      }
+
+      // Update pill counter
+      const pill = document.getElementById('slide-num-pill');
+      if (pill) {
+        pill.textContent = currentSlide < 10 ? `0${currentSlide}` : `${currentSlide}`;
+      }
+
+      // Update dots
+      const dots = document.querySelectorAll('.slide-dot');
+      dots.forEach((d, idx) => {
+        if (idx + 1 === currentSlide) {
+          d.className = 'slide-dot w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#10B981] scale-125 transition-all shadow-[0_0_8px_#10B981]';
+        } else {
+          d.className = 'slide-dot w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white/20 hover:bg-white/50 transition-all';
+        }
+      });
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(n) {
+      if (n >= 1 && n <= totalSlides) {
+        currentSlide = n;
+        updateSlide();
+      }
+    }
+
+    // Keyboard Shortcuts for TV Presentation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(1);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(totalSlides);
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    // Touch Swipe for Tablets
+    let touchStartX = 0;
+    let touchEndX = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+    window.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 50) {
+        nextSlide();
+      } else if (touchEndX - touchStartX > 50) {
+        prevSlide();
+      }
+    }, false);
+
+    // Fullscreen Toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn("Fullscreen request error:", err);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Web Audio Synthesizer: Bangla Voice & Chime Simulator
+    function playVoiceDemo(type) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const t = audioCtx.currentTime;
+
+        // Wave animation trigger
+        const waveBars = [document.getElementById('wave-1'), document.getElementById('wave-2'), document.getElementById('wave-3'), document.getElementById('wave-4')];
+        waveBars.forEach(w => w && w.classList.add('wave-active'));
+        setTimeout(() => {
+          waveBars.forEach(w => w && w.classList.remove('wave-active'));
+        }, 1800);
+
+        if (type === 'fare') {
+          // Play clear affirmative two-tone chime (NFC beep)
+          const osc1 = audioCtx.createOscillator();
+          const osc2 = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          osc1.type = 'sine';
+          osc2.type = 'sine';
+
+          osc1.frequency.setValueAtTime(880, t); // A5
+          osc1.frequency.setValueAtTime(1174.66, t + 0.12); // D6
+          osc2.frequency.setValueAtTime(1320, t + 0.12); // E6
+
+          gain.gain.setValueAtTime(0.01, t);
+          gain.gain.linearRampToValueAtTime(0.3, t + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc1.start(t);
+          osc2.start(t + 0.12);
+          osc1.stop(t + 0.5);
+          osc2.stop(t + 0.5);
+
+          // Voice speech synthesis if supported
+          if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance("ভাড়া সফল হয়েছে, কুড়ি টাকা");
+            utterance.lang = 'bn-BD';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.1;
+            window.speechSynthesis.speak(utterance);
+          }
+
+        } else if (type === 'dispatch') {
+          // Dispatch chime
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(587.33, t); // D5
+          osc.frequency.setValueAtTime(880, t + 0.15); // A5
+
+          gain.gain.setValueAtTime(0.01, t);
+          gain.gain.linearRampToValueAtTime(0.25, t + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.6);
+
+          if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance("ব্লক এল-এ যাত্রী অপেক্ষা করছে, এগিয়ে যান");
+            utterance.lang = 'bn-BD';
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+          }
+
+        } else if (type === 'alert') {
+          // Warning buzzer
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(350, t);
+          osc.frequency.setValueAtTime(250, t + 0.2);
+
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.55);
+
+          if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance("গেট ১ অতিক্রম, অননুমোদিত রুট সতর্কতা");
+            utterance.lang = 'bn-BD';
+            utterance.rate = 1.05;
+            window.speechSynthesis.speak(utterance);
+          }
+        }
+      } catch (err) {
+        console.warn("Audio synthesizer error:", err);
+      }
+    }
+  </script>
+</body>
+</html>

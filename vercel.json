@@ -189,16 +189,52 @@
       "dest": "/public/prototypes/shomvob-pitch/index.html"
     },
     {
+      "src": "/pitch/bahon/copilot(.*)",
+      "dest": "/public/pitch/bahon/copilot.html"
+    },
+    {
+      "src": "/pitch/bahon(/.*)?",
+      "dest": "/public/pitch/bahon/index.html"
+    },
+    {
+      "src": "/pitch/shomvob/copilot(.*)",
+      "dest": "/public/pitch/shomvob/copilot.html"
+    },
+    {
+      "src": "/pitch/shomvob(/.*)?",
+      "dest": "/public/pitch/shomvob/index.html"
+    },
+    {
+      "src": "/pitch(/.*)?",
+      "dest": "/public/pitch/index.html"
+    },
+    {
       "src": "/prototypes/bahon-pitch/copilot(.*)",
-      "dest": "/public/prototypes/bahon-pitch/copilot.html"
+      "status": 302,
+      "headers": {
+        "Location": "/pitch/bahon/copilot"
+      }
     },
     {
-      "src": "/prototypes/bahon-pitch/?$",
-      "dest": "/public/prototypes/bahon-pitch/index.html"
+      "src": "/prototypes/bahon-pitch(/.*)?",
+      "status": 302,
+      "headers": {
+        "Location": "/pitch/bahon/"
+      }
     },
     {
-      "src": "/prototypes/bahon-pitch/index(.*)",
-      "dest": "/public/prototypes/bahon-pitch/index.html"
+      "src": "/prototypes/shomvob-pitch/copilot(.*)",
+      "status": 302,
+      "headers": {
+        "Location": "/pitch/shomvob/copilot"
+      }
+    },
+    {
+      "src": "/prototypes/shomvob-pitch(/.*)?",
+      "status": 302,
+      "headers": {
+        "Location": "/pitch/shomvob/"
+      }
     },
     {
       "src": "/prototypes/bahon/copilot(.*)",
@@ -239,12 +275,13 @@
     {
       "src": "/nhf(/.*)?",
       "status": 302,
-      "headers": { "Location": "/prototypes/nhf-portal/" }
+      "headers": {
+        "Location": "/prototypes/nhf-portal/"
+      }
     },
     {
       "src": "/3d-viewer(/.*)?",
-      "status": 302,
-      "headers": { "Location": "/prototypes/3d-spatial-viewer/" }
+      "dest": "/public/prototypes/3d-spatial-viewer/index.html"
     },
     {
       "src": "/pages/(.*)",
@@ -289,17 +326,23 @@
     {
       "src": "^/crew(/.*)?$",
       "status": 302,
-      "headers": { "Location": "/workspace#tasks" }
+      "headers": {
+        "Location": "/workspace#tasks"
+      }
     },
     {
       "src": "^/manager(/.*)?$",
       "status": 302,
-      "headers": { "Location": "/workspace#overview" }
+      "headers": {
+        "Location": "/workspace#overview"
+      }
     },
     {
       "src": "^/dbm(/.*)?$",
       "status": 302,
-      "headers": { "Location": "/workspace?engineId=engine3#deliverables" }
+      "headers": {
+        "Location": "/workspace?engineId=engine3#deliverables"
+      }
     },
     {
       "src": "/workspace/(.*)",

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X PitchOS — Executive TV Decks & Presentation Engines</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+  <style>
+    :root {
+      --bg-dark: #070B12;
+      --bg-slate: #0F172A;
+      --surface-card: #131E2E;
+      --surface-card-hover: #19273C;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(0, 223, 137, 0.35);
+      --accent-emerald: #00DF89;
+      --accent-cyan: #00F0FF;
+      --accent-amber: #F59E0B;
+      --accent-purple: #A855F7;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-heading: 'Space Grotesk', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #152238 0%, var(--bg-dark) 70%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      background: rgba(7, 11, 18, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 16px 36px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .agency-badge {
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
+      color: #070B12;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-title span {
+      color: var(--accent-cyan);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, var(--accent-emerald), #059669);
+      color: #070B12;
+      box-shadow: 0 4px 14px rgba(0, 223, 137, 0.3);
+    }
+
+    .btn-emerald:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 223, 137, 0.45);
+    }
+
+    .btn-cyan {
+      background: linear-gradient(135deg, var(--accent-cyan), #0284C7);
+      color: #070B12;
+      box-shadow: 0 4px 14px rgba(0, 240, 255, 0.25);
+    }
+
+    .btn-cyan:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 64px 32px 40px;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 223, 137, 0.1);
+      border: 1px solid rgba(0, 223, 137, 0.3);
+      color: var(--accent-emerald);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+
+    .hero h1 span.gradient-text {
+      background: linear-gradient(135deg, #FFF, var(--accent-cyan), var(--accent-emerald));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 720px;
+      margin: 0 auto 28px;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .hero-stat-pill {
+      background: rgba(19, 30, 46, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .hero-stat-pill strong {
+      color: var(--accent-emerald);
+      font-family: var(--font-heading);
+      font-size: 15px;
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 32px 80px;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .pitch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 28px;
+      margin-bottom: 48px;
+    }
+
+    .pitch-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    .pitch-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-accent);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 223, 137, 0.15);
+    }
+
+    .pitch-card.featured {
+      border-color: rgba(0, 223, 137, 0.4);
+      background: linear-gradient(180deg, rgba(19, 30, 46, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    }
+
+    .card-banner {
+      height: 200px;
+      position: relative;
+      background: #090e17;
+      overflow: hidden;
+    }
+
+    .card-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .pitch-card:hover .card-banner img {
+      transform: scale(1.04);
+    }
+
+    .card-banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7, 11, 18, 0.1) 0%, rgba(7, 11, 18, 0.85) 100%);
+    }
+
+    .banner-tags {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .tag-emerald {
+      background: rgba(0, 223, 137, 0.9);
+      color: #070B12;
+    }
+
+    .tag-cyan {
+      background: rgba(0, 240, 255, 0.9);
+      color: #070B12;
+    }
+
+    .tag-amber {
+      background: rgba(245, 158, 11, 0.9);
+      color: #070B12;
+    }
+
+    .card-body {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-client {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+
+    .card-meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(7, 11, 18, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+
+    .card-meta-item {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+
+    .card-meta-item strong {
+      color: var(--text-main);
+    }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .card-actions .btn {
+      justify-content: center;
+      padding: 11px 14px;
+      font-size: 12px;
+    }
+
+    .card-actions .btn-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Dual Surface Explainer */
+    .explainer-box {
+      background: rgba(19, 30, 46, 0.6);
+      border: 1px solid var(--border-accent);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    @media (max-width: 800px) {
+      .explainer-box { grid-template-columns: 1fr; }
+      .pitch-grid { grid-template-columns: 1fr; }
+      header { padding: 14px 20px; }
+      main { padding: 20px 20px 60px; }
+    }
+
+    .explainer-col h3 {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-emerald);
+      margin-bottom: 10px;
+    }
+
+    .explainer-col p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 28px 36px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      background: rgba(7, 11, 18, 0.95);
+      margin-top: auto;
+    }
+
+    footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand-group">
+      <span class="agency-badge">Engine 2 · PitchOS</span>
+      <div class="brand-title">GRO10X <span>PITCHOS</span></div>
+    </div>
+    <div class="header-actions">
+      <a href="/prototypes" class="btn btn-outline">🔮 Prototype Showroom</a>
+      <a href="/workspace" class="btn btn-emerald">🏛️ Workspace</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-badge">⚡ Enterprise Presentation Engine</div>
+    <h1>Executive TV Decks & <br><span class="gradient-text">Private Presenter Co-Pilots</span></h1>
+    <p>16:9 Big-Screen TV-calibrated presentations engineered for high-stakes enterprise sales. Visual-first, high contrast, zero wall-of-text, and synchronized with private smartphone speaker controls.</p>
+    
+    <div class="hero-stats">
+      <div class="hero-stat-pill">
+        <span>📺 Display Standard:</span>
+        <strong>16:9 Edge-to-Edge 4K UHD</strong>
+      </div>
+      <div class="hero-stat-pill">
+        <span>📱 Private Co-Pilot:</span>
+        <strong>Handoff & Stopwatch Timer</strong>
+      </div>
+      <div class="hero-stat-pill">
+        <span>⚡ Closure Rate:</span>
+        <strong>Proposal-Wrapped Prototypes</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Presentation Catalog -->
+  <main>
+    <div class="section-title">
+      <span>🎯 Active Executive Presentation Suites</span>
+    </div>
+
+    <div class="pitch-grid">
+      <!-- Deck 1: Bahon Fleet OS -->
+      <div class="pitch-card featured">
+        <div class="card-banner">
+          <img src="/images/bahon/hero-bahon-gate1.png" alt="Bahon Fleet OS TV Pitch Deck" onerror="this.src='/images/bahon/depot-battery-swap.png'">
+          <div class="card-banner-overlay"></div>
+          <div class="banner-tags">
+            <span class="tag tag-emerald">Live TV Deck</span>
+            <span class="tag tag-cyan">16-Slide Suite</span>
+            <span class="tag tag-amber">৳60K Pilot</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-client">Tanvir Bashundhara Group · MD Ahmed Ibrahim Sobhan</div>
+          <h2 class="card-title">Bahon Fleet OS // Green Bashundhara</h2>
+          <p class="card-desc">Comprehensive 16-slide TV presentation deck for the autonomous digitization of 300+ electric shuttles in Bashundhara R/A. Features IoT acoustic Soundbox validation and Bashundhara Green Pass RFID ticketing.</p>
+          
+          <div class="card-meta-list">
+            <div class="card-meta-item"><span>Format</span><strong>16:9 Big-Screen TV Deck (Keyboard Nav)</strong></div>
+            <div class="card-meta-item"><span>Presenter Surface</span><strong>Mobile Co-Pilot (20m Timer + Notes)</strong></div>
+            <div class="card-meta-item"><span>Commercial Anchor</span><strong>৳60,000 BDT 30-Day Managed Pilot</strong></div>
+          </div>
+
+          <div class="card-actions">
+            <a href="/pitch/bahon" class="btn btn-emerald" target="_blank">📺 Launch TV Deck</a>
+            <a href="/pitch/bahon/copilot" class="btn btn-cyan" target="_blank">📱 Presenter Co-Pilot</a>
+            <a href="/prototypes/bahon/" class="btn btn-outline btn-full" target="_blank">🛺 Open Fleet Simulator Prototype</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deck 2: Shomvob Strategic Partnership -->
+      <div class="pitch-card">
+        <div class="card-banner">
+          <div style="width:100%; height:100%; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #070b12 100%); display:flex; align-items:center; justify-content:center; color:#38bdf8; font-size:48px; font-weight:800; font-family:var(--font-heading);">
+            SHOMVOB
+          </div>
+          <div class="card-banner-overlay"></div>
+          <div class="banner-tags">
+            <span class="tag tag-cyan">Strategic Alliance</span>
+            <span class="tag tag-emerald">HR Tech AI</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-client">Shomvob Technology Ltd · Executive Board</div>
+          <h2 class="card-title">Shomvob Strategic Tech Alliance</h2>
+          <p class="card-desc">High-altitude strategic partnership deck demonstrating automated candidate qualification, WhatsApp voice ingress, and automated hiring pipelines for blue-collar talent matching at scale.</p>
+          
+          <div class="card-meta-list">
+            <div class="card-meta-item"><span>Target Surface</span><strong>Conference Room TV & Executive Board</strong></div>
+            <div class="card-meta-item"><span>Tech Architecture</span><strong>Voice AI + WhatsApp Ingress + Talent ATS</strong></div>
+            <div class="card-meta-item"><span>Status</span><strong>Certified Strategic Asset</strong></div>
+          </div>
+
+          <div class="card-actions">
+            <a href="/pitch/shomvob" class="btn btn-emerald" target="_blank">📺 Launch TV Deck</a>
+            <a href="/pitch/shomvob/copilot" class="btn btn-cyan" target="_blank">📱 Presenter Co-Pilot</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deck 3: Sahanabag City Township OS -->
+      <div class="pitch-card">
+        <div class="card-banner">
+          <div style="width:100%; height:100%; background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #070b12 100%); display:flex; align-items:center; justify-content:center; color:#34d399; font-size:36px; font-weight:800; font-family:var(--font-heading);">
+            SAHANABAG GIS
+          </div>
+          <div class="card-banner-overlay"></div>
+          <div class="banner-tags">
+            <span class="tag tag-emerald">Township OS</span>
+            <span class="tag tag-cyan">Digital Twin</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-client">Sahanabag City Authority · Municipal & Smart Township</div>
+          <h2 class="card-title">Sahanabag Township OS // Digital Twin</h2>
+          <p class="card-desc">Full GIS spatial mapping, 3D interactive parcel routing, municipal telemetry, and civic infrastructure management platform built for modern township authorities.</p>
+          
+          <div class="card-meta-list">
+            <div class="card-meta-item"><span>Domain</span><strong>GIS Spatial Mapping & Municipal Control</strong></div>
+            <div class="card-meta-item"><span>Platform</span><strong>Interactive WebGL & Spatial Mapbox Twin</strong></div>
+          </div>
+
+          <div class="card-actions">
+            <a href="/prototypes/sahanabag-city" class="btn btn-emerald btn-full" target="_blank">🗺️ Open GIS Spatial Prototype</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deck 4: Sadman's Dream Garage -->
+      <div class="pitch-card">
+        <div class="card-banner">
+          <div style="width:100%; height:100%; background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #070b12 100%); display:flex; align-items:center; justify-content:center; color:#c084fc; font-size:36px; font-weight:800; font-family:var(--font-heading);">
+            3D GARAGE
+          </div>
+          <div class="card-banner-overlay"></div>
+          <div class="banner-tags">
+            <span class="tag tag-purple" style="background:#a855f7; color:#fff;">3D WebGL</span>
+            <span class="tag tag-amber">4K Phygital</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-client">Bespoke Automotive Phygital Twin</div>
+          <h2 class="card-title">Sadman's Dream Garage & 4K Print Master</h2>
+          <p class="card-desc">High-framerate 3D WebGL showroom with custom lighting, procedural V8/V12 audio synthesis, and companion 4K Ultra-HD printable framed merchandise master.</p>
+          
+          <div class="card-meta-list">
+            <div class="card-meta-item"><span>Engine</span><strong>Three.js WebGL + Web Audio Synthesizer</strong></div>
+            <div class="card-meta-item"><span>Merchandise</span><strong>16:9 4K 300 DPI Pre-rendered Poster</strong></div>
+          </div>
+
+          <div class="card-actions">
+            <a href="/prototypes/sadman-garage" class="btn btn-emerald" target="_blank">🏎️ Launch 3D Garage</a>
+            <a href="/prototypes/sadman-garage/poster" class="btn btn-cyan" target="_blank">🖼️ View 4K Poster</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dual Surface Operating Law Explainer -->
+    <div class="explainer-box">
+      <div class="explainer-col">
+        <h3>🏛️ The Invariant Dual-Pitch Architecture</h3>
+        <p>Every executive sales pitch package delivered by Mother OS Foundry Lab is bifurcated into two synchronized surfaces: <strong>Surface A (The Audience Display)</strong> for 55"–65" 4K TVs, and <strong>Surface B (The Private Presenter Co-Pilot)</strong> for the Founder's smartphone with speaker pacing notes and instant WhatsApp handoff.</p>
+      </div>
+      <div class="explainer-col">
+        <h3>💼 Proposal-Wrapped Conversion Pipeline</h3>
+        <p>All technology prototypes and TV presentations are permanently wrapped inside verified commercial proposals with transparent BDT credit accounting, milestone-based mobilization retainers, and single-tap digital authorization.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>GRO10X Innovation Lab · Engine 2 (PitchOS & Bespoke Solutions) · Operating Base: <a href="https://gro10x-ai.vercel.app" target="_blank">https://gro10x-ai.vercel.app</a></p>
+  </footer>
+
+</body>
+</html>
