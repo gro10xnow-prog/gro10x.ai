@@ -4,7 +4,7 @@
 **Canonical Governance Document:** Companion to [`AGENTS.md`](file:///d:/gro10x.ai/AGENTS.md) (Sections 8, 9, 13, 14, 15, 16)  
 **Ledger Data Store:** [`data/sprint_projects_ledger.json`](file:///d:/gro10x.ai/data/sprint_projects_ledger.json)  
 **Standard Currency:** Strictly **1 Credit = BDT 2.00** ($\approx \$0.0165$ USD | ~60.6 Credits = $1.00 USD)  
-**Status:** **ACTIVE ENTERPRISE LEDGER • 18 SPRINTS AUDITED • 1,155 PASSING TESTS**
+**Status:** **ACTIVE ENTERPRISE LEDGER • 19 SPRINTS AUDITED • 1,176 PASSING TESTS**
 
 ---
 
@@ -34,8 +34,9 @@ PRJ-PITCHOS-INBOUND      Mother OS Engine 2    Pitch & Presentation Lead     Inb
 PRJ-CAPITAL-GENESIS-S0   GRO10X Capital        Capital [S1]-[S4] Squad       Next.js 16 Core, 26 Tables, 6 Portals    COMPLETED   36   50,000    ৳100,000
 PRJ-CAPITAL-SP1-HARDEN   GRO10X Capital        Capital [S1]-[S4] Squad       bKash Settlement, Async Worker, 3-Bot    COMPLETED   12   30,000    ৳ 60,000
 PRJ-AGENT10X-FLEET-43    Agent10x.ai           Agent10x [S1]-[S4] Squad      43-Persona Fleet, Phone+PIN Auth, PWA    COMPLETED   78   50,000    ৳100,000
+PRJ-TOFFEECON-PWA-SEGREG ToffeeCon 2026        ToffeeCon [S1]-[S4] Squad     Public PWA Segregation, Smart Download   COMPLETED   21   25,000    ৳ 50,000
 ====================================================================================================================================
-CONGLOMERATE TOTALS: 18 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,155  525,000  ৳1,050,000
+CONGLOMERATE TOTALS: 19 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,176  550,000  ৳1,100,000
 ====================================================================================================================================
 ```
 
@@ -72,10 +73,12 @@ CONGLOMERATE TOTALS: 18 SPRINT PROJECTS CHARTERED & AUDITED                     
 * **Tests Certified**: 205 automated tests.
 
 ### D. ToffeeCon 2026 Platform (`D:\Toffeecon` — 6 Digital Employees)
-* **Squad Output**: Event OS on Render Cloud (`toffeecon-2026.onrender.com`) spanning 7 certified surfaces.
-* **Interactive Modules**: Ingress Gate (`/gate`), 100-Phone Wall (`/wall`), AI Dialect Dubbing Studio (`/audition`), 3-Screen Mainstage Panoramic LED (`/stage`), Simulation Sandbox (`/simulation`).
-* **Infrastructure**: 480ms WebSocket pub/sub with atomic `.tmp` swap JSON state hydration.
-* **Tests Certified**: 20 automated tests.
+* **Sprint 1 Core & Ingress Fix**: Event OS on Render Cloud (`toffeecon-2026.onrender.com`) spanning 7 surfaces (Gate, Wall, Audition, Stage, Simulation) with 480ms WebSocket pub/sub.
+* **Sprint 2 Public PWA Segregation & Smart App Download**:
+  - `adminRouteGuard()` middleware enforcing HTTP 302 redirects from `/admin`, `/control`, and `/simulation` to public surfaces unless authenticated via `x-director-auth`.
+  - Sensitive configuration APIs (`/api/ai/config`, `/api/system/audit-log`) protected with 401 guardrails and sanitized error logging (stripping filesystem paths).
+  - Smart **"📲 Download App"** button deployed on public landing and portal: Chromium `beforeinstallprompt` 1-tap sheet, iOS Safari 3-step visual modal, and auto-hiding in PWA standalone display mode.
+* **Tests Certified**: 21 / 21 automated tests passing across 8 test suites (commit `b90e5af` live on Render Cloud).
 
 ### E. Agent10x.ai (`Engine 1` — 5 Digital Employees & Master Workforce Host)
 * **Sprint 1 Core**: Multi-agent mesh with AES-256-GCM credential vault, double-entry credit ledger, and 3 initial personas (`@profiler`, `@hiring_manager`, `sarah-bde-fintech`).
@@ -110,10 +113,10 @@ CONGLOMERATE TOTALS: 18 SPRINT PROJECTS CHARTERED & AUDITED                     
 │                   GRO10X CONGLOMERATE AUDITED TOTALS                   │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Total Active Digital Employees:   43 Specialists Across 7 Workspaces   │
-│ Total Sprint Projects Completed:  17 Completed (1 Active Relay)        │
-│ Total Fleet Automated Tests:      1,155 Passing Tests (100% Green)     │
-│ Total Conglomerate Valuation:     525,000 Credits (৳ 10,50,000 BDT)    │
-│ USD Asset Valuation:              $ 8,662.50 USD                       │
-│ Estimated Legacy Agency Value:    $ 75,000 – $ 95,000 USD              │
+│ Total Sprint Projects Completed:  18 Completed (1 Active Relay)        │
+│ Total Fleet Automated Tests:      1,176 Passing Tests (100% Green)     │
+│ Total Conglomerate Valuation:     550,000 Credits (৳ 11,00,000 BDT)    │
+│ USD Asset Valuation:              $ 9,075.00 USD                       │
+│ Estimated Legacy Agency Value:    $ 80,000 – $ 100,000 USD             │
 └────────────────────────────────────────────────────────────────────────┘
 ```

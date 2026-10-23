@@ -432,14 +432,38 @@
       ],
       "charteredDate": "2026-10-23",
       "completedDate": "2026-10-23"
+    },
+    {
+      "id": "PRJ-TOFFEECON-PWA-SEGREGATION",
+      "venture": "ToffeeCon 2026",
+      "engine": "Engine 4 Satellite #4",
+      "port": 5000,
+      "sprint": "Sprint 2: Public PWA Segregation, Smart 1-Tap App Download Button & Admin Route Hardening",
+      "status": "COMPLETED",
+      "pricingType": "Commercial Satellite Retainer",
+      "creditValuation": 25000,
+      "bdtValuation": 50000,
+      "usdValuation": 412.50,
+      "testsCertified": 21,
+      "artifacts": [
+        "adminRouteGuard Middleware & HTTP 302 Redirects on /admin, /control, and /simulation",
+        "Sensitive Admin APIs Protected with requireDirectorAuth Header (x-director-auth: toffeecon-2026-secure)",
+        "Smart 📲 Download App Button with Chromium beforeinstallprompt & iOS Safari 3-Step Guidance Modal",
+        "PWA Standalone Mode Auto-Detection & Button Suppression (display-mode: standalone)",
+        "Scrubbed Public Surfaces (landing.html & portal.html) Free of Admin Links",
+        "Sanitized AI & Media Locker Endpoints with Redacted Filesystem Paths",
+        "Render Cloud Production Sync (commit b90e5af) with 21/21 Automated Tests Passing"
+      ],
+      "charteredDate": "2026-10-23",
+      "completedDate": "2026-10-23"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 18,
-    "totalSprintsCompleted": 17,
-    "totalCreditsGenerated": 525000,
-    "totalBdtValuation": 1050000,
-    "totalUsdValuation": 8662.50,
-    "totalTestsPassingAcrossHoldings": 1155
+    "totalSprintsChartered": 19,
+    "totalSprintsCompleted": 18,
+    "totalCreditsGenerated": 550000,
+    "totalBdtValuation": 1100000,
+    "totalUsdValuation": 9075.00,
+    "totalTestsPassingAcrossHoldings": 1176
   }
 }
