@@ -384,14 +384,38 @@
       ],
       "charteredDate": "2026-10-23",
       "completedDate": "2026-10-23"
+    },
+    {
+      "id": "PRJ-CAPITAL-SP1-HARDENING",
+      "venture": "GRO10X Capital (Capital10x)",
+      "engine": "Engine 6: Fintech & Capital Markets",
+      "port": 3000,
+      "sprint": "Sprint 1: bKash Gateway Settlement, Asynchronous Notification Queue Worker, 3-Bot Mesh Telemetry & E2E Hardening",
+      "status": "COMPLETED",
+      "pricingType": "Proprietary Venture Equity R&D",
+      "creditValuation": 30000,
+      "bdtValuation": 60000,
+      "usdValuation": 495.00,
+      "testsCertified": 12,
+      "artifacts": [
+        "Asynchronous Notification Queue Worker (/api/cron/process-notifications) with atomic batch locks",
+        "bKash Webhook & Settlement Bridge (/api/payments/bkash-webhook) with HMAC-SHA256 & atomic RPC (rpc_settle_bkash_booking)",
+        "Primary Allocation bKash Gateway Modal with real-time Postgres polling & celebration holding receipt",
+        "Admin Command Center Tab 14 (Bot Management) with Notification Queue Live Telemetry & 1-click worker execution",
+        "Telegram MiniApp Admin & Investor Views with live queue telemetry and [bKash Verified ⚡] badges",
+        "3-Bot Command Matrix Integration (@gro10xmanbot, @gro10xcapbot, @gro10xbizbot)",
+        "Playwright E2E Hardening Suite (tests/e2e/test_sprint1_hardening.mjs) with 7 photographic audit artifacts (12/12 assertions green)"
+      ],
+      "charteredDate": "2026-10-23",
+      "completedDate": "2026-10-23"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 16,
-    "totalSprintsCompleted": 15,
-    "totalCreditsGenerated": 445000,
-    "totalBdtValuation": 890000,
-    "totalUsdValuation": 7342.50,
-    "totalTestsPassingAcrossHoldings": 1103
+    "totalSprintsChartered": 17,
+    "totalSprintsCompleted": 16,
+    "totalCreditsGenerated": 475000,
+    "totalBdtValuation": 950000,
+    "totalUsdValuation": 7837.50,
+    "totalTestsPassingAcrossHoldings": 1115
   }
 }

@@ -4,7 +4,7 @@
 **Canonical Governance Document:** Companion to [`AGENTS.md`](file:///d:/gro10x.ai/AGENTS.md) (Sections 8, 9, 13, 14, 15, 16)  
 **Ledger Data Store:** [`data/sprint_projects_ledger.json`](file:///d:/gro10x.ai/data/sprint_projects_ledger.json)  
 **Standard Currency:** Strictly **1 Credit = BDT 2.00** ($\approx \$0.0165$ USD | ~60.6 Credits = $1.00 USD)  
-**Status:** **ACTIVE ENTERPRISE LEDGER • 16 SPRINTS AUDITED • 1,103 PASSING TESTS**
+**Status:** **ACTIVE ENTERPRISE LEDGER • 17 SPRINTS AUDITED • 1,115 PASSING TESTS**
 
 ---
 
@@ -32,8 +32,9 @@ PRJ-TOFFEECON-RISHKA     ToffeeCon 2026        Proposal Engine & Deal Lead   Dua
 PRJ-MOTHEROS-P0-HARDEN   Mother OS HQ          QA Lead + Pitch Lead          1,060 Tests Green, Canonical /pitch/     COMPLETED 1060   25,000    ৳ 50,000
 PRJ-PITCHOS-INBOUND      Mother OS Engine 2    Pitch & Presentation Lead     Inbound Intake Funnel, Telegram Alert    COMPLETED    7   30,000    ৳ 60,000
 PRJ-CAPITAL-GENESIS-S0   GRO10X Capital        Capital [S1]-[S4] Squad       Next.js 16 Core, 26 Tables, 6 Portals    COMPLETED   36   50,000    ৳100,000
+PRJ-CAPITAL-SP1-HARDEN   GRO10X Capital        Capital [S1]-[S4] Squad       bKash Settlement, Async Worker, 3-Bot    COMPLETED   12   30,000    ৳ 60,000
 ====================================================================================================================================
-CONGLOMERATE TOTALS: 16 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,103  445,000    ৳890,000
+CONGLOMERATE TOTALS: 17 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,115  475,000    ৳950,000
 ====================================================================================================================================
 ```
 
@@ -88,11 +89,13 @@ CONGLOMERATE TOTALS: 16 SPRINT PROJECTS CHARTERED & AUDITED                     
 * **Tests Certified**: 78 / 78 automated tests (100% green).
 
 ### G. GRO10X Capital (`D:\gro10x-capital` — 5 Digital Employees)
-* **Squad Output**: Next.js 16.3.0 App Router with Turbopack, React 19.2.8, Tailwind CSS v4.
-* **Portals**: 6 stakeholder portals including 15-tab Executive Admin Hub, Investor Desk, Secondary Share Market, and Institutional PO Credit facility (`/track/maats-cottage` managing ৳20 Cr Safe Plan).
-* **Database**: 26 synchronized Supabase PostgreSQL tables with zero floating-point math (`NUMERIC(18,2)`), atomic row locks (`rpc_acquire_secondary_share`), and ±10% FMV corridor.
-* **Bot Mesh**: `@gro10xmanbot`, `@gro10xcapbot`, `@gro10xbizbot`.
-* **Tests Certified**: 36 Playwright E2E suites passing.
+* **Sprint 0 Genesis**: Next.js 16.3.0 App Router with Turbopack, React 19.2.8, Tailwind CSS v4, 26 Supabase tables with zero floating-point math (`NUMERIC(18,2)`), 6 portals, 3 Telegram bots.
+* **Sprint 1 Hardening**:
+  - Asynchronous Notification Queue Worker (`/api/cron/process-notifications`) with batch locks and exponential retry ladder.
+  - bKash Webhook & Settlement Bridge (`/api/payments/bkash-webhook`) with HMAC-SHA256 signature verification and atomic share allocation RPC (`rpc_settle_bkash_booking`).
+  - Primary Allocation Modal with 2-rail payment selection (bKash instant vs bank transfer), real-time Postgres status polling, and holding receipt.
+  - Admin Tab 14 live telemetry widget and Telegram MiniApp Admin & Investor views with `[bKash Verified ⚡]` badges.
+* **Tests Certified**: 48 Playwright E2E & hardening tests (36 in S0 + 12 in SP1, 100% green).
 
 ---
 
@@ -103,10 +106,10 @@ CONGLOMERATE TOTALS: 16 SPRINT PROJECTS CHARTERED & AUDITED                     
 │                   GRO10X CONGLOMERATE AUDITED TOTALS                   │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Total Active Digital Employees:   42 Specialists Across 7 Workspaces   │
-│ Total Sprint Projects Completed:  15 Completed (1 Active Relay)        │
-│ Total Fleet Automated Tests:      1,103 Passing Tests (100% Green)     │
-│ Total Conglomerate Valuation:     445,000 Credits (৳ 8,90,000 BDT)     │
-│ USD Asset Valuation:              $ 7,342.50 USD                       │
-│ Estimated Legacy Agency Value:    $ 65,000 – $ 85,000 USD              │
+│ Total Sprint Projects Completed:  16 Completed (1 Active Relay)        │
+│ Total Fleet Automated Tests:      1,115 Passing Tests (100% Green)     │
+│ Total Conglomerate Valuation:     475,000 Credits (৳ 9,50,000 BDT)     │
+│ USD Asset Valuation:              $ 7,837.50 USD                       │
+│ Estimated Legacy Agency Value:    $ 70,000 – $ 90,000 USD              │
 └────────────────────────────────────────────────────────────────────────┘
 ```
