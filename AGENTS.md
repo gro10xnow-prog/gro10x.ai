@@ -260,7 +260,51 @@ For all productized micro-SaaS and bespoke tools commercialized under Engine 2:
 4. **Mandatory Test Coverage**:
    - Every product intake route must be certified by an automated test suite (`tests/pitchos_intake.test.js`) verifying route rendering, validation rejections, atomic storage, and ledger retrieval.
 
+---
 
+### 17. Venture Chief of Staff Ironclad Non-Execution & Tamper-Proof Handcuff Invariant
+To enforce strict organizational hierarchy and prevent discipline collapse or monolithic hallucination:
+1. **The Venture CoS Non-Execution Mandate**:
+   - Venture Chiefs of Staff (e.g., Capital CoS, Agent 10X CoS, PurpleBot CoS, Sahanabag CoS, ToffeeCon CoS) are executive orchestrators, architectural planners, and forensic gatekeepers.
+   - **THEY ARE STRICTLY FORBIDDEN FROM WRITING CODE, EDITING FILES, SCAFFOLDING DIRECTORIES, OR RUNNING TERMINAL COMMANDS.**
+   - All engineering tasks must be delegated sequentially to their chartered 4-engineer squad:
+     * **`[S1]`**: ALWAYS Backend & Data Layer Lead
+     * **`[S2]`**: ALWAYS Web Portal & Spatial Frontend Lead
+     * **`[S3]`**: ALWAYS Bot Mesh & AI Ingress Lead
+     * **`[S4]`**: ALWAYS QA Lead & Forensic Verification Lead
+2. **The Tamper-Proof Handcuff Prompt Template**:
+   - Whenever Central CoS issues a sprint or milestone directive to a Venture CoS, the prompt MUST include an explicit Non-Execution Handcuff:
+   - The Venture CoS's **sole permissible response** is the copy-paste prompt addressed to their **`[S1]` engineer** (or current active stage).
+   - The prompt must forbid them from mentioning or drafting later stages until the prior stage's forensic completion report has been inspected.
 
+---
 
+### 18. Prepopulated Phone + 4-Digit PIN Authentication Invariant (Stakeholder Ingress)
+To eliminate stakeholder onboarding friction, prevent SMS OTP gateway failures, and enable zero-friction review:
+1. **Prepopulated Deterministic Auth**:
+   - For internal digital employee management platforms (e.g. `Agent10x.ai`), client demo portals, and day-end stakeholder review, authentication must support prepopulated **Phone Number + 4-Digit PIN**.
+   - Prohibits third-party SMS OTP dependencies (e.g., Twilio, Greenweb) for internal testing and demo tiers.
+2. **Canonical Prepopulated Registry**:
+   - **Plabon (Founder & CEO)**: Phone `01708459008` | PIN `0621` (Role: `SUPER_ADMIN`)
+   - **Onim (QA Specialist)**: Phone `01755087633` | PIN `7633` (Role: `QA_LEAD`)
+   - **Dewan Saki Bhai (Client Partner - Bahon)**: Phone `01310678433` | PIN `8433` (Role: `STAKEHOLDER_VIEWER`)
+   - **Rahat Bhai (Client Partner - Shomvob)**: Phone `01711000001` | PIN `0001` (Role: `STAKEHOLDER_VIEWER`)
+   - **Merajul Islam (Client Partner - Serviq)**: Phone `01711000002` | PIN `0002` (Role: `STAKEHOLDER_VIEWER`)
+3. **Session Tokens & Local Storage**:
+   - Upon successful PIN match, issues a cryptographically signed JWT or secure session cookie persisted in localStorage (`authToken`) with organization role claims.
+
+---
+
+### 19. Engine 6 (GRO10X Capital) Financial Integrity & Settlement Invariants
+For all capital markets, secondary trading, and investment infrastructure under Engine 6 (`capital.gro10x.ai`):
+1. **Zero Floating-Point Drift Invariant (NUMERIC 18,2 Strictly)**:
+   - All share prices, primary bookings, transaction ledgers, wallet balances, and AUM calculations must use Postgres `NUMERIC(18, 2)` or integer Paisa representation.
+   - Zero tolerance for binary floating-point drift (0.00 Paisa discrepancy tolerance; zero JS IEEE-754 binary floating-point calculations in financial settlements).
+2. **Replay-Proof bKash MFS Settlement Bridge**:
+   - All inbound webhooks (`/api/payments/bkash-webhook`) must be authenticated using timing-safe `HMAC-SHA256` signature verification against `BKASH_WEBHOOK_SECRET`.
+   - Idempotency must be enforced via two distinct layers: an in-memory verification cache and database unique constraints on `public.mfs_transactions(trx_id)`.
+   - Asset disbursement must be executed atomically via database stored procedures (`rpc_settle_bkash_booking`) guaranteeing that share units and cash balances are never double-credited.
+3. **Resilient Asynchronous Notification Workers**:
+   - Telemetry and investor alert dispatchers must be decoupled from transactional HTTP requests and processed asynchronously via `/api/cron/process-notifications`.
+   - Notification queues must implement batch concurrency locks (`FOR UPDATE SKIP LOCKED` or atomic status transitions) and exponential backoff retry ladders.
 
