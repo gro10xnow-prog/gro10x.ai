@@ -480,10 +480,32 @@
       ],
       "charteredDate": "2026-10-23",
       "completedDate": "2026-10-23"
+    },
+    {
+      "id": "PRJ-TOFFEECON-SP3-GUEST-JOURNEY",
+      "venture": "ToffeeCon 2026",
+      "engine": "Engine 4 Satellite #4",
+      "port": 5000,
+      "sprint": "Sprint 3: End-to-End VIP Guest Journey, 300 DPI Luxury Print Master, Tokenized Ingress & Gated Turnstile Verification",
+      "status": "CHARTERED",
+      "pricingType": "Commercial Satellite Retainer",
+      "creditValuation": 40000,
+      "bdtValuation": 80000,
+      "usdValuation": 660.00,
+      "testsCertified": 0,
+      "artifacts": [
+        "50-100 VIP Guest Accreditation Whitelist Schema & Cryptographic Token Generator (data/accreditation_whitelist.json)",
+        "Headless Chromium 300 DPI Luxury A5 Print Master Generator (TOFFEECON_VIP_INVITATIONS_BATCH_100.pdf)",
+        "Mobile Tokenized Ingress & Fast-Pass Claim Flow (/claim?token=TC26-VIP-XXXX)",
+        "Gated PWA Access Control (Turnstile Pass, Live Buzzer & Media Locker Locked for Unaccredited Visitors)",
+        "Turnstile Ingress Verification Bridge (/api/gate/verify-pass) with Sub-50ms Optical Validation & WebSocket Sync"
+      ],
+      "charteredDate": "2026-10-23",
+      "completedDate": null
     }
   ],
   "totals": {
-    "totalSprintsChartered": 20,
+    "totalSprintsChartered": 21,
     "totalSprintsCompleted": 19,
     "totalCreditsGenerated": 565000,
     "totalBdtValuation": 1130000,

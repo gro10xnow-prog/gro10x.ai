@@ -4,7 +4,7 @@
 **Canonical Governance Document:** Companion to [`AGENTS.md`](file:///d:/gro10x.ai/AGENTS.md) (Sections 8, 9, 13, 14, 15, 16)  
 **Ledger Data Store:** [`data/sprint_projects_ledger.json`](file:///d:/gro10x.ai/data/sprint_projects_ledger.json)  
 **Standard Currency:** Strictly **1 Credit = BDT 2.00** ($\approx \$0.0165$ USD | ~60.6 Credits = $1.00 USD)  
-**Status:** **ACTIVE ENTERPRISE LEDGER • 20 SPRINTS AUDITED • 1,176 PASSING TESTS**
+**Status:** **ACTIVE ENTERPRISE LEDGER • 21 SPRINTS AUDITED • 1,176 PASSING TESTS**
 
 ---
 
@@ -36,8 +36,9 @@ PRJ-CAPITAL-SP1-HARDEN   GRO10X Capital        Capital [S1]-[S4] Squad       bKa
 PRJ-AGENT10X-FLEET-43    Agent10x.ai           Agent10x [S1]-[S4] Squad      43-Persona Fleet, Phone+PIN Auth, PWA    COMPLETED   78   50,000    ৳100,000
 PRJ-TOFFEECON-PWA-SEGREG ToffeeCon 2026        ToffeeCon [S1]-[S4] Squad     Public PWA Segregation, Smart Download   COMPLETED   21   25,000    ৳ 50,000
 PRJ-TOFFEECON-PURGE-2-1  ToffeeCon 2026        ToffeeCon [S1]-[S4] Squad     Mobile UI Overhaul & Prototype Purge     COMPLETED   21   15,000    ৳ 30,000
+PRJ-TOFFEECON-SP3-GUEST  ToffeeCon 2026        ToffeeCon [S1]-[S4] Squad     VIP Journey, 300DPI Print, Token Ingress CHARTERED    0   40,000    ৳ 80,000
 ====================================================================================================================================
-CONGLOMERATE TOTALS: 20 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,176  565,000  ৳1,130,000
+CONGLOMERATE TOTALS: 21 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,176  565,000  ৳1,130,000
 ====================================================================================================================================
 ```
 
@@ -119,9 +120,11 @@ CONGLOMERATE TOTALS: 20 SPRINT PROJECTS CHARTERED & AUDITED                     
 │                   GRO10X CONGLOMERATE AUDITED TOTALS                   │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Total Active Digital Employees:   43 Specialists Across 7 Workspaces   │
-│ Total Sprint Projects Completed:  19 Completed (1 Active Relay)        │
+│ Total Sprint Projects Chartered:  21 Chartered Projects                │
+│ Total Sprint Projects Completed:  19 Completed (2 Active Relays)       │
 │ Total Fleet Automated Tests:      1,176 Passing Tests (100% Green)     │
 │ Total Conglomerate Valuation:     565,000 Credits (৳ 11,30,000 BDT)    │
+│ Active Pipeline Chartered Value:  +40,000 Credits (৳ 80,000 BDT)       │
 │ USD Asset Valuation:              $ 9,322.50 USD                       │
 │ Estimated Legacy Agency Value:    $ 85,000 – $ 105,000 USD             │
 └────────────────────────────────────────────────────────────────────────┘
