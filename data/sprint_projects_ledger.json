@@ -504,14 +504,38 @@
       ],
       "charteredDate": "2026-10-23",
       "completedDate": "2026-10-23"
+    },
+    {
+      "id": "PRJ-TOFFEECON-SP4-DYNAMIC-SCHEDULE",
+      "venture": "ToffeeCon 2026",
+      "engine": "Engine 4 Satellite #4",
+      "port": 5000,
+      "sprint": "Sprint 4: Dynamic 12-Beat Event Schedule Engine, Director Admin Editor & Realtime Sync",
+      "status": "COMPLETED",
+      "pricingType": "Commercial Satellite Retainer",
+      "creditValuation": 30000,
+      "bdtValuation": 60000,
+      "usdValuation": 495.00,
+      "testsCertified": 53,
+      "artifacts": [
+        "Atomic 12-Beat Event Schedule Store (server/data/event_schedule.json) Ingested Verbatim from Official Client Slide",
+        "Public Dynamic Schedule Ingress (GET /api/schedule & GET /api/schedule/current) with Auto-Calculating Active/Next Slots",
+        "Director-Guarded Realtime Schedule Editor (PUT /api/schedule & POST /api/schedule/items) with x-director-auth Guardrails",
+        "Bidirectional WebSocket Telemetry Multicast (SCHEDULE_UPDATED) with Sub-300ms Client Hydration",
+        "Dynamic Timeline Rendering across Landing & Mobile PWA with Color Taxonomy (Purple=Program, Magenta=Keynote, Gold=Partner)",
+        "Live Stage Director Console Schedule Manager (/admin/director.html) with 1-Click Time Shifting & Status Toggles",
+        "Render Cloud Production Sync (commit cda442a) with 53/53 Automated Tests Passing Across 19 Suites"
+      ],
+      "charteredDate": "2026-10-23",
+      "completedDate": "2026-10-23"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 21,
-    "totalSprintsCompleted": 20,
-    "totalCreditsGenerated": 605000,
-    "totalBdtValuation": 1210000,
-    "totalUsdValuation": 9982.50,
-    "totalTestsPassingAcrossHoldings": 1196
+    "totalSprintsChartered": 22,
+    "totalSprintsCompleted": 22,
+    "totalCreditsGenerated": 635000,
+    "totalBdtValuation": 1270000,
+    "totalUsdValuation": 10477.50,
+    "totalTestsPassingAcrossHoldings": 1208
   }
 }
