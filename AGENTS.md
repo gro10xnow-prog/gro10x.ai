@@ -308,3 +308,22 @@ For all capital markets, secondary trading, and investment infrastructure under 
    - Telemetry and investor alert dispatchers must be decoupled from transactional HTTP requests and processed asynchronously via `/api/cron/process-notifications`.
    - Notification queues must implement batch concurrency locks (`FOR UPDATE SKIP LOCKED` or atomic status transitions) and exponential backoff retry ladders.
 
+---
+
+### 20. Living Digital Employee Desk & 4-Tab Workspace Invariant (Agent10x.ai)
+For all digital employees hosted, managed, or interacted with via Agent10x.ai (`Engine 1`):
+1. **The 4-Tab Living Workspace Architecture**:
+   - Every digital employee workspace must provide 4 standardized, synchronized tabs:
+     * **Tab 1: 💬 Chat & Tasks**: Real-time bidirectional SSE streaming with dynamic context hydration (`hydratePersonaContext`), pulling from organization metadata, discipline charters, attached memory docs, and prior receipts.
+     * **Tab 2: 📜 Daily Receipts Feed**: Automated interceptor for `/standup` and `/eod` commands, streaming structured Markdown cards and atomically persisting them to `employee_daily_receipts`.
+     * **Tab 3: 📁 Memory Vault**: Ingested document repository (`employee_memory_documents`) allowing founders and stakeholders to attach charters, SOPs, and project briefs for instant context grounding without model retraining.
+     * **Tab 4: 📝 Stakeholder Notes**: Executive audit trail (`employee_feedback_notes`) for Founder, Stakeholder, or CoS `DIRECTIVE` and `COURSE_CORRECTION` feedback attached to the employee's living profile.
+2. **Atomic Credit Metering Guardrail**:
+   - Every inference request, chat prompt, and receipt generation must debit the user's credit balance atomically using database row-level locks.
+   - If user wallet credits $\le 0$, the platform must reject execution with an HTTP 402 Payment Required guardrail.
+3. **Multi-Tenant Fleet Filtering & Online Status**:
+   - The workspace client must implement an organization switcher across all sovereign entities, an 8-discipline filter (`EXECUTIVE`, `ENGINEERING`, `OPERATIONS`, `AI_RESEARCH`, `COMMERCIAL`, `FINANCE`, `LEGAL`, `PEOPLE`), and dynamic status heartbeats (`online`, `busy`, `idle`).
+4. **Manifest V3 Chrome Extension QA Ingress**:
+   - Standardized in-browser testing sidepanel (`extension/agent10x-qa-runner`) capable of executing automated E2E browser assertions directly against live PWA routes.
+
+
