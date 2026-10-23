@@ -456,14 +456,38 @@
       ],
       "charteredDate": "2026-10-23",
       "completedDate": "2026-10-23"
+    },
+    {
+      "id": "PRJ-TOFFEECON-SP2-1-PURGE",
+      "venture": "ToffeeCon 2026",
+      "engine": "Engine 4 Satellite #4",
+      "port": 5000,
+      "sprint": "Sprint 2.1: Mobile PWA UI Refinement, Header Overhaul & 360° Prototype-to-Production Purge",
+      "status": "COMPLETED",
+      "pricingType": "Commercial Satellite Retainer",
+      "creditValuation": 15000,
+      "bdtValuation": 30000,
+      "usdValuation": 247.50,
+      "testsCertified": 21,
+      "artifacts": [
+        "56px Unclipped Mobile Header with Swirl Logo and ● LIVE 6G SYNC Badge",
+        "Safe-Area Navigation Inset (env(safe-area-inset-bottom)) for Android 3-Button & iOS Gesture Bars",
+        "Public Header Sanitization (Purged Stage LED & VIP Greetings; Added About, Agenda, Booths, Venue)",
+        "Dynamic localStorage Media Locker with Graceful Empty States (Purged Static Erik Aas Mock Stubs)",
+        "Turnstile QR Optical Laser Calibration (<= 22% scanline opacity for physical barcode scanners)",
+        "Live Keynote Ambient Beacon Glow Pulse (liveBeaconPulse) on Active Broadcasts",
+        "Render Cloud Release Sync (commits 4834212 & c8fcb25) with 21/21 Automated Tests Passing"
+      ],
+      "charteredDate": "2026-10-23",
+      "completedDate": "2026-10-23"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 19,
-    "totalSprintsCompleted": 18,
-    "totalCreditsGenerated": 550000,
-    "totalBdtValuation": 1100000,
-    "totalUsdValuation": 9075.00,
+    "totalSprintsChartered": 20,
+    "totalSprintsCompleted": 19,
+    "totalCreditsGenerated": 565000,
+    "totalBdtValuation": 1130000,
+    "totalUsdValuation": 9322.50,
     "totalTestsPassingAcrossHoldings": 1176
   }
 }
