@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>GRO10X Overview & Portfolio — High-Status Presentation Deck</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --bg-dark: #070B12;
+      --card-dark: #0E1626;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --neon-cyan: #00F0FF;
+      --neon-purple: #8B5CF6;
+      --neon-green: #10B981;
+      --neon-amber: #F59E0B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      overflow: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Ambient Spotlight & Grid */
+    .bg-radar {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+    }
+
+    .spotlight {
+      background: radial-gradient(circle at 50% 10%, rgba(0, 240, 255, 0.12) 0%, rgba(139, 92, 246, 0.08) 35%, rgba(7, 11, 18, 0) 70%);
+    }
+
+    /* Active Slide Transition for Big Screen & TV */
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: rgba(14, 22, 38, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(0, 240, 255, 0.3);
+    }
+
+    .glow-cyan {
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.18);
+    }
+
+    .glow-purple {
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.18);
+    }
+
+    /* Slide Content Height Fit */
+    .slide-body {
+      max-height: calc(100vh - 150px);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+      }
+      .slide.active {
+        height: auto;
+        min-height: calc(100vh - 120px);
+        padding-bottom: 90px;
+      }
+      .slide-body {
+        max-height: none;
+      }
+    }
+
+    /* Print Optimization for 1-Click PDF Presentation Export */
+    @media print {
+      @page {
+        size: 16in 9in landscape;
+        margin: 0;
+      }
+      body, html {
+        background-color: #070B12 !important;
+        color: #F8FAFC !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .slide {
+        display: flex !important;
+        opacity: 1 !important;
+        transform: none !important;
+        page-break-after: always;
+        break-after: page;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        padding: 3rem 4rem !important;
+        box-sizing: border-box !important;
+      }
+      .glass-card {
+        background: #0E1626 !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+  </style>
+</head>
+<body class="relative h-screen w-screen bg-[#070B12] bg-radar flex flex-col justify-between">
+
+  <!-- Ambient Light -->
+  <div class="spotlight absolute inset-0 pointer-events-none z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP HEADER / NAV BAR                                      -->
+  <!-- ========================================================= -->
+  <header class="no-print relative z-20 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#070B12]/80 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00F0FF] via-[#8B5CF6] to-[#EC4899] flex items-center justify-center font-black text-black text-base shadow-lg shadow-[#00F0FF]/20">
+        G
+      </div>
+      <div>
+        <div class="heading-font text-sm font-black tracking-wider text-white flex items-center gap-2">
+          GRO10X <span class="text-xs px-2 py-0.5 rounded-full bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30 font-semibold">Autonomous Venture Studio</span>
+        </div>
+        <div class="text-[11px] text-gray-400">Executive Overview & Portfolio · Partner Kit</div>
+      </div>
+    </div>
+
+    <!-- Quick Badges & Co-Pilot Link -->
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        Presented by <strong class="text-white">Arif Ahmed</strong> & <strong class="text-[#00F0FF]">GRO10X</strong>
+      </div>
+      <a href="/pitch/overview/copilot" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-[#8B5CF6]/15 hover:bg-[#8B5CF6]/25 border border-[#8B5CF6]/40 text-xs font-bold text-[#C4B5FD] transition flex items-center gap-1.5 shadow-sm">
+        📱 Presenter Co-Pilot ↗
+      </a>
+      <button onclick="downloadPdfDeck()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-semibold text-white transition" title="Export PDF Deck">
+        📥 PDF Deck
+      </button>
+      <button onclick="toggleFullscreen()" class="p-2 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 hover:text-white transition" title="Toggle Fullscreen (F)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- SLIDE CONTAINER (10 CANONICAL SLIDES)                      -->
+  <!-- ========================================================= -->
+  <main class="relative z-10 flex-1 w-full max-w-7xl mx-auto px-6 py-4 flex flex-col justify-center">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 01: THE HOOK                                        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-1" class="slide active flex-col justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-4">
+        ⚡ The New Reality of Digital Execution
+      </div>
+      <h1 class="heading-font text-3xl sm:text-5xl lg:text-6xl font-black text-white max-w-4xl tracking-tight leading-tight mb-6">
+        What if high-end creative and tech work took <span class="bg-gradient-to-r from-[#00F0FF] to-[#8B5CF6] bg-clip-text text-transparent">days instead of months?</span>
+      </h1>
+      <p class="text-gray-300 text-base sm:text-xl max-w-2xl mb-10 leading-relaxed font-normal">
+        Traditional agencies bill by the month and deliver static slides. We build live, fully interactive software and broadcast commercial assets in 48 to 72 hours.
+      </p>
+
+      <!-- Giant Visual Anchor: 3 Punchy Highlights -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-4xl text-left">
+        <div class="glass-card p-6 rounded-2xl border border-white/10 hover:border-[#00F0FF]/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/10 text-[#00F0FF] flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            ⏱️
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Ready in 3 to 5 Days</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            No 3-month agency delays or endless strategy meetings. Your product goes from idea to live deployment in days.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-white/10 hover:border-[#8B5CF6]/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-[#8B5CF6]/10 text-[#8B5CF6] flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            💰
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">1/10th the Agency Cost</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            Eliminate bloated retainer fees and large agency overheads. Elite quality at direct, transparent pricing.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-white/10 hover:border-emerald-400/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            📱
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Live Working Prototypes</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            We don't sell PDF wireframes. You test real, working software and interactive experiences on your phone.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 02: WHAT WE DO (3 PILLARS)                          -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-2" class="slide flex-col justify-center">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 text-[#C4B5FD] text-xs font-bold uppercase tracking-wider mb-2">
+          🎯 Core Capabilities
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Three Simple Pillars. One Agile Team.
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-2">
+          Everything an ambitious brand or enterprise needs to move fast, test ideas, and win market share.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto">
+        <!-- Pillar 1: AI Video -->
+        <div class="glass-card p-7 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+          <div class="absolute -right-8 -top-8 w-28 h-28 bg-[#EC4899]/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#EC4899] to-[#8B5CF6] flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-[#EC4899]/20 mb-5">
+              🎬
+            </div>
+            <div class="text-xs uppercase font-mono tracking-wider text-[#EC4899] font-bold mb-1">Pillar 01</div>
+            <h3 class="heading-font text-xl font-extrabold text-white mb-3">Broadcast AI Video & Commercials</h3>
+            <p class="text-sm text-gray-300 leading-relaxed mb-4">
+              4K TV commercials, photorealistic character spots, and high-impact social campaigns produced in 48 hours without expensive camera crews or production permits.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs text-gray-400 font-medium flex items-center gap-2">
+            <span class="text-[#00F0FF]">✓</span> 60s TV Spots · Brand Films · Character IP
+          </div>
+        </div>
+
+        <!-- Pillar 2: Custom Web Apps & Portals -->
+        <div class="glass-card p-7 rounded-2xl relative overflow-hidden flex flex-col justify-between border-[#00F0FF]/30 glow-cyan">
+          <div class="absolute -right-8 -top-8 w-28 h-28 bg-[#00F0FF]/15 rounded-full blur-2xl pointer-events-none"></div>
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#00F0FF] to-[#3B82F6] flex items-center justify-center text-black text-2xl font-bold shadow-lg shadow-[#00F0FF]/25 mb-5">
+              ⚡
+            </div>
+            <div class="text-xs uppercase font-mono tracking-wider text-[#00F0FF] font-bold mb-1">Pillar 02 · Flagship</div>
+            <h3 class="heading-font text-xl font-extrabold text-white mb-3">Custom Web Apps & Portals</h3>
+            <p class="text-sm text-gray-300 leading-relaxed mb-4">
+              Ultra-fast customer portals, interactive calculators, 3D product viewports, and executive dashboards built with modern, rock-solid web architecture.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs text-gray-400 font-medium flex items-center gap-2">
+            <span class="text-[#00F0FF]">✓</span> Customer Dashboards · 3D Twins · Booking Apps
+          </div>
+        </div>
+
+        <!-- Pillar 3: Smart Business Automations -->
+        <div class="glass-card p-7 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+          <div class="absolute -right-8 -top-8 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-emerald-500/20 mb-5">
+              🤖
+            </div>
+            <div class="text-xs uppercase font-mono tracking-wider text-emerald-400 font-bold mb-1">Pillar 03</div>
+            <h3 class="heading-font text-xl font-extrabold text-white mb-3">Smart Business Automations</h3>
+            <p class="text-sm text-gray-300 leading-relaxed mb-4">
+              24/7 intelligent WhatsApp sales agents, automated invoicing, real-time fleet telematics, and leak-proof revenue tracking that works while you sleep.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs text-gray-400 font-medium flex items-center gap-2">
+            <span class="text-[#00F0FF]">✓</span> WhatsApp AI · Revenue Protection · Ops Mesh
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 03: THE UNFAIR ADVANTAGE (COMPARISON)               -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-3" class="slide flex-col justify-center">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-2">
+          ⚖️ The GRO10X Multiplier
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Why Enterprise Leaders Are Switching From Slow Agencies
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-2">
+          Compare the bloated agency timeline with GRO10X's 48-hour delivery model.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto">
+        <!-- Traditional Agency -->
+        <div class="glass-card p-7 rounded-2xl border-red-500/20 relative">
+          <div class="flex items-center justify-between mb-5">
+            <span class="px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 text-xs font-bold uppercase">
+              Traditional Agency
+            </span>
+            <span class="text-gray-500 text-xs font-mono">The 90-Day Grind</span>
+          </div>
+          <ul class="space-y-4 text-sm text-gray-300">
+            <li class="flex items-start gap-3">
+              <span class="text-red-400 font-bold">✕</span>
+              <div>
+                <strong class="text-white block">3 to 6 Months Delivery</strong>
+                Dozens of endless scoping meetings, revision rounds, and committee sign-offs.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-red-400 font-bold">✕</span>
+              <div>
+                <strong class="text-white block">৳15 to ৳25 Lakhs Retainer</strong>
+                You pay for office rent, account managers, and junior designers on the clock.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-red-400 font-bold">✕</span>
+              <div>
+                <strong class="text-white block">Static PowerPoint Mockups</strong>
+                You only see non-clickable slide presentations until the contract is fully paid.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- GRO10X Model -->
+        <div class="glass-card p-7 rounded-2xl border-[#00F0FF]/40 glow-cyan relative bg-gradient-to-b from-[#00F0FF]/5 to-transparent">
+          <div class="flex items-center justify-between mb-5">
+            <span class="px-3 py-1 rounded-full bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40 text-xs font-bold uppercase flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse"></span>
+              GRO10X Autonomous Studio
+            </span>
+            <span class="text-[#00F0FF] text-xs font-mono font-bold">48-Hour Sprint</span>
+          </div>
+          <ul class="space-y-4 text-sm text-gray-200">
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold text-lg leading-none">✓</span>
+              <div>
+                <strong class="text-white block">3 to 5 Days Deployment</strong>
+                Rapid-execution squads build working systems in days, not months.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold text-lg leading-none">✓</span>
+              <div>
+                <strong class="text-white block">1/10th the Cost (~৳1.5L – ৳4.5L)</strong>
+                You pay purely for high-speed output and results, with zero agency overhead.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold text-lg leading-none">✓</span>
+              <div>
+                <strong class="text-white block">Live Interactive Prototypes</strong>
+                Test real, working software on your own smartphone before you commit.
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 04: CASE STUDY 1 — BANGLALINK RYZE (AI VIDEO)       -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-4" class="slide flex-col justify-center">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="px-2.5 py-0.5 rounded-full bg-[#EC4899]/10 text-[#EC4899] border border-[#EC4899]/30 text-xs font-bold uppercase">
+          Case Study 01 · Broadcast AI Video
+        </span>
+        <span class="text-gray-400 text-xs font-mono">Banglalink RYZE Commercial</span>
+      </div>
+      <h2 class="heading-font text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-2">
+        Banglalink RYZE: 60-Second Broadcast Commercial in 48 Hours
+      </h2>
+      <p class="text-gray-300 text-sm sm:text-base max-w-3xl mb-6">
+        Full TV broadcast commercial featuring 5 distinct youth personas across authentic Dhaka streetscapes, produced end-to-end with zero physical camera crews.
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Visual Anchor: Video Staging Frame -->
+        <div class="lg:col-span-7 glass-card rounded-2xl overflow-hidden border border-white/10 group relative">
+          <div class="aspect-video w-full bg-slate-900 relative overflow-hidden flex items-center justify-center">
+            <img src="/ryze_60s_audit/scene01_03s.jpg" alt="Banglalink RYZE AI Video" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-80" onerror="this.onerror=null; this.src='/images/bahon/hero-bahon-gate1.jpg'">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+            
+            <!-- Play Badge & Stat Overlay -->
+            <a href="/prototypes/ryze-ai-star/" target="_blank" class="absolute inset-0 flex items-center justify-center group-hover:scale-110 transition">
+              <div class="w-16 h-16 rounded-full bg-[#EC4899] text-white flex items-center justify-center shadow-2xl shadow-[#EC4899]/50 pl-1">
+                ▶
+              </div>
+            </a>
+            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs text-white/90 font-mono">
+              <span>5 Personas · 12 Scenes · EBU R128 Master</span>
+              <span class="px-2 py-0.5 rounded bg-black/60 border border-white/20">4K Broadcast Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlights -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1">01 · ZERO SHOOT DELAYS</div>
+            <h4 class="text-sm font-bold text-white mb-1">5 Photorealistic Youth Characters</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Synthesized hyper-realistic characters representing gamers, coders, and creators with authentic Bangladeshi expressions.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#8B5CF6] text-xs font-mono font-bold mb-1">02 · AUTHENTIC DHAKA STREETS</div>
+            <h4 class="text-sm font-bold text-white mb-1">Hyper-Real Local Environments</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Gulshan cafes, Dhanmondi rooftops, and campus hangouts rendered with high cultural fidelity and cinematic lighting.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1">03 · BROADCAST SOUND DESIGN</div>
+            <h4 class="text-sm font-bold text-white mb-1">Mastered Audio & Bangla Voiceover</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Compliant with national TV broadcast standards (EBU R128 loudness) with dynamic electronic music scoring.
+            </p>
+          </div>
+
+          <div class="pt-2">
+            <a href="/prototypes/ryze-ai-star/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#EC4899]/15 hover:bg-[#EC4899]/25 text-[#F472B6] border border-[#EC4899]/40 text-xs font-bold transition">
+              ▶ Launch RYZE Live Showcase ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 05: CASE STUDY 2 — BAHON FLEET OS (SMART OPS)       -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-5" class="slide flex-col justify-center">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase">
+          Case Study 02 · Smart Operations & Telematics
+        </span>
+        <span class="text-gray-400 text-xs font-mono">Bahon Electric Mobility</span>
+      </div>
+      <h2 class="heading-font text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-2">
+        Bahon Fleet OS: Real-Time Telematics & Revenue Protection
+      </h2>
+      <p class="text-gray-300 text-sm sm:text-base max-w-3xl mb-6">
+        Intelligent EV fleet operating system protecting green transit operations in Bashundhara with live vehicle telemetry and digital cash audit trails.
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Visual Anchor: Telematics HUD Card -->
+        <div class="lg:col-span-7 glass-card rounded-2xl overflow-hidden border border-emerald-500/30 p-5 relative">
+          <div class="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-bold text-white uppercase font-mono">Bashundhara Depot · 30 Active EVs</span>
+            </div>
+            <span class="text-xs px-2.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono">Live Telemetry</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="p-3 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Daily Revenue Protected</div>
+              <div class="text-xl font-black text-emerald-400">৳48,500<span class="text-xs font-normal text-gray-400">/day</span></div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Active Vehicles</div>
+              <div class="text-xl font-black text-[#00F0FF]">30 / 30</div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Turnaround SLA</div>
+              <div class="text-xl font-black text-white">5 Days</div>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-[#070B12]/80 border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+            <span>🛡️ Anti-Fare Leakage Engine: Automated bKash QR & GPS passenger audit</span>
+            <span class="text-emerald-400 font-bold font-mono">100% Locked</span>
+          </div>
+        </div>
+
+        <!-- 3 Highlights -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1">01 · REVENUE AUDIT</div>
+            <h4 class="text-sm font-bold text-white mb-1">৳48,500/Day Anti-Leakage Protection</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Eliminated manual driver cash skimming with dynamic digital ticketing and automated trip logs.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1">02 · PREDICTIVE BATTERY HEALTH</div>
+            <h4 class="text-sm font-bold text-white mb-1">Automated Depot Swap Routing</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Real-time battery telemetry flags vehicles under 20% charge and auto-assigns the nearest charging bay.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#8B5CF6] text-xs font-mono font-bold mb-1">03 · RAPID ROLLOUT</div>
+            <h4 class="text-sm font-bold text-white mb-1">Delivered & Operational in 5 Days</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Driver mobile pass, depot supervisor dashboard, and fleet owner analytics delivered in one working sprint.
+            </p>
+          </div>
+
+          <div class="pt-2 flex items-center gap-3">
+            <a href="/prototypes/bahon/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 text-xs font-bold transition">
+              ⚡ Launch Bahon Live OS ↗
+            </a>
+            <a href="/pitch/bahon" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 text-xs font-medium transition">
+              📺 TV Pitch ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 06: CASE STUDY 3 — TOFFEECON 2026 (EVENT TECH)      -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-6" class="slide flex-col justify-center">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="px-2.5 py-0.5 rounded-full bg-[#8B5CF6]/10 text-[#C4B5FD] border border-[#8B5CF6]/30 text-xs font-bold uppercase">
+          Case Study 03 · Enterprise Event Tech & Ingress
+        </span>
+        <span class="text-gray-400 text-xs font-mono">ToffeeCon 2026 Summit</span>
+      </div>
+      <h2 class="heading-font text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-2">
+        ToffeeCon 2026: Sub-50ms Optical Turnstile & VIP Fast-Pass
+      </h2>
+      <p class="text-gray-300 text-sm sm:text-base max-w-3xl mb-6">
+        Full digital credential and stage visual operating system for 600+ VIPs and digital creators, eliminating entrance queues with sub-second barcode verification.
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Visual Anchor: Event Pass Credential -->
+        <div class="lg:col-span-7 glass-card rounded-2xl overflow-hidden border border-[#8B5CF6]/30 p-6 relative">
+          <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+            <div>
+              <span class="text-xs uppercase font-mono tracking-wider text-[#C4B5FD] font-bold">VIP All-Access Digital Credential</span>
+              <h3 class="text-xl font-black text-white">TOFFEECON 2026</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-[#8B5CF6]/20 border border-[#8B5CF6]/40 flex items-center justify-center text-xl">
+              🎟️
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="p-3.5 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Scan Latency</div>
+              <div class="text-2xl font-black text-[#00F0FF]">&lt; 50ms</div>
+              <div class="text-[11px] text-gray-400">Zero door queuing for 600+ guests</div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Print Output</div>
+              <div class="text-2xl font-black text-[#C4B5FD]">300 DPI</div>
+              <div class="text-[11px] text-gray-400">Pre-rendered luxury physical badge</div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+            <span>✨ Live Mainstage Interactive Voting HUD & Dubbing Booth</span>
+            <span class="text-emerald-400 font-bold font-mono">WebSocket Ready</span>
+          </div>
+        </div>
+
+        <!-- 3 Highlights -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#8B5CF6] text-xs font-mono font-bold mb-1">01 · SUB-50MS ENTRY</div>
+            <h4 class="text-sm font-bold text-white mb-1">Optical Turnstile Check-in</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Hardware-agnostic QR turnstiles allow high-speed scanning from smartphones or printed acrylic passes.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1">02 · DUAL-ASSET BADGES</div>
+            <h4 class="text-sm font-bold text-white mb-1">Digital Wallet + 300 DPI Print</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Zero client-side distortion; pre-compiled 4K print-ready masters for premium physical merchandise.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1">03 · INTERACTIVE STAGE</div>
+            <h4 class="text-sm font-bold text-white mb-1">Real-Time Mainstage Voting HUD</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Audience members cast live votes from mobile phones with sub-100ms visualizer updates on 4K LED walls.
+            </p>
+          </div>
+
+          <div class="pt-2 flex items-center gap-3">
+            <a href="/docs/TOFFEECON_TECH_QUOTATION_550K.pdf" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#8B5CF6]/15 hover:bg-[#8B5CF6]/25 text-[#C4B5FD] border border-[#8B5CF6]/40 text-xs font-bold transition">
+              📄 View Tech Architecture PDF ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 07: CASE STUDY 4 — SAHANABAG CITY (3D REAL ESTATE)  -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-7" class="slide flex-col justify-center">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="px-2.5 py-0.5 rounded-full bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30 text-xs font-bold uppercase">
+          Case Study 04 · 3D Spatial Digital Twin
+        </span>
+        <span class="text-gray-400 text-xs font-mono">Sahanabag City Township</span>
+      </div>
+      <h2 class="heading-font text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-2">
+        Sahanabag City: Interactive 3D Township & Plot Booking Twin
+      </h2>
+      <p class="text-gray-300 text-sm sm:text-base max-w-3xl mb-6">
+        Full-scale digital cadastral map and interactive 3D plot reservation engine allowing prospective land buyers to explore sectors, view dimensions, and calculate installments.
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Visual Anchor: 3D Twin Preview -->
+        <div class="lg:col-span-7 glass-card rounded-2xl overflow-hidden border border-[#00F0FF]/30 p-6 relative">
+          <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+            <div>
+              <span class="text-xs uppercase font-mono tracking-wider text-[#00F0FF] font-bold">Interactive 3D Cadastral OS</span>
+              <h3 class="text-xl font-black text-white">সাহানাবাগ সিটি (Sahanabag City)</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/30 flex items-center justify-center text-xl">
+              🏙️
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="p-3 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Plot Dimension</div>
+              <div class="text-base font-black text-[#00F0FF]">3 & 5 Katha</div>
+              <div class="text-[10px] text-gray-400">Exact boundary geo-points</div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">EMI Engine</div>
+              <div class="text-base font-black text-emerald-400">Dynamic BDT</div>
+              <div class="text-[10px] text-gray-400">36 / 48 / 60 Mo. plans</div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Zero Installs</div>
+              <div class="text-base font-black text-white">Web Browser</div>
+              <div class="text-[10px] text-gray-400">Runs smoothly on mobile</div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+            <span>🗺️ Cadastral Ledger Sync: 1-Tap Plot Reservation with bKash Deposit</span>
+            <span class="text-[#00F0FF] font-bold font-mono">Instant Booking</span>
+          </div>
+        </div>
+
+        <!-- 3 Highlights -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1">01 · 360° PLOT EXPLORATION</div>
+            <h4 class="text-sm font-bold text-white mb-1">Interactive 3D Sector Navigation</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Buyers fly through the master township, check road widths, and view cardinal orientation before booking.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1">02 · REAL-TIME PRICING</div>
+            <h4 class="text-sm font-bold text-white mb-1">Dynamic EMI & Down Payment Math</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Instantly adjusts monthly installments based on plot size and down payment percentage in Bangladeshi Taka.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#8B5CF6] text-xs font-mono font-bold mb-1">03 · ZERO APP DOWNLOADS</div>
+            <h4 class="text-sm font-bold text-white mb-1">Lightweight Mobile WebGL</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              No heavy 300MB mobile apps required. Opens instantly on WhatsApp share links in 2 seconds.
+            </p>
+          </div>
+
+          <div class="pt-2">
+            <a href="/prototypes/sahanabag-city/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00F0FF]/15 hover:bg-[#00F0FF]/25 text-[#00F0FF] border border-[#00F0FF]/40 text-xs font-bold transition">
+              🏙️ Launch 3D Township Twin ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 08: HOW WE WORK (3 SIMPLE STEPS)                    -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-8" class="slide flex-col justify-center">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+          🚀 Simple Engagement Model
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          From First Conversation to Live System in 3 Steps
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-2">
+          No months of theoretical roadmaps. We prove value first with rapid working software.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto">
+        <!-- Step 1 -->
+        <div class="glass-card p-7 rounded-2xl relative">
+          <div class="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center font-black text-xl text-white mb-5 font-mono">
+            01
+          </div>
+          <div class="text-xs font-mono font-bold text-[#00F0FF] uppercase mb-1">Day 01 · 30 Minutes</div>
+          <h3 class="heading-font text-xl font-bold text-white mb-3">Discovery & Alignment</h3>
+          <p class="text-sm text-gray-300 leading-relaxed">
+            We meet over coffee or a 30-minute call. You share your biggest business bottleneck, customer problem, or campaign idea.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="glass-card p-7 rounded-2xl border-[#00F0FF]/40 glow-cyan relative bg-gradient-to-b from-[#00F0FF]/5 to-transparent">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/20 border border-[#00F0FF]/50 flex items-center justify-center font-black text-xl text-[#00F0FF] mb-5 font-mono">
+            02
+          </div>
+          <div class="text-xs font-mono font-bold text-[#00F0FF] uppercase mb-1">Day 02–03 · 48 Hours</div>
+          <h3 class="heading-font text-xl font-bold text-white mb-3">Working Live Prototype</h3>
+          <p class="text-sm text-gray-200 leading-relaxed">
+            Our autonomous squad builds a real, working interactive version of your app or video asset. We send you the link to test on your phone.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="glass-card p-7 rounded-2xl relative">
+          <div class="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center font-black text-xl text-white mb-5 font-mono">
+            03
+          </div>
+          <div class="text-xs font-mono font-bold text-emerald-400 uppercase mb-1">Day 04–05 · Launch</div>
+          <h3 class="heading-font text-xl font-bold text-white mb-3">Refine, Launch & Scale</h3>
+          <p class="text-sm text-gray-300 leading-relaxed">
+            You test with your stakeholders. Once validated, we connect production APIs, domain names, and payment gateways for public rollout.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 09: THE ZERO-RISK OFFER                             -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-9" class="slide flex-col justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-4">
+        🛡️ Complete Risk Reversal
+      </div>
+      <h2 class="heading-font text-3xl sm:text-5xl lg:text-6xl font-black text-white max-w-4xl tracking-tight leading-tight mb-4">
+        The 48-Hour Working Prototype: <span class="text-[#00F0FF]">Test Before You Invest.</span>
+      </h2>
+      <p class="text-gray-300 text-base sm:text-lg max-w-2xl mb-8 leading-relaxed">
+        Why should you commit millions of Taka to an agency without seeing what they can build? We reverse all the risk.
+      </p>
+
+      <div class="glass-card p-8 rounded-3xl border border-[#00F0FF]/40 glow-cyan max-w-3xl w-full text-left bg-gradient-to-b from-[#00F0FF]/10 to-transparent">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <div class="text-2xl mb-2">🚫</div>
+            <h4 class="heading-font text-base font-bold text-white mb-1">Zero Upfront Retainer</h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              No large retainers or locking contracts before you see tangible results.
+            </p>
+          </div>
+          <div>
+            <div class="text-2xl mb-2">📲</div>
+            <h4 class="heading-font text-base font-bold text-white mb-1">Live On Your Phone</h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Experience the actual user journey, buttons, and animations first-hand.
+            </p>
+          </div>
+          <div>
+            <div class="text-2xl mb-2">🤝</div>
+            <h4 class="heading-font text-base font-bold text-white mb-1">Zero Obligation</h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              If the prototype doesn't blow your team away, you owe us absolutely nothing.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="text-xs text-gray-300">
+            <strong class="text-white">Commercial Pricing:</strong> Standard Sprints from <span class="text-[#00F0FF] font-bold font-mono">৳25,000 BDT</span> (~12,500 Credits)
+          </div>
+          <button onclick="goToSlide(10)" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#00F0FF] to-[#8B5CF6] text-black font-extrabold text-xs shadow-lg shadow-[#00F0FF]/25 hover:opacity-95 transition">
+            Request a 48-Hour Prototype ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 10: LET'S CONNECT (DUAL WHATSAPP + PDF)              -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-10" class="slide flex-col justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-4">
+        🤝 Start Your Sprint This Week
+      </div>
+      <h2 class="heading-font text-3xl sm:text-5xl font-black text-white max-w-3xl tracking-tight leading-tight mb-4">
+        Ready to Build Something Remarkable?
+      </h2>
+      <p class="text-gray-300 text-sm sm:text-base max-w-xl mb-8 leading-relaxed">
+        Connect directly with our leadership team on WhatsApp to request your 48-Hour Working Prototype or download the offline deck.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mb-8 text-left">
+        <!-- Arif Ahmed -->
+        <div class="glass-card p-6 rounded-2xl border border-white/10 hover:border-[#00F0FF]/50 transition">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#00F0FF] to-[#3B82F6] flex items-center justify-center font-black text-black text-lg">
+              AA
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white">Arif Ahmed</h3>
+              <div class="text-xs text-gray-400">Strategic Industry Partner & Deal Originator</div>
+              <div class="text-xs text-[#00F0FF] font-mono">+880 1680-061704</div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mb-4 leading-relaxed">
+            Lead contact for enterprise partnerships, telecom integrations, and strategic venture introductions.
+          </p>
+          <a href="https://wa.me/8801680061704?text=Hi%20Arif%20Bhai%2C%20I%20saw%20the%20GRO10X%20overview%20deck%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" class="w-full py-2.5 px-4 rounded-xl bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#4ADE80] border border-[#25D366]/40 text-xs font-bold transition flex items-center justify-center gap-2">
+            💬 WhatsApp Arif Ahmed (+8801680061704)
+          </a>
+        </div>
+
+        <!-- Plabon / Firoz -->
+        <div class="glass-card p-6 rounded-2xl border border-white/10 hover:border-[#8B5CF6]/50 transition">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#8B5CF6] to-[#EC4899] flex items-center justify-center font-black text-white text-lg">
+              P
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white">Plabon (Firoz)</h3>
+              <div class="text-xs text-gray-400">Founder & CEO, GRO10X Holdings</div>
+              <div class="text-xs text-[#C4B5FD] font-mono">+880 1708-459008</div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mb-4 leading-relaxed">
+            Direct architecture scoping, technical leadership, and 48-Hour working prototype scheduling.
+          </p>
+          <a href="https://wa.me/8801708459008?text=Hi%20Plabon%2C%20I%20reviewed%20the%20GRO10X%20overview%20deck%20and%20want%20to%20request%20a%2048-Hour%20Working%20Prototype." target="_blank" class="w-full py-2.5 px-4 rounded-xl bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#4ADE80] border border-[#25D366]/40 text-xs font-bold transition flex items-center justify-center gap-2">
+            💬 WhatsApp Plabon (+8801708459008)
+          </a>
+        </div>
+      </div>
+
+      <!-- PDF Download Button & Website -->
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <button onclick="downloadPdfDeck()" class="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition flex items-center gap-2">
+          📥 Download PDF Deck (1-Click Master)
+        </button>
+        <a href="https://gro10x-ai.vercel.app" target="_blank" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 font-medium text-xs transition">
+          🌐 Visit gro10x-ai.vercel.app ↗
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM NAVIGATION HUD & CONTROLS                          -->
+  <!-- ========================================================= -->
+  <footer class="no-print relative z-20 flex items-center justify-between px-6 py-3 border-t border-white/10 bg-[#070B12]/90 backdrop-blur-md">
+    <!-- Prev / Next Buttons -->
+    <div class="flex items-center gap-2">
+      <button onclick="prevSlide()" class="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-xs font-bold text-gray-200 transition active:scale-95 flex items-center gap-1.5">
+        ← Previous
+      </button>
+      <button onclick="nextSlide()" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#00F0FF] to-[#8B5CF6] text-black text-xs font-black transition active:scale-95 flex items-center gap-1.5 shadow-md shadow-[#00F0FF]/20">
+        Next →
+      </button>
+    </div>
+
+    <!-- Slide Indicators / Dots (1 to 10) -->
+    <div class="hidden sm:flex items-center gap-1.5" id="slideDots">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Slide Counter & Hotkey Help -->
+    <div class="flex items-center gap-3">
+      <div class="text-xs font-mono font-bold text-[#00F0FF]" id="slideCounter">
+        01 / 10
+      </div>
+      <div class="hidden lg:flex items-center gap-2 text-[11px] text-gray-500 font-mono">
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">←</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">→</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">Space</span>
+        <span>Nav</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400 ml-2">F</span>
+        <span>Fullscreen</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT SLIDE ENGINE & HOTKEYS                         -->
+  <!-- ========================================================= -->
+  <script>
+    const TOTAL_SLIDES = 10;
+    let currentSlide = 1;
+
+    function initNavigation() {
+      // Build dots
+      const dotsContainer = document.getElementById('slideDots');
+      dotsContainer.innerHTML = '';
+      for (let i = 1; i <= TOTAL_SLIDES; i++) {
+        const dot = document.createElement('button');
+        dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${i === 1 ? 'bg-[#00F0FF] w-6' : 'bg-white/20 hover:bg-white/50'}`;
+        dot.title = `Go to Slide ${i}`;
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+      }
+      updateUI();
+    }
+
+    function goToSlide(slideNum) {
+      if (slideNum < 1 || slideNum > TOTAL_SLIDES) return;
+
+      const currentEl = document.getElementById(`slide-${currentSlide}`);
+      if (currentEl) currentEl.classList.remove('active');
+
+      currentSlide = slideNum;
+
+      const newEl = document.getElementById(`slide-${currentSlide}`);
+      if (newEl) newEl.classList.add('active');
+
+      updateUI();
+    }
+
+    function nextSlide() {
+      if (currentSlide < TOTAL_SLIDES) {
+        goToSlide(currentSlide + 1);
+      } else {
+        goToSlide(1); // loop back
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        goToSlide(currentSlide - 1);
+      } else {
+        goToSlide(TOTAL_SLIDES);
+      }
+    }
+
+    function updateUI() {
+      // Counter
+      const counterEl = document.getElementById('slideCounter');
+      if (counterEl) {
+        counterEl.textContent = `${String(currentSlide).padStart(2, '0')} / ${String(TOTAL_SLIDES).padStart(2, '0')}`;
+      }
+
+      // Dots
+      const dotsContainer = document.getElementById('slideDots');
+      if (dotsContainer) {
+        const dots = dotsContainer.children;
+        for (let i = 0; i < dots.length; i++) {
+          if (i + 1 === currentSlide) {
+            dots[i].className = 'w-6 h-2 rounded-full bg-[#00F0FF] transition-all duration-300';
+          } else {
+            dots[i].className = 'w-2 h-2 rounded-full bg-white/20 hover:bg-white/50 transition-all duration-300';
+          }
+        }
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function downloadPdfDeck() {
+      window.print();
+    }
+
+    // Keyboard Navigation
+    window.addEventListener('keydown', (e) => {
+      // Ignore if user is inside an input or textarea
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'p' || e.key === 'P') {
+        if (e.ctrlKey || e.metaKey) {
+          // default print
+        } else {
+          e.preventDefault();
+          downloadPdfDeck();
+        }
+      }
+    });
+
+    // Touch Swipe Gestures
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const swipeDistance = touchEndX - touchStartX;
+      if (Math.abs(swipeDistance) > 50) {
+        if (swipeDistance < 0) {
+          nextSlide(); // swipe left
+        } else {
+          prevSlide(); // swipe right
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initNavigation);
+  </script>
+</body>
+</html>

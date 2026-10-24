@@ -570,6 +570,12 @@ app.get(['/pitch/shomvob', '/pitch/shomvob/'], (req, res) => {
 app.get(['/pitch/shomvob/copilot', '/pitch/shomvob/copilot.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pitch/shomvob/copilot.html'));
 });
+app.get(['/pitch/overview', '/pitch/overview/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/overview/index.html'));
+});
+app.get(['/pitch/overview/copilot', '/pitch/overview/copilot.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/overview/copilot.html'));
+});
 app.use('/pitch', express.static(path.join(__dirname, 'public/pitch')));
 
 // Central Prototype Showroom & Staged Client Prototypes

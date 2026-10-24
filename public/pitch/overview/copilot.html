@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>GRO10X Overview — Presenter Co-Pilot (Mobile HUD for Arif)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #070B12;
+      color: #E2E8F0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glow-cyan { box-shadow: 0 0 16px rgba(0, 240, 255, 0.35); }
+    .glow-purple { box-shadow: 0 0 16px rgba(139, 92, 246, 0.35); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 select-none bg-[#070B12]">
+
+  <!-- ========================================================= -->
+  <!-- TOP STICKY CONTROLLER HUD                                 -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-50 bg-[#0A101D]/95 backdrop-blur-md border-b border-white/10 px-4 py-2.5 shadow-2xl">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      
+      <!-- Identity -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#00F0FF] to-[#8B5CF6] flex items-center justify-center text-black font-black text-sm shadow-md">
+          G
+        </div>
+        <div>
+          <div class="text-[11px] font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+            ARIF CO-PILOT
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse"></span>
+          </div>
+          <div class="text-[9px] text-gray-400 mono">GRO10X Overview · Partner HUD</div>
+        </div>
+      </div>
+
+      <!-- Live Presentation Pacing Timer (10 min pitch + 5 min Q&A) -->
+      <div class="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
+        <div class="text-right">
+          <div class="text-[8px] text-gray-400 uppercase mono font-bold">Pitch Timer</div>
+          <div id="timer-display" class="text-sm font-black mono text-[#00F0FF] leading-none">10:00</div>
+        </div>
+        <button id="timer-btn" onclick="toggleTimer()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition active:scale-90" title="Start/Pause Timer">
+          ▶
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Quick Navigation Tabs -->
+    <div class="max-w-md mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-[#00F0FF] text-black transition shrink-0">
+        🎙️ Speaker Notes (1-10)
+      </button>
+      <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        ⚔️ 1-Tap Objections
+      </button>
+      <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        💬 WhatsApp Follow-ups
+      </button>
+      <a href="/pitch/overview" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-[#00F0FF] border border-[#00F0FF]/30 transition shrink-0 flex items-center gap-1">
+        📺 TV Deck ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN CONTAINER                                            -->
+  <!-- ========================================================= -->
+  <main class="max-w-md mx-auto w-full px-4 pt-3 flex-1">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 1: SPEAKER NOTES (SLIDES 1 TO 10)                     -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-notes" class="tab-content space-y-3">
+      
+      <div class="p-3 bg-gradient-to-r from-[#00F0FF]/10 via-[#8B5CF6]/10 to-transparent rounded-2xl border border-white/10 mb-2">
+        <div class="text-[10px] uppercase font-mono font-bold text-[#00F0FF]">Arif's Pitch Strategy</div>
+        <div class="text-xs text-gray-200 mt-0.5">
+          Focus on <strong class="text-white">Days vs Months</strong> and the <strong class="text-[#00F0FF]">48-Hour Working Prototype</strong>. Keep the conversation away from tech jargon.
+        </div>
+      </div>
+
+      <!-- Slide 1 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden" open>
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">01</span>
+            <span class="text-xs font-bold text-white">The Hook · Days Instead of Months</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Opening Words:</strong> "You know the traditional agency story: you hire them, spend two months in scoping meetings, pay ৳15 to ৳20 Lakhs, and all you get is a PowerPoint presentation."</p>
+          <p><strong class="text-[#00F0FF]">The Shift:</strong> "What if you could give us your idea on Monday, and have a working version running on your phone by Wednesday?"</p>
+          <div class="p-2.5 rounded-lg bg-[#00F0FF]/5 border border-[#00F0FF]/20 text-[11px] text-[#00F0FF]">
+            💡 <strong>Key Goal:</strong> Get them nodding about agency delays.
+          </div>
+        </div>
+      </details>
+
+      <!-- Slide 2 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">02</span>
+            <span class="text-xs font-bold text-white">What We Do · 3 Simple Pillars</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Pillar 1 (AI Video):</strong> 4K TV commercials and brand videos in 48 hours without renting cameras or blocking streets.</p>
+          <p><strong class="text-white">Pillar 2 (Web Portals):</strong> Custom dashboards, 3D product viewports, and booking engines built with modern tech.</p>
+          <p><strong class="text-white">Pillar 3 (Automations):</strong> 24/7 intelligent WhatsApp bots and real-time operations dashboards that stop revenue leakage.</p>
+        </div>
+      </details>
+
+      <!-- Slide 3 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">03</span>
+            <span class="text-xs font-bold text-white">The Unfair Advantage · Comparison</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">The Contrast:</strong> "Traditional agencies have 20 people billing hours for coffee meetings. We use an autonomous engineering studio where 1 team focuses 100% on building."</p>
+          <p><strong class="text-emerald-400">Result:</strong> 3–5 days vs 90 days. 1/10th the cost. Working code instead of slide decks.</p>
+        </div>
+      </details>
+
+      <!-- Slide 4 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#EC4899]/20 text-[#F472B6] flex items-center justify-center font-black text-xs font-mono">04</span>
+            <span class="text-xs font-bold text-white">Case Study 1 · Banglalink RYZE (AI Video)</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">The Proof:</strong> "We built a 60-second national broadcast commercial for Banglalink RYZE in 48 hours."</p>
+          <p>"All 5 characters, Dhaka streetscapes, and youth personas were generated with AI pipelines. Sound design was fully mastered for TV broadcast standards."</p>
+          <a href="/prototypes/ryze-ai-star/" target="_blank" class="inline-block text-[11px] text-[#EC4899] font-bold">
+            ▶ Tap to open RYZE Prototype ↗
+          </a>
+        </div>
+      </details>
+
+      <!-- Slide 5 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">05</span>
+            <span class="text-xs font-bold text-white">Case Study 2 · Bahon EV Fleet OS</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Business Impact:</strong> "In Bashundhara, electric van operators were losing ৳48,500 every day to untracked trips and manual cash fare handling."</p>
+          <p>"We built Bahon Fleet OS in 5 days with live GPS passenger audit, digital QR ticketing, and battery alerts. The leak was completely plugged."</p>
+          <a href="/prototypes/bahon/" target="_blank" class="inline-block text-[11px] text-emerald-400 font-bold">
+            ⚡ Tap to open Bahon OS ↗
+          </a>
+        </div>
+      </details>
+
+      <!-- Slide 6 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">06</span>
+            <span class="text-xs font-bold text-white">Case Study 3 · ToffeeCon VIP Event OS</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">High-Speed Ingress:</strong> "For ToffeeCon 2026, 600+ top VIPs and content creators checked in through optical turnstiles with under 50-millisecond scanning."</p>
+          <p>"No registration bottleneck at the entrance, luxury 300 DPI acrylic badges, and live mainstage audience voting."</p>
+        </div>
+      </details>
+
+      <!-- Slide 7 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">07</span>
+            <span class="text-xs font-bold text-white">Case Study 4 · Sahanabag City (3D Twin)</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">3D Real Estate:</strong> "Instead of flat 2D brochures, Sahanabag City buyers can walk through the entire township in 3D right on their phone without installing an app."</p>
+          <p>"They click a plot, see exact dimensions, calculate their EMI in Taka, and pay the booking deposit via bKash."</p>
+          <a href="/prototypes/sahanabag-city/" target="_blank" class="inline-block text-[11px] text-[#00F0FF] font-bold">
+            🏙️ Tap to open 3D Twin ↗
+          </a>
+        </div>
+      </details>
+
+      <!-- Slide 8 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">08</span>
+            <span class="text-xs font-bold text-white">How We Work · 3 Simple Steps</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Step 1:</strong> 30-minute discovery call to align on the core bottleneck.</p>
+          <p><strong class="text-white">Step 2:</strong> In 48 hours, we deliver a working interactive prototype on your phone.</p>
+          <p><strong class="text-white">Step 3:</strong> You test with your board/customers, and we launch production.</p>
+        </div>
+      </details>
+
+      <!-- Slide 9 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">09</span>
+            <span class="text-xs font-bold text-white">The Zero-Risk Offer · 48h Prototype</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">The Close:</strong> "We don't ask you to commit to large retainers or write big checks before seeing what we can do."</p>
+          <p><strong class="text-[#00F0FF]">The Offer:</strong> "Let us build you a 48-hour working prototype. Test it. If your leadership isn't blown away, you owe us nothing."</p>
+        </div>
+      </details>
+
+      <!-- Slide 10 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">10</span>
+            <span class="text-xs font-bold text-white">Let's Connect · Next Steps</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Action:</strong> Suggest setting up a quick 3-way WhatsApp group with Arif, Plabon, and their key decision maker.</p>
+          <p>Offer to send them the offline PDF presentation deck immediately.</p>
+        </div>
+      </details>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 2: 1-TAP OBJECTIONS DRAWER                            -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-objections" class="tab-content hidden space-y-3">
+      
+      <div class="p-3 bg-red-500/10 rounded-2xl border border-red-500/20 text-xs text-red-300 mb-2">
+        <strong>Instant Defense Kit:</strong> Tap any objection below to read the exact, defensible counter-argument.
+      </div>
+
+      <!-- Objection 1 -->
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2">
+        <div class="text-xs font-bold text-white flex items-center gap-2">
+          <span class="text-red-400">❓</span> "How can you build in 48 hours when other agencies take 3 months?"
+        </div>
+        <div class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
+          <strong class="text-[#00F0FF]">Say this:</strong> "Traditional agencies bill for hours, so slower delivery means higher billing. They also have 5 layers of account executives. Our studio uses autonomous digital squads that work around the clock with pre-built enterprise modules."
+        </div>
+      </div>
+
+      <!-- Objection 2 -->
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2">
+        <div class="text-xs font-bold text-white flex items-center gap-2">
+          <span class="text-red-400">❓</span> "Is this just a cheap template or real custom code?"
+        </div>
+        <div class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
+          <strong class="text-[#00F0FF]">Say this:</strong> "Everything we build is 100% custom, production-ready software. You can inspect the live Bahon EV Fleet or Banglalink commercial right now on your phone to verify the engineering depth."
+        </div>
+      </div>
+
+      <!-- Objection 3 -->
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2">
+        <div class="text-xs font-bold text-white flex items-center gap-2">
+          <span class="text-red-400">❓</span> "What happens after delivery? Who supports the software?"
+        </div>
+        <div class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
+          <strong class="text-[#00F0FF]">Say this:</strong> "We don't hand off code and disappear. We host on enterprise global edge infrastructure with 99.9% uptime SLA and offer dedicated monthly engineering retainer squads to keep improving the system."
+        </div>
+      </div>
+
+      <!-- Objection 4 -->
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2">
+        <div class="text-xs font-bold text-white flex items-center gap-2">
+          <span class="text-red-400">❓</span> "Can you sign an NDA before we share our company details?"
+        </div>
+        <div class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
+          <strong class="text-[#00F0FF]">Say this:</strong> "Yes, standard procedure. We execute mutual non-disclosure agreements before receiving any internal APIs or proprietary data."
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 3: WHATSAPP FOLLOW-UP KIT                             -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-whatsapp" class="tab-content hidden space-y-3">
+      
+      <div class="p-3 bg-[#25D366]/10 rounded-2xl border border-[#25D366]/20 text-xs text-emerald-300 mb-2">
+        <strong>1-Tap Post-Meeting Handoff:</strong> Copy or dispatch pre-written messages immediately after coffee.
+      </div>
+
+      <!-- Template 1 -->
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2.5">
+        <div class="text-xs font-bold text-white flex items-center justify-between">
+          <span>1. Post-Meeting Deck + Prototype Offer</span>
+          <span class="text-[10px] text-gray-400 mono">Standard</span>
+        </div>
+        <div id="msg-text-1" class="text-xs text-gray-300 bg-black/40 p-3 rounded-xl border border-white/5 leading-relaxed font-mono">
+Hi! Great speaking with you today. Here is the link to our live executive presentation deck: https://gro10x-ai.vercel.app/pitch/overview
+
+As discussed, we'd love to build you a 48-Hour Working Prototype so your team can test a live version on mobile before signing any contract. Let me know what time works this week for a 20-min alignment call with Plabon and me.
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="copyMessage('msg-text-1')" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition">
+            📋 Copy Message
+          </button>
+          <a id="wa-btn-1" href="https://wa.me/?text=Hi!%20Great%20speaking%20with%20you%20today.%20Here%20is%20the%20link%20to%20our%20live%20executive%20presentation%20deck:%20https://gro10x-ai.vercel.app/pitch/overview%0A%0AAs%20discussed,%20we'd%20love%20to%20build%20you%20a%2048-Hour%20Working%20Prototype%20so%20your%20team%20can%20test%20a%20live%20version%20on%20mobile%20before%20signing%20any%20contract.%20Let%20me%20know%20what%20time%20works%20this%20week%20for%20a%2020-min%20alignment%20call%20with%20Plabon%20and%20me." target="_blank" class="py-2 px-3 rounded-xl bg-[#25D366] text-black text-xs font-black transition flex items-center gap-1">
+            💬 Open WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Template 2 -->
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2.5">
+        <div class="text-xs font-bold text-white flex items-center justify-between">
+          <span>2. Quick 4-Case Studies Share</span>
+          <span class="text-[10px] text-gray-400 mono">Proof</span>
+        </div>
+        <div id="msg-text-2" class="text-xs text-gray-300 bg-black/40 p-3 rounded-xl border border-white/5 leading-relaxed font-mono">
+Hi! Here are the 4 live case studies we reviewed:
+1. Banglalink RYZE 60s Broadcast TV Commercial: https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/
+2. Bahon EV Fleet Command OS: https://gro10x-ai.vercel.app/prototypes/bahon/
+3. Sahanabag City 3D Township Twin: https://gro10x-ai.vercel.app/prototypes/sahanabag-city/
+4. Full Deck: https://gro10x-ai.vercel.app/pitch/overview
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="copyMessage('msg-text-2')" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition">
+            📋 Copy Message
+          </button>
+          <a id="wa-btn-2" href="https://wa.me/?text=Hi!%20Here%20are%20the%204%20live%20case%20studies%20we%20reviewed:%0A1.%20Banglalink%20RYZE%2060s%20Broadcast%20TV%20Commercial:%20https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/%0A2.%20Bahon%20EV%20Fleet%20Command%20OS:%20https://gro10x-ai.vercel.app/prototypes/bahon/%0A3.%20Sahanabag%20City%203D%20Township%20Twin:%20https://gro10x-ai.vercel.app/prototypes/sahanabag-city/%0A4.%20Full%20Deck:%20https://gro10x-ai.vercel.app/pitch/overview" target="_blank" class="py-2 px-3 rounded-xl bg-[#25D366] text-black text-xs font-black transition flex items-center gap-1">
+            💬 Open WhatsApp
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT LOGIC & TIMER                                  -->
+  <!-- ========================================================= -->
+  <script>
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[#00F0FF]', 'text-black');
+        btn.classList.add('bg-white/10', 'text-gray-300');
+      });
+
+      const targetTab = document.getElementById(`tab-${tabId}`);
+      const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (targetTab) targetTab.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.remove('bg-white/10', 'text-gray-300');
+        targetBtn.classList.add('bg-[#00F0FF]', 'text-black');
+      }
+    }
+
+    // Timer Logic (10-minute countdown)
+    let timerDuration = 10 * 60; // 600 seconds
+    let timerRemaining = timerDuration;
+    let timerInterval = null;
+    let isRunning = false;
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      const displayEl = document.getElementById('timer-display');
+      if (displayEl) {
+        displayEl.textContent = formatTime(timerRemaining);
+        if (timerRemaining <= 120 && timerRemaining > 0) {
+          displayEl.className = 'text-sm font-black mono text-[#F59E0B] leading-none animate-pulse';
+        } else if (timerRemaining <= 0) {
+          displayEl.className = 'text-sm font-black mono text-[#EF4444] leading-none';
+        } else {
+          displayEl.className = 'text-sm font-black mono text-[#00F0FF] leading-none';
+        }
+      }
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timer-btn');
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        if (btn) btn.textContent = '▶';
+      } else {
+        if (timerRemaining <= 0) timerRemaining = timerDuration;
+        isRunning = true;
+        if (btn) btn.textContent = '⏸';
+        timerInterval = setInterval(() => {
+          if (timerRemaining > 0) {
+            timerRemaining--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            if (btn) btn.textContent = '↺';
+          }
+        }, 1000);
+      }
+    }
+
+    // Clipboard Copy Helper
+    function copyMessage(elementId) {
+      const text = document.getElementById(elementId).innerText.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy', err);
+      });
+    }
+  </script>
+</body>
+</html>
