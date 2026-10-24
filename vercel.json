@@ -165,6 +165,10 @@
       "dest": "/public/auth.html"
     },
     {
+      "src": "/fellowship(/.*)?",
+      "dest": "/public/fellowship.html"
+    },
+    {
       "src": "/sprint(.*)",
       "dest": "/public/sprint.html"
     },
@@ -203,6 +207,14 @@
     {
       "src": "/pitch/shomvob(/.*)?",
       "dest": "/public/pitch/shomvob/index.html"
+    },
+    {
+      "src": "/pitch/overview/copilot(.*)",
+      "dest": "/public/pitch/overview/copilot.html"
+    },
+    {
+      "src": "/pitch/overview(/.*)?",
+      "dest": "/public/pitch/overview/index.html"
     },
     {
       "src": "/pitch(/.*)?",
