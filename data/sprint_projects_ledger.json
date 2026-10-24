@@ -528,14 +528,37 @@
       ],
       "charteredDate": "2026-10-23",
       "completedDate": "2026-10-23"
+    },
+    {
+      "id": "PRJ-RYZE-SP1-60S-BROADCAST-MASTER",
+      "venture": "Banglalink RYZE Co-Star AI",
+      "engine": "Engine 2: Bespoke Agency Services & Solutions",
+      "port": "Workspace D:\\RYZE",
+      "sprint": "Sprint 1: 60-Second Broadcast Golden Master, Metrology Calibration & Consumer Clearance",
+      "status": "COMPLETED",
+      "pricingType": "Enterprise Media Commercial Retainer",
+      "creditValuation": 50000,
+      "bdtValuation": 100000,
+      "usdValuation": 825.00,
+      "testsCertified": 7,
+      "artifacts": [
+        "60-Second Progressive Broadcast Golden Master (RYZE_COSTAR_AI_BROADCAST_FINAL_DELIVERY_60S.mp4, 21.85 MB, 1440 frames @ 24fps)",
+        "EBU R128 Master Balanced Audio Bed (ryze_master_audio_balanced_60s.wav, exact -16.0 LUFS, -1.6 dBFS true peak headroom)",
+        "Cleaned & Synced Kinetic Subtitles (kinetic_subtitles_60s.ass with Line 26 'Shhh... লাইব্রেরি কিন্তু...')",
+        "Visual & Metrology Remediation Receipt (AUDIT_REMEDIATION_S2_RECEIPT.md)",
+        "Acoustic Stems & Dynamic Ducking Verification Receipt (AUDIT_VERIFICATION_RECEIPT_AUDIO_SUBTITLE_S1.md)",
+        "Independent Forensic Quality & Consumer Hype Clearance Dossier (CERT-2026-RYZE-60S-BROADCAST-FINAL-v5.0, 7.6/10 Consumer Score)"
+      ],
+      "charteredDate": "2026-10-23",
+      "completedDate": "2026-10-24"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 22,
-    "totalSprintsCompleted": 22,
-    "totalCreditsGenerated": 635000,
-    "totalBdtValuation": 1270000,
-    "totalUsdValuation": 10477.50,
-    "totalTestsPassingAcrossHoldings": 1208
+    "totalSprintsChartered": 23,
+    "totalSprintsCompleted": 23,
+    "totalCreditsGenerated": 685000,
+    "totalBdtValuation": 1370000,
+    "totalUsdValuation": 11302.50,
+    "totalTestsPassingAcrossHoldings": 1215
   }
 }
