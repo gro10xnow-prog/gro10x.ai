@@ -621,14 +621,38 @@
       ],
       "charteredDate": "2026-10-24",
       "completedDate": "2026-10-24"
+    },
+    {
+      "id": "PRJ-MADMAN-3D-PROTOTYPE",
+      "venture": "Foundry Lab / Mother OS Engine 2",
+      "engine": "Engine 2: Bespoke Agency Services & Solutions",
+      "port": 3000,
+      "sprint": "Sprint: Madman 3D WebGL Kinetic Sculpture & GPU Tiering Showcase",
+      "status": "COMPLETED",
+      "pricingType": "Pre-Sales 3D Proof-of-Concept & WebGL Engine",
+      "creditValuation": 25000,
+      "bdtValuation": 50000,
+      "usdValuation": 412.50,
+      "testsCertified": 10,
+      "artifacts": [
+        "Awwwards-Grade Three.js r128 WebGL Kinetic Sculpture (public/prototypes/madman-3d/index.html mounted at /prototypes/madman-3d)",
+        "Physical PBR Glass Icosahedron (transmission: 0.90, ior: 1.52) & Dual Counter-Rotating Chrome Orbital Rings",
+        "Lenis v1.1.9 Smooth Momentum Scroll Choreography & 180-Degree 3D Exploded-View Parallax",
+        "Dynamic Hardware-Sensing GPU Tiering (High 60 FPS Desktop vs Low-Power Mobile Throttle)",
+        "Interactive Control Dock (Wireframe toggle, 3 lighting palettes, speed cycling, shockwave trigger)",
+        "Central Showroom Integration in public/prototypes/index.html",
+        "Automated Jest Test Suite (tests/madman_3d_prototype.test.js, 10/10 green)"
+      ],
+      "charteredDate": "2026-10-24",
+      "completedDate": "2026-10-24"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 26,
-    "totalSprintsCompleted": 26,
-    "totalCreditsGenerated": 780000,
-    "totalBdtValuation": 1560000,
-    "totalUsdValuation": 12870.00,
-    "totalTestsPassingAcrossHoldings": 1262
+    "totalSprintsChartered": 27,
+    "totalSprintsCompleted": 27,
+    "totalCreditsGenerated": 805000,
+    "totalBdtValuation": 1610000,
+    "totalUsdValuation": 13282.50,
+    "totalTestsPassingAcrossHoldings": 1272
   }
 }
