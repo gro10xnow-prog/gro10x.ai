@@ -326,4 +326,71 @@ For all digital employees hosted, managed, or interacted with via Agent10x.ai (`
 4. **Manifest V3 Chrome Extension QA Ingress**:
    - Standardized in-browser testing sidepanel (`extension/agent10x-qa-runner`) capable of executing automated E2E browser assertions directly against live PWA routes.
 
+---
+
+### 21. The Zero-PRD Blind Consumer Quality Mandate (Zero Mechanical Rubber-Stamping)
+For all commercial video productions, audio-visual campaigns, public advertisements, and interactive media assets:
+
+1. **The Blind Consumer Perspective Invariant**:
+   - Automated test scripts (checking regex in subtitle files, delogo bounding boxes, or static frame counts) must **NEVER** serve as the sole gate for final broadcast, client delivery, or public launch.
+   - Before any media asset receives clearance, `[S4]` Forensic QA must perform a **Zero-PRD Blind Consumer Audit** from the vantage point of a cold, first-time viewer (e.g. 20-year-old mobile user scrolling YouTube Shorts/TikTok in bed with earphones, or an executive on a 55" conference display).
+   - The auditor must explicitly disregard the storyboard and PRD to evaluate raw sensory immersion:
+     * **3-Second Hook Friction**: Does it immediately stop thumb-scrolling, or is it a clichéd corporate trope?
+     * **Weirdness & Uncanny Valley Meter**: Are there melting pixels, rubbery AI fingers, or visual glitches?
+     * **Pacing & Cringe Factor**: Does dialogue match on-screen character actions, and is the energy authentic?
+
+2. **Calibrated Realistic Scoring Scale**:
+   - Scores must be compressed toward the center of the scale (target: `5.0–7.5/10` for initial cuts; `8.0–9.0/10` for viral broadcast masters).
+   - Arbitrary or unearned `9.5/10` or `10.0/10` ratings are strictly prohibited until an asset has survived multiple real-world consumer passes with zero human-perceptible defects.
+
+---
+
+### 22. Commercial Acoustic Continuity & Sonic Black Hole Prevention Invariant
+To guarantee broadcast-grade sound design and maintain viewer adrenaline across all video assets:
+
+1. **Zero Dead Air / Sonic Black Hole Rule**:
+   - Spoken vocal silence exceeding **1.5 seconds** during energetic scenes, montages, or narrative climaxes is strictly prohibited unless intentionally designed as a dramatic stop with an active sonic tension riser.
+   - Any gap $>2.0$ seconds where neither voiceover nor energetic music drives the scene must be flagged as a critical defect by `[S4]`.
+
+2. **Prohibition of "Text-Purge" Shortcuts**:
+   - Audio and video squads are **STRICTLY FORBIDDEN** from resolving unvoiced subtitle defects by simply deleting subtitle events and leaving acoustic silence.
+   - Discrepancies between narrative text and audio must be solved by:
+     * Retaining and mastering native vocal stems;
+     * Layering high-energy musical builds (e.g., 128 BPM world-beat/trap beds ducked to -18 dBFS);
+     * Bridging clip seams with 1.2s pitch-rising whoosh risers (160 Hz $\rightarrow$ 1200 Hz); or
+     * Retiming and tightening the visual cut so the scene moves forward without dead air.
+
+3. **Sonic Brand Payoff Standard**:
+   - The final 5.0 seconds of every commercial (the outro / conversion lockup) must feature a distinct, high-impact sonic signature (e.g. 808 sub-bass drop, chord chime, or brand sound logo) layered over the driving music bed at a safe peak ceiling ($\le -1.5\text{ dBFS}$).
+
+---
+
+### 23. Native Generative Audio Preservation & Anti-TTS Downgrade Mandate
+When utilizing multimodal generative AI video engines (such as Google Gemini / OmniFlash) that output native character speech:
+
+1. **Strict Prohibition on Synthetic TTS Overwrite**:
+   - Squads `[S1]`, `[S2]`, and `[S3]` are strictly forbidden from discarding, replacing, or muting authentic generative native voiceover with robotic synthetic TTS (e.g., Edge-TTS, generic cloud speech engines) when native speech is present.
+   - The native generative voiceover carries irreplaceable emotional prosody, authentic regional dialect, and natural breathing cadence that synthetic TTS cannot replicate.
+
+2. **Multi-Track Mastering Architecture**:
+   - Sound engineering must treat native generative voice as the lead vocal stem (normalized to $-14\text{ to } -16\text{ LUFS}$).
+   - Secondary music beds must be dynamically ducked underneath vocal activity (sidechain compression target: $-18\text{ to } -20\text{ dBFS}$) and allowed to swell during natural pauses.
+
+3. **Vertical Mobile Safe Zone & Kinetic Subtitles**:
+   - For 9:16 vertical video (1080×1920), kinetic subtitles must be anchored at `\pos(540,1380)` to prevent occlusion by mobile app chrome (like buttons, comments, captions, sound icons).
+   - Maximum 3–4 words per line with dynamic keyword color highlighting (e.g., gold `#F59E0B` or cyan `#38BDF8`).
+   - The opening slice ($0.0\text{s} - 2.0\text{s}$) must incorporate a kinetic punch-in zoom (1.15x scale) to hook the viewer before settling into steady motion.
+
+---
+
+### 24. Vercel Static Subroute Precedence & Routing Declaration Invariant
+To prevent route hijacking and unexpected fallback redirects across production deployments:
+
+1. **Strict Ordering Invariant in `vercel.json`**:
+   - In `vercel.json` route configurations, explicit sub-routes (e.g. `/pitch/overview`, `/pitch/overview/copilot`, `/fellowship`) must **ALWAYS** be declared physically before broad parent directory catch-all expressions (e.g. `{"src": "/pitch(/.*)?", "dest": "/public/pitch/index.html"}`).
+   - Vercel evaluates routing patterns in top-to-bottom array order. Placing a parent regex catch-all before a child sub-path immediately hijacks all child requests and serves the parent entrypoint.
+
+2. **Verification Gate**:
+   - Any new route or presentation portal mounted under an existing prefix must be accompanied by an automated HTTP route-resolution test verifying that the child URL returns HTTP 200 with its own title and markup rather than the parent portal.
+
 

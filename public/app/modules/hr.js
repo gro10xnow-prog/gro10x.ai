@@ -29,6 +29,7 @@ window.APP_MODULES.hr = async function(container) {
   let attendanceData = [];
   let eodData = [];
   let invitationsData = [];
+  let fellowshipData = [];
   let isLoading = true;
   let hasError = false;
 
@@ -50,13 +51,14 @@ window.APP_MODULES.hr = async function(container) {
     renderSkeleton();
 
     try {
-      const [team, leaves, workload, attendance, eod, invites] = await Promise.all([
+      const [team, leaves, workload, attendance, eod, invites, fellowship] = await Promise.all([
         APP_API.get('/team').catch(() => []),
         APP_API.get('/leaves').catch(() => []),
         APP_API.get('/team/workload').catch(() => []),
         APP_API.get('/team/attendance').catch(() => []),
         APP_API.get('/team/eod').catch(() => []),
-        APP_API.get('/team/invitation-status').catch(() => ({ members: [] }))
+        APP_API.get('/team/invitation-status').catch(() => ({ members: [] })),
+        APP_API.get('/fellowship/applications').catch(() => ({ applications: [] }))
       ]);
 
       const fetchedList = Array.isArray(team) ? team : (team && Array.isArray(team.data) ? team.data : []);
@@ -65,6 +67,17 @@ window.APP_MODULES.hr = async function(container) {
       workloadData = Array.isArray(workload) ? workload : [];
       attendanceData = Array.isArray(attendance) ? attendance : [];
       eodData = Array.isArray(eod) ? eod : [];
+      if (Array.isArray(fellowship)) {
+        fellowshipData = fellowship;
+      } else if (fellowship && Array.isArray(fellowship.applications)) {
+        fellowshipData = fellowship.applications;
+      } else if (fellowship && fellowship.data && Array.isArray(fellowship.data.applications)) {
+        fellowshipData = fellowship.data.applications;
+      } else if (fellowship && Array.isArray(fellowship.data)) {
+        fellowshipData = fellowship.data;
+      } else {
+        fellowshipData = [];
+      }
       invitationsData = (invites && Array.isArray(invites.members) && invites.members.length > 0)
         ? invites.members
         : teamData.map(m => ({
@@ -101,6 +114,7 @@ window.APP_MODULES.hr = async function(container) {
     } catch (err) {
       console.warn('[HR Module] Load fallback note:', err);
       teamData = DEFAULT_TEAM_MEMBERS;
+      fellowshipData = [];
       invitationsData = DEFAULT_TEAM_MEMBERS.map(m => ({
         empCode: m.emp_code,
         name: m.name,
@@ -203,6 +217,7 @@ window.APP_MODULES.hr = async function(container) {
         <button id="btnHrTabAttendance" data-tab="attendance" class="btn-ghost hr-tab-btn ${activeHrTab === 'attendance' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('attendance')">📍 Today's Attendance (${attendanceData.length})</button>
         <button id="btnHrTabEod" data-tab="eod" class="btn-ghost hr-tab-btn ${activeHrTab === 'eod' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('eod')">📝 EOD Reports (${eodData.length})</button>
         <button id="btnHrTabLeaves" data-tab="leaves" class="btn-ghost hr-tab-btn ${activeHrTab === 'leaves' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('leaves')">🌴 Leave Requests (${pendingLeaves} Pending)</button>
+        <button id="btnHrTabFellowship" data-tab="fellowship" class="btn-ghost hr-tab-btn ${activeHrTab === 'fellowship' ? 'btn-secondary active' : ''}" onclick="window.HR_MODULE.switchTab('fellowship')">🎓 AI Fellowship Applications (<span id="hrFellowshipCountBadge">${fellowshipData.length}</span>)</button>
       </div>
 
       <div class="data-table-container">
@@ -381,6 +396,21 @@ window.APP_MODULES.hr = async function(container) {
           </div>
           <div id="aiModalContent" style="display:flex; flex-direction:column; gap:1rem;">
             Loading personalized message...
+          </div>
+        </div>
+      </div>
+
+      <!-- Fellowship Creative Idea Modal -->
+      <div id="hrFellowshipIdeaModal" class="modal-overlay" onclick="if(event.target === this) window.HR_MODULE.closeFellowshipModal()">
+        <div class="modal-box" style="max-width:580px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+            <h3 style="margin:0; color:#fff; font-family:var(--font-heading); display:flex; align-items:center; gap:0.5rem;" id="fellowshipModalTitle">
+              💡 Creative Direction Experiment
+            </h3>
+            <button onclick="window.HR_MODULE.closeFellowshipModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <div id="fellowshipModalContent" style="display:flex; flex-direction:column; gap:1rem;">
+            Loading creative experiment idea...
           </div>
         </div>
       </div>
@@ -598,6 +628,132 @@ window.APP_MODULES.hr = async function(container) {
                 <td><span style="font-size:1.1rem;">${escapeHTML(e.mood || '😊')}</span></td>
               </tr>
             `).join('') || `<tr><td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">No EOD reports logged yet</td></tr>`}
+          </tbody>
+        </table>
+      `;
+    } else if (activeHrTab === 'fellowship') {
+      const totalApplicants = fellowshipData.length;
+      const avgScore = totalApplicants > 0
+        ? (fellowshipData.reduce((acc, c) => acc + (Number(c.aiAptitudeScore) || 0), 0) / totalApplicants).toFixed(1)
+        : '0.0';
+
+      const uniCounts = {};
+      fellowshipData.forEach(c => {
+        const u = (c.university || '').trim();
+        if (u) {
+          let shortUni = u;
+          if (/dhaka/i.test(u)) shortUni = 'DU';
+          else if (/north south/i.test(u) || /nsu/i.test(u)) shortUni = 'NSU';
+          else if (/brac/i.test(u)) shortUni = 'BRAC';
+          else if (/buet/i.test(u)) shortUni = 'BUET';
+          else if (/iba/i.test(u)) shortUni = 'IBA';
+          else if (/jahangirnagar/i.test(u) || /ju\b/i.test(u)) shortUni = 'JU';
+          else if (/bup/i.test(u)) shortUni = 'BUP';
+          else if (/aiub/i.test(u)) shortUni = 'AIUB';
+          else if (/iut/i.test(u)) shortUni = 'IUT';
+          uniCounts[shortUni] = (uniCounts[shortUni] || 0) + 1;
+        }
+      });
+      const topUnis = Object.entries(uniCounts).sort((a,b) => b[1] - a[1]).slice(0, 4).map(([name, count]) => `${name} (${count})`);
+      const topUnisStr = topUnis.length > 0 ? topUnis.join(', ') : 'DU, NSU, BRAC';
+
+      return `
+        <div id="hrFellowshipPipelineCard" style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:16px; padding:1.25rem; margin-bottom:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:0.75rem;">
+            <div>
+              <div style="font-size:1.1rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:0.5rem;">
+                🎓 AI Media & Research Fellowship Candidate Cockpit
+              </div>
+              <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
+                Vetted university creators, prompt engineers, and video directors across Bangladesh.
+              </div>
+            </div>
+            <div style="display:flex; gap:0.6rem; align-items:center;">
+              <a href="/fellowship" target="_blank" class="btn-secondary btn-sm" style="text-decoration:none; font-size:0.8rem;">🌐 Public Portal ↗</a>
+              <button class="btn-ghost btn-sm" onclick="window.HR_MODULE.reload()" style="font-size:0.8rem;">🔄 Refresh</button>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="background:rgba(255,255,255,0.03); padding:0.75rem 1rem; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em;">Total Applicants</div>
+              <div style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:0.2rem;">${totalApplicants}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:0.75rem 1rem; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em;">Top Universities</div>
+              <div style="font-size:0.95rem; font-weight:700; color:var(--purple-light); margin-top:0.35rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHTML(topUnisStr)}">${topUnisStr}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:0.75rem 1rem; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+              <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em;">Average Aptitude Score</div>
+              <div style="font-size:1.4rem; font-weight:800; color:#34d399; margin-top:0.2rem;">⭐ ${avgScore} <span style="font-size:0.8rem; color:var(--text-muted); font-weight:400;">/ 10</span></div>
+            </div>
+          </div>
+        </div>
+
+        <table id="hrFellowshipTable" class="data-table">
+          <thead>
+            <tr>
+              <th>Token ID</th>
+              <th>Full Name & Contact Phone</th>
+              <th>University & Department (Graduation Year)</th>
+              <th>AI Tools & Editing Experience</th>
+              <th>Portfolio URL</th>
+              <th>Creative Experiment Idea</th>
+              <th>AI Aptitude Score</th>
+              <th>1-Click Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${fellowshipData.length > 0 ? fellowshipData.map(c => {
+              const cleanPhone = (c.phone || '').replace(/[^0-9]/g, '');
+              const waPhone = cleanPhone.startsWith('88') ? cleanPhone : (cleanPhone.startsWith('01') ? '88' + cleanPhone : cleanPhone);
+              const waText = encodeURIComponent(`Assalamu Alaikum ${c.name}! This is GRO10X Talent Operations regarding your AI Media Fellowship application (${c.token || 'FELLOW-2026'}). We reviewed your portfolio and would like to connect for your next stage.`);
+              const waLink = `https://wa.me/${waPhone}?text=${waText}`;
+              const tokenStr = c.token || c.id || 'FELLOW-2026';
+              const ideaSnippet = c.creativeExperimentPrompt || 'N/A';
+
+              return `
+                <tr>
+                  <td>
+                    <strong style="color:var(--purple-light); font-family:monospace; font-size:0.85rem;">${escapeHTML(tokenStr)}</strong>
+                    <div style="font-size:0.68rem; color:var(--text-muted);">${c.timestamp ? new Date(c.timestamp).toLocaleDateString() : 'Recent'}</div>
+                  </td>
+                  <td>
+                    <div style="font-weight:700; color:#fff;">${escapeHTML(c.name || 'Candidate')}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">${escapeHTML(c.phone || 'N/A')}</div>
+                  </td>
+                  <td>
+                    <div style="font-weight:600; color:var(--text-main); font-size:0.85rem;">${escapeHTML(c.university || 'University')}</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHTML(c.department || 'N/A')} (Grad ${escapeHTML(c.graduationYear || 'N/A')})</div>
+                  </td>
+                  <td>
+                    <div style="font-size:0.78rem; color:var(--text-secondary); max-width:200px; line-height:1.35;">${escapeHTML(c.experienceSummary || 'N/A')}</div>
+                  </td>
+                  <td>
+                    ${c.portfolioUrl ? `
+                      <a href="${escapeHTML(c.portfolioUrl)}" target="_blank" rel="noopener noreferrer" class="btn-ghost btn-sm" style="display:inline-flex; align-items:center; gap:0.3rem; color:var(--purple-light); border:1px solid rgba(168,85,247,0.3); border-radius:6px; padding:0.25rem 0.55rem; text-decoration:none; font-size:0.75rem; white-space:nowrap;">
+                        🔗 Portfolio ↗
+                      </a>
+                    ` : '<span style="font-size:0.75rem; color:var(--text-muted);">None</span>'}
+                  </td>
+                  <td>
+                    <div title="${escapeHTML(ideaSnippet)}" onclick='window.HR_MODULE.viewFellowshipIdea("${escapeHTML(tokenStr)}")' style="font-size:0.78rem; color:var(--text-secondary); max-width:210px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; text-decoration:underline dotted;" class="fellowship-idea-cell">
+                      💡 ${escapeHTML(ideaSnippet)}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge badge-emerald" style="font-weight:800; font-size:0.78rem; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; white-space:nowrap;">
+                      ⭐ ${Number(c.aiAptitudeScore || 0).toFixed(1)} / 10
+                    </span>
+                  </td>
+                  <td>
+                    <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="btn-emerald btn-sm" style="display:inline-flex; align-items:center; gap:0.35rem; background:#10b981; color:#fff; font-weight:700; text-decoration:none; padding:0.4rem 0.75rem; border-radius:8px; white-space:nowrap; box-shadow:0 2px 6px rgba(16,185,129,0.25);">
+                      📲 WhatsApp Candidate
+                    </a>
+                  </td>
+                </tr>
+              `;
+            }).join('') : `<tr><td colspan="8" style="text-align:center; padding:3rem; color:var(--text-muted);">No fellowship applications received yet. Share <a href="/fellowship" target="_blank" style="color:var(--purple-light);">gro10x-ai.vercel.app/fellowship</a> to attract candidates.</td></tr>`}
           </tbody>
         </table>
       `;
@@ -1380,6 +1536,42 @@ window.APP_MODULES.hr = async function(container) {
       window.open(waUrl, '_blank');
       if (window.showToast) window.showToast('WhatsApp Web opened with pre-filled message! 🚀', 'success');
       this.closeAiModal();
+    },
+
+    viewFellowshipIdea(token) {
+      const candidate = fellowshipData.find(c => c.token === token || c.id === token);
+      if (!candidate) return;
+      const modal = document.getElementById('hrFellowshipIdeaModal');
+      const title = document.getElementById('fellowshipModalTitle');
+      const content = document.getElementById('fellowshipModalContent');
+      if (modal && title && content) {
+        title.innerHTML = `💡 Creative Experiment — ${escapeHTML(candidate.name)}`;
+        const cleanPhone = (candidate.phone || '').replace(/[^0-9]/g, '');
+        const waPhone = cleanPhone.startsWith('88') ? cleanPhone : (cleanPhone.startsWith('01') ? '88' + cleanPhone : cleanPhone);
+        const waMsg = encodeURIComponent(`Assalamu Alaikum ${candidate.name}! Loved your AI Media Fellowship creative experiment (${candidate.token || 'FELLOW-2026'}). Let's discuss your pilot production.`);
+        content.innerHTML = `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem;">
+            <div style="font-size:0.72rem; text-transform:uppercase; color:var(--purple-light); font-weight:800; letter-spacing:0.05em; margin-bottom:0.5rem;">Proposed AI Media Production</div>
+            <div style="font-size:0.92rem; color:#fff; line-height:1.6; white-space:pre-wrap;">${escapeHTML(candidate.creativeExperimentPrompt || 'No prompt specified.')}</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:var(--text-muted); padding:0 0.25rem;">
+            <span>🎓 <b>${escapeHTML(candidate.university)}</b> (${escapeHTML(candidate.department)})</span>
+            <span>⭐ Score: <b style="color:#34d399;">${Number(candidate.aiAptitudeScore || 0).toFixed(1)} / 10</b></span>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
+            <button class="btn-secondary" onclick="window.HR_MODULE.closeFellowshipModal()">Close</button>
+            <a href="https://wa.me/${waPhone}?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="btn-emerald" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; border-radius:8px; font-weight:700; color:#fff;">
+              📲 Discuss on WhatsApp
+            </a>
+          </div>
+        `;
+        modal.classList.add('active');
+      }
+    },
+
+    closeFellowshipModal() {
+      const modal = document.getElementById('hrFellowshipIdeaModal');
+      if (modal) modal.classList.remove('active');
     }
   };
 
@@ -1390,7 +1582,7 @@ window.APP_MODULES.hr = async function(container) {
   window._hrKeydownHandler = function(e) {
     if (window.location.hash !== '#hr') return;
     if (e.key === 'Escape') {
-      const modals = ['hrProfileDrawer', 'hrEditMemberModal', 'hrAddMemberModal', 'hrInviteModal', 'hrReminderModal', 'hrAiMessageModal'];
+      const modals = ['hrProfileDrawer', 'hrEditMemberModal', 'hrAddMemberModal', 'hrInviteModal', 'hrReminderModal', 'hrAiMessageModal', 'hrFellowshipIdeaModal'];
       modals.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('active');
