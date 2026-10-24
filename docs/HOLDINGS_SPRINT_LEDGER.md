@@ -41,8 +41,9 @@ PRJ-TOFFEECON-SP4-SCHED  ToffeeCon 2026        ToffeeCon [S1]-[S4] Squad     Dyn
 PRJ-RYZE-SP1-60S-MASTER  Banglalink RYZE       RYZE [S1]-[S4] Squad          60s Broadcast Master, EBU R128, Consumer COMPLETED    7   50,000    ৳100,000
 PRJ-PITCH-ARIF-DECK      Mother OS Engine 2    Pitch & Presentation Lead     10-Slide Overview Deck, Co-Pilot HUD, 4K COMPLETED   20   35,000    ৳ 70,000
 PRJ-MEDIA10X-PILOT-01    Media10x Pilutics     Media10x [S1]-[S4] Squad      Short #01 Bangladesh, 1080p, YouTube LIVE COMPLETED    7   25,000    ৳ 50,000
+PRJ-BINIYOG-FOODPANDA    Mother OS Engine 2    Pitch & Presentation Lead     Biniyog.io × Foodpanda Pitch Deck & HUD  COMPLETED   20   35,000    ৳ 70,000
 ====================================================================================================================================
-CONGLOMERATE TOTALS: 25 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,242  745,000  ৳1,490,000
+CONGLOMERATE TOTALS: 26 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,262  780,000  ৳1,560,000
 ====================================================================================================================================
 ```
 
@@ -156,11 +157,11 @@ CONGLOMERATE TOTALS: 25 SPRINT PROJECTS CHARTERED & AUDITED                     
 │                   GRO10X CONGLOMERATE AUDITED TOTALS                   │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Total Active Digital Employees:   53 Specialists Across 9 Workspaces   │
-│ Total Sprint Projects Chartered:  25 Chartered Projects                │
-│ Total Sprint Projects Completed:  25 Completed (100% Audited)          │
-│ Total Fleet Automated Tests:      1,242 Passing Tests/Gates (100% Green│
-│ Total Conglomerate Valuation:     745,000 Credits (৳ 14,90,000 BDT)    │
-│ Institutional USD Asset Value:    $ 12,292.50 USD (Crossed $12K)       │
-│ Estimated Legacy Agency Value:    $ 135,000 – $ 175,000 USD            │
+│ Total Sprint Projects Chartered:  26 Chartered Projects                │
+│ Total Sprint Projects Completed:  26 Completed (100% Audited)          │
+│ Total Fleet Automated Tests:      1,262 Passing Tests/Gates (100% Green│
+│ Total Conglomerate Valuation:     780,000 Credits (৳ 15,60,000 BDT)    │
+│ Institutional USD Asset Value:    $ 12,870.00 USD (Approaching $13K)   │
+│ Estimated Legacy Agency Value:    $ 145,000 – $ 185,000 USD            │
 └────────────────────────────────────────────────────────────────────────┘
 ```

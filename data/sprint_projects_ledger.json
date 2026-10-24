@@ -598,14 +598,37 @@
       ],
       "charteredDate": "2026-10-24",
       "completedDate": "2026-10-24"
+    },
+    {
+      "id": "PRJ-BINIYOG-FOODPANDA",
+      "venture": "Mother OS HQ / Engine 2",
+      "engine": "Engine 2: Bespoke Agency Services & Solutions",
+      "port": 3000,
+      "sprint": "Sprint: Biniyog.io × Foodpanda Revenue-Linked Murabaha Partnership Deck & Presenter Co-Pilot",
+      "status": "COMPLETED",
+      "pricingType": "Commercial Productized Presentation (PitchOS)",
+      "creditValuation": 35000,
+      "bdtValuation": 70000,
+      "usdValuation": 577.50,
+      "testsCertified": 20,
+      "artifacts": [
+        "10-Slide Fullscreen Boardroom Presentation Deck (public/pitch/biniyog-foodpanda/index.html mounted at /pitch/biniyog-foodpanda)",
+        "Mobile Smartphone Presenter Co-Pilot HUD (public/pitch/biniyog-foodpanda/copilot.html with 15-min pacing timer and objection handling)",
+        "Delivery Hero Pakistan ABHI Case Anchor & Strategic Battlecard vs Conventional Banks",
+        "Transparent Deal Economics Math (৳300k advance, 10% Murabaha markup, ৳27.5k weekly escrow deduction)",
+        "Foodpanda Executive Ingress with Direct WhatsApp to Shabab Bhai (+8801673113566) and 1-Click Print A4 PDF Export",
+        "Automated Jest Test Suite (tests/pitch_biniyog_foodpanda.test.js, 20/20 green)"
+      ],
+      "charteredDate": "2026-10-24",
+      "completedDate": "2026-10-24"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 25,
-    "totalSprintsCompleted": 25,
-    "totalCreditsGenerated": 745000,
-    "totalBdtValuation": 1490000,
-    "totalUsdValuation": 12292.50,
-    "totalTestsPassingAcrossHoldings": 1242
+    "totalSprintsChartered": 26,
+    "totalSprintsCompleted": 26,
+    "totalCreditsGenerated": 780000,
+    "totalBdtValuation": 1560000,
+    "totalUsdValuation": 12870.00,
+    "totalTestsPassingAcrossHoldings": 1262
   }
 }
