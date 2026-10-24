@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Biniyog.io × Foodpanda — Delivery-Escrow Working Capital Financing Master</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --bg-dark: #070B12;
+      --card-dark: #0E1626;
+      --fp-pink: #D70F64;
+      --fp-pink-glow: rgba(215, 15, 100, 0.35);
+      --biniyog-green: #00B074;
+      --biniyog-green-glow: rgba(0, 176, 116, 0.35);
+      --accent-cyan: #00F0FF;
+      --accent-amber: #F59E0B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      overflow: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Ambient Spotlight & Grid */
+    .bg-radar {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(215, 15, 100, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 176, 116, 0.035) 1px, transparent 1px);
+    }
+
+    .spotlight {
+      background: radial-gradient(circle at 50% 12%, rgba(215, 15, 100, 0.14) 0%, rgba(0, 176, 116, 0.12) 35%, rgba(7, 11, 18, 0) 70%);
+    }
+
+    /* Active Slide Transition for TV & Boardroom Displays */
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: rgba(14, 22, 38, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glow-pink {
+      box-shadow: 0 0 30px var(--fp-pink-glow);
+    }
+
+    .glow-green {
+      box-shadow: 0 0 30px var(--biniyog-green-glow);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+      }
+      .slide.active {
+        height: auto;
+        min-height: calc(100vh - 120px);
+        padding-bottom: 90px;
+      }
+    }
+
+    /* Print Optimization for 1-Click PDF Presentation Export */
+    @media print {
+      @page {
+        size: 16in 9in landscape;
+        margin: 0;
+      }
+      body, html {
+        background-color: #070B12 !important;
+        color: #F8FAFC !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .slide {
+        display: flex !important;
+        opacity: 1 !important;
+        transform: none !important;
+        page-break-after: always;
+        break-after: page;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        padding: 3rem 4rem !important;
+        box-sizing: border-box !important;
+      }
+      .glass-card {
+        background: #0E1626 !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+  </style>
+</head>
+<body class="relative h-screen w-screen bg-[#070B12] bg-radar flex flex-col justify-between">
+
+  <!-- Ambient Light -->
+  <div class="spotlight absolute inset-0 pointer-events-none z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP HEADER / NAV BAR                                      -->
+  <!-- ========================================================= -->
+  <header class="no-print relative z-20 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#070B12]/80 backdrop-blur-md">
+    <!-- Co-Branded Lockup -->
+    <div class="flex items-center gap-3">
+      <!-- Biniyog.io Logo Pill -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#00B074]/15 border border-[#00B074]/40">
+        <span class="w-3 h-3 rounded-full bg-[#00B074] shadow-sm shadow-[#00B074]"></span>
+        <span class="heading-font font-black tracking-tight text-white text-sm">biniyog<span class="text-[#00B074]">.io</span></span>
+      </div>
+      <span class="text-gray-500 font-mono text-xs">✕</span>
+      <!-- Foodpanda Logo Pill -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#D70F64]/15 border border-[#D70F64]/40">
+        <span class="w-3 h-3 rounded-full bg-[#D70F64] shadow-sm shadow-[#D70F64]"></span>
+        <span class="heading-font font-black tracking-tight text-white text-sm">food<span class="text-[#D70F64]">panda</span></span>
+      </div>
+      <div class="hidden md:block pl-2 border-l border-white/10">
+        <span class="text-xs text-gray-400 font-medium">Merchant Working Capital Financing Master</span>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
+        <span class="w-2 h-2 rounded-full bg-[#00B074] animate-pulse"></span>
+        Presented by <strong class="text-white">Shabab Bhai</strong> (Biniyog.io)
+      </div>
+      <a href="/pitch/biniyog-foodpanda/copilot" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-[#00B074]/20 hover:bg-[#00B074]/30 border border-[#00B074]/40 text-xs font-bold text-[#6EE7B7] transition flex items-center gap-1.5 shadow-sm">
+        📱 Presenter Co-Pilot ↗
+      </a>
+      <button onclick="downloadPdfDeck()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-semibold text-white transition" title="Export PDF Deck">
+        📥 PDF Deck
+      </button>
+      <button onclick="toggleFullscreen()" class="p-2 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 hover:text-white transition" title="Toggle Fullscreen (F)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- SLIDE CONTAINER (10 CANONICAL SLIDES)                      -->
+  <!-- ========================================================= -->
+  <main class="relative z-10 flex-1 w-full max-w-7xl mx-auto px-6 py-4 flex flex-col justify-center">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 01: THE HOOK & TITLE                                -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-1" class="slide active flex-col justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#D70F64]/15 to-[#00B074]/15 border border-white/15 text-xs font-bold uppercase tracking-wider mb-5">
+        <span class="text-[#D70F64]">Delivery Hero Playbook</span> · <span class="text-[#00B074]">Shariah-Compliant Murabaha</span>
+      </div>
+      <h1 class="heading-font text-3xl sm:text-5xl lg:text-6xl font-black text-white max-w-5xl tracking-tight leading-tight mb-4">
+        Replicating Delivery Hero's Proven Embedded Finance Model in <span class="bg-gradient-to-r from-[#D70F64] via-rose-400 to-[#00B074] bg-clip-text text-transparent">Bangladesh</span>
+      </h1>
+      <p class="text-gray-300 text-base sm:text-xl max-w-3xl mb-10 leading-relaxed font-normal">
+        <strong class="text-white">Biniyog.io × Foodpanda:</strong> Unlocking Restaurant Growth via Delivery-Escrow Working Capital Financing with zero balance-sheet risk.
+      </p>
+
+      <!-- Giant Visual Anchor: 3 High-Impact Pillars -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-4xl text-left">
+        <div class="glass-card p-6 rounded-2xl border-white/10 hover:border-[#D70F64]/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-[#D70F64]/15 text-[#D70F64] flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            🌍
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Delivery Hero Precedent</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            Already tested and deployed across regional Delivery Hero markets, directly proven with ABHI in Foodpanda Pakistan.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border-white/10 hover:border-[#00B074]/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-[#00B074]/15 text-[#00B074] flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            🛡️
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Zero Balance-Sheet Risk</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            100% funded by Biniyog.io's retail crowd-investors. Foodpanda carries zero balance-sheet debt or credit risk.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border-white/10 hover:border-[#00F0FF]/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/15 text-[#00F0FF] flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            🤝
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">100% Halal Murabaha</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            Shariah-compliant raw material purchases with fixed transparent markups. Zero compound interest (Riba).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 02: THE REGIONAL VALIDATION (THE ABHI PROOF)        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-2" class="slide flex-col justify-center">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D70F64]/15 border border-[#D70F64]/30 text-[#D70F64] text-xs font-bold uppercase tracking-wider mb-2">
+          🌍 Proven Regional Precedent
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Proven Playbook: How Foodpanda & ABHI Scaled Merchant Financing
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto mt-2">
+          Delivery Hero has already pioneered and proven this exact working capital architecture in Pakistan.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-5xl mx-auto w-full">
+        <!-- Visual Anchor: Regional Proof Card -->
+        <div class="lg:col-span-7 glass-card p-7 rounded-2xl border border-[#D70F64]/30 glow-pink relative overflow-hidden">
+          <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+            <div>
+              <span class="text-xs uppercase font-mono tracking-wider text-[#D70F64] font-bold">Delivery Hero Partnership</span>
+              <h3 class="text-xl font-black text-white">Foodpanda Pakistan × ABHI</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-[#00B074]/15 text-[#00B074] border border-[#00B074]/30 text-xs font-bold font-mono">
+              Live & Deployed
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-5">
+            <div class="p-4 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Restaurant Churn</div>
+              <div class="text-2xl font-black text-[#00B074]">-15% Drop</div>
+              <div class="text-[11px] text-gray-400">Kept high-performing vendors active</div>
+            </div>
+            <div class="p-4 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Platform GMV Lift</div>
+              <div class="text-2xl font-black text-[#D70F64]">+12% Growth</div>
+              <div class="text-[11px] text-gray-400">Financed inventory lifted order fulfillment</div>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-[#070B12]/80 border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+            <span>🔗 Delivery Hero Reference: abhi.com.pk/foodpanda-and-abhi-partner</span>
+            <span class="text-[#00F0FF] font-mono font-bold">Verified Benchmark</span>
+          </div>
+        </div>
+
+        <!-- 3 Highlights -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#D70F64] text-xs font-mono font-bold mb-1">01 · FOODPANDA PAKISTAN</div>
+            <h4 class="text-sm font-bold text-white mb-1">Instant Merchant Liquidity</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Eliminated bank friction by evaluating restaurants purely on platform order volume and customer review history.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00B074] text-xs font-mono font-bold mb-1">02 · GRABFOOD SE ASIA BENCHMARK</div>
+            <h4 class="text-sm font-bold text-white mb-1">15% Lower Merchant Churn</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              When restaurants can finance meat, oil, and packaging smoothly, supply shortages and sudden kitchen bankruptcies vanish.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1">03 · LOCALIZED FOR BANGLADESH</div>
+            <h4 class="text-sm font-bold text-white mb-1">Shariah-Compliant Retail Crowd</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Biniyog.io provides the exact missing financial rail in Dhaka: 100% Halal Murabaha powered by retail crowd-investors.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 03: THE LOCAL BOTTLENECK IN DHAKA                   -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-3" class="slide flex-col justify-center">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider mb-2">
+          ⚠️ The Capital Chokehold
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Why 85% of Foodpanda Restaurants Starve for Working Capital
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-2">
+          Dhaka's commercial banks cannot serve fast-moving restaurants and cloud kitchens.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full">
+        <!-- Bottleneck 1 -->
+        <div class="glass-card p-7 rounded-2xl border-red-500/20 relative">
+          <div class="w-12 h-12 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center font-black text-xl mb-4 font-mono">
+            85%
+          </div>
+          <div class="text-xs font-mono font-bold text-red-400 uppercase mb-1">Bottleneck 01</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Bank Rejection Rate</h3>
+          <p class="text-sm text-gray-300 leading-relaxed">
+            Commercial banks require immovable land mortgages and 2 years of audited balance sheets that 85%+ of cloud kitchens and eateries simply do not possess.
+          </p>
+        </div>
+
+        <!-- Bottleneck 2 -->
+        <div class="glass-card p-7 rounded-2xl border-amber-500/20 relative">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-black text-xl mb-4 font-mono">
+            65%
+          </div>
+          <div class="text-xs font-mono font-bold text-amber-400 uppercase mb-1">Bottleneck 02</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Riba / Interest Aversion</h3>
+          <p class="text-sm text-gray-300 leading-relaxed">
+            Over 65% of local restaurant owners strictly avoid conventional bank loans due to the religious prohibition of compounding interest (Riba).
+          </p>
+        </div>
+
+        <!-- Bottleneck 3 -->
+        <div class="glass-card p-7 rounded-2xl border-[#D70F64]/30 relative">
+          <div class="w-12 h-12 rounded-xl bg-[#D70F64]/10 text-[#D70F64] flex items-center justify-center font-black text-xl mb-4 font-mono">
+            7D
+          </div>
+          <div class="text-xs font-mono font-bold text-[#D70F64] uppercase mb-1">Bottleneck 03</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Weekly Payout Gap</h3>
+          <p class="text-sm text-gray-300 leading-relaxed">
+            Between weekly Foodpanda disbursements, restaurants run dry on cash to purchase bulk meats and packaging, turning off their store during peak hours.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 04: THE SOLUTION: REVENUE-LINKED MURABAHA           -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-4" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00B074]/15 border border-[#00B074]/30 text-[#00B074] text-xs font-bold uppercase tracking-wider mb-2">
+          ⚡ The Seamless Mechanism
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Inventory Financed Today. Repaid Automatically from Weekly Payouts.
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto mt-1">
+          An automated 4-step escrow waterfall that turns Foodpanda sales data into instant raw material financing.
+        </p>
+      </div>
+
+      <!-- Giant Visual Anchor: 4-Step Flowchart -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto w-full mb-6">
+        <div class="glass-card p-5 rounded-2xl border-[#00B074]/30 relative">
+          <div class="w-10 h-10 rounded-xl bg-[#00B074]/20 text-[#00B074] flex items-center justify-center font-black font-mono text-base mb-3">
+            01
+          </div>
+          <div class="text-[11px] font-mono text-[#00B074] uppercase font-bold">Step 1 · Supplier Buy</div>
+          <h4 class="text-sm font-bold text-white mb-2">Biniyog Buys Materials</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Biniyog.io purchases raw materials & packaging directly from vetted suppliers with crowd capital.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border-white/10 relative">
+          <div class="w-10 h-10 rounded-xl bg-white/10 text-white flex items-center justify-center font-black font-mono text-base mb-3">
+            02
+          </div>
+          <div class="text-[11px] font-mono text-gray-400 uppercase font-bold">Step 2 · Kitchen Delivery</div>
+          <h4 class="text-sm font-bold text-white mb-2">Goods to Restaurant</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Raw materials delivered directly to the restaurant with a clear Shariah Murabaha fixed-markup sale contract.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border-[#D70F64]/30 relative">
+          <div class="w-10 h-10 rounded-xl bg-[#D70F64]/20 text-[#D70F64] flex items-center justify-center font-black font-mono text-base mb-3">
+            03
+          </div>
+          <div class="text-[11px] font-mono text-[#D70F64] uppercase font-bold">Step 3 · Order Fulfillment</div>
+          <h4 class="text-sm font-bold text-white mb-2">Foodpanda Orders</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Restaurant prepares meals and fulfills customer orders on Foodpanda without ever running out of stock.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border-[#00F0FF]/30 glow-green relative">
+          <div class="w-10 h-10 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black font-mono text-base mb-3">
+            04
+          </div>
+          <div class="text-[11px] font-mono text-[#00F0FF] uppercase font-bold">Step 4 · Escrow Cut</div>
+          <h4 class="text-sm font-bold text-white mb-2">Weekly Deductions</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Foodpanda automatically intercepts a fixed weekly % from merchant payouts directly into escrow before disbursement.
+          </p>
+        </div>
+      </div>
+
+      <div class="max-w-5xl mx-auto w-full p-4 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 flex flex-wrap items-center justify-between gap-3">
+        <span>🛡️ <strong>Zero Collection Hassle:</strong> Escrow draws repayment at source, reducing default risk from 5% to under 1%.</span>
+        <span class="text-[#00B074] font-bold font-mono">100% Shariah-Compliant Murabaha</span>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 05: SAMPLE DEAL ECONOMICS (TRANSPARENT MATH)        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-5" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00B074]/15 border border-[#00B074]/30 text-[#00B074] text-xs font-bold uppercase tracking-wider mb-2">
+          📊 Transparent Unit Economics
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Clear, Predictable, Shariah-Compliant Returns
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          Realistic economics for a typical high-performing Dhaka eatery over a 12-week Murabaha cycle.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-5xl mx-auto w-full">
+        <!-- Giant Visual Anchor: The Math Card -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#00B074]/40 glow-green relative">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+            <span class="text-xs uppercase font-mono tracking-wider text-[#00B074] font-bold">Standard 12-Week Murabaha Facility</span>
+            <span class="text-xs px-2.5 py-0.5 rounded bg-[#D70F64]/10 text-[#D70F64] border border-[#D70F64]/30 font-mono">Dhaka High-Volume Merchant</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="p-3.5 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Inventory Advance</div>
+              <div class="text-2xl font-black text-white">৳300,000 <span class="text-xs font-normal text-gray-400">BDT</span></div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Physical goods delivered</div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">10% Murabaha Markup</div>
+              <div class="text-2xl font-black text-[#00B074]">৳30,000 <span class="text-xs font-normal text-gray-400">BDT</span></div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Fixed profit, zero compounding</div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Weekly Foodpanda GMV</div>
+              <div class="text-2xl font-black text-[#D70F64]">৳50,000 <span class="text-xs font-normal text-gray-400">BDT</span></div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Average weekly merchant sales</div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-black/40 border border-emerald-500/30">
+              <div class="text-[10px] text-emerald-400 uppercase font-mono font-bold">Weekly Escrow Deduction</div>
+              <div class="text-2xl font-black text-[#00F0FF]">৳27,500 <span class="text-xs font-normal text-gray-400">BDT</span></div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Total: ৳330,000 over 12 weeks</div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-black/50 border border-white/10 text-xs flex items-center justify-between">
+            <span class="text-gray-300">Default Rate Benchmark:</span>
+            <span class="text-emerald-400 font-mono font-bold">Dropped from 5% to &lt; 1% via Escrow</span>
+          </div>
+        </div>
+
+        <!-- 3 Highlights -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00B074] text-xs font-mono font-bold mb-1">01 · FIXED TRANSPARENT COST</div>
+            <h4 class="text-sm font-bold text-white mb-1">Zero Compounding Interest</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Restaurant pays exactly ৳30,000 markup over 12 weeks. No penalty rollups, late compounding, or hidden fees.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#D70F64] text-xs font-mono font-bold mb-1">02 · CASHFLOW POSITIVE</div>
+            <h4 class="text-sm font-bold text-white mb-1">Self-Funding Wholesale Savings</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Bulk inventory purchasing yields 3%–5% supplier discounts, effectively paying for the Murabaha markup.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1">03 · PROPORTIONAL SCALE</div>
+            <h4 class="text-sm font-bold text-white mb-1">Deduction Scales with GMV</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              During unexpected monsoon or off-peak weeks, weekly deductions adjust flexibly with payout volume.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 06: WHY FOODPANDA WINS (THE P&L IMPACT)             -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-6" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D70F64]/15 border border-[#D70F64]/30 text-[#D70F64] text-xs font-bold uppercase tracking-wider mb-2">
+          📈 Commercial Bottom Line
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          15% Churn Reduction & An Incremental ৳4M–৳6M Monthly Commission
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          How embedded working capital directly expands Foodpanda's top-line marketplace revenue.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full">
+        <!-- Benefit 1 -->
+        <div class="glass-card p-7 rounded-2xl border-[#00B074]/30 glow-green relative flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-[#00B074]/15 text-[#00B074] flex items-center justify-center text-2xl font-bold mb-4 font-mono">
+              -15%
+            </div>
+            <div class="text-xs font-mono font-bold text-[#00B074] uppercase mb-1">Impact 01</div>
+            <h3 class="heading-font text-xl font-bold text-white mb-2">Vendor Retention & Survival</h3>
+            <p class="text-sm text-gray-300 leading-relaxed">
+              Prevents sudden restaurant bankruptcies, kitchen closures, and merchant attrition caused by temporary cash shortages.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs text-gray-400 font-medium mt-4">
+            ✓ Keeps top 20% revenue-generating eateries active
+          </div>
+        </div>
+
+        <!-- Benefit 2 -->
+        <div class="glass-card p-7 rounded-2xl border-[#D70F64]/40 glow-pink relative flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-[#D70F64]/15 text-[#D70F64] flex items-center justify-center text-2xl font-bold mb-4 font-mono">
+              +12%
+            </div>
+            <div class="text-xs font-mono font-bold text-[#D70F64] uppercase mb-1">Impact 02</div>
+            <h3 class="heading-font text-xl font-bold text-white mb-2">GMV & Commission Lift</h3>
+            <p class="text-sm text-gray-300 leading-relaxed">
+              Financed merchants maintain 100% menu availability during peak dinner hours, boosting order completion and platform commissions.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs text-[#D70F64] font-bold mt-4 font-mono">
+            + ৳4M to ৳6M incremental monthly commission
+          </div>
+        </div>
+
+        <!-- Benefit 3 -->
+        <div class="glass-card p-7 rounded-2xl border-[#00F0FF]/30 relative flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-[#00F0FF]/15 text-[#00F0FF] flex items-center justify-center text-2xl font-bold mb-4 font-mono">
+              +৳8M
+            </div>
+            <div class="text-xs font-mono font-bold text-[#00F0FF] uppercase mb-1">Impact 03</div>
+            <h3 class="heading-font text-xl font-bold text-white mb-2">Platform Ad Spend Surge</h3>
+            <p class="text-sm text-gray-300 leading-relaxed">
+              Cashflow-positive restaurants reinvest bulk purchasing savings into promoted search ads and featured banners on the Foodpanda app.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs text-gray-400 font-medium mt-4">
+            ✓ +৳6M–৳8M in quarterly platform advertising revenue
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 07: BINIYOG.IO VS. CONVENTIONAL BANKS               -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-7" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00B074]/15 border border-[#00B074]/30 text-[#00B074] text-xs font-bold uppercase tracking-wider mb-2">
+          ⚔️ The Strategic Battlecard
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Why Biniyog.io Outperforms Traditional Commercial Lenders
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          Comparing conventional commercial banks against Biniyog.io's fintech engine.
+        </p>
+      </div>
+
+      <div class="max-w-5xl mx-auto w-full glass-card rounded-2xl overflow-hidden border border-white/10">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+          <thead>
+            <tr class="border-b border-white/10 bg-white/5">
+              <th class="p-4 text-gray-400 font-mono uppercase text-xs">Evaluation Vector</th>
+              <th class="p-4 text-red-400 font-bold uppercase text-xs">Conventional Banks (City / BRAC)</th>
+              <th class="p-4 text-[#00B074] font-black uppercase text-xs bg-[#00B074]/10">Biniyog.io Embedded Murabaha</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5 text-gray-300">
+            <tr>
+              <td class="p-4 font-bold text-white">Collateral Requirement</td>
+              <td class="p-4 text-gray-400">Demands physical land mortgages & asset deeds</td>
+              <td class="p-4 text-white font-medium bg-[#00B074]/5">Zero physical collateral · Underwritten on Foodpanda GMV</td>
+            </tr>
+            <tr>
+              <td class="p-4 font-bold text-white">Turnaround Speed</td>
+              <td class="p-4 text-gray-400">45 to 60 days of bureaucratic branch approvals</td>
+              <td class="p-4 text-[#00F0FF] font-bold bg-[#00B074]/5">&lt; 48 hours digital disbursement to suppliers</td>
+            </tr>
+            <tr>
+              <td class="p-4 font-bold text-white">Shariah Compliance</td>
+              <td class="p-4 text-red-400">Interest loans (Riba) rejected by 65%+ of restaurateurs</td>
+              <td class="p-4 text-[#00B074] font-bold bg-[#00B074]/5">100% Halal asset-backed Murabaha trade facility</td>
+            </tr>
+            <tr>
+              <td class="p-4 font-bold text-white">Foodpanda Credit Risk</td>
+              <td class="p-4 text-gray-400">Often requires corporate guarantee or balance-sheet debt</td>
+              <td class="p-4 text-emerald-400 font-bold bg-[#00B074]/5">Zero First-Loss Liability · Crowd carries 100% risk</td>
+            </tr>
+            <tr>
+              <td class="p-4 font-bold text-white">Repayment Structure</td>
+              <td class="p-4 text-gray-400">Rigid monthly EMI causing defaults during quiet weeks</td>
+              <td class="p-4 text-white font-medium bg-[#00B074]/5">Automated weekly escrow deductions scaling with GMV</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 08: ZERO-RISK ARCHITECTURE & ESCROW SAFEGUARDS      -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-8" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-2">
+          🛡️ Institutional Risk Architecture
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Tri-Party Agreement with Automated Waterfall Security
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          Engineered to guarantee zero operational risk and zero tech disruption for Foodpanda.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full">
+        <!-- Safeguard 1 -->
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="w-12 h-12 rounded-xl bg-[#00B074]/20 text-[#00B074] flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            01
+          </div>
+          <div class="text-xs font-mono font-bold text-[#00B074] uppercase mb-1">Senior Escrow Priority</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Automated Settlement Deduction</h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Installment deductions clear directly from Foodpanda's weekly vendor payout settlement prior to funds hitting merchant bank accounts.
+          </p>
+        </div>
+
+        <!-- Safeguard 2 -->
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="w-12 h-12 rounded-xl bg-[#D70F64]/20 text-[#D70F64] flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            02
+          </div>
+          <div class="text-xs font-mono font-bold text-[#D70F64] uppercase mb-1">Smart Waterfall Triggers</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Revenue-Dip Safety Net</h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            If a restaurant's weekly sales drop below safe coverage thresholds, automated alerts trigger an agreed grace extension without triggering defaults.
+          </p>
+        </div>
+
+        <!-- Safeguard 3 -->
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            03
+          </div>
+          <div class="text-xs font-mono font-bold text-[#00F0FF] uppercase mb-1">Lightweight Integration</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Read-Only Vendor API / CSV</h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Zero complex engineering overhauls. Runs on simple weekly settlement CSVs or read-only API access to restaurant order histories.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 09: 90-DAY DHAKA PILOT ROADMAP                      -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-9" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00B074]/15 border border-[#00B074]/30 text-[#00B074] text-xs font-bold uppercase tracking-wider mb-2">
+          🚀 Execution Plan
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Phased Rollout: 50 High-Volume Restaurants in 3 Hubs
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          A disciplined 90-day trajectory from contract signing to nationwide expansion.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full">
+        <!-- Month 1 -->
+        <div class="glass-card p-6 rounded-2xl border-white/10 relative">
+          <div class="w-10 h-10 rounded-xl bg-white/10 text-white flex items-center justify-center font-bold font-mono text-sm mb-3">
+            M1
+          </div>
+          <div class="text-xs font-mono font-bold text-gray-400 uppercase mb-1">Month 01 · Alignment</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Tri-Party Framework</h3>
+          <ul class="text-xs text-gray-300 space-y-2 leading-relaxed">
+            <li>• Legal tri-party contract signoff</li>
+            <li>• Standard weekly escrow payout mapping</li>
+            <li>• Pilot restaurant selection criteria definition</li>
+          </ul>
+        </div>
+
+        <!-- Month 2 -->
+        <div class="glass-card p-6 rounded-2xl border-[#D70F64]/40 glow-pink relative">
+          <div class="w-10 h-10 rounded-xl bg-[#D70F64]/20 text-[#D70F64] flex items-center justify-center font-bold font-mono text-sm mb-3">
+            M2
+          </div>
+          <div class="text-xs font-mono font-bold text-[#D70F64] uppercase mb-1">Month 02 · 50 Merchant Pilot</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Dhaka Core Rollout</h3>
+          <ul class="text-xs text-gray-300 space-y-2 leading-relaxed">
+            <li>• Deploy ৳15M BDT pool to 50 top-rated eateries</li>
+            <li>• Focused on Gulshan, Banani & Dhanmondi hubs</li>
+            <li>• Weekly automated settlement reconciliation</li>
+          </ul>
+        </div>
+
+        <!-- Month 3 -->
+        <div class="glass-card p-6 rounded-2xl border-[#00B074]/40 glow-green relative">
+          <div class="w-10 h-10 rounded-xl bg-[#00B074]/20 text-[#00B074] flex items-center justify-center font-bold font-mono text-sm mb-3">
+            M3
+          </div>
+          <div class="text-xs font-mono font-bold text-[#00B074] uppercase mb-1">Month 03 · Expansion</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Nationwide Scale</h3>
+          <ul class="text-xs text-gray-300 space-y-2 leading-relaxed">
+            <li>• Review pilot default rate & GMV lift metrics</li>
+            <li>• Expand to 500+ restaurants & cloud kitchens</li>
+            <li>• Roll out to HomeChefs across Chittagong & Sylhet</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 10: ACTION & CONTACT                                -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-10" class="slide flex-col justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00B074]/15 border border-[#00B074]/30 text-[#00B074] text-xs font-bold uppercase tracking-wider mb-4">
+        🤝 Partnership Next Steps
+      </div>
+      <h2 class="heading-font text-3xl sm:text-5xl font-black text-white max-w-4xl tracking-tight leading-tight mb-4">
+        Empowering Bangladesh's Food Economy Together
+      </h2>
+      <p class="text-gray-300 text-sm sm:text-base max-w-2xl mb-8 leading-relaxed">
+        Let's pilot the Delivery Hero embedded working capital model with Biniyog.io in Q4, unlocking higher GMV, lower restaurant churn, and zero balance-sheet risk.
+      </p>
+
+      <div class="glass-card p-8 rounded-3xl border border-[#00B074]/40 glow-green max-w-2xl w-full text-left mb-8">
+        <div class="flex items-center gap-4 mb-5 border-b border-white/10 pb-4">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#00B074] to-[#00F0FF] flex items-center justify-center font-black text-black text-xl">
+            SB
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-white">Shabab Bhai</h3>
+            <div class="text-xs text-gray-400">Chief Executive / Partnerships Lead, Biniyog.io</div>
+            <div class="text-xs text-[#00B074] font-mono font-bold">+880 1673-113566 · @khan.number.one</div>
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-300 leading-relaxed mb-6">
+          Ready to initiate the 50-restaurant pilot framework with Foodpanda commercial and finance leadership.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          <a href="https://wa.me/8801673113566?text=Hi%20Shabab%20Bhai%2C%20let's%20schedule%20the%20Foodpanda%20%C3%97%20Biniyog.io%20pilot%20alignment%20call." target="_blank" class="w-full sm:flex-1 py-3 px-5 rounded-xl bg-[#25D366] hover:bg-[#22c55e] text-black text-xs font-black transition flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/20">
+            💬 WhatsApp Shabab Bhai (+8801673113566)
+          </a>
+          <button onclick="downloadPdfDeck()" class="w-full sm:w-auto py-3 px-5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition flex items-center justify-center gap-2">
+            📥 Export PDF Deck
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs text-gray-400">
+        <span>Powered by <strong class="text-white">Biniyog.io</strong></span>
+        <span>•</span>
+        <a href="https://biniyog.io" target="_blank" class="text-[#00B074] hover:underline font-mono">biniyog.io ↗</a>
+        <span>•</span>
+        <a href="https://gro10x-ai.vercel.app" target="_blank" class="text-gray-400 hover:text-white">Built by GRO10X PitchOS</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM NAVIGATION HUD & CONTROLS                          -->
+  <!-- ========================================================= -->
+  <footer class="no-print relative z-20 flex items-center justify-between px-6 py-3 border-t border-white/10 bg-[#070B12]/90 backdrop-blur-md">
+    <!-- Prev / Next Buttons -->
+    <div class="flex items-center gap-2">
+      <button onclick="prevSlide()" class="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-xs font-bold text-gray-200 transition active:scale-95 flex items-center gap-1.5">
+        ← Previous
+      </button>
+      <button onclick="nextSlide()" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#D70F64] to-[#00B074] text-white text-xs font-black transition active:scale-95 flex items-center gap-1.5 shadow-md shadow-[#D70F64]/20">
+        Next →
+      </button>
+    </div>
+
+    <!-- Slide Indicators / Dots (1 to 10) -->
+    <div class="hidden sm:flex items-center gap-1.5" id="slideDots">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Slide Counter & Hotkey Help -->
+    <div class="flex items-center gap-3">
+      <div class="text-xs font-mono font-bold text-[#00B074]" id="slideCounter">
+        01 / 10
+      </div>
+      <div class="hidden lg:flex items-center gap-2 text-[11px] text-gray-500 font-mono">
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">←</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">→</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">Space</span>
+        <span>Nav</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400 ml-2">F</span>
+        <span>Fullscreen</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT SLIDE ENGINE & HOTKEYS                         -->
+  <!-- ========================================================= -->
+  <script>
+    const TOTAL_SLIDES = 10;
+    let currentSlide = 1;
+
+    function initNavigation() {
+      const dotsContainer = document.getElementById('slideDots');
+      dotsContainer.innerHTML = '';
+      for (let i = 1; i <= TOTAL_SLIDES; i++) {
+        const dot = document.createElement('button');
+        dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${i === 1 ? 'bg-[#00B074] w-6' : 'bg-white/20 hover:bg-white/50'}`;
+        dot.title = `Go to Slide ${i}`;
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+      }
+      updateUI();
+    }
+
+    function goToSlide(slideNum) {
+      if (slideNum < 1 || slideNum > TOTAL_SLIDES) return;
+
+      const currentEl = document.getElementById(`slide-${currentSlide}`);
+      if (currentEl) currentEl.classList.remove('active');
+
+      currentSlide = slideNum;
+
+      const newEl = document.getElementById(`slide-${currentSlide}`);
+      if (newEl) newEl.classList.add('active');
+
+      updateUI();
+    }
+
+    function nextSlide() {
+      if (currentSlide < TOTAL_SLIDES) {
+        goToSlide(currentSlide + 1);
+      } else {
+        goToSlide(1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        goToSlide(currentSlide - 1);
+      } else {
+        goToSlide(TOTAL_SLIDES);
+      }
+    }
+
+    function updateUI() {
+      const counterEl = document.getElementById('slideCounter');
+      if (counterEl) {
+        counterEl.textContent = `${String(currentSlide).padStart(2, '0')} / ${String(TOTAL_SLIDES).padStart(2, '0')}`;
+      }
+
+      const dotsContainer = document.getElementById('slideDots');
+      if (dotsContainer) {
+        const dots = dotsContainer.children;
+        for (let i = 0; i < dots.length; i++) {
+          if (i + 1 === currentSlide) {
+            dots[i].className = 'w-6 h-2 rounded-full bg-[#00B074] transition-all duration-300';
+          } else {
+            dots[i].className = 'w-2 h-2 rounded-full bg-white/20 hover:bg-white/50 transition-all duration-300';
+          }
+        }
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function downloadPdfDeck() {
+      window.print();
+    }
+
+    // Keyboard Navigation
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'p' || e.key === 'P') {
+        if (e.ctrlKey || e.metaKey) {
+          // default print
+        } else {
+          e.preventDefault();
+          downloadPdfDeck();
+        }
+      }
+    });
+
+    // Touch Swipe Gestures
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const swipeDistance = touchEndX - touchStartX;
+      if (Math.abs(swipeDistance) > 50) {
+        if (swipeDistance < 0) {
+          nextSlide();
+        } else {
+          prevSlide();
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initNavigation);
+  </script>
+</body>
+</html>

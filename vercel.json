@@ -217,6 +217,14 @@
       "dest": "/public/pitch/overview/index.html"
     },
     {
+      "src": "/pitch/biniyog-foodpanda/copilot(.*)",
+      "dest": "/public/pitch/biniyog-foodpanda/copilot.html"
+    },
+    {
+      "src": "/pitch/biniyog-foodpanda(/.*)?",
+      "dest": "/public/pitch/biniyog-foodpanda/index.html"
+    },
+    {
       "src": "/pitch(/.*)?",
       "dest": "/public/pitch/index.html"
     },
