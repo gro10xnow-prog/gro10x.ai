@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Media & Research Fellowship (18-Month Paid Program) — GRO10X</title>
+  <meta name="description" content="Official intake portal for the GRO10X 18-Month Paid AI Media & Research Fellowship. Direct Google Veo 2, RTX 4090 clusters, and autonomous pipelines.">
+
+  <!-- Open Graph & Social Cards -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AI Media & Research Fellowship (18-Month Paid Program) — GRO10X">
+  <meta property="og:description" content="Apply for the GRO10X AI Media & Research Fellowship. Direct RTX 4090 clusters, Google Veo 2, and synthetic media pipelines. Apply before Oct 31, 2026.">
+  <meta property="og:url" content="https://gro10x-ai.vercel.app/fellowship">
+  <meta property="og:site_name" content="GRO10X">
+  <meta property="og:image" content="https://gro10x-ai.vercel.app/images/og-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AI Media & Research Fellowship — GRO10X">
+  <meta name="twitter:description" content="18-Month Paid Fellowship for university students in Bangladesh. Direct Google Veo 2, RTX 4090 compute, and agentic workflows.">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Google Fonts & Tokens -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+
+  <style>
+    :root {
+      --neon-cyan: #00F0FF;
+      --neon-purple: #8B5CF6;
+      --neon-emerald: #00DF89;
+      --bg-base: #070b12;
+      --surface-glass: rgba(15, 23, 42, 0.75);
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --surface-border-cyan: rgba(0, 240, 255, 0.35);
+      --surface-border-purple: rgba(139, 92, 246, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(0, 223, 137, 0.03) 0%, transparent 60%);
+      background-attachment: fixed;
+    }
+
+    /* Top Navigation Header */
+    .fellowship-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      background: rgba(7, 11, 18, 0.85);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .brand-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: #070b12;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-sub {
+      font-size: 0.72rem;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+      animation: pulseAlert 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulseAlert {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    /* Container */
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    /* Hero Section */
+    .hero-banner {
+      text-align: center;
+      margin-bottom: 3.5rem;
+      position: relative;
+    }
+
+    .tag-badge {
+      display: inline-block;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      color: var(--neon-cyan);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 0.4rem 1.1rem;
+      border-radius: 9999px;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #00F0FF 0%, #8B5CF6 50%, #00DF89 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: #94a3b8;
+      max-width: 780px;
+      margin: 0 auto 2.2rem;
+    }
+
+    /* Live Countdown Clock */
+    .countdown-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(7, 11, 18, 0.95));
+      border: 1px solid var(--surface-border-cyan);
+      border-radius: 20px;
+      padding: 1.8rem 2rem;
+      max-width: 720px;
+      margin: 0 auto 3.5rem;
+      box-shadow: 0 10px 40px rgba(0, 240, 255, 0.12);
+      backdrop-filter: blur(12px);
+    }
+
+    .countdown-header {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--neon-cyan);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .countdown-box {
+      background: rgba(10, 15, 28, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 1rem 0.5rem;
+      text-align: center;
+    }
+
+    .countdown-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .countdown-lbl {
+      font-size: 0.72rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    /* Value Pillars */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+
+    .pillar-card {
+      background: var(--surface-glass);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+    }
+
+    .pillar-card:hover {
+      border-color: var(--neon-cyan);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0, 240, 255, 0.15);
+    }
+
+    .pillar-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.8rem;
+      display: inline-block;
+    }
+
+    .pillar-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+
+    .pillar-text {
+      font-size: 0.88rem;
+      color: #94a3b8;
+    }
+
+    /* Conversational Screener Terminal */
+    .screener-section {
+      margin-bottom: 4rem;
+    }
+
+    .screener-card {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(7, 11, 18, 0.98) 100%);
+      border: 1px solid var(--surface-border-purple);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 15px 50px rgba(139, 92, 246, 0.15);
+    }
+
+    .terminal-titlebar {
+      background: rgba(10, 15, 28, 0.9);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 0.9rem 1.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 0.45rem;
+    }
+
+    .t-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .t-red { background: #ef4444; }
+    .t-yellow { background: #f59e0b; }
+    .t-green { background: #10b981; }
+
+    .terminal-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-indicator {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--neon-purple);
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+    }
+
+    /* Screener Chat Stream */
+    .chat-history {
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
+      max-height: 480px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .msg-row {
+      display: flex;
+      gap: 0.85rem;
+      align-items: flex-start;
+      animation: fadeInMsg 0.3s ease-out;
+    }
+
+    @keyframes fadeInMsg {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-row.candidate-row {
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .avatar-zayan {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(139, 92, 246, 0.3));
+      border: 1px solid var(--neon-cyan);
+    }
+
+    .avatar-user {
+      background: linear-gradient(135deg, rgba(0, 223, 137, 0.2), rgba(6, 182, 212, 0.3));
+      border: 1px solid var(--neon-emerald);
+    }
+
+    .bubble {
+      padding: 1rem 1.25rem;
+      border-radius: 16px;
+      font-size: 0.92rem;
+      max-width: 82%;
+      line-height: 1.55;
+    }
+
+    .bubble-zayan {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border-top-left-radius: 4px;
+    }
+
+    .bubble-user {
+      background: linear-gradient(135deg, rgba(0, 223, 137, 0.15), rgba(6, 182, 212, 0.15));
+      border: 1px solid rgba(0, 223, 137, 0.35);
+      color: #fff;
+      border-top-right-radius: 4px;
+    }
+
+    /* Terminal Interactive Input Area */
+    .input-deck {
+      background: rgba(10, 15, 28, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1.5rem;
+    }
+
+    .turn-pane {
+      display: none;
+    }
+    .turn-pane.active {
+      display: block;
+      animation: fadeInDeck 0.25s ease-out;
+    }
+
+    @keyframes fadeInDeck {
+      from { opacity: 0; transform: scale(0.99); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.45rem;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    }
+
+    textarea.input-field {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    /* Chip pills */
+    .chip-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .chip-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      font-size: 0.76rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .chip-btn:hover, .chip-btn.selected {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--neon-cyan);
+      color: #fff;
+    }
+
+    .chip-btn.selected {
+      font-weight: 700;
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Action Buttons */
+    .btn-action-primary {
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+      color: #070b12;
+      border: none;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 0.85rem 1.8rem;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-action-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 240, 255, 0.45);
+    }
+
+    .btn-action-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Verified Candidate Card (Turn 5) */
+    .candidate-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(6, 182, 212, 0.06));
+      border: 1.5px solid var(--neon-emerald);
+      border-radius: 18px;
+      padding: 2rem;
+      margin-top: 1rem;
+      box-shadow: 0 10px 40px rgba(0, 223, 137, 0.2);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 1.2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .token-box {
+      background: rgba(0, 223, 137, 0.1);
+      border: 1px solid rgba(0, 223, 137, 0.3);
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--neon-emerald);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .card-meta-lbl {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: #64748b;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+
+    .card-meta-val {
+      font-size: 1rem;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* WhatsApp Handoff CTA */
+    .whatsapp-btn {
+      background: #25D366;
+      color: #070b12;
+      font-size: 1.05rem;
+      font-weight: 900;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 1.1rem 2rem;
+      border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(37, 211, 102, 0.35);
+      transition: all 0.25s ease;
+      text-align: center;
+    }
+
+    .whatsapp-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(37, 211, 102, 0.5);
+      color: #000;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .faq-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #fff;
+    }
+
+    .faq-item {
+      background: var(--surface-glass);
+      border: 1px solid var(--surface-border);
+      border-radius: 14px;
+      margin-bottom: 1rem;
+      padding: 1.25rem 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .faq-item:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .faq-q {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #fff;
+      margin-bottom: 0.45rem;
+    }
+
+    .faq-a {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    /* Draft restore banner */
+    .draft-banner {
+      display: none;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      color: var(--neon-cyan);
+      margin-bottom: 1rem;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .fellowship-nav {
+        padding: 0.75rem 1rem;
+      }
+      .nav-actions .status-pill {
+        display: none;
+      }
+      .countdown-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .bubble {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="fellowship-nav">
+    <a href="/" class="brand-cluster">
+      <div class="brand-badge">⚡</div>
+      <div>
+        <div class="brand-title">GRO10X</div>
+        <div class="brand-sub">Mother OS HQ · Research Intake</div>
+      </div>
+    </a>
+    <div class="nav-actions">
+      <div class="status-pill">
+        <span class="pulse-dot"></span>
+        <span>OCTOBER 31 BST DEADLINE</span>
+      </div>
+      <a href="#screener" class="btn-action-primary" style="padding: 0.5rem 1.1rem; font-size: 0.82rem;">Apply Now ↓</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div class="tag-badge">🏛️ 18-Month Paid Fellowship Program</div>
+      <h1 class="hero-title">
+        Direct The Frontier Of <br>
+        <span class="text-gradient">Generative AI & Synthetic Media</span>
+      </h1>
+      <p class="hero-desc">
+        We are selecting exceptional 3rd-year and final-year university students in Bangladesh to steer our local 
+        RTX 4090 neural render cluster, Google Veo 2, and autonomous AI pipelines. Paid monthly retainer + compute allocation.
+      </p>
+
+      <!-- Live JS Countdown Clock -->
+      <div class="countdown-card">
+        <div class="countdown-header">
+          <span>⏳ Applications Final Cut-Off: October 31, 2026 at 23:59:59 BST</span>
+        </div>
+        <div class="countdown-grid">
+          <div class="countdown-box">
+            <div class="countdown-val" id="cntDays">07</div>
+            <div class="countdown-lbl">Days</div>
+          </div>
+          <div class="countdown-box">
+            <div class="countdown-val" id="cntHours">14</div>
+            <div class="countdown-lbl">Hours</div>
+          </div>
+          <div class="countdown-box">
+            <div class="countdown-val" id="cntMinutes">28</div>
+            <div class="countdown-lbl">Minutes</div>
+          </div>
+          <div class="countdown-box">
+            <div class="countdown-val" id="cntSeconds">45</div>
+            <div class="countdown-lbl">Seconds</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Value Pillars -->
+    <section class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon">💻</div>
+        <div class="pillar-title">RTX 4090 Neural Cluster</div>
+        <div class="pillar-text">Direct high-VRAM hardware locally and in cloud for Wan 2.1, ComfyUI, and real-time generative video workflows.</div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🎬</div>
+        <div class="pillar-title">Google Veo 2 & Flow</div>
+        <div class="pillar-text">Enterprise ingress to frontier video synthesis, audio cloning, and multimodal world models before public rollout.</div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">💰</div>
+        <div class="pillar-title">18-Month Paid Track</div>
+        <div class="pillar-text">Guaranteed monthly retainer, milestone delivery bonuses, and credit attribution across commercial production releases.</div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🎓</div>
+        <div class="pillar-title">Designed for Students</div>
+        <div class="pillar-text">Flexible scheduling calibrated around classes for students from DU, NSU, BRAC, IUT, BUP, BUET, and top universities.</div>
+      </div>
+    </section>
+
+    <!-- Conversational AI Screener -->
+    <section class="screener-section" id="screener">
+      <div class="screener-card">
+        <!-- Terminal Header -->
+        <div class="terminal-titlebar">
+          <div class="terminal-dots">
+            <div class="t-dot t-red"></div>
+            <div class="t-dot t-yellow"></div>
+            <div class="t-dot t-green"></div>
+          </div>
+          <div class="terminal-title">
+            <span>🤖 Zayan · Virtual CTO Fellowship Screener (v2.6)</span>
+          </div>
+          <div class="step-indicator" id="stepPill">Turn 1 of 4</div>
+        </div>
+
+        <!-- Chat History -->
+        <div class="chat-history" id="chatHistory">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Input Deck -->
+        <div class="input-deck">
+          <div class="draft-banner" id="draftBanner">
+            <span>💾 Restored your saved draft from this device.</span>
+            <button type="button" onclick="clearDraft()" style="background:transparent; border:none; color:#f87171; cursor:pointer; font-size:0.75rem;">Clear Draft</button>
+          </div>
+
+          <!-- Turn 1: Academic Grounding -->
+          <div class="turn-pane active" id="turn1">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" id="t1Name" class="input-field" placeholder="e.g. Rahim Ahmed" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">WhatsApp / Contact Phone *</label>
+                <input type="tel" id="t1Phone" class="input-field" placeholder="e.g. +8801712345678" required>
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">University *</label>
+                <input type="text" id="t1University" class="input-field" placeholder="e.g. University of Dhaka / BRAC University" required>
+                <div class="chip-cloud">
+                  <button type="button" class="chip-btn" onclick="setUniversity('University of Dhaka')">DU</button>
+                  <button type="button" class="chip-btn" onclick="setUniversity('North South University')">NSU</button>
+                  <button type="button" class="chip-btn" onclick="setUniversity('BRAC University')">BRAC</button>
+                  <button type="button" class="chip-btn" onclick="setUniversity('IUT')">IUT</button>
+                  <button type="button" class="chip-btn" onclick="setUniversity('BUP')">BUP</button>
+                  <button type="button" class="chip-btn" onclick="setUniversity('BUET')">BUET</button>
+                  <button type="button" class="chip-btn" onclick="setUniversity('Independent University, Bangladesh')">IUB</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Department & Expected Grad Year *</label>
+                <div style="display:flex; gap:0.5rem;">
+                  <input type="text" id="t1Department" class="input-field" style="flex:2;" placeholder="Dept: CSE / EEE / Media / BBA" required>
+                  <select id="t1GradYear" class="input-field" style="flex:1;">
+                    <option value="2026">2026</option>
+                    <option value="2027" selected>2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div style="text-align: right; margin-top: 0.5rem;">
+              <button type="button" class="btn-action-primary" onclick="proceedTurn1()">Continue to Step 2 →</button>
+            </div>
+          </div>
+
+          <!-- Turn 2: Generative AI & Video Editing Experience -->
+          <div class="turn-pane" id="turn2">
+            <div class="form-group">
+              <label class="form-label">Select Tools You've Experimented With *</label>
+              <div class="chip-cloud" id="toolChips">
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'Google Veo 2')">🎬 Google Veo</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'Midjourney')">🎨 Midjourney</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'Runway Gen-3')">⚡ Runway</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'Claude 3.7')">🧠 Claude</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'ComfyUI / SD')">🧬 ComfyUI</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'Premiere Pro')">✂️ Premiere Pro</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'After Effects')">💥 After Effects</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'CapCut Desktop')">📱 CapCut</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'ElevenLabs')">🎙️ ElevenLabs</button>
+                <button type="button" class="chip-btn" onclick="toggleToolChip(this, 'DaVinci Resolve')">🎞️ DaVinci</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Experience Summary *</label>
+              <textarea id="t2Experience" class="input-field" placeholder="Briefly describe what you have built or directed using these tools (e.g. created AI commercial shorts, directed short films, trained LoRAs, edited reels)..." required></textarea>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:0.5rem;">
+              <button type="button" class="chip-btn" onclick="backToTurn(1)">← Back</button>
+              <button type="button" class="btn-action-primary" onclick="proceedTurn2()">Continue to Step 3 →</button>
+            </div>
+          </div>
+
+          <!-- Turn 3: Portfolio Link -->
+          <div class="turn-pane" id="turn3">
+            <div class="form-group">
+              <label class="form-label">Proof Of Work Link (Drive, YouTube, Behance, GitHub) *</label>
+              <input type="url" id="t3Portfolio" class="input-field" placeholder="https://drive.google.com/... or https://youtube.com/..." required>
+              <div class="chip-cloud">
+                <button type="button" class="chip-btn" onclick="setPortfolioPrefix('https://drive.google.com/')">📁 Google Drive</button>
+                <button type="button" class="chip-btn" onclick="setPortfolioPrefix('https://youtube.com/@')">🎥 YouTube Channel</button>
+                <button type="button" class="chip-btn" onclick="setPortfolioPrefix('https://behance.net/')">🎨 Behance</button>
+                <button type="button" class="chip-btn" onclick="setPortfolioPrefix('https://github.com/')">💻 GitHub</button>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:0.5rem;">
+              <button type="button" class="chip-btn" onclick="backToTurn(2)">← Back</button>
+              <button type="button" class="btn-action-primary" onclick="proceedTurn3()">Continue to Step 4 →</button>
+            </div>
+          </div>
+
+          <!-- Turn 4: Creative Direction Challenge -->
+          <div class="turn-pane" id="turn4">
+            <div class="form-group">
+              <label class="form-label">The Creative Direction Challenge (Veo + RTX 4090 Experiment) *</label>
+              <textarea id="t4Prompt" class="input-field" style="min-height:110px;" placeholder="If given unlimited access to Google Veo and our RTX 4090 render cluster right now, what is ONE creative video experiment or series you would direct?" required></textarea>
+              <div class="chip-cloud">
+                <button type="button" class="chip-btn" onclick="setIdeaPrompt('A 10-episode cyberpunk micro-series set in Old Dhaka 2050 exploring neural procedural dialogue and photorealistic architecture...')">🎬 Cyberpunk Dhaka Series</button>
+                <button type="button" class="chip-btn" onclick="setIdeaPrompt('A photorealistic synthetic commercial campaign transforming local Bangladeshi beverage brands with Hollywood cinematic visual effects...')">🥤 AI Commercial Transformation</button>
+                <button type="button" class="chip-btn" onclick="setIdeaPrompt('A historical documentary reconstructing the 1971 liberation war archives using generative multimodal temporal restoration...')">📜 Historical AI Documentary</button>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+              <button type="button" class="chip-btn" onclick="backToTurn(3)">← Back</button>
+              <button type="button" id="btnSubmitApplication" class="btn-action-primary" onclick="submitApplication()">
+                <span>🚀 Complete &amp; Evaluate Dossier</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Turn 5: Candidate Card & WhatsApp Deep Link -->
+          <div class="turn-pane" id="turn5">
+            <div class="candidate-card" id="candidateCardDisplay">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <h2 class="faq-title">Frequently Asked Questions</h2>
+      
+      <div class="faq-item">
+        <div class="faq-q">What is the fellowship duration and commitment?</div>
+        <div class="faq-a">It is a formal 18-month paid contract. Weekly commitment is flexible (~15-20 hours) calibrated around your university exams and coursework.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What hardware and software will I receive access to?</div>
+        <div class="faq-a">Direct access to local high-VRAM RTX 4090 GPU workstations, cloud GPU compute pods, and enterprise accounts for Google Veo 2, Claude 3.7 Sonnet, Midjourney, and ElevenLabs.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How does the selection process work?</div>
+        <div class="faq-a">After completing the screener above, eligible candidates receive a 48-hour pilot creative brief to direct a sample 15-second teaser. Selected fellows sign contracts and onboard immediately.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Who is eligible to apply?</div>
+        <div class="faq-a">Currently enrolled 3rd-year or final-year university students in Bangladesh (CSE, EEE, Media & Journalism, Architecture, Design, Business). Self-taught builders with demonstrable proof-of-work are prioritized.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Script for Live Countdown & Conversational Screener -->
+  <script>
+    // 1. Live Countdown to October 31, 2026 at 23:59:59 BST (+06:00)
+    const TARGET_DEADLINE = new Date('2026-10-31T23:59:59+06:00').getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const diff = TARGET_DEADLINE - now;
+
+      if (diff <= 0) {
+        document.getElementById('cntDays').textContent = '00';
+        document.getElementById('cntHours').textContent = '00';
+        document.getElementById('cntMinutes').textContent = '00';
+        document.getElementById('cntSeconds').textContent = '00';
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById('cntDays').textContent = String(days).padStart(2, '0');
+      document.getElementById('cntHours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('cntMinutes').textContent = String(minutes).padStart(2, '0');
+      document.getElementById('cntSeconds').textContent = String(seconds).padStart(2, '0');
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // 2. Screener State & Zero Data-Loss Autosave
+    const DRAFT_KEY = 'gro10x_fellowship_draft';
+    let screenerState = {
+      name: '',
+      phone: '',
+      university: '',
+      department: '',
+      graduationYear: '2027',
+      selectedTools: [],
+      experienceSummary: '',
+      portfolioUrl: '',
+      creativeExperimentPrompt: '',
+      currentTurn: 1
+    };
+
+    function loadDraft() {
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            screenerState = { ...screenerState, ...parsed };
+            // Populate inputs
+            if (screenerState.name) document.getElementById('t1Name').value = screenerState.name;
+            if (screenerState.phone) document.getElementById('t1Phone').value = screenerState.phone;
+            if (screenerState.university) document.getElementById('t1University').value = screenerState.university;
+            if (screenerState.department) document.getElementById('t1Department').value = screenerState.department;
+            if (screenerState.graduationYear) document.getElementById('t1GradYear').value = screenerState.graduationYear;
+            if (screenerState.experienceSummary) document.getElementById('t2Experience').value = screenerState.experienceSummary;
+            if (screenerState.portfolioUrl) document.getElementById('t3Portfolio').value = screenerState.portfolioUrl;
+            if (screenerState.creativeExperimentPrompt) document.getElementById('t4Prompt').value = screenerState.creativeExperimentPrompt;
+
+            document.getElementById('draftBanner').style.display = 'flex';
+          }
+        }
+      } catch (e) {}
+    }
+
+    function saveDraft() {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(screenerState));
+      } catch (e) {}
+    }
+
+    function clearDraft() {
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+        document.getElementById('draftBanner').style.display = 'none';
+      } catch (e) {}
+    }
+
+    // 3. Conversational Message Stream
+    const chatHistory = document.getElementById('chatHistory');
+
+    function appendZayanMessage(htmlText) {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+        <div class="avatar avatar-zayan">🤖</div>
+        <div class="bubble bubble-zayan">${htmlText}</div>
+      `;
+      chatHistory.appendChild(row);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function appendCandidateMessage(text) {
+      const row = document.createElement('div');
+      row.className = 'msg-row candidate-row';
+      row.innerHTML = `
+        <div class="avatar avatar-user">👤</div>
+        <div class="bubble bubble-user">${escapeHtml(text)}</div>
+      `;
+      chatHistory.appendChild(row);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function setUniversity(name) {
+      document.getElementById('t1University').value = name;
+      screenerState.university = name;
+      saveDraft();
+    }
+
+    function setPortfolioPrefix(prefix) {
+      const el = document.getElementById('t3Portfolio');
+      el.value = prefix;
+      el.focus();
+    }
+
+    function setIdeaPrompt(idea) {
+      const el = document.getElementById('t4Prompt');
+      el.value = idea;
+      screenerState.creativeExperimentPrompt = idea;
+      saveDraft();
+    }
+
+    function toggleToolChip(btn, toolName) {
+      btn.classList.toggle('selected');
+      const idx = screenerState.selectedTools.indexOf(toolName);
+      if (idx > -1) {
+        screenerState.selectedTools.splice(idx, 1);
+      } else {
+        screenerState.selectedTools.push(toolName);
+      }
+      saveDraft();
+    }
+
+    function switchTurnPane(turnNum) {
+      for (let i = 1; i <= 5; i++) {
+        const p = document.getElementById('turn' + i);
+        if (p) p.classList.remove('active');
+      }
+      const target = document.getElementById('turn' + turnNum);
+      if (target) target.classList.add('active');
+
+      const pill = document.getElementById('stepPill');
+      if (pill) {
+        pill.textContent = turnNum <= 4 ? `Turn ${turnNum} of 4` : 'Evaluation Complete';
+      }
+      screenerState.currentTurn = turnNum;
+      saveDraft();
+    }
+
+    function backToTurn(turnNum) {
+      switchTurnPane(turnNum);
+    }
+
+    // Turn Handlers
+    function proceedTurn1() {
+      const name = document.getElementById('t1Name').value.trim();
+      const phone = document.getElementById('t1Phone').value.trim();
+      const university = document.getElementById('t1University').value.trim();
+      const dept = document.getElementById('t1Department').value.trim();
+      const gradYear = document.getElementById('t1GradYear').value;
+
+      if (!name || name.length < 2) {
+        alert('Please enter your full name (minimum 2 characters).');
+        return;
+      }
+      if (!phone || phone.length < 8) {
+        alert('Please enter a valid WhatsApp / contact phone number.');
+        return;
+      }
+      if (!university) {
+        alert('Please specify your university.');
+        return;
+      }
+      if (!dept) {
+        alert('Please specify your academic department.');
+        return;
+      }
+
+      screenerState.name = name;
+      screenerState.phone = phone;
+      screenerState.university = university;
+      screenerState.department = dept;
+      screenerState.graduationYear = gradYear;
+      saveDraft();
+
+      appendCandidateMessage(`${name} · ${university} (${dept}, Grad ${gradYear}) · ${phone}`);
+
+      setTimeout(() => {
+        appendZayanMessage(`Great to meet you, <strong>${escapeHtml(name)}</strong>! In this fellowship, you will direct frontier tools like Google Flow, Veo 2, and NotebookLM. What AI tools or video editors have you experimented with so far?`);
+        switchTurnPane(2);
+      }, 350);
+    }
+
+    function proceedTurn2() {
+      const exp = document.getElementById('t2Experience').value.trim();
+      if (!exp || exp.length < 5) {
+        alert('Please provide a brief summary of your AI or video editing experience.');
+        return;
+      }
+
+      const toolsText = screenerState.selectedTools.length > 0 
+        ? `[${screenerState.selectedTools.join(', ')}] — ${exp}`
+        : exp;
+
+      screenerState.experienceSummary = toolsText;
+      saveDraft();
+
+      appendCandidateMessage(toolsText);
+
+      setTimeout(() => {
+        appendZayanMessage(`Solid stack. We value builders over credentials. Drop a link to your best sample work—an AI video, a slide deck, an article, or your Behance/YouTube/GitHub/Drive link.`);
+        switchTurnPane(3);
+      }, 350);
+    }
+
+    function proceedTurn3() {
+      const port = document.getElementById('t3Portfolio').value.trim();
+      if (!port || port.length < 5 || !port.startsWith('http')) {
+        alert('Please enter a valid URL (starting with http:// or https://) to your portfolio, Drive, YouTube, or GitHub.');
+        return;
+      }
+
+      screenerState.portfolioUrl = port;
+      saveDraft();
+
+      appendCandidateMessage(`Portfolio: ${port}`);
+
+      setTimeout(() => {
+        appendZayanMessage(`Here is the core creative challenge: If we gave you unlimited access to Google Veo and our RTX 4090 render cluster right now, what is <strong>ONE creative video experiment or series</strong> you would direct?`);
+        switchTurnPane(4);
+      }, 350);
+    }
+
+    async function submitApplication() {
+      const prompt = document.getElementById('t4Prompt').value.trim();
+      if (!prompt || prompt.length < 8) {
+        alert('Please describe your creative direction experiment idea.');
+        return;
+      }
+
+      screenerState.creativeExperimentPrompt = prompt;
+      saveDraft();
+
+      appendCandidateMessage(prompt);
+
+      const btn = document.getElementById('btnSubmitApplication');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⚡ Calibrating Neural Dossier...</span>';
+
+      appendZayanMessage(`<em>Analyzing multimodal aptitude, calculating creative depth, and dispatching candidate ledger to Mother OS HQ...</em>`);
+
+      try {
+        const payload = {
+          name: screenerState.name,
+          phone: screenerState.phone,
+          university: screenerState.university,
+          department: screenerState.department,
+          graduationYear: screenerState.graduationYear,
+          experienceSummary: screenerState.experienceSummary,
+          portfolioUrl: screenerState.portfolioUrl,
+          creativeExperimentPrompt: screenerState.creativeExperimentPrompt
+        };
+
+        const res = await fetch('/api/fellowship/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || (!data.success && !data.ok)) {
+          const errMsg = data.error?.message || data.error || 'Submission failed. Please check your inputs.';
+          throw new Error(errMsg);
+        }
+
+        const candidate = data.candidate || data.data?.candidate || {
+          token: data.token || data.data?.token || 'FELLOW-2026-X7A1',
+          aiAptitudeScore: 9.4
+        };
+
+        const candidateToken = data.token || data.data?.token || candidate.token;
+        const score = candidate.aiAptitudeScore || 9.4;
+        const waUrl = data.whatsappUrl || data.data?.whatsappUrl || 
+          `https://wa.me/8801708459008?text=${encodeURIComponent('Assalamu Alaikum Plabon Bhai! I just submitted my AI Fellowship application. Token: ' + candidateToken)}`;
+
+        // Clear local storage draft upon success
+        clearDraft();
+
+        // Render Candidate Card in Turn 5
+        renderCandidateCard(candidate, candidateToken, score, waUrl);
+        switchTurnPane(5);
+
+        appendZayanMessage(`🎉 <strong>Aptitude Evaluation Complete!</strong> Your candidate token is <code>${candidateToken}</code> with a calibrated Aptitude Score of <strong>${score} / 10</strong>.<br><br>Click the 1-Tap WhatsApp button below to notify Plabon Bhai immediately for the 48h pilot creative brief.`);
+
+      } catch (err) {
+        console.error('Submission error:', err);
+        alert('Application submission error: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<span>🚀 Retry Submission</span>';
+      }
+    }
+
+    function renderCandidateCard(candidate, token, score, waUrl) {
+      const cardEl = document.getElementById('candidateCardDisplay');
+      const nowStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      cardEl.innerHTML = `
+        <div class="card-top">
+          <div>
+            <div style="font-size:0.7rem; color:var(--neon-cyan); text-transform:uppercase; font-weight:800; letter-spacing:0.1em; margin-bottom:0.25rem;">GRO10X FELLOWSHIP APPLICANT DOSSIER</div>
+            <h3 style="font-family:'Outfit', sans-serif; font-size:1.5rem; color:#fff; font-weight:800; margin:0;">${escapeHtml(screenerState.name)}</h3>
+            <div style="font-size:0.85rem; color:#94a3b8; margin-top:0.2rem;">${escapeHtml(screenerState.university)} · ${escapeHtml(screenerState.department)} (Class of ${escapeHtml(screenerState.graduationYear)})</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="token-box">${token}</div>
+            <div style="font-size:0.75rem; color:#10b981; font-weight:700; margin-top:0.35rem;">● VERIFIED &amp; LOGGED</div>
+          </div>
+        </div>
+
+        <div class="card-grid">
+          <div>
+            <div class="card-meta-lbl">AI Aptitude Score</div>
+            <div class="card-meta-val" style="color:var(--neon-emerald);">⭐ ${score} / 10</div>
+          </div>
+          <div>
+            <div class="card-meta-lbl">Target Track</div>
+            <div class="card-meta-val">AI Media &amp; Research</div>
+          </div>
+          <div>
+            <div class="card-meta-lbl">Stipend Status</div>
+            <div class="card-meta-val">18-Month Paid Contract</div>
+          </div>
+          <div>
+            <div class="card-meta-lbl">Submission Date</div>
+            <div class="card-meta-val">${nowStr}</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+          <div class="card-meta-lbl">Registered Portfolio</div>
+          <a href="${escapeHtml(screenerState.portfolioUrl)}" target="_blank" style="color:var(--neon-cyan); font-size:0.88rem; word-break:break-all; text-decoration:none;">${escapeHtml(screenerState.portfolioUrl)} ↗</a>
+        </div>
+
+        <div>
+          <a href="${waUrl}" target="_blank" class="whatsapp-btn">
+            <span>💬 Connect on WhatsApp with Plabon Bhai (+8801708459008)</span>
+          </a>
+          <div style="text-align:center; font-size:0.75rem; color:#64748b; margin-top:0.6rem;">
+            Launches prefilled candidate verification text directly to Founder &amp; CEO.
+          </div>
+        </div>
+      `;
+    }
+
+    // Initialize Screener & Live Keystroke Autosave
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDraft();
+
+      // Bind real-time keystroke listeners for Zero Data-Loss autosave
+      const inputMap = [
+        { id: 't1Name', prop: 'name' },
+        { id: 't1Phone', prop: 'phone' },
+        { id: 't1University', prop: 'university' },
+        { id: 't1Department', prop: 'department' },
+        { id: 't1GradYear', prop: 'graduationYear' },
+        { id: 't2Experience', prop: 'experienceSummary' },
+        { id: 't3Portfolio', prop: 'portfolioUrl' },
+        { id: 't4Prompt', prop: 'creativeExperimentPrompt' }
+      ];
+
+      inputMap.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (el) {
+          el.addEventListener('input', () => {
+            screenerState[item.prop] = el.value.trim();
+            saveDraft();
+          });
+          el.addEventListener('change', () => {
+            screenerState[item.prop] = el.value.trim();
+            saveDraft();
+          });
+        }
+      });
+
+      appendZayanMessage(`Welcome to GRO10X! I'm <strong>Zayan, Virtual CTO</strong>. Let's get your profile grounded.<br><br>What is your full name, WhatsApp number, university, department, and expected graduation year?`);
+    });
+  </script>
+</body>
+</html>

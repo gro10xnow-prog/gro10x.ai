@@ -1,0 +1,36 @@
+[
+  {
+    "id": "FELLOW-2026-1792817106406-1EBE",
+    "token": "FELLOW-2026-1EBE",
+    "name": "Sadman Sakib",
+    "phone": "+8801711223344",
+    "university": "University of Dhaka",
+    "department": "Computer Science & Engineering",
+    "graduationYear": "2027",
+    "experienceSummary": "Google Veo 2, Midjourney v6, Premiere Pro, Claude 3.7. Directed 5 micro-commercials.",
+    "portfolioUrl": "https://drive.google.com/drive/folders/sample-sakib",
+    "creativeExperimentPrompt": "A 10-episode cyberpunk micro-series set in Old Dhaka 2050 using Google Veo for temporal character persistence.",
+    "aiAptitudeScore": 9.8,
+    "whatsappUrl": "https://wa.me/8801708459008?text=Assalamu%20Alaikum%20Plabon%20Bhai!%20I%20just%20completed%20my%20AI%20Media%20Fellowship%20application%20on%20Gro10x%20(Candidate%20ID%3A%20FELLOW-2026-1EBE).%0A%0AName%3A%20Sadman%20Sakib%0AUniversity%3A%20University%20of%20Dhaka%20(Computer%20Science%20%26%20Engineering%2C%20Grad%202027)%0APortfolio%3A%20https%3A%2F%2Fdrive.google.com%2Fdrive%2Ffolders%2Fsample-sakib%0A%0AExcited%20to%20connect%20for%20the%2048h%20pilot%20creative%20assignment!",
+    "timestamp": "2026-10-24T04:45:06.406Z",
+    "status": "APPLIED",
+    "source": "GRO10X_HQ_INGRESS"
+  },
+  {
+    "id": "FELLOW-2026-1792817106500-A151",
+    "token": "FELLOW-2026-A151",
+    "name": "Ayesha Siddiqua",
+    "phone": "+8801822334455",
+    "university": "North South University",
+    "department": "Media & Journalism",
+    "graduationYear": "2026",
+    "experienceSummary": "CapCut Desktop, Runway Gen-3, ElevenLabs, After Effects. Directed documentary shorts.",
+    "portfolioUrl": "https://youtube.com/@ayesha-ai-media",
+    "creativeExperimentPrompt": "A photorealistic commercial campaign transforming local Bangladeshi sustainable fashion brands using multimodal video generation.",
+    "aiAptitudeScore": 9.8,
+    "whatsappUrl": "https://wa.me/8801708459008?text=Assalamu%20Alaikum%20Plabon%20Bhai!%20I%20just%20completed%20my%20AI%20Media%20Fellowship%20application%20on%20Gro10x%20(Candidate%20ID%3A%20FELLOW-2026-A151).%0A%0AName%3A%20Ayesha%20Siddiqua%0AUniversity%3A%20North%20South%20University%20(Media%20%26%20Journalism%2C%20Grad%202026)%0APortfolio%3A%20https%3A%2F%2Fyoutube.com%2F%40ayesha-ai-media%0A%0AExcited%20to%20connect%20for%20the%2048h%20pilot%20creative%20assignment!",
+    "timestamp": "2026-10-24T04:45:06.500Z",
+    "status": "APPLIED",
+    "source": "GRO10X_HQ_INGRESS"
+  }
+]

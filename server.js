@@ -643,6 +643,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
+// AI Media & Research Fellowship Intake Portal (18-Month Paid Program)
+app.get(['/fellowship', '/fellowship/', '/fellowship.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/fellowship.html'));
+});
+
 app.get(['/auth', '/login'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/auth.html'));
 });
