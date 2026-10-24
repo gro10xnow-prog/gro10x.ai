@@ -286,7 +286,7 @@
       "pricingType": "Strategic Co-Venture Pre-Sales (100% Equity Alignment)",
       "creditValuation": 35000,
       "bdtValuation": 70000,
-      "usdValuation": 577.50,
+      "usdValuation": 577.5,
       "testsCertified": 24,
       "artifacts": [
         "16-Slide TV-Calibrated Interactive Deck (https://gro10x-ai.vercel.app/prototypes/bahon-pitch/)",
@@ -309,7 +309,7 @@
       "pricingType": "Commercial Strategic Partnership",
       "creditValuation": 175000,
       "bdtValuation": 350000,
-      "usdValuation": 2887.50,
+      "usdValuation": 2887.5,
       "testsCertified": 8,
       "artifacts": [
         "Internal B2B Estimate PDF (https://gro10x-ai.vercel.app/docs/TOFFEECON_TECH_ESTIMATE_350K.pdf)",
@@ -330,7 +330,7 @@
       "pricingType": "Internal R&D Capacity Investment (100% Equity Discount)",
       "creditValuation": 25000,
       "bdtValuation": 50000,
-      "usdValuation": 412.50,
+      "usdValuation": 412.5,
       "testsCertified": 1060,
       "artifacts": [
         "100% Green Jest Test Suite (1,060 / 1,060 Passing)",
@@ -351,7 +351,7 @@
       "pricingType": "Productized Micro-SaaS Ingress",
       "creditValuation": 30000,
       "bdtValuation": 60000,
-      "usdValuation": 495.00,
+      "usdValuation": 495.0,
       "testsCertified": 7,
       "artifacts": [
         "High-Converting PitchOS Landing Page & Live Dual-Surface Comparison (public/pitch/index.html)",
@@ -373,7 +373,7 @@
       "pricingType": "Proprietary Venture Equity R&D",
       "creditValuation": 50000,
       "bdtValuation": 100000,
-      "usdValuation": 825.00,
+      "usdValuation": 825.0,
       "testsCertified": 36,
       "artifacts": [
         "Next.js 16 App Router & Turbopack Core (D:\\gro10x-capital)",
@@ -395,7 +395,7 @@
       "pricingType": "Proprietary Venture Equity R&D",
       "creditValuation": 30000,
       "bdtValuation": 60000,
-      "usdValuation": 495.00,
+      "usdValuation": 495.0,
       "testsCertified": 12,
       "artifacts": [
         "Asynchronous Notification Queue Worker (/api/cron/process-notifications) with atomic batch locks",
@@ -419,7 +419,7 @@
       "pricingType": "Proprietary Venture Equity R&D",
       "creditValuation": 50000,
       "bdtValuation": 100000,
-      "usdValuation": 825.00,
+      "usdValuation": 825.0,
       "testsCertified": 78,
       "artifacts": [
         "Multi-Organization Database Schema (002_conglomerate_42_employees.sql) with 7 Orgs, 43 Personas & 5 Stakeholder PIN Accounts",
@@ -443,7 +443,7 @@
       "pricingType": "Commercial Satellite Retainer",
       "creditValuation": 25000,
       "bdtValuation": 50000,
-      "usdValuation": 412.50,
+      "usdValuation": 412.5,
       "testsCertified": 21,
       "artifacts": [
         "adminRouteGuard Middleware & HTTP 302 Redirects on /admin, /control, and /simulation",
@@ -467,7 +467,7 @@
       "pricingType": "Commercial Satellite Retainer",
       "creditValuation": 15000,
       "bdtValuation": 30000,
-      "usdValuation": 247.50,
+      "usdValuation": 247.5,
       "testsCertified": 21,
       "artifacts": [
         "56px Unclipped Mobile Header with Swirl Logo and ● LIVE 6G SYNC Badge",
@@ -491,7 +491,7 @@
       "pricingType": "Commercial Satellite Retainer",
       "creditValuation": 40000,
       "bdtValuation": 80000,
-      "usdValuation": 660.00,
+      "usdValuation": 660.0,
       "testsCertified": 41,
       "artifacts": [
         "60-Guest Enterprise VIP Whitelist & Cryptographic Token Generator (TC26-VIP-[4DIGIT]-[HEX4])",
@@ -515,7 +515,7 @@
       "pricingType": "Commercial Satellite Retainer",
       "creditValuation": 30000,
       "bdtValuation": 60000,
-      "usdValuation": 495.00,
+      "usdValuation": 495.0,
       "testsCertified": 53,
       "artifacts": [
         "Atomic 12-Beat Event Schedule Store (server/data/event_schedule.json) Ingested Verbatim from Official Client Slide",
@@ -539,7 +539,7 @@
       "pricingType": "Enterprise Media Commercial Retainer",
       "creditValuation": 50000,
       "bdtValuation": 100000,
-      "usdValuation": 825.00,
+      "usdValuation": 825.0,
       "testsCertified": 7,
       "artifacts": [
         "60-Second Progressive Broadcast Golden Master (RYZE_COSTAR_AI_BROADCAST_FINAL_DELIVERY_60S.mp4, 21.85 MB, 1440 frames @ 24fps)",
@@ -562,7 +562,7 @@
       "pricingType": "Commercial Productized Presentation",
       "creditValuation": 35000,
       "bdtValuation": 70000,
-      "usdValuation": 577.50,
+      "usdValuation": 577.5,
       "testsCertified": 20,
       "artifacts": [
         "10-Slide Fullscreen Interactive Presentation Deck (public/pitch/overview/index.html mounted at /pitch/overview)",
@@ -586,7 +586,7 @@
       "pricingType": "Viral Media Production & Publishing",
       "creditValuation": 25000,
       "bdtValuation": 50000,
-      "usdValuation": 412.50,
+      "usdValuation": 412.5,
       "testsCertified": 7,
       "artifacts": [
         "Published YouTube Short Deliverable (https://youtube.com/shorts/rBoVE1DVHOg)",
@@ -609,7 +609,7 @@
       "pricingType": "Commercial Productized Presentation (PitchOS)",
       "creditValuation": 35000,
       "bdtValuation": 70000,
-      "usdValuation": 577.50,
+      "usdValuation": 577.5,
       "testsCertified": 20,
       "artifacts": [
         "10-Slide Fullscreen Boardroom Presentation Deck (public/pitch/biniyog-foodpanda/index.html mounted at /pitch/biniyog-foodpanda)",
@@ -632,7 +632,7 @@
       "pricingType": "Pre-Sales 3D Proof-of-Concept & WebGL Engine",
       "creditValuation": 25000,
       "bdtValuation": 50000,
-      "usdValuation": 412.50,
+      "usdValuation": 412.5,
       "testsCertified": 10,
       "artifacts": [
         "Awwwards-Grade Three.js r128 WebGL Kinetic Sculpture (public/prototypes/madman-3d/index.html mounted at /prototypes/madman-3d)",
@@ -645,14 +645,39 @@
       ],
       "charteredDate": "2026-10-24",
       "completedDate": "2026-10-24"
+    },
+    {
+      "id": "PRJ-COMMERCE10X-FOOTWEAR-CAPSULE",
+      "venture": "Commerce10x.ai / Mother OS Engine 3",
+      "engine": "Engine 3: Commerce10x.ai (Dynamic Commerce Engine & Phygital Retail)",
+      "port": 3000,
+      "sprint": "Sprint 28: 10X Footwear & Luxury Apparel Brand Architecture, Tri-Color System, and Physical Asset Pipeline",
+      "status": "COMPLETED",
+      "pricingType": "Physical/Phygital Product Architecture & Production Pipeline",
+      "creditValuation": 35000,
+      "bdtValuation": 70000,
+      "usdValuation": 577.5,
+      "testsCertified": 12,
+      "artifacts": [
+        "The 10X Tri-Color Brand Formula Specification (Chassis/Fabric Base + The 10 + The X)",
+        "Interactive 10X Capsule Drop 01 Showroom (public/prototypes/10x-capsule-drop-01/index.html mounted at /prototypes/10x-capsule-drop-01/)",
+        "Five Printify Production Footwear Packs (Spider-Man, Heritage Racing, Cyber Stealth, Tokyo Sunset, Bengal Royal) in public/prototypes/",
+        "Five 350 GSM Boxy French Terry Heavyweight Luxury Tee Renders with 3D Puff Print and Contrast Woven Hem Labels",
+        "Pre-Calibrated Lateral Sneaker Die-Cut Artworks with Un-Mirrored Typography and Zero Lace-Collision Offsets",
+        "Master Lifestyle Brand Identity Moodboard (Blind-Debossed Italian Calfskin, CNC Bead-Blasted Titanium, Emerald Edge-Seam)",
+        "Central Showroom Integration in public/prototypes/index.html",
+        "Automated Verification Test Suite (tests/sprint_28_10x_capsule.test.js, 12/12 green)"
+      ],
+      "charteredDate": "2026-10-25",
+      "completedDate": "2026-10-25"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 27,
+    "totalSprintsChartered": 28,
     "totalSprintsCompleted": 27,
-    "totalCreditsGenerated": 805000,
-    "totalBdtValuation": 1610000,
-    "totalUsdValuation": 13282.50,
-    "totalTestsPassingAcrossHoldings": 1272
+    "totalCreditsGenerated": 845000,
+    "totalBdtValuation": 1690000,
+    "totalUsdValuation": 13942.5,
+    "totalTestsPassingAcrossHoldings": 1284
   }
 }
