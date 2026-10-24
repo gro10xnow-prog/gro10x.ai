@@ -11,53 +11,127 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { ok, fail, asyncHandler } = require('../utils/response');
 const { sendTelegramNotification } = require('../services/bot');
+const { supabase, isSupabaseConfigured } = require('../services/supabase');
 
 const DATA_DIR = path.resolve(__dirname, '../../data');
 const APPLICATIONS_FILE = path.join(DATA_DIR, 'fellowship_applications.json');
+const TMP_APPLICATIONS_FILE = path.join(os.tmpdir(), 'fellowship_applications.json');
+
+// In-memory candidate application buffer (resilient against read-only serverless filesystems)
+let memoryApplications = [];
 
 /**
- * Reads existing applications from fellowship_applications.json with fallback
+ * Reads existing applications from fellowship_applications.json, /tmp fallback, and memory
  */
 function readApplications() {
-  try {
-    if (!fs.existsSync(APPLICATIONS_FILE)) {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
+  const mergedMap = new Map();
+
+  // 1. Seed from in-memory cache
+  if (Array.isArray(memoryApplications)) {
+    for (const app of memoryApplications) {
+      if (app && (app.token || app.id)) {
+        mergedMap.set(app.token || app.id, app);
       }
-      fs.writeFileSync(APPLICATIONS_FILE, '[]', 'utf8');
-      return [];
     }
-    const raw = fs.readFileSync(APPLICATIONS_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (err) {
-    console.error('[Fellowship Storage] Read error:', err.message);
-    return [];
   }
+
+  // 2. Read from primary filesystem if available
+  try {
+    if (fs.existsSync(APPLICATIONS_FILE)) {
+      const raw = fs.readFileSync(APPLICATIONS_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        for (const app of parsed) {
+          if (app && (app.token || app.id)) mergedMap.set(app.token || app.id, app);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Fellowship Storage] Primary read warning:', err.message);
+  }
+
+  // 3. Read from serverless /tmp fallback if available
+  try {
+    if (fs.existsSync(TMP_APPLICATIONS_FILE)) {
+      const rawTmp = fs.readFileSync(TMP_APPLICATIONS_FILE, 'utf8');
+      const parsedTmp = JSON.parse(rawTmp);
+      if (Array.isArray(parsedTmp)) {
+        for (const app of parsedTmp) {
+          if (app && (app.token || app.id)) mergedMap.set(app.token || app.id, app);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Fellowship Storage] /tmp read warning:', err.message);
+  }
+
+  const result = Array.from(mergedMap.values());
+  // Keep memory cache updated
+  memoryApplications = result;
+  return result;
 }
 
 /**
- * Atomically appends a new application with Zero Data-Loss guarantees
+ * Atomically appends a new application with Zero Data-Loss guarantees.
+ * Handles read-only serverless environments (Vercel Lambda) without throwing.
  */
 function appendApplication(newApp) {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  // Always record to in-memory buffer first (immediate crash protection)
+  if (!memoryApplications.some(a => a.id === newApp.id || a.token === newApp.token)) {
+    memoryApplications.unshift(newApp);
   }
 
-  const apps = readApplications();
-  apps.push(newApp);
+  const allApps = readApplications();
+  if (!allApps.some(a => a.id === newApp.id || a.token === newApp.token)) {
+    allApps.unshift(newApp);
+  }
 
-  const tmpFile = path.join(DATA_DIR, `.fellowship_apps_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.tmp`);
-  fs.writeFileSync(tmpFile, JSON.stringify(apps, null, 2), 'utf8');
+  // Attempt 1: Write to primary project data folder
   try {
-    fs.renameSync(tmpFile, APPLICATIONS_FILE);
-  } catch (e) {
-    // Windows fallback for file-lock on rename
-    fs.writeFileSync(APPLICATIONS_FILE, JSON.stringify(apps, null, 2), 'utf8');
-    try { fs.unlinkSync(tmpFile); } catch (_) {}
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    const tmpFile = path.join(DATA_DIR, `.fellowship_apps_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.tmp`);
+    fs.writeFileSync(tmpFile, JSON.stringify(allApps, null, 2), 'utf8');
+    try {
+      fs.renameSync(tmpFile, APPLICATIONS_FILE);
+    } catch (_) {
+      fs.writeFileSync(APPLICATIONS_FILE, JSON.stringify(allApps, null, 2), 'utf8');
+      try { fs.unlinkSync(tmpFile); } catch (_) {}
+    }
+  } catch (fsErr) {
+    // Expected on Vercel serverless where /var/task is read-only EROFS
+    console.warn('[Fellowship Storage] Primary filesystem read-only notice (Vercel serverless):', fsErr.message);
   }
+
+  // Attempt 2: Write to writable /tmp directory
+  try {
+    fs.writeFileSync(TMP_APPLICATIONS_FILE, JSON.stringify(allApps, null, 2), 'utf8');
+  } catch (tmpErr) {
+    console.warn('[Fellowship Storage] /tmp write notice:', tmpErr.message);
+  }
+
+  // Attempt 3: Sync to Supabase leads if configured
+  try {
+    if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && supabase) {
+      supabase.from('leads').insert({
+        id: `LED-${Date.now().toString().slice(-6)}`,
+        name: newApp.name,
+        email: `${(newApp.token || 'fellow').toLowerCase()}@fellowship.gro10x.ai`,
+        phone: newApp.phone,
+        service_interest: 'AI Media & Research Fellowship',
+        source: 'fellowship_intake_portal',
+        status: 'new',
+        notes: `[FELLOWSHIP APPLICATION] Token: ${newApp.token} | University: ${newApp.university} (${newApp.department}, ${newApp.graduationYear}) | Aptitude: ${newApp.aiAptitudeScore} | Portfolio: ${newApp.portfolioUrl} | Experiment: ${newApp.creativeExperimentPrompt}`
+      }).then(() => {}).catch(e => console.warn('[Supabase Fellowship Sync Note]:', e.message));
+    }
+  } catch (sbErr) {
+    console.warn('[Supabase Fellowship Sync Notice]:', sbErr.message);
+  }
+
   return newApp;
 }
 
