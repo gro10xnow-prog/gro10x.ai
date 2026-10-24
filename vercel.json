@@ -273,6 +273,10 @@
       "dest": "/public/prototypes/serviq-pilot/index.html"
     },
     {
+      "src": "/prototypes/madman-3d(/.*)?",
+      "dest": "/public/prototypes/madman-3d/index.html"
+    },
+    {
       "src": "/prototypes/sadman-garage/poster(/.*)?",
       "dest": "/public/prototypes/sadman-garage/poster.html"
     },

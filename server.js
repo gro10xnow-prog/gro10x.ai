@@ -594,6 +594,11 @@ app.get(['/prototypes/sahanabag-city', '/prototypes/sahanabag-city/'], (req, res
   res.sendFile(path.join(__dirname, 'public/prototypes/sahanabag-city/index.html'));
 });
 
+// Madman 3D WebGL Interactive Proof-of-Concept Prototype
+app.get(['/prototypes/madman-3d', '/prototypes/madman-3d/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/madman-3d/index.html'));
+});
+
 // Madmen Agency OS & Showcase Prototype
 app.get(['/prototypes/madmen-os', '/prototypes/madmen-os/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/madmen-os/index.html'));

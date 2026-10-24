@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>MADMAN — 3D Spatial Creative Agency // Next-Gen WebGL Experience</title>
+  <meta name="description" content="Awwwards-grade interactive 3D WebGL experience for Madman Creative Agency featuring dynamic GPU tiering, kinetic glass & chrome PBR geometry, and Lenis smooth-scroll choreography.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+  <!-- Google Fonts: Space Grotesk, Inter, Outfit, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#06080C',
+            slateDark: '#0B0F17',
+            emeraldNeon: '#00DF89',
+            limeNeon: '#BFFF04',
+            cyberPink: '#FF007A',
+            cyberCyan: '#00F0FF',
+            goldWarm: '#FFB800'
+          },
+          fontFamily: {
+            heading: ['Space Grotesk', 'Outfit', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Three.js r128 + Post Processing Suite -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+  <!-- Lenis Smooth Scroll -->
+  <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
+
+  <style>
+    :root {
+      --bg-obsidian: #06080C;
+      --card-glass: rgba(11, 15, 23, 0.72);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --accent-emerald: #00DF89;
+      --accent-lime: #BFFF04;
+      --accent-pink: #FF007A;
+      --accent-cyan: #00F0FF;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-obsidian);
+      color: #F8FAFC;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fixed WebGL Canvas Behind Content */
+    #webgl-canvas-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #webgl-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Glassmorphism Classes */
+    .glass-panel {
+      background: var(--card-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .glass-panel-glow {
+      background: var(--card-glass);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(0, 223, 137, 0.25);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 223, 137, 0.1);
+    }
+
+    .glass-dock {
+      background: rgba(10, 14, 22, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 223, 137, 0.15);
+    }
+
+    /* Gradient Text */
+    .text-gradient-lime {
+      background: linear-gradient(135deg, #FFFFFF 10%, #BFFF04 60%, #00DF89 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .text-gradient-pink {
+      background: linear-gradient(135deg, #FFFFFF 10%, #FF007A 60%, #9D4EDD 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Interactive Turntable Mouse Area for Hero */
+    .turntable-catcher {
+      pointer-events: auto;
+      cursor: grab;
+    }
+    .turntable-catcher:active {
+      cursor: grabbing;
+    }
+
+    /* Ambient Subtle Grid Lines */
+    .bg-grid-pattern {
+      background-size: 60px 60px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    }
+
+    /* Pulse Glow */
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+    .animate-pulse-glow {
+      animation: pulseGlow 4s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="relative selection:bg-[#BFFF04] selection:text-black">
+
+  <!-- ========================================================================= -->
+  <!-- 1. FULLSCREEN 3D WEBGL ENGINE LAYER (THREE.JS R128 + BLOOM + PARTICLES)   -->
+  <!-- ========================================================================= -->
+  <div id="webgl-canvas-container" aria-hidden="true">
+    <canvas id="webgl-canvas"></canvas>
+  </div>
+
+  <!-- Ambient Flare Overlay -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] bg-gradient-to-b from-[#BFFF04]/10 via-[#00DF89]/5 to-transparent blur-3xl pointer-events-none z-[1]"></div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. STICKY TOP HUD BAR & GPU TELEMETRY                                     -->
+  <!-- ========================================================================= -->
+  <header class="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 py-3.5 bg-[#06080C]/80 backdrop-blur-xl border-b border-white/10 flex justify-between items-center transition-all duration-300">
+    <div class="flex items-center gap-3">
+      <!-- Madman Emblem -->
+      <a href="/prototypes/madman-3d/" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#BFFF04] to-[#00DF89] flex items-center justify-center font-black text-black font-heading text-lg shadow-[0_0_20px_rgba(191,255,4,0.4)] group-hover:scale-105 transition-transform">
+          M
+        </div>
+        <div>
+          <div class="font-heading font-extrabold text-base tracking-tight flex items-center gap-2">
+            <span>MADMAN</span>
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider bg-white/10 text-[#BFFF04] px-1.5 py-0.5 rounded border border-[#BFFF04]/30">3D WebGL</span>
+          </div>
+          <div class="text-[10px] text-gray-400 font-mono tracking-wide hidden sm:block">
+            Cult Campaigns & Spatial Tech // Port 3000
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Central GPU Status Badge -->
+    <div id="gpu-telemetry-pill" class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-gray-300 shadow-inner">
+      <span class="w-2 h-2 rounded-full bg-[#00DF89] animate-pulse"></span>
+      <span id="gpu-tier-name">GPU TIER: HIGH</span>
+      <span class="text-white/20">|</span>
+      <span id="fps-counter" class="text-[#BFFF04]">60 FPS</span>
+      <span class="text-white/20">|</span>
+      <span class="text-gray-400">PBR BLOOM ACTIVE</span>
+    </div>
+
+    <!-- Navigation Actions -->
+    <div class="flex items-center gap-2.5 sm:gap-3">
+      <a href="/pitch/" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-300 hover:text-white bg-white/5 border border-white/10 hover:border-white/20 transition hidden sm:inline-flex items-center gap-1.5">
+        <span>📺</span> PitchOS Decks
+      </a>
+      <a href="/prototypes" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-300 hover:text-white bg-white/5 border border-white/10 hover:border-white/20 transition flex items-center gap-1.5">
+        <span>🔮</span> Showroom
+      </a>
+      <a href="#portfolio" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-black bg-gradient-to-r from-[#BFFF04] to-[#00DF89] hover:opacity-90 transition shadow-[0_0_15px_rgba(191,255,4,0.3)] flex items-center gap-1">
+        <span>⚡</span> Explore Work
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 3. MAIN SCROLL CONTAINER CHOREOGRAPHY (LENIS SMOOTH SCROLL)               -->
+  <!-- ========================================================================= -->
+  <main class="relative z-10 pt-20">
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- HERO SECTION: KINETIC 3D TURNTABLE STAGE                               -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="hero" class="relative min-h-[95vh] flex flex-col justify-between px-4 sm:px-8 max-w-7xl mx-auto pt-12 pb-16 turntable-catcher">
+      
+      <!-- Top Hero Header & Tagline -->
+      <div class="max-w-3xl pt-8 pointer-events-none">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#BFFF04]/10 border border-[#BFFF04]/30 text-[#BFFF04] text-xs font-mono font-bold tracking-wider uppercase mb-5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#BFFF04]"></span>
+          Awwwards-Grade Interactive Spatial WebGL
+        </div>
+
+        <h1 class="font-heading font-black text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight mb-6">
+          CULT PHENOMENA <br>
+          <span class="text-gradient-lime">ENGINEERED IN 3D.</span>
+        </h1>
+
+        <p class="font-body text-base sm:text-lg text-gray-300 max-w-xl leading-relaxed mb-8">
+          Madman crafts boundary-breaking creative technology, real-time spatial WebGL monoliths, and cultural campaigns for tier-1 telcos and forward-thinking enterprises.
+        </p>
+
+        <!-- Interactive Hint Pill -->
+        <div class="inline-flex items-center gap-2 text-xs font-mono text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+          <span>🖱️</span> Drag to rotate 3D Monolith • Scroll to explode kinetic geometry
+        </div>
+      </div>
+
+      <!-- Hero Metrics Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-12 pointer-events-auto">
+        <div class="glass-panel rounded-2xl p-4 sm:p-5 hover:border-[#BFFF04]/40 transition group">
+          <div class="text-[11px] font-mono uppercase text-gray-400 mb-1 flex items-center justify-between">
+            <span>Campaign Media Value</span>
+            <span class="text-[#BFFF04]">01</span>
+          </div>
+          <div class="font-heading font-black text-2xl sm:text-3xl text-white group-hover:text-[#BFFF04] transition">
+            ৳120M+
+          </div>
+          <div class="text-[11px] text-gray-400 mt-1">Banglalink & National Brands</div>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-4 sm:p-5 hover:border-[#00DF89]/40 transition group">
+          <div class="text-[11px] font-mono uppercase text-gray-400 mb-1 flex items-center justify-between">
+            <span>Spatial Prototype Turnaround</span>
+            <span class="text-[#00DF89]">02</span>
+          </div>
+          <div class="font-heading font-black text-2xl sm:text-3xl text-white group-hover:text-[#00DF89] transition">
+            48 Hours
+          </div>
+          <div class="text-[11px] text-gray-400 mt-1">Zero-sprawl edge deployment</div>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-4 sm:p-5 hover:border-[#00F0FF]/40 transition group">
+          <div class="text-[11px] font-mono uppercase text-gray-400 mb-1 flex items-center justify-between">
+            <span>Organic Reach</span>
+            <span class="text-[#00F0FF]">03</span>
+          </div>
+          <div class="font-heading font-black text-2xl sm:text-3xl text-white group-hover:text-[#00F0FF] transition">
+            15M+
+          </div>
+          <div class="text-[11px] text-gray-400 mt-1">Youth & Gen-Z Virality</div>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-4 sm:p-5 hover:border-[#FF007A]/40 transition group">
+          <div class="text-[11px] font-mono uppercase text-gray-400 mb-1 flex items-center justify-between">
+            <span>Target Frame Budget</span>
+            <span class="text-[#FF007A]">04</span>
+          </div>
+          <div class="font-heading font-black text-2xl sm:text-3xl text-white group-hover:text-[#FF007A] transition flex items-center gap-1.5">
+            60 FPS
+            <span class="text-xs px-1.5 py-0.5 rounded bg-[#00DF89]/20 text-[#00DF89] font-mono">PBR</span>
+          </div>
+          <div class="text-[11px] text-gray-400 mt-1">Dynamic GPU Tiering</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SECTION 2: CAPABILITIES & SPATIAL ENGINE BREAKTHROUGHS                  -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="capabilities" class="py-24 px-4 sm:px-8 max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-14 gap-4">
+        <div>
+          <div class="text-xs font-mono font-bold tracking-widest uppercase text-[#BFFF04] mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#BFFF04]"></span>
+            CORE EXPERTISE & TECH STACK
+          </div>
+          <h2 class="font-heading font-black text-3xl sm:text-5xl tracking-tight text-white">
+            Beyond Standard Web. <br>
+            <span class="text-gradient-lime">Living, Spatial Interfaces.</span>
+          </h2>
+        </div>
+        <p class="text-gray-400 text-sm sm:text-base max-w-md font-body leading-relaxed">
+          Inspired by the kinetic benchmarks of <strong>golime.xyz</strong> and <strong>editfr.com</strong>, we combine WebGL shaders, real-time procedural physics, and enterprise reliability.
+        </p>
+      </div>
+
+      <!-- Capabilities Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Card 1 -->
+        <div class="glass-panel rounded-2xl p-6 hover:border-[#BFFF04]/50 transition duration-300 relative overflow-hidden group">
+          <div class="w-12 h-12 rounded-xl bg-[#BFFF04]/10 border border-[#BFFF04]/30 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
+            💎
+          </div>
+          <h3 class="font-heading font-bold text-xl text-white mb-2">PBR Glass & Chrome</h3>
+          <p class="text-gray-400 text-sm leading-relaxed mb-4">
+            Custom Three.js physical transmission shaders with chromatic dispersion, realistic refraction indices (IOR 1.52), and metallic chrome reflections.
+          </p>
+          <div class="text-xs font-mono text-[#BFFF04]">MeshPhysicalMaterial • Shaders</div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="glass-panel rounded-2xl p-6 hover:border-[#00DF89]/50 transition duration-300 relative overflow-hidden group">
+          <div class="w-12 h-12 rounded-xl bg-[#00DF89]/10 border border-[#00DF89]/30 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
+            🌪️
+          </div>
+          <h3 class="font-heading font-bold text-xl text-white mb-2">Procedural Particles</h3>
+          <p class="text-gray-400 text-sm leading-relaxed mb-4">
+            Thousands of interactive particles morphing in real-time between geometrical formations, reacting dynamically to scroll velocity and mouse impulses.
+          </p>
+          <div class="text-xs font-mono text-[#00DF89]">BufferGeometry • Float32Array</div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="glass-panel rounded-2xl p-6 hover:border-[#00F0FF]/50 transition duration-300 relative overflow-hidden group">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/30 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
+            ⚡
+          </div>
+          <h3 class="font-heading font-bold text-xl text-white mb-2">Dynamic GPU Tiering</h3>
+          <p class="text-gray-400 text-sm leading-relaxed mb-4">
+            Adaptive hardware detection dynamically balances pixel ratio, bloom intensity, and particle density to guarantee locked 60 FPS on both mobile and 4K desktops.
+          </p>
+          <div class="text-xs font-mono text-[#00F0FF]">Adaptive Quality • Mobile Fallback</div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="glass-panel rounded-2xl p-6 hover:border-[#FF007A]/50 transition duration-300 relative overflow-hidden group">
+          <div class="w-12 h-12 rounded-xl bg-[#FF007A]/10 border border-[#FF007A]/30 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
+            📜
+          </div>
+          <h3 class="font-heading font-bold text-xl text-white mb-2">Lenis Choreography</h3>
+          <p class="text-gray-400 text-sm leading-relaxed mb-4">
+            Inertial physics-based smooth scrolling seamlessly drives the 3D scene: objects explode, flip 180°, and assemble into frames as portfolio cards enter the viewport.
+          </p>
+          <div class="text-xs font-mono text-[#FF007A]">Lenis Smooth-Scroll • 120Hz</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SECTION 3: FLAGSHIP PORTFOLIO SHOWCASES (FRAMED BY 3D OBJECTS)         -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="portfolio" class="py-24 px-4 sm:px-8 max-w-7xl mx-auto">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="text-xs font-mono font-bold tracking-widest uppercase text-[#00DF89] mb-3">
+          MADMAN FLAGSHIP PORTFOLIO
+        </div>
+        <h2 class="font-heading font-black text-3xl sm:text-5xl tracking-tight text-white mb-4">
+          Campaigns That Shook The Culture.
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base">
+          As you scroll, the floating 3D glass geometry choreographs in real-time to frame our headline digital platforms and campaigns.
+        </p>
+      </div>
+
+      <!-- Portfolio Stack Cards -->
+      <div class="space-y-12">
+        
+        <!-- Case 1: Banglalink Toffee -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-10 border border-white/10 hover:border-[#BFFF04]/40 transition duration-500 relative overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-7">
+              <div class="flex items-center gap-2.5 mb-4">
+                <span class="px-2.5 py-1 rounded bg-[#BFFF04]/10 text-[#BFFF04] border border-[#BFFF04]/30 text-xs font-mono font-bold uppercase">
+                  Enterprise OTT & Live Streaming
+                </span>
+                <span class="text-xs font-mono text-gray-400">VECOM-2026-01</span>
+              </div>
+              <h3 class="font-heading font-black text-2xl sm:text-4xl text-white mb-4">
+                Banglalink Toffee // Mega-Streaming IP
+              </h3>
+              <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 font-body">
+                Full-funnel digital campaign and live sports streaming experience for Banglalink's flagship OTT entertainment app. Delivered custom interactive fan hubs, sub-second live score sync, and viral social memes generating over 8 million live concurrent viewers.
+              </p>
+              
+              <div class="grid grid-cols-3 gap-4 mb-8 pt-4 border-t border-white/10">
+                <div>
+                  <div class="font-heading font-black text-xl text-[#BFFF04]">8M+</div>
+                  <div class="text-[11px] text-gray-400 font-mono">Live Concurrents</div>
+                </div>
+                <div>
+                  <div class="font-heading font-black text-xl text-white">4.8★</div>
+                  <div class="text-[11px] text-gray-400 font-mono">App Rating</div>
+                </div>
+                <div>
+                  <div class="font-heading font-black text-xl text-[#00DF89]">#1 OTT</div>
+                  <div class="text-[11px] text-gray-400 font-mono">National Market</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <a href="/prototypes" class="px-5 py-2.5 rounded-xl text-xs font-bold text-black bg-[#BFFF04] hover:bg-[#BFFF04]/90 transition shadow-lg">
+                  View Campaign Case Study
+                </a>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5">
+              <div class="rounded-2xl bg-gradient-to-br from-[#121824] to-[#080B10] p-6 border border-white/10 shadow-2xl relative overflow-hidden group">
+                <div class="w-full h-48 rounded-xl bg-gradient-to-tr from-[#BFFF04]/20 via-[#00DF89]/10 to-transparent flex items-center justify-center font-heading font-black text-4xl text-white/80 group-hover:scale-105 transition-transform duration-500">
+                  TOFFEE
+                </div>
+                <div class="mt-4 flex justify-between items-center text-xs font-mono text-gray-400">
+                  <span>CLIENT: BANGLALINK</span>
+                  <span class="text-[#BFFF04]">ACTIVE RETAINER</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case 2: Banglalink Ryze -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-10 border border-white/10 hover:border-[#FF007A]/40 transition duration-500 relative overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-7">
+              <div class="flex items-center gap-2.5 mb-4">
+                <span class="px-2.5 py-1 rounded bg-[#FF007A]/10 text-[#FF007A] border border-[#FF007A]/30 text-xs font-mono font-bold uppercase">
+                  Generative AI & Gen-Z Casting
+                </span>
+                <span class="text-xs font-mono text-gray-400">VECOM-2026-02</span>
+              </div>
+              <h3 class="font-heading font-black text-2xl sm:text-4xl text-white mb-4">
+                Banglalink Ryze // "Gen-Z Star" AI Video Simulator
+              </h3>
+              <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 font-body">
+                Groundbreaking persona casting platform powered by biometric face alignment, simulated neural video inpainting, and procedural Web Audio beats. Enabled youth users to star alongside cultural icons in personalized 1080×1920 Instagram Reel story posters.
+              </p>
+              
+              <div class="grid grid-cols-3 gap-4 mb-8 pt-4 border-t border-white/10">
+                <div>
+                  <div class="font-heading font-black text-xl text-[#FF007A]">450K+</div>
+                  <div class="text-[11px] text-gray-400 font-mono">Reels Generated</div>
+                </div>
+                <div>
+                  <div class="font-heading font-black text-xl text-white">&lt; 3.2s</div>
+                  <div class="text-[11px] text-gray-400 font-mono">Render Latency</div>
+                </div>
+                <div>
+                  <div class="font-heading font-black text-xl text-[#00DF89]">4.2x</div>
+                  <div class="text-[11px] text-gray-400 font-mono">Engagement Lift</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <a href="/prototypes/ryze-ai-star/" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#FF007A] to-[#9D4EDD] hover:opacity-90 transition shadow-lg">
+                  Launch Ryze Simulator Prototype
+                </a>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5">
+              <div class="rounded-2xl bg-gradient-to-br from-[#1d0a1b] to-[#080B10] p-6 border border-white/10 shadow-2xl relative overflow-hidden group">
+                <div class="w-full h-48 rounded-xl bg-gradient-to-tr from-[#FF007A]/20 via-[#9D4EDD]/10 to-transparent flex items-center justify-center font-heading font-black text-4xl text-white/80 group-hover:scale-105 transition-transform duration-500">
+                  RYZE AI
+                </div>
+                <div class="mt-4 flex justify-between items-center text-xs font-mono text-gray-400">
+                  <span>CLIENT: BANGLALINK RYZE</span>
+                  <span class="text-[#FF007A]">GEN-Z VIRAL IP</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case 3: ToffeeCon 2026 EOS -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-10 border border-white/10 hover:border-[#00F0FF]/40 transition duration-500 relative overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-7">
+              <div class="flex items-center gap-2.5 mb-4">
+                <span class="px-2.5 py-1 rounded bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30 text-xs font-mono font-bold uppercase">
+                  Arena Multi-Screen & Event OS
+                </span>
+                <span class="text-xs font-mono text-gray-400">PORT 5000</span>
+              </div>
+              <h3 class="font-heading font-black text-2xl sm:text-4xl text-white mb-4">
+                ToffeeCon 2026 EOS // Event Operating System
+              </h3>
+              <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 font-body">
+                Full-scale multi-surface operational platform orchestrating 10,000+ convention attendees across real-time video walls, virtual stage triggers, biometric check-in gates, and an AI-assisted talent audition booth.
+              </p>
+              
+              <div class="grid grid-cols-3 gap-4 mb-8 pt-4 border-t border-white/10">
+                <div>
+                  <div class="font-heading font-black text-xl text-[#00F0FF]">10,000+</div>
+                  <div class="text-[11px] text-gray-400 font-mono">NFC Gate Entries</div>
+                </div>
+                <div>
+                  <div class="font-heading font-black text-xl text-white">4 Screens</div>
+                  <div class="text-[11px] text-gray-400 font-mono">Stage Wall Sync</div>
+                </div>
+                <div>
+                  <div class="font-heading font-black text-xl text-[#00DF89]">0 Latency</div>
+                  <div class="text-[11px] text-gray-400 font-mono">Local Mesh</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <a href="/flow-simulator.html" target="_blank" class="px-5 py-2.5 rounded-xl text-xs font-bold text-black bg-[#00F0FF] hover:bg-[#00F0FF]/90 transition shadow-lg">
+                  Launch Event Simulator
+                </a>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5">
+              <div class="rounded-2xl bg-gradient-to-br from-[#081a24] to-[#080B10] p-6 border border-white/10 shadow-2xl relative overflow-hidden group">
+                <div class="w-full h-48 rounded-xl bg-gradient-to-tr from-[#00F0FF]/20 via-[#00DF89]/10 to-transparent flex items-center justify-center font-heading font-black text-4xl text-white/80 group-hover:scale-105 transition-transform duration-500">
+                  TOFFEECON
+                </div>
+                <div class="mt-4 flex justify-between items-center text-xs font-mono text-gray-400">
+                  <span>CHARTERED SATELLITE VENTURE</span>
+                  <span class="text-[#00F0FF]">PORT 5000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SECTION 4: BENCHMARK COMPARISON VS GOLIME.XYZ & EDITFR.COM              -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section class="py-24 px-4 sm:px-8 max-w-7xl mx-auto">
+      <div class="glass-panel-glow rounded-3xl p-8 sm:p-12 relative overflow-hidden">
+        <div class="max-w-3xl mb-10">
+          <div class="text-xs font-mono font-bold tracking-widest uppercase text-[#BFFF04] mb-3">
+            TECHNICAL BENCHMARK SPECIFICATION
+          </div>
+          <h2 class="font-heading font-black text-3xl sm:text-4xl text-white mb-4">
+            Matching & Outperforming Golime.xyz & Editfr.com
+          </h2>
+          <p class="text-gray-300 text-sm sm:text-base leading-relaxed font-body">
+            Madman and GRO10X deliver bespoke WebGL visual poetry backed by deterministic, production-grade cloud infrastructure.
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left font-mono text-xs sm:text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-white/15 text-gray-400">
+                <th class="py-3.5 px-4 font-bold">Capability Feature</th>
+                <th class="py-3.5 px-4 font-bold text-gray-400">golime.xyz</th>
+                <th class="py-3.5 px-4 font-bold text-gray-400">editfr.com</th>
+                <th class="py-3.5 px-4 font-bold text-[#BFFF04] bg-white/5 rounded-t-lg">MADMAN 3D (GRO10X)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-gray-300">
+              <tr>
+                <td class="py-4 px-4 font-sans font-semibold text-white">Kinetic 3D PBR Geometry</td>
+                <td class="py-4 px-4">Standard GLTF meshes</td>
+                <td class="py-4 px-4">Wireframe models</td>
+                <td class="py-4 px-4 font-bold text-[#BFFF04] bg-white/5">Procedural Glass Transmission + Chrome PBR</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-4 font-sans font-semibold text-white">Dynamic GPU Tiering</td>
+                <td class="py-4 px-4">Partial FPS throttle</td>
+                <td class="py-4 px-4">Static quality</td>
+                <td class="py-4 px-4 font-bold text-[#00DF89] bg-white/5">Autonomous 4-Tier Hardware Throttling (60 FPS Locked)</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-4 font-sans font-semibold text-white">Smooth-Scroll Engine</td>
+                <td class="py-4 px-4">Native Scroll / CSS</td>
+                <td class="py-4 px-4">Lenis v1</td>
+                <td class="py-4 px-4 font-bold text-[#BFFF04] bg-white/5">Lenis v1.1.9 + Direct 3D Rotation Choreography</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-4 font-sans font-semibold text-white">Post-Processing Bloom</td>
+                <td class="py-4 px-4">CSS Blurs only</td>
+                <td class="py-4 px-4">Selective Bloom</td>
+                <td class="py-4 px-4 font-bold text-[#00F0FF] bg-white/5">UnrealBloomPass + ToneMapping + Adaptive Bypass</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-4 font-sans font-semibold text-white">Interactive Customizer Dock</td>
+                <td class="py-4 px-4">None (Static view)</td>
+                <td class="py-4 px-4">Cursor only</td>
+                <td class="py-4 px-4 font-bold text-[#FF007A] bg-white/5">Real-time Wireframe, Lighting Presets & Turntable Speeds</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SECTION 5: CALL TO ACTION & AGENCY ENGAGEMENT                           -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section class="py-20 px-4 sm:px-8 max-w-7xl mx-auto text-center">
+      <div class="glass-panel rounded-3xl p-10 sm:p-16 max-w-4xl mx-auto relative overflow-hidden">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#BFFF04]/10 border border-[#BFFF04]/30 text-[#BFFF04] text-xs font-mono font-bold uppercase mb-6">
+          Ready to Elevate Your Brand
+        </div>
+
+        <h2 class="font-heading font-black text-3xl sm:text-5xl text-white mb-6 tracking-tight">
+          Commission Your Custom <br>
+          <span class="text-gradient-lime">3D Spatial Prototype.</span>
+        </h2>
+
+        <p class="text-gray-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed mb-8">
+          Turn passive website visitors into an engaged audience with real-time WebGL, interactive 3D digital twins, and bespoke interactive presentation decks.
+        </p>
+
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <a href="/pitch/" class="px-6 py-3 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-[#BFFF04] to-[#00DF89] hover:opacity-90 transition shadow-[0_0_25px_rgba(191,255,4,0.4)] flex items-center gap-2">
+            <span>📺</span> Explore PitchOS TV Decks
+          </a>
+          <a href="/prototypes" class="px-6 py-3 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/15 border border-white/15 transition flex items-center gap-2">
+            <span>🔮</span> Central Prototype Showroom
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 4. INTERACTIVE 3D CONTROL DOCK (STICKY FLOATING CONTROL PANEL)            -->
+  <!-- ========================================================================= -->
+  <aside id="control-dock" class="fixed bottom-6 right-6 z-50 glass-dock rounded-2xl p-3.5 flex flex-col gap-3 shadow-2xl transition-all duration-300 border border-white/15">
+    
+    <!-- Dock Header -->
+    <div class="flex items-center justify-between gap-4 pb-2 border-b border-white/10 text-[11px] font-mono">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#BFFF04] animate-ping"></span>
+        <span class="font-bold text-white uppercase tracking-wider">3D Stage Dock</span>
+      </div>
+      <button id="dock-minimize-btn" onclick="toggleDock()" class="text-gray-400 hover:text-white transition text-xs" title="Minimize Dock">
+        ▼
+      </button>
+    </div>
+
+    <!-- Dock Controls Container -->
+    <div id="dock-controls" class="flex flex-col gap-3">
+      
+      <!-- Lighting Theme Color Presets -->
+      <div>
+        <div class="text-[10px] font-mono uppercase text-gray-400 mb-1.5 flex justify-between">
+          <span>Lighting Accent</span>
+          <span id="active-theme-label" class="text-[#BFFF04]">Emerald</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-color-emerald" onclick="setLightingTheme('emerald')" class="w-7 h-7 rounded-lg bg-[#00DF89] border-2 border-white shadow-md hover:scale-110 transition-transform" title="Neon Emerald (Signature)"></button>
+          <button id="btn-color-pink" onclick="setLightingTheme('pink')" class="w-7 h-7 rounded-lg bg-[#FF007A] border border-white/30 hover:border-white hover:scale-110 transition-transform" title="Cyber Pink (Electric)"></button>
+          <button id="btn-color-gold" onclick="setLightingTheme('gold')" class="w-7 h-7 rounded-lg bg-[#FFB800] border border-white/30 hover:border-white hover:scale-110 transition-transform" title="Sovereign Gold (Luxury)"></button>
+        </div>
+      </div>
+
+      <!-- Action Toggles -->
+      <div class="grid grid-cols-2 gap-2 pt-1 border-t border-white/10">
+        <!-- Wireframe Mode Toggle -->
+        <button id="btn-toggle-wireframe" onclick="toggleWireframe()" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-gray-200 transition flex items-center justify-center gap-1.5">
+          <span>🕸️</span> Wireframe
+        </button>
+
+        <!-- Turntable Speed -->
+        <button id="btn-turntable-speed" onclick="cycleTurntableSpeed()" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-gray-200 transition flex items-center justify-center gap-1.5">
+          <span>🔄</span> Speed: <span id="speed-label" class="text-[#BFFF04]">1x</span>
+        </button>
+      </div>
+
+      <!-- Particle Explosion Shockwave -->
+      <button id="btn-pulse-particles" onclick="triggerParticleShockwave()" class="w-full py-1.5 rounded-lg bg-gradient-to-r from-[#BFFF04]/20 to-[#00DF89]/20 hover:from-[#BFFF04]/30 hover:to-[#00DF89]/30 border border-[#BFFF04]/40 text-[11px] font-mono text-[#BFFF04] font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+        <span>💥</span> Particle Shockwave
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- 5. FOOTER & CONGLOMERATE LEGAL SPEC                                       -->
+  <!-- ========================================================================= -->
+  <footer class="relative z-10 border-t border-white/10 py-12 px-4 sm:px-8 bg-[#040609] text-gray-500 font-mono text-xs">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-6 h-6 rounded bg-[#BFFF04] text-black font-black flex items-center justify-center text-xs font-heading">
+          M
+        </div>
+        <span>MADMAN CREATIVE AGENCY // GRO10X HOLDINGS (MOTHER OS HQ)</span>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <a href="/pitch/" class="hover:text-white transition">PitchOS Decks</a>
+        <a href="/prototypes" class="hover:text-white transition">Prototypes Showroom</a>
+        <a href="https://gro10x-ai.vercel.app" target="_blank" class="text-[#BFFF04] hover:underline">gro10x-ai.vercel.app</a>
+      </div>
+
+      <div class="text-gray-600 text-[11px]">
+        Engineered with Three.js r128 + UnrealBloom + Lenis • 60 FPS Certified
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- 6. THREE.JS 3D SCENE + LENIS SMOOTH SCROLL + GPU TIERING SCRIPT           -->
+  <!-- ========================================================================= -->
+  <script>
+    // ── Global Scene State ───────────────────────────────────────────────────
+    let scene, camera, renderer, composer, bloomPass;
+    let centralGroup, coreMesh, ring1, ring2, kineticShards = [], particleSystem;
+    let particlePositions, initialParticlePositions;
+    let isWireframe = false;
+    let turntableSpeed = 1.0;
+    let currentTheme = 'emerald';
+    let mouseX = 0, mouseY = 0;
+    let targetRotationX = 0, targetRotationY = 0;
+    let scrollProgress = 0;
+    let shockwaveIntensity = 0;
+    let isMobile = false;
+
+    // Lighting color definitions
+    const THEMES = {
+      emerald: {
+        key: 0x00DF89,
+        accent: 0xBFFF04,
+        rim: 0x00F0FF,
+        ambient: 0x061118,
+        label: 'Emerald'
+      },
+      pink: {
+        key: 0xFF007A,
+        accent: 0xFF007A,
+        rim: 0x9D4EDD,
+        ambient: 0x150718,
+        label: 'Cyber Pink'
+      },
+      gold: {
+        key: 0xFFB800,
+        accent: 0xFFD700,
+        rim: 0xFF8C00,
+        ambient: 0x181206,
+        label: 'Gold'
+      }
+    };
+
+    let keyLight, rimLight, pointLight;
+
+    // ── 1. Dynamic GPU Tiering ───────────────────────────────────────────────
+    function detectGPUTier() {
+      const concurrency = navigator.hardwareConcurrency || 4;
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+      let tier = 'HIGH';
+      let particleCount = 2500;
+      let enableBloom = true;
+      let maxPixelRatio = Math.min(devicePixelRatio, 2.0);
+
+      if (isMobile) {
+        tier = 'MOBILE LITE';
+        particleCount = 1000;
+        enableBloom = false; // Bypass bloom on mobile for guaranteed 60fps
+        maxPixelRatio = Math.min(devicePixelRatio, 1.25);
+      } else if (concurrency < 4) {
+        tier = 'BALANCED';
+        particleCount = 1600;
+        enableBloom = true;
+        maxPixelRatio = 1.5;
+      }
+
+      // Update HUD telemetry
+      const tierLabel = document.getElementById('gpu-tier-name');
+      if (tierLabel) tierLabel.textContent = `GPU TIER: ${tier}`;
+
+      return {
+        tier,
+        particleCount,
+        enableBloom,
+        maxPixelRatio,
+        isMobile
+      };
+    }
+
+    const gpuTier = detectGPUTier();
+
+    // ── 2. Three.js Initialization ───────────────────────────────────────────
+    function initThree() {
+      const canvas = document.getElementById('webgl-canvas');
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // Scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x06080C);
+      scene.fog = new THREE.FogExp2(0x06080C, 0.035);
+
+      // Camera
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+      camera.position.set(0, 0, 8.5);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: !gpuTier.isMobile,
+        alpha: false,
+        powerPreference: 'high-performance'
+      });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(gpuTier.maxPixelRatio);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
+
+      // Post-Processing Composer (UnrealBloom)
+      if (typeof THREE.EffectComposer !== 'undefined' && typeof THREE.UnrealBloomPass !== 'undefined' && gpuTier.enableBloom) {
+        try {
+          const renderPass = new THREE.RenderPass(scene, camera);
+          bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(width, height),
+            0.65, // strength
+            0.4,  // radius
+            0.82  // threshold
+          );
+
+          composer = new THREE.EffectComposer(renderer);
+          composer.addPass(renderPass);
+          composer.addPass(bloomPass);
+        } catch (e) {
+          console.warn('[PostProcessing] Fallback to direct rendering:', e.message);
+          composer = null;
+        }
+      }
+
+      // Lighting
+      buildLighting();
+
+      // Kinetic Geometry
+      buildKineticGeometry();
+
+      // Particle Field
+      buildParticleField(gpuTier.particleCount);
+
+      // Event Listeners
+      window.addEventListener('resize', onWindowResize);
+      setupTurntableInteraction();
+    }
+
+    // ── 3. Lighting Setup ────────────────────────────────────────────────────
+    function buildLighting() {
+      const theme = THEMES[currentTheme];
+
+      const ambient = new THREE.AmbientLight(theme.ambient, 1.8);
+      scene.add(ambient);
+
+      keyLight = new THREE.DirectionalLight(theme.key, 2.5);
+      keyLight.position.set(5, 6, 5);
+      scene.add(keyLight);
+
+      rimLight = new THREE.DirectionalLight(theme.rim, 2.0);
+      rimLight.position.set(-6, -4, -4);
+      scene.add(rimLight);
+
+      pointLight = new THREE.PointLight(theme.accent, 2.0, 15);
+      pointLight.position.set(0, 0, 4);
+      scene.add(pointLight);
+    }
+
+    // ── 4. Build Kinetic Brand Sculpture ─────────────────────────────────────
+    function buildKineticGeometry() {
+      centralGroup = new THREE.Group();
+      scene.add(centralGroup);
+
+      // 1. Central Glass Core (Faceted Icosahedron)
+      const coreGeo = new THREE.IcosahedronGeometry(1.6, 1);
+      const coreMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        metalness: 0.1,
+        roughness: 0.08,
+        transmission: 0.9,
+        thickness: 1.5,
+        ior: 1.52,
+        reflectivity: 0.9,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
+        transparent: true,
+        opacity: 0.92
+      });
+      coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      centralGroup.add(coreMesh);
+
+      // 2. Orbital Chrome Ring 1 (Torus)
+      const ring1Geo = new THREE.TorusGeometry(2.5, 0.08, 24, 100);
+      const chromeMat = new THREE.MeshStandardMaterial({
+        color: 0xdddddd,
+        metalness: 0.95,
+        roughness: 0.05
+      });
+      ring1 = new THREE.Mesh(ring1Geo, chromeMat);
+      ring1.rotation.x = Math.PI / 3;
+      ring1.rotation.y = Math.PI / 6;
+      centralGroup.add(ring1);
+
+      // 3. Orbital Chrome Ring 2 (Offset Torus)
+      const ring2Geo = new THREE.TorusGeometry(3.1, 0.06, 24, 100);
+      const ring2Mat = new THREE.MeshStandardMaterial({
+        color: THEMES[currentTheme].key,
+        metalness: 0.85,
+        roughness: 0.15,
+        emissive: THEMES[currentTheme].key,
+        emissiveIntensity: 0.25
+      });
+      ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+      ring2.rotation.x = -Math.PI / 4;
+      ring2.rotation.z = Math.PI / 5;
+      centralGroup.add(ring2);
+
+      // 4. Orbiting Kinetic Shards (Prisms)
+      const shardGeo = new THREE.OctahedronGeometry(0.25, 0);
+      const shardMat = new THREE.MeshPhysicalMaterial({
+        color: THEMES[currentTheme].accent,
+        metalness: 0.7,
+        roughness: 0.2,
+        emissive: THEMES[currentTheme].accent,
+        emissiveIntensity: 0.4
+      });
+
+      const shardCount = 14;
+      for (let i = 0; i < shardCount; i++) {
+        const shard = new THREE.Mesh(shardGeo, shardMat.clone());
+        const angle = (i / shardCount) * Math.PI * 2;
+        const radius = 2.0 + Math.random() * 1.5;
+        const yOffset = (Math.random() - 0.5) * 2.0;
+
+        shard.position.set(
+          Math.cos(angle) * radius,
+          yOffset,
+          Math.sin(angle) * radius
+        );
+
+        shard.userData = {
+          baseAngle: angle,
+          radius,
+          yOffset,
+          speed: 0.5 + Math.random() * 0.8,
+          originalPos: shard.position.clone()
+        };
+
+        kineticShards.push(shard);
+        centralGroup.add(shard);
+      }
+    }
+
+    // ── 5. Procedural Particle Field ─────────────────────────────────────────
+    function buildParticleField(count) {
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+
+      const color1 = new THREE.Color(THEMES[currentTheme].key);
+      const color2 = new THREE.Color(THEMES[currentTheme].rim);
+
+      for (let i = 0; i < count; i++) {
+        const i3 = i * 3;
+        const radius = 3.0 + Math.random() * 9.0;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+
+        pos[i3] = radius * Math.sin(phi) * Math.cos(theta);
+        pos[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+        pos[i3 + 2] = radius * Math.cos(phi);
+
+        const mixedColor = color1.clone().lerp(color2, Math.random());
+        colors[i3] = mixedColor.r;
+        colors[i3 + 1] = mixedColor.g;
+        colors[i3 + 2] = mixedColor.b;
+      }
+
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      particlePositions = pos;
+      initialParticlePositions = new Float32Array(pos);
+
+      const mat = new THREE.PointsMaterial({
+        size: gpuTier.isMobile ? 0.05 : 0.038,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending
+      });
+
+      particleSystem = new THREE.Points(geo, mat);
+      scene.add(particleSystem);
+    }
+
+    // ── 6. Turntable Interaction & Inertia ────────────────────────────────────
+    function setupTurntableInteraction() {
+      let isDragging = false;
+      let prevX = 0, prevY = 0;
+
+      const catcher = document.getElementById('hero');
+
+      function onPointerDown(e) {
+        isDragging = true;
+        prevX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+        prevY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      }
+
+      function onPointerMove(e) {
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+        mouseX = (clientX / window.innerWidth) * 2 - 1;
+        mouseY = -(clientY / window.innerHeight) * 2 + 1;
+
+        if (isDragging) {
+          const deltaX = clientX - prevX;
+          const deltaY = clientY - prevY;
+          targetRotationY += deltaX * 0.008;
+          targetRotationX += deltaY * 0.008;
+          prevX = clientX;
+          prevY = clientY;
+        }
+      }
+
+      function onPointerUp() {
+        isDragging = false;
+      }
+
+      if (catcher) {
+        catcher.addEventListener('mousedown', onPointerDown);
+        catcher.addEventListener('touchstart', onPointerDown, { passive: true });
+      }
+
+      window.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('touchmove', onPointerMove, { passive: true });
+      window.addEventListener('mouseup', onPointerUp);
+      window.addEventListener('touchend', onPointerUp);
+    }
+
+    // ── 7. Lenis Smooth Scroll Integration ───────────────────────────────────
+    let lenis;
+    function initLenis() {
+      if (typeof Lenis !== 'undefined') {
+        lenis = new Lenis({
+          duration: 1.2,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          smoothWheel: true,
+          touchMultiplier: 1.5
+        });
+
+        lenis.on('scroll', ({ scroll, limit, progress }) => {
+          scrollProgress = progress || 0;
+        });
+
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+      } else {
+        window.addEventListener('scroll', () => {
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          scrollProgress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+        });
+      }
+    }
+
+    // ── 8. Animation & Render Loop ───────────────────────────────────────────
+    let clock = new THREE.Clock();
+    let frameTimes = [];
+    let lastFpsUpdate = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+      const time = clock.getElapsedTime();
+
+      // FPS Counter
+      const now = performance.now();
+      frameTimes.push(now);
+      while (frameTimes.length > 0 && frameTimes[0] <= now - 1000) {
+        frameTimes.shift();
+      }
+      if (now - lastFpsUpdate > 500) {
+        const fpsElement = document.getElementById('fps-counter');
+        if (fpsElement) fpsElement.textContent = `${frameTimes.length} FPS`;
+        lastFpsUpdate = now;
+      }
+
+      // Turntable Inertia
+      if (centralGroup) {
+        // Base auto-rotate
+        centralGroup.rotation.y += 0.3 * turntableSpeed * delta;
+
+        // Mouse turntable interpolation
+        centralGroup.rotation.y += (targetRotationY - centralGroup.rotation.y) * 0.08;
+        centralGroup.rotation.x += (targetRotationX - centralGroup.rotation.x) * 0.08;
+
+        // Lenis Scroll Choreography:
+        // As scrollProgress increases (0 -> 1):
+        // 1. Group explodes outward (scale expands & rings decouple)
+        // 2. Rotates 180° along Z and Y
+        // 3. Shards frame the viewport
+        const explodeFactor = Math.sin(scrollProgress * Math.PI); // Peaks around mid-page
+        const scrollRotation = scrollProgress * Math.PI * 2;
+
+        centralGroup.position.y = Math.sin(time * 0.8) * 0.15 - (scrollProgress * 1.5);
+        centralGroup.rotation.z = Math.sin(time * 0.5) * 0.1 + (scrollProgress * Math.PI * 0.8);
+
+        if (ring1) {
+          ring1.rotation.x = (Math.PI / 3) + scrollRotation * 0.5 + time * 0.2;
+          ring1.scale.setScalar(1 + explodeFactor * 0.4);
+        }
+        if (ring2) {
+          ring2.rotation.z = (Math.PI / 5) - scrollRotation * 0.4 - time * 0.15;
+          ring2.scale.setScalar(1 + explodeFactor * 0.6);
+        }
+
+        // Kinetic Shards Orbit + Explosion
+        kineticShards.forEach((shard, idx) => {
+          const data = shard.userData;
+          const currentAngle = data.baseAngle + (time * data.speed * turntableSpeed);
+          const currentRadius = data.radius + (explodeFactor * 1.8) + (shockwaveIntensity * 2.5);
+
+          shard.position.x = Math.cos(currentAngle) * currentRadius;
+          shard.position.z = Math.sin(currentAngle) * currentRadius;
+          shard.position.y = data.yOffset + Math.sin(time * 2 + idx) * 0.2;
+
+          shard.rotation.x += 0.02;
+          shard.rotation.y += 0.03;
+        });
+      }
+
+      // Particle Field Animation & Shockwave Ripple
+      if (particleSystem && particlePositions && initialParticlePositions) {
+        const positions = particleSystem.geometry.attributes.position.array;
+        const count = positions.length / 3;
+
+        for (let i = 0; i < count; i++) {
+          const i3 = i * 3;
+          // Organic breathing oscillation
+          const wave = Math.sin(time * 1.2 + i * 0.05) * 0.08;
+          const shock = shockwaveIntensity * Math.sin(i * 0.1 - time * 5) * 0.5;
+
+          positions[i3] = initialParticlePositions[i3] * (1 + wave + shock);
+          positions[i3 + 1] = initialParticlePositions[i3 + 1] * (1 + wave + shock);
+          positions[i3 + 2] = initialParticlePositions[i3 + 2] * (1 + wave + shock);
+        }
+
+        particleSystem.geometry.attributes.position.needsUpdate = true;
+        particleSystem.rotation.y = time * 0.03 + (scrollProgress * 0.5);
+      }
+
+      // Decay shockwave
+      if (shockwaveIntensity > 0.001) {
+        shockwaveIntensity *= 0.94;
+      } else {
+        shockwaveIntensity = 0;
+      }
+
+      // Point Light follows mouse
+      if (pointLight) {
+        pointLight.position.x += (mouseX * 4 - pointLight.position.x) * 0.05;
+        pointLight.position.y += (mouseY * 4 - pointLight.position.y) * 0.05;
+      }
+
+      // Render via Composer or direct Renderer
+      if (composer) {
+        composer.render();
+      } else {
+        renderer.render(scene, camera);
+      }
+    }
+
+    // ── 9. Window Resize ─────────────────────────────────────────────────────
+    function onWindowResize() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(width, height);
+      if (composer) {
+        composer.setSize(width, height);
+      }
+    }
+
+    // ── 10. Interactive Control Dock Actions ─────────────────────────────────
+    function toggleWireframe() {
+      isWireframe = !isWireframe;
+      if (coreMesh) coreMesh.material.wireframe = isWireframe;
+      if (ring1) ring1.material.wireframe = isWireframe;
+      if (ring2) ring2.material.wireframe = isWireframe;
+      kineticShards.forEach(s => s.material.wireframe = isWireframe);
+
+      const btn = document.getElementById('btn-toggle-wireframe');
+      if (btn) {
+        btn.classList.toggle('bg-[#BFFF04]/20', isWireframe);
+        btn.classList.toggle('text-[#BFFF04]', isWireframe);
+      }
+    }
+
+    function setLightingTheme(themeName) {
+      if (!THEMES[themeName]) return;
+      currentTheme = themeName;
+      const theme = THEMES[themeName];
+
+      if (keyLight) keyLight.color.setHex(theme.key);
+      if (rimLight) rimLight.color.setHex(theme.rim);
+      if (pointLight) pointLight.color.setHex(theme.accent);
+
+      if (ring2) {
+        ring2.material.color.setHex(theme.key);
+        ring2.material.emissive.setHex(theme.key);
+      }
+
+      kineticShards.forEach(s => {
+        s.material.color.setHex(theme.accent);
+        s.material.emissive.setHex(theme.accent);
+      });
+
+      // Update particle colors
+      if (particleSystem) {
+        const colors = particleSystem.geometry.attributes.color.array;
+        const color1 = new THREE.Color(theme.key);
+        const color2 = new THREE.Color(theme.rim);
+        const count = colors.length / 3;
+
+        for (let i = 0; i < count; i++) {
+          const i3 = i * 3;
+          const mixed = color1.clone().lerp(color2, Math.random());
+          colors[i3] = mixed.r;
+          colors[i3 + 1] = mixed.g;
+          colors[i3 + 2] = mixed.b;
+        }
+        particleSystem.geometry.attributes.color.needsUpdate = true;
+      }
+
+      const label = document.getElementById('active-theme-label');
+      if (label) {
+        label.textContent = theme.label;
+        label.style.color = `#${theme.accent.toString(16).padStart(6, '0')}`;
+      }
+    }
+
+    function cycleTurntableSpeed() {
+      const speeds = [0, 1.0, 2.0, 3.5];
+      const labels = ['Paused', '1x', '2x', '3.5x'];
+
+      let idx = speeds.indexOf(turntableSpeed);
+      idx = (idx + 1) % speeds.length;
+      turntableSpeed = speeds[idx];
+
+      const label = document.getElementById('speed-label');
+      if (label) label.textContent = labels[idx];
+    }
+
+    function triggerParticleShockwave() {
+      shockwaveIntensity = 1.0;
+    }
+
+    function toggleDock() {
+      const controls = document.getElementById('dock-controls');
+      const btn = document.getElementById('dock-minimize-btn');
+      if (controls) {
+        controls.classList.toggle('hidden');
+        btn.textContent = controls.classList.contains('hidden') ? '▲' : '▼';
+      }
+    }
+
+    // ── 11. Boot Orchestration ───────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      initThree();
+      initLenis();
+      animate();
+    });
+  </script>
+</body>
+</html>
