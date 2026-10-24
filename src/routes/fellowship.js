@@ -291,11 +291,105 @@ router.post(['/apply', '/'], asyncHandler(async (req, res) => {
 }));
 
 /**
+ * Parses a Supabase lead record back into a canonical candidate entity
+ */
+function parseLeadToFellowship(lead) {
+  let meta = {};
+  if (lead.notes) {
+    if (lead.notes.trim().startsWith('{')) {
+      try { meta = JSON.parse(lead.notes); } catch (_) {}
+    } else if (lead.notes.includes('[FELLOWSHIP APPLICATION]')) {
+      const tokenMatch = lead.notes.match(/Token:\s*([^\s|]+)/i);
+      const uniMatch = lead.notes.match(/University:\s*([^|(]+)(?:\(([^,)]+),\s*([^)]+)\))?/i);
+      const aptMatch = lead.notes.match(/Aptitude:\s*([\d.]+)/i);
+      const portMatch = lead.notes.match(/Portfolio:\s*([^\s|]+)/i);
+      const expMatch = lead.notes.match(/Experiment:\s*(.+)$/i);
+
+      meta.token = tokenMatch ? tokenMatch[1].trim() : null;
+      meta.university = uniMatch ? uniMatch[1].trim() : '';
+      meta.department = uniMatch && uniMatch[2] ? uniMatch[2].trim() : '';
+      meta.graduationYear = uniMatch && uniMatch[3] ? uniMatch[3].trim() : '';
+      meta.aiAptitudeScore = aptMatch ? parseFloat(aptMatch[1]) : 9.5;
+      meta.portfolioUrl = portMatch ? portMatch[1].trim() : '';
+      meta.creativeExperimentPrompt = expMatch ? expMatch[1].trim() : '';
+    }
+  }
+
+  const token = meta.token || lead.id;
+  const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+  const waPhone = cleanPhone.startsWith('88') ? cleanPhone : (cleanPhone.startsWith('01') ? '88' + cleanPhone : cleanPhone);
+  const waMsg = encodeURIComponent(`Assalamu Alaikum ${lead.name || 'Candidate'}! Loved your AI Media Fellowship creative experiment (${token}). Let's discuss your pilot production.`);
+  const whatsappUrl = `https://wa.me/${waPhone}?text=${waMsg}`;
+
+  return {
+    id: lead.id,
+    token: token,
+    name: lead.name,
+    phone: lead.phone,
+    university: meta.university || 'University',
+    department: meta.department || 'N/A',
+    graduationYear: meta.graduationYear || '2026',
+    experienceSummary: meta.experienceSummary || 'Generative AI & Video Editing',
+    portfolioUrl: meta.portfolioUrl || '',
+    creativeExperimentPrompt: meta.creativeExperimentPrompt || lead.notes || '',
+    aiAptitudeScore: meta.aiAptitudeScore || 9.5,
+    whatsappUrl: whatsappUrl,
+    timestamp: lead.created_at,
+    status: 'APPLIED',
+    source: 'fellowship_intake_portal'
+  };
+}
+
+/**
+ * Asynchronously fetches all applications across Supabase, /tmp, and primary data folder
+ */
+async function fetchAllApplicationsAsync() {
+  const mergedMap = new Map();
+
+  // 1. Fetch live records from Supabase leads table (canonical cross-instance source)
+  try {
+    if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && supabase) {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('source', 'fellowship_intake_portal')
+        .order('created_at', { ascending: false });
+
+      if (Array.isArray(data)) {
+        for (const lead of data) {
+          const parsed = parseLeadToFellowship(lead);
+          if (parsed && (parsed.token || parsed.id)) {
+            mergedMap.set(parsed.token || parsed.id, parsed);
+          }
+        }
+      }
+    }
+  } catch (sbErr) {
+    console.warn('[Fellowship Storage] Supabase query notice:', sbErr.message);
+  }
+
+  // 2. Merge local /tmp applications and primary file applications
+  const localApps = readApplications();
+  for (const app of localApps) {
+    if (app && (app.token || app.id)) {
+      if (!mergedMap.has(app.token || app.id)) {
+        mergedMap.set(app.token || app.id, app);
+      }
+    }
+  }
+
+  const all = Array.from(mergedMap.values());
+  // Sort by timestamp descending (newest first)
+  all.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+  return all;
+}
+
+/**
  * GET /api/fellowship/applications
  * Returns all submitted applications (for verification & admin reporting)
  */
 router.get(['/applications', '/list'], asyncHandler(async (req, res) => {
-  const apps = readApplications();
+  const apps = await fetchAllApplicationsAsync();
   return ok(res, {
     total: apps.length,
     applications: apps
@@ -308,7 +402,7 @@ router.get(['/applications', '/list'], asyncHandler(async (req, res) => {
  */
 router.get('/status/:token', asyncHandler(async (req, res) => {
   const { token } = req.params;
-  const apps = readApplications();
+  const apps = await fetchAllApplicationsAsync();
   const matched = apps.find(a => (a.token || '').toUpperCase() === (token || '').toUpperCase() || a.id === token);
   if (!matched) {
     return fail(res, 404, `No fellowship application found matching token: ${token}`, 'NOT_FOUND');
