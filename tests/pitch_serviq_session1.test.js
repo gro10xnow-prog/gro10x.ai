@@ -61,9 +61,10 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('visual-powergrid.svg');
     });
 
-    test('contains Slide 4: Why BPO is Ground Zero for AI Leverage', async () => {
+    test('contains Slide 4: Why BPO is Ground Zero for AI Leverage with humanized non-jargon copy', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
       expect(res.text).toContain('BPO অপারেশন্সে AI কেন সবচেয়ে বেশি শক্তিশালী?');
+      expect(res.text).toContain('DAILY MESSAGE FLOOD');
       expect(res.text).toContain('হাজারো মেসেজ ও রিকোয়েস্ট');
       expect(res.text).toContain('ভিন্ন ভিন্ন ফরম্যাট');
       expect(res.text).toContain('সবার আগে সার্ভিস ডেলিভারি');
@@ -102,6 +103,7 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('Serviq-এর ৪টি ডেস্কে ৪টি আলাদা AI ইঞ্জিন');
       expect(res.text).toContain('Shabuddin · Rayhan · Ridhiya · Partha');
       expect(res.text).toContain('Customer Operations');
+      expect(res.text).toContain('Instant Executive Drafts');
       expect(res.text).toContain('Field Logistics');
       expect(res.text).toMatch(/Admin (&|&amp;) Data Engine/);
       expect(res.text).toContain('visual-4desks.svg');
@@ -224,7 +226,7 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('id="desktop-slide-list"');
     });
 
-    test('renders slide-by-slide audio rehearsal recorder with MediaRecorder & Web Audio API triggers', async () => {
+    test('renders slide-by-slide audio rehearsal recorder with MediaRecorder, quota eviction & Object URL fallback', async () => {
       const res = await request(app).get('/pitch/serviq-session1/copilot');
       expect(res.text).toContain('toggleAudioRecordingActive()');
       expect(res.text).toContain('startAudioRecordingActive()');
@@ -232,8 +234,29 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('navigator.mediaDevices.getUserMedia');
       expect(res.text).toContain('MediaRecorder');
       expect(res.text).toContain('serviq_audio_slide_');
+      expect(res.text).toContain('manageAudioQuotaEviction');
+      expect(res.text).toContain('sessionAudioMap');
+      expect(res.text).toContain('URL.createObjectURL');
       expect(res.text).toContain('id="btn-record-audio-desktop"');
       expect(res.text).toContain('id="audio-player-desktop"');
+    });
+
+    test('embeds the 2 pacing interventions in Slide 3 and Slide 7 speaker notes', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/copilot');
+      expect(res.text).toContain('PACING GUARDRAIL (Avoid GPU rabbit holes)');
+      expect(res.text).toContain('বিদ্যুৎ কেন্দ্র বানাতে আসিনি');
+      expect(res.text).toContain('PACING GUARDRAIL (Avoid wording debates)');
+      expect(res.text).toContain('মেইলের প্রতিটি শব্দ নিয়ে কিন্তু আমরা এখন তর্ক করব না');
+    });
+
+    test('verifies visual-4desks.svg font size bump for Meet 1080p stream', async () => {
+      const fs = require('fs');
+      const path = require('path');
+      const svg = fs.readFileSync(path.join(__dirname, '../public/pitch/serviq-session1/assets/visual-4desks.svg'), 'utf8');
+      expect(svg).toContain('font-size="12"');
+      expect(svg).toContain('font-size="13"');
+      expect(svg).toContain('font-weight="700"');
+      expect(svg).not.toContain('font-size="10"');
     });
 
     test('renders in-browser editable presenter notes with localStorage persistence', async () => {
