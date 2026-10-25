@@ -146,6 +146,37 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('href="/pitch/serviq-session1/takeaway"');
       expect(res.text).toContain('target="_blank"');
     });
+
+    test('verifies native inlined SVGs in Slide 2, 3, 4, 6, and 8 with zero network roundtrips', async () => {
+      const res = await request(app).get('/pitch/serviq-session1');
+      expect(res.text).toContain('id="intern-svg"');
+      expect(res.text).toContain('id="powergrid-svg"');
+      expect(res.text).toContain('id="bpo-svg"');
+      expect(res.text).toContain('id="rcto-svg"');
+      expect(res.text).toContain('id="desks-svg"');
+      // Verify SVGs are embedded as SVG markup, not bare img tags
+      expect(res.text).toContain('data-asset="visual-intern.svg"');
+      expect(res.text).toContain('data-asset="visual-powergrid.svg"');
+      expect(res.text).toContain('data-asset="visual-bpo-contrast.svg"');
+      expect(res.text).toContain('data-asset="visual-rcto.svg"');
+      expect(res.text).toContain('data-asset="visual-4desks.svg"');
+    });
+
+    test('verifies full 16:9 widescreen space utilization and expanded pod layout', async () => {
+      const res = await request(app).get('/pitch/serviq-session1');
+      expect(res.text).toContain('max-w-7xl w-full mx-auto px-6 lg:px-12');
+      expect(res.text).toContain('min-h-[440px] lg:min-h-[480px]');
+      expect(res.text).toContain('flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]');
+    });
+
+    test('verifies vercel.json static asset handler exists for /pitch/serviq-session1/assets/(.*)', () => {
+      const fs = require('fs');
+      const path = require('path');
+      const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../vercel.json'), 'utf8'));
+      const assetRoute = vercelConfig.routes.find(r => r.src === '/pitch/serviq-session1/assets/(.*)');
+      expect(assetRoute).toBeDefined();
+      expect(assetRoute.dest).toBe('/public/pitch/serviq-session1/assets/$1');
+    });
   });
 
   describe('Surface B: Private Presenter Co-Pilot 2.0 HUD (/pitch/serviq-session1/copilot)', () => {

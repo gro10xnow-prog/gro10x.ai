@@ -233,6 +233,10 @@
       "dest": "/public/pitch/serviq-session1/takeaway/index.html"
     },
     {
+      "src": "/pitch/serviq-session1/assets/(.*)",
+      "dest": "/public/pitch/serviq-session1/assets/$1"
+    },
+    {
       "src": "/pitch/serviq-session1(/.*)?",
       "dest": "/public/pitch/serviq-session1/index.html"
     },
