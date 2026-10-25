@@ -225,6 +225,14 @@
       "dest": "/public/pitch/biniyog-foodpanda/index.html"
     },
     {
+      "src": "/pitch/serviq-session1/copilot(.*)",
+      "dest": "/public/pitch/serviq-session1/copilot.html"
+    },
+    {
+      "src": "/pitch/serviq-session1(/.*)?",
+      "dest": "/public/pitch/serviq-session1/index.html"
+    },
+    {
       "src": "/pitch(/.*)?",
       "dest": "/public/pitch/index.html"
     },

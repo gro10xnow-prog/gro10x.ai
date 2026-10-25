@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Serviq Masterclass — Presenter Co-Pilot HUD (Session 1)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #070B12;
+      color: #E2E8F0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glow-cyan { box-shadow: 0 0 16px rgba(0, 240, 255, 0.35); }
+    .glow-purple { box-shadow: 0 0 16px rgba(139, 92, 246, 0.35); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 select-none bg-[#070B12]">
+
+  <!-- ========================================================= -->
+  <!-- TOP STICKY CONTROLLER HUD                                 -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-50 bg-[#0A101D]/95 backdrop-blur-md border-b border-white/10 px-4 py-2.5 shadow-2xl">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      
+      <!-- Identity -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#00F0FF] to-[#8B5CF6] flex items-center justify-center text-black font-black text-sm shadow-md">
+          S
+        </div>
+        <div>
+          <div class="text-[11px] font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+            PLABON CO-PILOT
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse"></span>
+          </div>
+          <div class="text-[9px] text-gray-400 mono">Serviq BPO · Session 1 Kickoff</div>
+        </div>
+      </div>
+
+      <!-- Pacing Stopwatch: 60m Masterclass + 30m Q&A -->
+      <div class="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
+        <div class="text-right">
+          <div class="text-[8px] text-gray-400 uppercase mono font-bold" id="timer-label">Masterclass (60m)</div>
+          <div id="timer-display" class="text-sm font-black mono text-[#00F0FF] leading-none">60:00</div>
+        </div>
+        <button id="timer-btn" onclick="toggleTimer()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition active:scale-90" title="Start/Pause Timer">
+          ▶
+        </button>
+        <button onclick="switchTimerMode()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 flex items-center justify-center text-[10px] font-mono transition" title="Switch between 60m & 30m Q&A">
+          ⇄
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Quick Navigation Tabs -->
+    <div class="max-w-md mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-[#00F0FF] text-black transition shrink-0">
+        🎙️ Speaker Notes (1-12)
+      </button>
+      <button onclick="switchTab('shootout')" id="tab-btn-shootout" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        📋 Live Shootout Prompts
+      </button>
+      <button onclick="switchTab('governance')" id="tab-btn-governance" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        🛡️ PII & Security Shield
+      </button>
+      <a href="/pitch/serviq-session1" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-[#00F0FF] border border-[#00F0FF]/30 transition shrink-0 flex items-center gap-1">
+        📺 TV Deck ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN CONTAINER                                            -->
+  <!-- ========================================================= -->
+  <main class="max-w-md mx-auto w-full px-4 pt-3 flex-1">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 1: SPEAKER NOTES (SLIDES 1 TO 12)                     -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-notes" class="tab-content space-y-3">
+      
+      <div class="p-3 bg-gradient-to-r from-[#00F0FF]/10 via-[#8B5CF6]/10 to-transparent rounded-2xl border border-white/10 mb-2">
+        <div class="text-[10px] uppercase font-mono font-bold text-[#00F0FF]">Plabon's Masterclass Strategy</div>
+        <div class="text-xs text-gray-200 mt-0.5">
+          Zero trainee screen-sharing today. Maintain psychological safety. Focus on <strong class="text-white">"The Tireless MBA Intern"</strong> and <strong class="text-[#00F0FF]">The RCTO Protocol</strong>.
+        </div>
+      </div>
+
+      <!-- Slide 1 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden" open>
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">01</span>
+            <span class="text-xs font-bold text-white">Welcome & Mission Launch</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Opening Words:</strong> "Welcome Meraz Bhai, Moon Bhai, Ridhiya, Rayhan, Shabuddin, and Partha. Today is not about turning you into computer programmers or data scientists."</p>
+          <p><strong class="text-[#00F0FF]">The Vision:</strong> "Today marks the transition of Serviq BPO from a traditional manual operations house into Bangladesh’s most tech-accelerated Employer of Record managing 4,700+ deployed personnel across 64 districts."</p>
+        </div>
+      </details>
+
+      <!-- Slide 2 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">02</span>
+            <span class="text-xs font-bold text-white">The Core Mental Model · The MBA Intern</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">The Metaphor:</strong> "When you open Gemini, don't think of Google Search. Google Search finds existing pages. Gemini writes brand-new work from scratch."</p>
+          <p><strong class="text-white">The Persona:</strong> "Treat Gemini like a top-ranking IBA or Ivy League graduate who walked into your Banani office at 9:00 AM today. They have memorized every dictionary and business book, but have zero local context about Serviq until you give them an executive brief."</p>
+        </div>
+      </details>
+
+      <!-- Slide 3 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">03</span>
+            <span class="text-xs font-bold text-white">The 3-Layer Enterprise Power Grid</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">The 3 Layers:</strong></p>
+          <ul class="space-y-1.5 text-gray-300">
+            <li>• <strong class="text-white">Layer 1 (The Power Grid):</strong> Google & Nvidia server farms. You don't build power stations; you plug in.</li>
+            <li>• <strong class="text-white">Layer 2 (The Brain in a Jar):</strong> Gemini 1.5 Pro. The brilliant mind waiting for orders.</li>
+            <li>• <strong class="text-[#00F0FF]">Layer 3 (The Desk):</strong> Google Workspace, Sheets, Gmail, NotebookLM. Where Serviq leads reclaim 3 hours every day.</li>
+          </ul>
+        </div>
+      </details>
+
+      <!-- Slide 4 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">04</span>
+            <span class="text-xs font-bold text-white">Why BPO is Ground Zero for AI</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">The Friction:</strong> "Serviq manages 4,700 payrolls across 64 districts. That generates thousands of questions every single week."</p>
+          <p><strong class="text-emerald-400">The Edge:</strong> "Your competitors answer those manually one email at a time. Serviq is about to answer them with instant, flawless AI speed, winning multinational client accounts."</p>
+        </div>
+      </details>
+
+      <!-- Slide 5 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center font-black text-xs font-mono">05</span>
+            <span class="text-xs font-bold text-white">The "Lazy Prompt" Trap</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">The Trap:</strong> "If Meraz Bhai tells a junior employee 'Do some work today' and walks away, what happens? Nothing useful."</p>
+          <p><strong class="text-red-400">The 4-Word Trap:</strong> "Typing 'Write a client email' gives you corporate garbage. Today we eliminate the lazy prompt forever."</p>
+        </div>
+      </details>
+
+      <!-- Slide 6 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">06</span>
+            <span class="text-xs font-bold text-white">The GRO10X RCTO Protocol</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Memorize R-C-T-O:</strong></p>
+          <p>• <strong class="text-[#00F0FF]">R (Role):</strong> Senior EOR Operations Lead at Serviq BPO.</p>
+          <p>• <strong class="text-[#C4B5FD]">C (Context):</strong> 45 promoters, bank clearing maintenance window.</p>
+          <p>• <strong class="text-emerald-400">T (Task):</strong> Reassuring email update to HR Director Tanvir Ahmed.</p>
+          <p>• <strong class="text-amber-400">O (Output):</strong> 3 paragraphs, under 150 words, timeline bullets.</p>
+        </div>
+      </details>
+
+      <!-- Slide 7 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">07</span>
+            <span class="text-xs font-bold text-white">Live Shootout: Client Payroll Scenario</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Execution Cue:</strong> Switch to Gemini tab on Meet. Paste Prompt A first. Highlight the cold, robotic text. Then paste Prompt B. Show the 4-second transformation.</p>
+          <p><strong class="text-[#00F0FF]">Key Takeaway:</strong> "The machine is identical. The difference is the prompt architecture."</p>
+        </div>
+      </details>
+
+      <!-- Slide 8 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">08</span>
+            <span class="text-xs font-bold text-white">The 4 Serviq Desks Ahead</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Call out each lead by name:</strong></p>
+          <p>• <strong>Shabuddin:</strong> Customer query matrix automation.</p>
+          <p>• <strong>Rayhan:</strong> Field logistics multimodal image extraction.</p>
+          <p>• <strong>Ridhiya:</strong> Admin policy circular digests.</p>
+          <p>• <strong>Partha:</strong> Google Sheets formula automation & daily status reporting.</p>
+        </div>
+      </details>
+
+      <!-- Slide 9 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">09</span>
+            <span class="text-xs font-bold text-white">Security, Privacy & PII Shield</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Reassure Meraz & Moon Bhai:</strong></p>
+          <p>1. No public model training on enterprise Workspace documents.</p>
+          <p>2. The Golden Redaction Rule: Zero unredacted national IDs or passwords.</p>
+          <p>3. Human-in-the-Loop: AI drafts; a human always reviews and sends.</p>
+        </div>
+      </details>
+
+      <!-- Slide 10 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">10</span>
+            <span class="text-xs font-bold text-white">The 5-Session Flight Plan</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Roadmap Narrative:</strong> "Today is the foundation. Sessions 2 & 3 are online tool mastery. Sessions 4 & 5 are in-person laptop restructuring at your Banani headquarters."</p>
+        </div>
+      </details>
+
+      <!-- Slide 11 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">11</span>
+            <span class="text-xs font-bold text-white">2-Minute Zero-Friction Homework</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Set Zero Anxiety:</strong> "Only 2 minutes: Log into `gemini.google.com` to verify access, and write down ONE annoying task. Do not prompt yet! Bring it to Session 2."</p>
+        </div>
+      </details>
+
+      <!-- Slide 12 -->
+      <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">12</span>
+            <span class="text-xs font-bold text-white">Open Floor: Questions & Fear Dissolution</span>
+          </div>
+          <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+        </summary>
+        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-white">Trigger Open Floor:</strong> "Meraz Bhai, Moon Bhai, team—unmute your mics. Ask me anything, even if you think it's too basic or sounds too good to be true."</p>
+        </div>
+      </details>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 2: LIVE SHOOTOUT (1-TAP PROMPTS)                      -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-shootout" class="tab-content hidden space-y-3">
+      
+      <div class="p-3 bg-[#00F0FF]/10 rounded-2xl border border-[#00F0FF]/20 text-xs text-[#00F0FF] mb-2">
+        <strong>1-Tap Masterclass Shootout:</strong> Tap copy on Prompt A, paste in Gemini. Then tap copy on Prompt B to show the senior transformation.
+      </div>
+
+      <!-- Prompt A Card -->
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-red-500/30 space-y-2.5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-red-400 font-mono">PROMPT A (THE LAZY PROMPT)</span>
+          <span class="text-[10px] text-gray-400 font-mono">4 Words</span>
+        </div>
+        <div id="prompt-a-text" class="text-xs text-red-300 bg-black/40 p-3 rounded-xl border border-red-500/20 font-mono leading-relaxed">
+Write an email to a client saying employee salaries are delayed due to bank holiday.
+        </div>
+        <button onclick="copyElementText('prompt-a-text')" class="w-full py-2.5 px-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs font-bold transition flex items-center justify-center gap-1.5">
+          📋 Copy Prompt A (Lazy)
+        </button>
+      </div>
+
+      <!-- Prompt B Card -->
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-emerald-500/30 space-y-2.5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-emerald-400 font-mono">PROMPT B (SERVIQ RCTO PROTOCOL)</span>
+          <span class="text-[10px] text-emerald-400 font-mono font-bold">Production Standard</span>
+        </div>
+        <div id="prompt-b-text" class="text-xs text-emerald-300 bg-black/40 p-3 rounded-xl border border-emerald-500/20 font-mono leading-relaxed max-h-48 overflow-y-auto">
+Role: You are a Senior Client Operations Manager at Serviq BPO Limited, a premier tech-enabled Employer of Record (EOR) managing 4,700+ payrolls in Bangladesh.
+
+Context: One of our multinational corporate accounts has inquired why their 45 field promoters have not yet received salary credit alerts this morning. Today is Sunday, and Bangladesh Bank's BEFTN/NPSB interbank clearing network experienced a scheduled server maintenance window until 1:00 PM. All payroll files were dispatched by Serviq on Thursday before cutoff.
+
+Task: Draft a reassuring, highly professional email update to the Client HR Director (Tanvir Ahmed). Explain the exact bank clearing status without placing blame, confirm that all disbursements are expected to reflect between 2:00 PM and 4:30 PM today, and provide our dedicated operations hotline for any urgent employee queries.
+
+Output Guardrails:
+1. Tone: Calm, authoritative, executive, corporate B2B empathy.
+2. Structure: 3 concise paragraphs under 150 words total.
+3. Include a bulleted 3-step timeline (Thursday File Dispatch -> Bank Server Maintenance -> Expected SMS Reflection).
+4. Do not use generic placeholders; sign off formally on behalf of Serviq BPO Operations Desk.
+        </div>
+        <button onclick="copyElementText('prompt-b-text')" class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
+          📋 Copy Prompt B (Serviq RCTO)
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 3: PII & SECURITY SHIELD                              -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-governance" class="tab-content hidden space-y-3">
+      
+      <div class="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-xs text-emerald-300 mb-2">
+        <strong>Executive Data Defense:</strong> Present these 3 laws to address Meraz Bhai & Moon Bhai's governance priorities.
+      </div>
+
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2">
+        <div class="text-xs font-bold text-white flex items-center gap-2">
+          <span class="text-[#00F0FF]">1.</span> Commercial Data Boundary
+        </div>
+        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
+          "Google Workspace Enterprise and commercial Gemini licenses do not use proprietary client spreadsheets, candidate CVs, or internal communications to train public foundation models."
+        </p>
+      </div>
+
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2">
+        <div class="text-xs font-bold text-white flex items-center gap-2">
+          <span class="text-amber-400">2.</span> The Golden Redaction Rule
+        </div>
+        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
+          "Never paste unredacted personal identification numbers (NIDs), unmasked bank account numbers, or passwords into chat prompts. Use dummy tokens (e.g., [Employee_01], [Bank_A])."
+        </p>
+      </div>
+
+      <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2">
+        <div class="text-xs font-bold text-white flex items-center gap-2">
+          <span class="text-emerald-400">3.</span> The Human Gatekeeper Law
+        </div>
+        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
+          "AI is your tireless drafting intern; you are the executive manager. AI drafts, human eyes verify facts, and a human always hits 'Send'. You are 100% accountable for the final output."
+        </p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT LOGIC & TIMER                                  -->
+  <!-- ========================================================= -->
+  <script>
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[#00F0FF]', 'text-black');
+        btn.classList.add('bg-white/10', 'text-gray-300');
+      });
+
+      const targetTab = document.getElementById(`tab-${tabId}`);
+      const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (targetTab) targetTab.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.remove('bg-white/10', 'text-gray-300');
+        targetBtn.classList.add('bg-[#00F0FF]', 'text-black');
+      }
+    }
+
+    // Pacing Stopwatch: 60m Masterclass + 30m Q&A
+    let isQAMode = false;
+    let timerDuration = 60 * 60; // 3600 seconds
+    let timerRemaining = timerDuration;
+    let timerInterval = null;
+    let isRunning = false;
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      const displayEl = document.getElementById('timer-display');
+      const labelEl = document.getElementById('timer-label');
+      if (displayEl) {
+        displayEl.textContent = formatTime(timerRemaining);
+        if (timerRemaining <= 300 && timerRemaining > 0) {
+          displayEl.className = 'text-sm font-black mono text-[#F59E0B] leading-none animate-pulse';
+        } else if (timerRemaining <= 0) {
+          displayEl.className = 'text-sm font-black mono text-[#EF4444] leading-none';
+        } else {
+          displayEl.className = `text-sm font-black mono ${isQAMode ? 'text-[#8B5CF6]' : 'text-[#00F0FF]'} leading-none`;
+        }
+      }
+      if (labelEl) {
+        labelEl.textContent = isQAMode ? 'Floor Q&A (30m)' : 'Masterclass (60m)';
+      }
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timer-btn');
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        if (btn) btn.textContent = '▶';
+      } else {
+        if (timerRemaining <= 0) timerRemaining = timerDuration;
+        isRunning = true;
+        if (btn) btn.textContent = '⏸';
+        timerInterval = setInterval(() => {
+          if (timerRemaining > 0) {
+            timerRemaining--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            if (btn) btn.textContent = '↺';
+          }
+        }, 1000);
+      }
+    }
+
+    function switchTimerMode() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      const btn = document.getElementById('timer-btn');
+      if (btn) btn.textContent = '▶';
+
+      isQAMode = !isQAMode;
+      timerDuration = isQAMode ? (30 * 60) : (60 * 60);
+      timerRemaining = timerDuration;
+      updateTimerDisplay();
+    }
+
+    // Clipboard Copy Helper
+    function copyElementText(elementId) {
+      const text = document.getElementById(elementId).innerText.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Prompt copied to clipboard! Paste into Gemini.');
+      }).catch(err => {
+        console.error('Failed to copy', err);
+      });
+    }
+  </script>
+</body>
+</html>

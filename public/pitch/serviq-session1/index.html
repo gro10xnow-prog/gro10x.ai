@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Serviq BPO AI Masterclass — Session 1: Foundations & The RCTO Protocol</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --bg-dark: #070B12;
+      --card-dark: #0E1626;
+      --serviq-cyan: #00F0FF;
+      --serviq-cyan-glow: rgba(0, 240, 255, 0.35);
+      --serviq-purple: #8B5CF6;
+      --serviq-purple-glow: rgba(139, 92, 246, 0.35);
+      --serviq-emerald: #10B981;
+      --serviq-amber: #F59E0B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      overflow: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Ambient Spotlight & Grid */
+    .bg-radar {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 240, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(139, 92, 246, 0.035) 1px, transparent 1px);
+    }
+
+    .spotlight {
+      background: radial-gradient(circle at 50% 12%, rgba(0, 240, 255, 0.14) 0%, rgba(139, 92, 246, 0.10) 35%, rgba(7, 11, 18, 0) 70%);
+    }
+
+    /* Active Slide Transition for TV & Boardroom Displays */
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: rgba(14, 22, 38, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glow-cyan {
+      box-shadow: 0 0 30px var(--serviq-cyan-glow);
+    }
+
+    .glow-purple {
+      box-shadow: 0 0 30px var(--serviq-purple-glow);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+      }
+      .slide.active {
+        height: auto;
+        min-height: calc(100vh - 120px);
+        padding-bottom: 90px;
+      }
+    }
+
+    /* Print Optimization for 1-Click PDF Presentation Export */
+    @media print {
+      @page {
+        size: 16in 9in landscape;
+        margin: 0;
+      }
+      body, html {
+        background-color: #070B12 !important;
+        color: #F8FAFC !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .slide {
+        display: flex !important;
+        opacity: 1 !important;
+        transform: none !important;
+        page-break-after: always;
+        break-after: page;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        padding: 3rem 4rem !important;
+        box-sizing: border-box !important;
+      }
+      .glass-card {
+        background: #0E1626 !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+  </style>
+</head>
+<body class="relative h-screen w-screen bg-[#070B12] bg-radar flex flex-col justify-between">
+
+  <!-- Ambient Light -->
+  <div class="spotlight absolute inset-0 pointer-events-none z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP HEADER / NAV BAR                                      -->
+  <!-- ========================================================= -->
+  <header class="no-print relative z-20 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#070B12]/80 backdrop-blur-md">
+    <!-- Co-Branded Lockup -->
+    <div class="flex items-center gap-3">
+      <!-- Serviq Logo Pill -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/40">
+        <span class="w-3 h-3 rounded-full bg-[#00F0FF] shadow-sm shadow-[#00F0FF]"></span>
+        <span class="heading-font font-black tracking-tight text-white text-sm">SERVIQ<span class="text-[#00F0FF]"> BPO</span></span>
+      </div>
+      <span class="text-gray-500 font-mono text-xs">✕</span>
+      <!-- GRO10X Logo Pill -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#8B5CF6]/15 border border-[#8B5CF6]/40">
+        <span class="w-3 h-3 rounded-full bg-[#8B5CF6] shadow-sm shadow-[#8B5CF6]"></span>
+        <span class="heading-font font-black tracking-tight text-white text-sm">GRO<span class="text-[#8B5CF6]">10X</span></span>
+      </div>
+      <div class="hidden md:block pl-2 border-l border-white/10">
+        <span class="text-xs text-gray-400 font-medium">Session 1: AI Workforce Acceleration Masterclass</span>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
+        <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse"></span>
+        Lead Trainer: <strong class="text-white">Firoz Uddin Ahmed (Plabon)</strong>
+      </div>
+      <a href="/pitch/serviq-session1/copilot" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-[#00F0FF]/20 hover:bg-[#00F0FF]/30 border border-[#00F0FF]/40 text-xs font-bold text-[#A5F3FC] transition flex items-center gap-1.5 shadow-sm">
+        📱 Presenter Co-Pilot ↗
+      </a>
+      <button onclick="downloadPdfDeck()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-semibold text-white transition" title="Export PDF Deck">
+        📥 PDF Deck
+      </button>
+      <button onclick="toggleFullscreen()" class="p-2 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 hover:text-white transition" title="Toggle Fullscreen (F)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- SLIDE CONTAINER (12 CANONICAL SLIDES)                      -->
+  <!-- ========================================================= -->
+  <main class="relative z-10 flex-1 w-full max-w-7xl mx-auto px-6 py-4 flex flex-col justify-center">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 01: WELCOME & MISSION LAUNCH                        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-1" class="slide active flex-col justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#00F0FF]/15 to-[#8B5CF6]/15 border border-white/15 text-xs font-bold uppercase tracking-wider mb-5">
+        <span class="text-[#00F0FF]">Serviq BPO AI Masterclass</span> · <span class="text-[#C4B5FD]">Session 01 of 05</span>
+      </div>
+      <h1 class="heading-font text-3xl sm:text-5xl lg:text-6xl font-black text-white max-w-5xl tracking-tight leading-tight mb-4">
+        Serviq BPO AI Workforce Acceleration: <span class="bg-gradient-to-r from-[#00F0FF] via-cyan-200 to-[#8B5CF6] bg-clip-text text-transparent">Day 1 Kickoff</span>
+      </h1>
+      <p class="text-gray-300 text-base sm:text-xl max-w-3xl mb-10 leading-relaxed font-normal">
+        Transitioning Serviq BPO from a manual operations house into Bangladesh's premier AI-accelerated Employer of Record managing <strong class="text-white">4,700+ deployed personnel across 64 districts</strong>.
+      </p>
+
+      <!-- Giant Visual Anchor: 3 High-Impact Highlights -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-4xl text-left">
+        <div class="glass-card p-6 rounded-2xl border-white/10 hover:border-[#00F0FF]/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/15 text-[#00F0FF] flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            🎯
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Built Specifically for Serviq</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            Zero generic textbook templates; designed directly from your team's real operational files, queries, and field logs.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border-white/10 hover:border-[#8B5CF6]/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-[#8B5CF6]/15 text-[#8B5CF6] flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            ⏱️
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">The 3-Hour Daily Reclaim</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            Freeing core operational leads from repetitive drafting and manual data entry to focus on high-value client relationships.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border-white/10 hover:border-emerald-400/40 transition group">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition">
+            🤝
+          </div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Executive & Team Alignment</h3>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            Uniting Meraz Bhai and Moon Bhai's enterprise growth targets with the daily workload relief of the operational desk.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 02: THE CORE MENTAL MODEL                           -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-2" class="slide flex-col justify-center">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-2">
+          🧠 The Core Mental Model
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Stop Thinking 'Search Engine' — Start Thinking 'Tireless MBA Intern'
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto mt-2">
+          Google Search finds existing webpages. AI writes brand-new executive work from your exact instructions.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-5xl mx-auto w-full">
+        <!-- Giant Visual Anchor: The Intern Persona Card -->
+        <div class="lg:col-span-7 glass-card p-7 rounded-2xl border border-[#00F0FF]/40 glow-cyan relative overflow-hidden">
+          <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+            <div>
+              <span class="text-xs uppercase font-mono tracking-wider text-[#00F0FF] font-bold">The AI Persona</span>
+              <h3 class="text-xl font-black text-white">Tier-1 Ivy League / IBA Graduate</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold font-mono">
+              24/7 Energy
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-5">
+            <div class="p-4 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Knowledge Base</div>
+              <div class="text-xl font-black text-white">Photographic Memory</div>
+              <div class="text-[11px] text-gray-400">Every dictionary, law, & business book</div>
+            </div>
+            <div class="p-4 rounded-xl bg-black/40 border border-white/5">
+              <div class="text-[10px] text-gray-400 uppercase font-mono">Local Serviq Context</div>
+              <div class="text-xl font-black text-amber-400">Zero (Until Briefed)</div>
+              <div class="text-[11px] text-gray-400">Locked in a soundproof room</div>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-[#070B12]/80 border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+            <span>⚡ Execution Speed: Complex analysis completed in under 5 seconds</span>
+            <span class="text-[#00F0FF] font-mono font-bold">0% Fatigue</span>
+          </div>
+        </div>
+
+        <!-- 3 Highlights -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1">01 · PHOTOGRAPHIC MEMORY</div>
+            <h4 class="text-sm font-bold text-white mb-1">Brilliant with Zero Local Context</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Knows every grammar rule and business framework on earth, but knows nothing about Serviq until you provide the memo.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#8B5CF6] text-xs font-mono font-bold mb-1">02 · INPUT DETERMINES OUTPUT</div>
+            <h4 class="text-sm font-bold text-white mb-1">Briefing Determines Brilliance</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Feed it a 4-word vague request, get corporate fluff. Feed it an executive operational brief, get boardroom gold.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1">03 · TIRELESS 24/7 EXECUTION</div>
+            <h4 class="text-sm font-bold text-white mb-1">Zero Afternoon Brain Fog</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Never gets tired, never gets overwhelmed by ticket volume, and generates clean drafts in under 5 seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 03: THE 3-LAYER ENTERPRISE POWER GRID               -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-3" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-[#C4B5FD] text-xs font-bold uppercase tracking-wider mb-2">
+          🔌 Enterprise Metaphor
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          How Modern AI Works: The Power Grid, The Brain, and The Desk
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          You don't build an electric power station to turn on an air conditioner. You just plug in.
+        </p>
+      </div>
+
+      <!-- Giant Visual Anchor: 3-Tier Vertical Stack -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full mb-4">
+        <!-- Layer 1 -->
+        <div class="glass-card p-6 rounded-2xl border-white/10 relative">
+          <div class="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            L1
+          </div>
+          <div class="text-xs font-mono font-bold text-gray-400 uppercase mb-1">Layer 1 · Global Hardware</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">The National Power Grid</h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Google, Nvidia, and planetary server farms spend $100B+ on processors. You don't build it; you plug into the wall socket.
+          </p>
+        </div>
+
+        <!-- Layer 2 -->
+        <div class="glass-card p-6 rounded-2xl border-[#8B5CF6]/30 relative">
+          <div class="w-12 h-12 rounded-xl bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            L2
+          </div>
+          <div class="text-xs font-mono font-bold text-[#C4B5FD] uppercase mb-1">Layer 2 · Foundation Model</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">The Brain in a Jar</h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Gemini 1.5 Pro with 2-million-token memory. The brilliant intellect locked in an office waiting for your executive briefing.
+          </p>
+        </div>
+
+        <!-- Layer 3 -->
+        <div class="glass-card p-6 rounded-2xl border-[#00F0FF]/40 glow-cyan relative bg-gradient-to-b from-[#00F0FF]/10 to-transparent">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            L3
+          </div>
+          <div class="text-xs font-mono font-bold text-[#00F0FF] uppercase mb-1">Layer 3 · Where Serviq Lives</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">The Workstation Desk</h3>
+          <p class="text-xs text-gray-200 leading-relaxed">
+            Google Workspace, Gmail, Sheets, and NotebookLM. The only layer you care about to eliminate daily friction and reclaim 3 hours.
+          </p>
+        </div>
+      </div>
+
+      <div class="max-w-5xl mx-auto w-full p-4 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+        <span>💡 <strong>Executive Takeaway:</strong> You do not need to learn coding or machine learning. You simply learn to steer from Layer 3.</span>
+        <span class="text-[#00F0FF] font-bold font-mono">100% Practical</span>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 04: WHY BPO IS GROUND ZERO FOR AI LEVERAGE          -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-4" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+          🏢 BPO Operational Reality
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          The Repetitive Communication & Data Bottleneck
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          Why high-volume BPO operations are the number one beneficiary of language AI.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto w-full">
+        <!-- Traditional BPO -->
+        <div class="glass-card p-7 rounded-2xl border-red-500/20 relative">
+          <div class="flex items-center justify-between mb-4">
+            <span class="px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 text-xs font-bold uppercase">
+              Traditional BPO Model
+            </span>
+            <span class="text-gray-500 text-xs font-mono">70% Manual Time</span>
+          </div>
+          <ul class="space-y-4 text-xs sm:text-sm text-gray-300">
+            <li class="flex items-start gap-3">
+              <span class="text-red-400 font-bold">✕</span>
+              <div>
+                <strong class="text-white block">Massive Query Volumes</strong>
+                Typing the same salary, tax, leave, and attendance answers hundreds of times.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-red-400 font-bold">✕</span>
+              <div>
+                <strong class="text-white block">Fragmented Field Updates</strong>
+                Supervisors send messy WhatsApp text, voice notes, and blurry handwritten receipts.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-red-400 font-bold">✕</span>
+              <div>
+                <strong class="text-white block">Slow SLA Turnaround</strong>
+                Clients wait hours for simple updates because leads are bogged down in drafting.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- AI-Accelerated Serviq -->
+        <div class="glass-card p-7 rounded-2xl border-[#00F0FF]/40 glow-cyan relative bg-gradient-to-b from-[#00F0FF]/5 to-transparent">
+          <div class="flex items-center justify-between mb-4">
+            <span class="px-3 py-1 rounded-full bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40 text-xs font-bold uppercase flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse"></span>
+              AI-Accelerated Serviq
+            </span>
+            <span class="text-[#00F0FF] text-xs font-mono font-bold">80% High-Value Time</span>
+          </div>
+          <ul class="space-y-4 text-xs sm:text-sm text-gray-200">
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold text-lg leading-none">✓</span>
+              <div>
+                <strong class="text-white block">Instant Executive Replies</strong>
+                Turn messy inquiries into calm, professional client emails in 4 seconds.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold text-lg leading-none">✓</span>
+              <div>
+                <strong class="text-white block">Automated Field Extraction</strong>
+                Drop photos of rosters and handwritten receipts; AI extracts structured data tables.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold text-lg leading-none">✓</span>
+              <div>
+                <strong class="text-white block">The Unfair Market Advantage</strong>
+                Serviq wins multinational enterprise contracts by offering 10x faster response SLAs.
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 05: THE LAZY PROMPT TRAP                            -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-5" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider mb-2">
+          ⚠️ The 48-Hour Failure
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Why Most People Give Up on AI After 48 Hours
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          When you treat the world's most powerful AI like a Google search bar, you get garbage.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-5xl mx-auto w-full">
+        <!-- Giant Visual Anchor: Lazy Prompt Breakdown -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-red-500/30 relative">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+            <span class="text-xs uppercase font-mono tracking-wider text-red-400 font-bold">The Typical 4-Word Disaster</span>
+            <span class="text-xs px-2.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/30 font-mono">Zero Context</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-black/60 border border-red-500/20 font-mono text-xs text-red-300 mb-4">
+            "Write an email to a client saying salaries are delayed."
+          </div>
+
+          <div class="p-4 rounded-xl bg-black/40 border border-white/5 space-y-2 text-xs text-gray-400 leading-relaxed">
+            <p><strong class="text-white">What AI Outputs:</strong> "Dear Sir/Madam, We regret to inform you that employee salaries are delayed due to an unforeseen issue. We apologize for the inconvenience caused. Sincerely, [Your Name] [Company]."</p>
+            <p class="text-red-400 font-bold">❌ Result: Sounds robotic, triggers client panic, admits fault for bank clearing holidays, and destroys trust.</p>
+          </div>
+        </div>
+
+        <!-- 3 Highlights -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-red-400 text-xs font-mono font-bold mb-1">01 · VAGUE INSTRUCTIONS</div>
+            <h4 class="text-sm font-bold text-white mb-1">Average of the Internet</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              With zero context, AI generates generic boilerplate that no multinational client in Gulshan or Banani would ever accept.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-amber-400 text-xs font-mono font-bold mb-1">02 · HALLUCINATION RISK</div>
+            <h4 class="text-sm font-bold text-white mb-1">Unchecked Assumptions</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Without boundaries, the model fills in the gaps by guessing reasons, leading to embarrassing inaccuracies.
+            </p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1">03 · THE FALSE BLAME</div>
+            <h4 class="text-sm font-bold text-white mb-1">Blaming Tech Instead of Prompts</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Users quit saying "AI doesn't work for my business", when the real flaw was a total lack of prompt architecture.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 06: THE PROPRIETARY GRO10X RCTO PROTOCOL            -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-6" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-2">
+          💎 The Core Secret
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          The Master Blueprint for Flawless AI Execution: R-C-T-O
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          The 4 pillars that turn any prompt into senior-analyst gold in 5 seconds.
+        </p>
+      </div>
+
+      <!-- Giant Visual Anchor: 4 Pillars -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto w-full mb-4">
+        <!-- R -->
+        <div class="glass-card p-5 rounded-2xl border-[#00F0FF]/30 relative">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black font-mono text-xl mb-3">
+            R
+          </div>
+          <div class="text-[11px] font-mono text-[#00F0FF] uppercase font-bold">Role · Who is Speaking?</div>
+          <h4 class="text-sm font-bold text-white mb-2">Senior EOR Lead</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Give the AI a persona, seniority level, and brand tone (e.g., "Senior Client Operations Manager at Serviq BPO").
+          </p>
+        </div>
+
+        <!-- C -->
+        <div class="glass-card p-5 rounded-2xl border-[#8B5CF6]/30 relative">
+          <div class="w-12 h-12 rounded-xl bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black font-mono text-xl mb-3">
+            C
+          </div>
+          <div class="text-[11px] font-mono text-[#C4B5FD] uppercase font-bold">Context · What Happened?</div>
+          <h4 class="text-sm font-bold text-white mb-2">Ground Realities</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Feed the exact facts: bank clearing maintenance window, payroll files dispatched on Thursday, expected SMS times.
+          </p>
+        </div>
+
+        <!-- T -->
+        <div class="glass-card p-5 rounded-2xl border-emerald-500/30 relative">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black font-mono text-xl mb-3">
+            T
+          </div>
+          <div class="text-[11px] font-mono text-emerald-400 uppercase font-bold">Task · What to Produce?</div>
+          <h4 class="text-sm font-bold text-white mb-2">Clear Deliverable</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Draft a reassuring client email to HR Director Tanvir Ahmed with an operational hotline for escalations.
+          </p>
+        </div>
+
+        <!-- O -->
+        <div class="glass-card p-5 rounded-2xl border-amber-500/30 relative">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black font-mono text-xl mb-3">
+            O
+          </div>
+          <div class="text-[11px] font-mono text-amber-400 uppercase font-bold">Output · Guardrails</div>
+          <h4 class="text-sm font-bold text-white mb-2">Strict Constraints</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            3 paragraphs, under 150 words, bulleted timeline, calm executive empathy, zero generic brackets or placeholders.
+          </p>
+        </div>
+      </div>
+
+      <div class="max-w-5xl mx-auto w-full p-4 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 flex items-center justify-between">
+        <span>💡 <strong>Formula Invariant:</strong> Role + Context + Task + Output Guardrails = 100% Boardroom-Ready Output.</span>
+        <span class="text-[#00F0FF] font-bold font-mono">The RCTO Standard</span>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 07: LIVE SHOOTOUT: REAL SERVIQ OPERATIONAL SCENARIO -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-7" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-2">
+          ⚔️ Live Masterclass Shootout
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Live Demonstration: Resolving an Urgent Client Payroll Inquiry
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          Watch Google Gemini transform from robotic amateur into senior Serviq operations lead.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto w-full">
+        <!-- Prompt A -->
+        <div class="glass-card p-6 rounded-2xl border-red-500/30 relative">
+          <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+            <span class="text-xs font-bold text-red-400 font-mono uppercase">Prompt A · The Lazy Request</span>
+            <span class="text-[10px] text-gray-400 font-mono">4 Words</span>
+          </div>
+          <div class="p-3 bg-black/60 rounded-xl text-xs font-mono text-red-300 mb-3 border border-red-500/20">
+            "Write an email to a client saying employee salaries are delayed due to bank holiday."
+          </div>
+          <div class="text-xs text-gray-400 space-y-1.5 leading-relaxed">
+            <div class="text-red-400 font-bold">❌ Flaws:</div>
+            <div>• Generic "Dear Sir/Madam" and corporate apology</div>
+            <div>• Unnecessarily alarms client regarding internal blame</div>
+            <div>• Zero timeline or escalation details provided</div>
+          </div>
+        </div>
+
+        <!-- Prompt B -->
+        <div class="glass-card p-6 rounded-2xl border-emerald-500/40 glow-cyan relative bg-gradient-to-b from-emerald-500/5 to-transparent">
+          <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+            <span class="text-xs font-bold text-emerald-400 font-mono uppercase">Prompt B · Serviq RCTO Protocol</span>
+            <span class="text-[10px] text-emerald-400 font-mono font-bold">Production Standard</span>
+          </div>
+          <div class="p-3 bg-black/60 rounded-xl text-xs font-mono text-emerald-300 mb-3 border border-emerald-500/20">
+            "Role: Senior Client Ops Lead at Serviq BPO... Context: 45 field promoters, Sunday BEFTN clearing window... Task: Reassuring update to HR Director Tanvir Ahmed... Output: 3 paragraphs, timeline bullets, under 150 words."
+          </div>
+          <div class="text-xs text-gray-300 space-y-1.5 leading-relaxed">
+            <div class="text-emerald-400 font-bold">✓ Impact:</div>
+            <div>• Greets Tanvir Ahmed formally with proactive authority</div>
+            <div>• Proves files dispatched Thursday; explains clearing window</div>
+            <div>• Provides 2:00 PM – 4:30 PM resolution window + hotline</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 08: THE 4 SERVIQ DESKS                              -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-8" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-[#C4B5FD] text-xs font-bold uppercase tracking-wider mb-2">
+          👥 Precision Tailoring
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Precision-Tailored for Each Team Member's Real Daily Tasks
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          Constructed directly from the actual operational files submitted by Serviq leads.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto w-full">
+        <!-- Desk 1: Shabuddin -->
+        <div class="glass-card p-5 rounded-2xl border-white/10 hover:border-[#00F0FF]/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-bold text-base mb-3 font-mono">
+            D1
+          </div>
+          <div class="text-[11px] font-mono text-[#00F0FF] uppercase font-bold">Shabuddin</div>
+          <h4 class="text-sm font-bold text-white mb-2">Customer Query Matrix</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Automating repetitive salary, leave, and tax inquiries into instant, polished corporate replies.
+          </p>
+        </div>
+
+        <!-- Desk 2: Rayhan -->
+        <div class="glass-card p-5 rounded-2xl border-white/10 hover:border-[#8B5CF6]/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-bold text-base mb-3 font-mono">
+            D2
+          </div>
+          <div class="text-[11px] font-mono text-[#C4B5FD] uppercase font-bold">Khandaker Rayhan</div>
+          <h4 class="text-sm font-bold text-white mb-2">Field Logistics & Incidents</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Multimodal image extraction turning messy field photos and supervisor updates into clean tables.
+          </p>
+        </div>
+
+        <!-- Desk 3: Ridhiya -->
+        <div class="glass-card p-5 rounded-2xl border-white/10 hover:border-emerald-500/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base mb-3 font-mono">
+            D3
+          </div>
+          <div class="text-[11px] font-mono text-emerald-400 uppercase font-bold">Ridhiya Islam</div>
+          <h4 class="text-sm font-bold text-white mb-2">Admin Digest & Policy</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Summarizing lengthy policy circulars into instant executive management memos and staff digests.
+          </p>
+        </div>
+
+        <!-- Desk 4: Partha -->
+        <div class="glass-card p-5 rounded-2xl border-white/10 hover:border-amber-500/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-base mb-3 font-mono">
+            D4
+          </div>
+          <div class="text-[11px] font-mono text-amber-400 uppercase font-bold">Partha Nath Sarker</div>
+          <h4 class="text-sm font-bold text-white mb-2">Sheets & Status Reports</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Writing complex Google Sheets formulas and converting daily status sheets into clean client dashboards.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 09: THE SECURITY, PRIVACY & PII SHIELD              -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-9" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+          🛡️ Enterprise Governance
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          Enterprise Governance: Protecting Client Data & Company Trust
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          Bank-grade confidentiality protocols for Serviq's enterprise client contracts.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full">
+        <!-- Shield 1 -->
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            01
+          </div>
+          <div class="text-xs font-mono font-bold text-[#00F0FF] uppercase mb-1">Strict Data Boundary</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">No Public AI Training</h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Commercial enterprise Gemini licenses do not use your proprietary documents or employee records to train public AI models.
+          </p>
+        </div>
+
+        <!-- Shield 2 -->
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            02
+          </div>
+          <div class="text-xs font-mono font-bold text-amber-400 uppercase mb-1">Golden Redaction Rule</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Zero Raw PII in Prompts</h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Never paste raw national ID numbers, personal bank account details, or employee passwords into raw chat windows.
+          </p>
+        </div>
+
+        <!-- Shield 3 -->
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xl mb-4 font-mono">
+            03
+          </div>
+          <div class="text-xs font-mono font-bold text-emerald-400 uppercase mb-1">Human Gatekeeper Law</div>
+          <h3 class="heading-font text-lg font-bold text-white mb-2">Human-in-the-Loop</h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            AI is your drafting intern; you are the executive director. A human always reviews, validates, and hits 'Send'.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 10: THE 5-SESSION FLIGHT PLAN                       -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-10" class="slide flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-2">
+          🗺️ Weekly Curriculum
+        </div>
+        <h2 class="heading-font text-3xl sm:text-5xl font-black text-white tracking-tight">
+          From Zero-Friction Foundations to Live Office Execution
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mt-1">
+          A disciplined 5-session roadmap designed around your team's busy workdays.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3 max-w-5xl mx-auto w-full">
+        <!-- S1 -->
+        <div class="glass-card p-4 rounded-xl border-[#00F0FF]/40 glow-cyan bg-[#00F0FF]/5">
+          <div class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase mb-1">Session 01 · Today</div>
+          <h4 class="text-xs font-bold text-white mb-2">Foundations & RCTO</h4>
+          <p class="text-[11px] text-gray-300 leading-relaxed">
+            Mental models, prompt architecture, and eliminating draft friction.
+          </p>
+        </div>
+
+        <!-- S2 -->
+        <div class="glass-card p-4 rounded-xl border-white/10">
+          <div class="text-[10px] font-mono font-bold text-gray-400 uppercase mb-1">Session 02 · Online</div>
+          <h4 class="text-xs font-bold text-white mb-2">Gemini & Multimodal</h4>
+          <p class="text-[11px] text-gray-400 leading-relaxed">
+            Customer query matrix & field image data extraction.
+          </p>
+        </div>
+
+        <!-- S3 -->
+        <div class="glass-card p-4 rounded-xl border-white/10">
+          <div class="text-[10px] font-mono font-bold text-gray-400 uppercase mb-1">Session 03 · Online</div>
+          <h4 class="text-xs font-bold text-white mb-2">Workspace & Sheets</h4>
+          <p class="text-[11px] text-gray-400 leading-relaxed">
+            Formula generation, email automation & daily status reporting.
+          </p>
+        </div>
+
+        <!-- S4 -->
+        <div class="glass-card p-4 rounded-xl border-white/10">
+          <div class="text-[10px] font-mono font-bold text-emerald-400 uppercase mb-1">Session 04 · Banani</div>
+          <h4 class="text-xs font-bold text-white mb-2">In-Person Lab</h4>
+          <p class="text-[11px] text-gray-400 leading-relaxed">
+            Screen-to-screen laptop restructuring at Serviq HQ.
+          </p>
+        </div>
+
+        <!-- S5 -->
+        <div class="glass-card p-4 rounded-xl border-white/10">
+          <div class="text-[10px] font-mono font-bold text-[#C4B5FD] uppercase mb-1">Session 05 · Banani</div>
+          <h4 class="text-xs font-bold text-white mb-2">Founders Command</h4>
+          <p class="text-[11px] text-gray-400 leading-relaxed">
+            NotebookLM enterprise hub & capstone team demos.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 11: TODAY'S 2-MINUTE ZERO-FRICTION HOMEWORK         -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-11" class="slide flex-col justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-4">
+        ✅ Zero-Friction Assignment
+      </div>
+      <h2 class="heading-font text-3xl sm:text-5xl font-black text-white max-w-4xl tracking-tight leading-tight mb-3">
+        Your Mission Before Tuesday: <span class="text-emerald-400">Zero Typing, Zero Stress</span>
+      </h2>
+      <p class="text-gray-300 text-sm sm:text-base max-w-2xl mb-8 leading-relaxed">
+        No long homework, no coding, and no exams. Just 2 quick minutes before tomorrow's session.
+      </p>
+
+      <div class="glass-card p-8 rounded-3xl border border-emerald-500/40 max-w-3xl w-full text-left bg-gradient-to-b from-emerald-500/10 to-transparent">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <div class="text-2xl mb-2">🌐</div>
+            <h4 class="heading-font text-base font-bold text-white mb-1">1. Log In to Gemini</h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Open <strong class="text-white">gemini.google.com</strong> using your registered work email to ensure access.
+            </p>
+          </div>
+          <div>
+            <div class="text-2xl mb-2">📝</div>
+            <h4 class="heading-font text-base font-bold text-white mb-1">2. Pick 1 Annoying Task</h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Write down one boring, repetitive task from today that stole 30 minutes of your time.
+            </p>
+          </div>
+          <div>
+            <div class="text-2xl mb-2">🛑</div>
+            <h4 class="heading-font text-base font-bold text-white mb-1">3. Do Not Prompt Yet!</h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Bring your sample to Session 2 tomorrow. We will build your personal RCTO engine to solve it live.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between">
+          <span class="text-xs text-gray-400">Total Time Required: <strong class="text-emerald-400">2 Minutes</strong></span>
+          <span class="text-xs text-[#00F0FF] font-mono font-bold">Ready for Session 2</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 12: OPEN FLOOR: QUESTIONS & DISCUSSION              -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-12" class="slide flex-col justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-4">
+        🎙️ Open Floor
+      </div>
+      <h2 class="heading-font text-3xl sm:text-5xl font-black text-white max-w-4xl tracking-tight leading-tight mb-4">
+        The Floor is Yours: Let's Address Every Question Directly
+      </h2>
+      <p class="text-gray-300 text-sm sm:text-base max-w-2xl mb-8 leading-relaxed">
+        Unmute your microphones. Meraz Bhai, Moon Bhai, Shabuddin, Rayhan, Ridhiya, Partha—no question is too simple.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl text-left mb-8">
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="text-2xl mb-2">🛡️</div>
+          <h4 class="heading-font text-base font-bold text-white mb-1">Zero Judgment Zone</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Curiosity is our only prerequisite. Ask anything about accuracy, tools, or fears.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="text-2xl mb-2">⚡</div>
+          <h4 class="heading-font text-base font-bold text-white mb-1">The Replacement Question</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            AI will not replace BPO operators; operators who master AI will replace operators who don't.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border-white/10">
+          <div class="text-2xl mb-2">🎯</div>
+          <h4 class="heading-font text-base font-bold text-white mb-1">Leadership Priorities</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Aligning directly on Serviq's operational throughput, SLA guarantees, and billable margins.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs text-gray-400">
+        <span>Serviq BPO Limited × GRO10X Holdings</span>
+        <span>•</span>
+        <button onclick="downloadPdfDeck()" class="text-[#00F0FF] hover:underline">Download Master Deck PDF ↗</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM NAVIGATION HUD & CONTROLS                          -->
+  <!-- ========================================================= -->
+  <footer class="no-print relative z-20 flex items-center justify-between px-6 py-3 border-t border-white/10 bg-[#070B12]/90 backdrop-blur-md">
+    <!-- Prev / Next Buttons -->
+    <div class="flex items-center gap-2">
+      <button onclick="prevSlide()" class="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-xs font-bold text-gray-200 transition active:scale-95 flex items-center gap-1.5">
+        ← Previous
+      </button>
+      <button onclick="nextSlide()" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#00F0FF] to-[#8B5CF6] text-black text-xs font-black transition active:scale-95 flex items-center gap-1.5 shadow-md shadow-[#00F0FF]/20">
+        Next →
+      </button>
+    </div>
+
+    <!-- Slide Indicators / Dots (1 to 12) -->
+    <div class="hidden sm:flex items-center gap-1.5" id="slideDots">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Slide Counter & Hotkey Help -->
+    <div class="flex items-center gap-3">
+      <div class="text-xs font-mono font-bold text-[#00F0FF]" id="slideCounter">
+        01 / 12
+      </div>
+      <div class="hidden lg:flex items-center gap-2 text-[11px] text-gray-500 font-mono">
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">←</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">→</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">Space</span>
+        <span>Nav</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400 ml-2">F</span>
+        <span>Fullscreen</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT SLIDE ENGINE & HOTKEYS                         -->
+  <!-- ========================================================= -->
+  <script>
+    const TOTAL_SLIDES = 12;
+    let currentSlide = 1;
+
+    function initNavigation() {
+      const dotsContainer = document.getElementById('slideDots');
+      dotsContainer.innerHTML = '';
+      for (let i = 1; i <= TOTAL_SLIDES; i++) {
+        const dot = document.createElement('button');
+        dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${i === 1 ? 'bg-[#00F0FF] w-6' : 'bg-white/20 hover:bg-white/50'}`;
+        dot.title = `Go to Slide ${i}`;
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+      }
+      updateUI();
+    }
+
+    function goToSlide(slideNum) {
+      if (slideNum < 1 || slideNum > TOTAL_SLIDES) return;
+
+      const currentEl = document.getElementById(`slide-${currentSlide}`);
+      if (currentEl) currentEl.classList.remove('active');
+
+      currentSlide = slideNum;
+
+      const newEl = document.getElementById(`slide-${currentSlide}`);
+      if (newEl) newEl.classList.add('active');
+
+      updateUI();
+    }
+
+    function nextSlide() {
+      if (currentSlide < TOTAL_SLIDES) {
+        goToSlide(currentSlide + 1);
+      } else {
+        goToSlide(1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        goToSlide(currentSlide - 1);
+      } else {
+        goToSlide(TOTAL_SLIDES);
+      }
+    }
+
+    function updateUI() {
+      const counterEl = document.getElementById('slideCounter');
+      if (counterEl) {
+        counterEl.textContent = `${String(currentSlide).padStart(2, '0')} / ${String(TOTAL_SLIDES).padStart(2, '0')}`;
+      }
+
+      const dotsContainer = document.getElementById('slideDots');
+      if (dotsContainer) {
+        const dots = dotsContainer.children;
+        for (let i = 0; i < dots.length; i++) {
+          if (i + 1 === currentSlide) {
+            dots[i].className = 'w-6 h-2 rounded-full bg-[#00F0FF] transition-all duration-300';
+          } else {
+            dots[i].className = 'w-2 h-2 rounded-full bg-white/20 hover:bg-white/50 transition-all duration-300';
+          }
+        }
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function downloadPdfDeck() {
+      window.print();
+    }
+
+    // Keyboard Navigation
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'p' || e.key === 'P') {
+        if (e.ctrlKey || e.metaKey) {
+          // default print
+        } else {
+          e.preventDefault();
+          downloadPdfDeck();
+        }
+      }
+    });
+
+    // Touch Swipe Gestures
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const swipeDistance = touchEndX - touchStartX;
+      if (Math.abs(swipeDistance) > 50) {
+        if (swipeDistance < 0) {
+          nextSlide();
+        } else {
+          prevSlide();
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initNavigation);
+  </script>
+</body>
+</html>

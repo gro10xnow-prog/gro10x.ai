@@ -582,6 +582,12 @@ app.get(['/pitch/biniyog-foodpanda', '/pitch/biniyog-foodpanda/'], (req, res) =>
 app.get(['/pitch/biniyog-foodpanda/copilot', '/pitch/biniyog-foodpanda/copilot.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pitch/biniyog-foodpanda/copilot.html'));
 });
+app.get(['/pitch/serviq-session1', '/pitch/serviq-session1/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/serviq-session1/index.html'));
+});
+app.get(['/pitch/serviq-session1/copilot', '/pitch/serviq-session1/copilot.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/serviq-session1/copilot.html'));
+});
 app.use('/pitch', express.static(path.join(__dirname, 'public/pitch')));
 
 // Central Prototype Showroom & Staged Client Prototypes
