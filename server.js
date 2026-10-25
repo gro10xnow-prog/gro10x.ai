@@ -638,6 +638,11 @@ app.get(['/prototypes/shomvob-pitch/copilot', '/prototypes/shomvob-pitch/copilot
   res.redirect(302, '/pitch/shomvob/copilot');
 });
 
+// ToffeeCon 2026 EOS (Experience Operating System) Prototype & Simulation
+app.get(['/prototypes/toffeecon', '/prototypes/toffeecon/', '/toffeecon', '/toffeecon/', '/simulation', '/simulation/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/toffeecon/index.html'));
+});
+
 // Sadman's Dream Garage & Phygital Twin Prototype
 app.get(['/prototypes/sadman-garage', '/prototypes/sadman-garage/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/sadman-garage/index.html'));

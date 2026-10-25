@@ -454,19 +454,16 @@
     <div class="hero-chip">Zero-Sprawl Pre-Sales Demos</div>
     <h1>Central Prototype Showroom</h1>
     <p>
-      High-velocity client prototypes engineered with zero external build dependencies, zero database pollution, and instant multi-device responsiveness on <code>gro10x.ai</code>.
+      High-velocity client prototypes engineered with zero external build dependencies, zero database pollution, and instant multi-device responsiveness on <code>gro10x-ai.vercel.app</code>.
     </p>
 
     <!-- Filter Buttons -->
     <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Prototypes (13)</button>
-      <button class="filter-btn" onclick="filterPrototypes('spatial', this)">3D & Spatial (4)</button>
-      <button class="filter-btn" onclick="filterPrototypes('workforce', this)">Workforce & AI EdTech (1)</button>
-      <button class="filter-btn" onclick="filterPrototypes('mobility', this)">Clean Mobility & EV (1)</button>
-      <button class="filter-btn" onclick="filterPrototypes('agency', this)">Enterprise & Media OS (3)</button>
-      <button class="filter-btn" onclick="filterPrototypes('proptech', this)">PropTech & Land (1)</button>
-      <button class="filter-btn" onclick="filterPrototypes('fintech', this)">Fintech & Enterprise (1)</button>
-      <button class="filter-btn" onclick="filterPrototypes('growth', this)">BPO & Social (1)</button>
+      <button class="filter-btn active" onclick="filterPrototypes('all', this)">All Projects (16)</button>
+      <button class="filter-btn" onclick="filterPrototypes('spatial', this)">3D Spatial Twins & WebGL (5)</button>
+      <button class="filter-btn" onclick="filterPrototypes('pitch', this)">PitchOS TV Decks & Co-Pilots (4)</button>
+      <button class="filter-btn" onclick="filterPrototypes('eos', this)">Enterprise Operating Systems (3)</button>
+      <button class="filter-btn" onclick="filterPrototypes('pilots', this)">Client Growth Pilots (4)</button>
     </div>
   </section>
 
@@ -474,7 +471,7 @@
   <main class="showcase-grid">
 
     <!-- Card: ToffeeCon 2026 EOS — Entertainment Operating System -->
-    <article class="proto-card" data-category="agency">
+    <article class="proto-card" data-category="eos">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #3b0764, #070B12);">
         <span class="proto-tag" style="background: rgba(168,85,247,0.25); color:#C084FC; border:1px solid rgba(168,85,247,0.4);">Port 5000 • Chartered Venture</span>
         <div class="proto-overlay-icon">🎪</div>
@@ -492,16 +489,73 @@
           <span class="meta-chip">Port 5000 Microservice</span>
         </div>
         <div class="proto-actions">
-          <button class="proto-btn btn-outline" onclick="openPreview('/flow-simulator.html', 'ToffeeCon 2026 EOS Simulation')">
+          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/toffeecon/index.html', 'ToffeeCon 2026 EOS Simulation')">
             📱 Interactive Preview
           </button>
-          <a href="/flow-simulator.html" target="_blank" class="proto-btn btn-emerald">
+          <a href="/prototypes/toffeecon/index.html" target="_blank" class="proto-btn btn-emerald">
             🚀 Launch Simulation
           </a>
         </div>
       </div>
     </article>
 
+    <!-- Card: Serviq BPO AI Workforce Masterclass (Engine 2 PitchOS) -->
+    <article class="proto-card" data-category="pitch">
+      <div class="proto-preview-box" style="background: radial-gradient(circle, #1e3a8a, #070B12);">
+        <span class="proto-tag" style="background: rgba(59,130,246,0.25); color:#60A5FA; border:1px solid rgba(59,130,246,0.4);">Engine 2 • PitchOS Masterclass</span>
+        <div class="proto-overlay-icon">🏢</div>
+      </div>
+      <div class="proto-body">
+        <h2 class="proto-title">Serviq BPO — AI Workforce Masterclass</h2>
+        <p class="proto-desc">
+          High-status 16:9 boardroom TV presentation and private smartphone presenter co-pilot for Serviq BPO leadership. Features the 4 AI workforce desks (Ops, Tech, Growth, Talent), 10X capacity multiplier, interactive ROI simulators, and the printable 8-Page A4 Executive Takeaway Manual.
+        </p>
+        <div class="proto-meta">
+          <span class="meta-chip">16:9 Boardroom TV</span>
+          <span class="meta-chip">Mobile Co-Pilot</span>
+          <span class="meta-chip">8-Page A4 Manual</span>
+          <span class="meta-chip">4 AI Desks Model</span>
+          <span class="meta-chip">Serviq BPO</span>
+        </div>
+        <div class="proto-actions">
+          <button class="proto-btn btn-outline" onclick="openPreview('/pitch/serviq-session1/', 'Serviq BPO AI Workforce Masterclass')">
+            📱 Interactive Preview
+          </button>
+          <a href="/pitch/serviq-session1/" target="_blank" class="proto-btn btn-emerald">
+            🚀 Launch TV Deck
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card: Biniyog x Foodpanda Strategic Deck (Engine 2 PitchOS) -->
+    <article class="proto-card" data-category="pitch">
+      <div class="proto-preview-box" style="background: radial-gradient(circle, #be185d, #070B12);">
+        <span class="proto-tag" style="background: rgba(244,63,94,0.25); color:#FB7185; border:1px solid rgba(244,63,94,0.4);">Fintech & Enterprise Pitch</span>
+        <div class="proto-overlay-icon">🐼</div>
+      </div>
+      <div class="proto-body">
+        <h2 class="proto-title">Biniyog × Foodpanda Strategic Deck & Co-Pilot</h2>
+        <p class="proto-desc">
+          High-stakes executive presentation deck for Biniyog's Shariah-compliant financing syndication partnership with Foodpanda Bangladesh. Features restaurant credit underwriting models, dynamic margin calculators, automated merchant recovery, and private presenter co-pilot.
+        </p>
+        <div class="proto-meta">
+          <span class="meta-chip">16:9 TV Presentation</span>
+          <span class="meta-chip">Biniyog Shariah</span>
+          <span class="meta-chip">Foodpanda Merchants</span>
+          <span class="meta-chip">Mobile Co-Pilot</span>
+          <span class="meta-chip">Dynamic Margin Math</span>
+        </div>
+        <div class="proto-actions">
+          <button class="proto-btn btn-outline" onclick="openPreview('/pitch/biniyog-foodpanda/', 'Biniyog × Foodpanda Strategic Deck')">
+            📱 Interactive Preview
+          </button>
+          <a href="/pitch/biniyog-foodpanda/" target="_blank" class="proto-btn btn-emerald">
+            🚀 Launch TV Deck
+          </a>
+        </div>
+      </div>
+    </article>
 
     <!-- Card: Sadman's Dream Garage & Phygital Twin -->
     <article class="proto-card" data-category="spatial">
@@ -533,7 +587,7 @@
     </article>
 
     <!-- Card: GRO10X × SHOMVOB Strategic Partnership Pitch Deck -->
-    <article class="proto-card" data-category="workforce">
+    <article class="proto-card" data-category="pitch">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #1CA752, #070B12);">
         <span class="proto-tag" style="background: rgba(28,167,82,0.25); color:#22c55e; border:1px solid rgba(28,167,82,0.4);">Forbes Asia 100 • 16-Slide OS</span>
         <div class="proto-overlay-icon">🎓</div>
@@ -552,10 +606,10 @@
           <span class="meta-chip">SME Credit & Recovery</span>
         </div>
         <div class="proto-actions">
-          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/shomvob-pitch/', 'GRO10X × SHOMVOB Strategic Deck')">
+          <button class="proto-btn btn-outline" onclick="openPreview('/pitch/shomvob/', 'GRO10X × SHOMVOB Strategic Deck')">
             📱 Interactive Preview
           </button>
-          <a href="/prototypes/shomvob-pitch/" target="_blank" class="proto-btn btn-emerald">
+          <a href="/pitch/shomvob/" target="_blank" class="proto-btn btn-emerald">
             🚀 Launch Live
           </a>
         </div>
@@ -563,7 +617,7 @@
     </article>
 
     <!-- Card: BAHON 16-Slide TV Pitch Deck & Presenter Co-Pilot -->
-    <article class="proto-card" data-category="mobility">
+    <article class="proto-card" data-category="pitch">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #064E3B, #070B12);">
         <span class="proto-tag tag-emerald">16:9 Big-Screen TV Pitch</span>
         <div class="proto-overlay-icon">📺</div>
@@ -581,10 +635,10 @@
           <span class="meta-chip">৳60K Pilot Anchor</span>
         </div>
         <div class="proto-actions">
-          <button class="proto-btn btn-outline" onclick="openPreview('/prototypes/bahon-pitch/', 'BAHON 16-Slide Executive TV Deck')">
+          <button class="proto-btn btn-outline" onclick="openPreview('/pitch/bahon/', 'BAHON 16-Slide Executive TV Deck')">
             📱 Interactive Preview
           </button>
-          <a href="/prototypes/bahon-pitch/" target="_blank" class="proto-btn btn-emerald">
+          <a href="/pitch/bahon/" target="_blank" class="proto-btn btn-emerald">
             🚀 Launch TV Deck
           </a>
         </div>
@@ -592,7 +646,7 @@
     </article>
 
     <!-- Card 0: BAHON (বাহন) — Green Bashundhara Electric Fleet Command -->
-    <article class="proto-card" data-category="mobility">
+    <article class="proto-card" data-category="pilots">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #064E3B, #070B12);">
         <span class="proto-tag tag-emerald">Electric Fleet & Telemetry</span>
         <div class="proto-overlay-icon">🛺</div>
@@ -620,7 +674,7 @@
       </div>
     </article>
 
-        <!-- Card: MADMAN 3D WebGL Interactive Experience -->
+    <!-- Card: MADMAN 3D WebGL Interactive Experience -->
     <article class="proto-card" data-category="spatial">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #253304, #06080C);">
         <span class="proto-tag" style="background: rgba(191,255,4,0.25); color:#BFFF04; border:1px solid rgba(191,255,4,0.4);">Awwwards-Grade • WebGL 3D</span>
@@ -650,20 +704,20 @@
     </article>
 
     <!-- Card: 10X Capsule Drop 01 (Commerce10x Phygital Retail) -->
-    <article class="proto-card" data-category="growth">
+    <article class="proto-card" data-category="spatial">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #0d2818, #07090e);">
-        <span class="proto-tag" style="background: rgba(0,255,136,0.2); color:#00FF88; border:1px solid rgba(0,255,136,0.4);">Engine 3: Phygital Commerce</span>
+        <span class="proto-tag" style="background: rgba(0,255,136,0.2); color:#00FF88; border:1px solid rgba(0,255,136,0.4);">Engine 3 • Phygital 3D</span>
         <div class="proto-overlay-icon">👟</div>
       </div>
       <div class="proto-body">
-        <h2 class="proto-title">10X Capsule Drop 01 — Footwear & Luxury Apparel</h2>
+        <h2 class="proto-title">10X Capsule Drop 01 — Cyber Stealth & Heritage Sneaker 3D</h2>
         <p class="proto-desc">
-          Official Commerce10x Phygital proof-of-concept proving the 10X Brand Formula: Immutable geometric anchor (10X) governed by the 3-Color Triad Rule (Garment Base + The "10" + The "X"). Features 5 Printify production-certified low-top sneaker drops and 5 luxury 350 GSM heavyweight boxy tees with high-density puff-print and woven hem labels.
+          Official Commerce10x Phygital proof-of-concept proving the 10X Brand Formula: Immutable geometric anchor (10X) governed by the 3-Color Triad Rule (Garment Base + The "10" + The "X"). Features 5 Printify production-certified low-top sneaker drops, interactive 3D WebGL turntable inspection, and 5 luxury 350 GSM heavyweight boxy tees.
         </p>
         <div class="proto-meta">
           <span class="meta-chip">Printify 3D Footwear (BP2793)</span>
+          <span class="meta-chip">3D WebGL Inspection</span>
           <span class="meta-chip">350 GSM Boxy French Terry</span>
-          <span class="meta-chip">High-Density 3D Puff Print</span>
           <span class="meta-chip">Tri-Color Triad Rule</span>
           <span class="meta-chip">LOC: 23.8103°N 90.4125°E</span>
         </div>
@@ -679,7 +733,7 @@
     </article>
 
     <!-- Card 1: Madmen Agency OS & Showcase (LIME-INSPIRED) -->
-    <article class="proto-card" data-category="agency">
+    <article class="proto-card" data-category="eos">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #1a2205, #070809);">
         <span class="proto-tag" style="background: rgba(191,255,4,0.2); color:#BFFF04; border:1px solid rgba(191,255,4,0.4);">Agency of Record</span>
         <div class="proto-overlay-icon">⚡</div>
@@ -707,7 +761,7 @@
     </article>
 
     <!-- Card 2: Banglalink Ryze "Gen-Z Star" AI Video Simulator -->
-    <article class="proto-card" data-category="agency">
+    <article class="proto-card" data-category="pilots">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #2a0845, #0A0B0E);">
         <span class="proto-tag" style="background: rgba(255,85,0,0.2); color:#FF5500; border:1px solid rgba(255,85,0,0.4);">Generative AI Casting</span>
         <div class="proto-overlay-icon">🎬</div>
@@ -735,7 +789,7 @@
     </article>
 
     <!-- Card 3: Sahanabag City (সাহানাবাগ সিটি) -->
-    <article class="proto-card" data-category="proptech">
+    <article class="proto-card" data-category="eos">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #064E3B, #070B12);">
         <span class="proto-tag tag-emerald">Digital Cadastral OS</span>
         <div class="proto-overlay-icon">🗺️</div>
@@ -791,7 +845,7 @@
     </article>
 
     <!-- Card 2: National Housing Finance (NHF) -->
-    <article class="proto-card" data-category="fintech">
+    <article class="proto-card" data-category="pilots">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #0B192C, #060e18);">
         <span class="proto-tag tag-emerald">Institutional Banking</span>
         <div class="proto-overlay-icon">🏛️</div>
@@ -847,7 +901,7 @@
     </article>
 
     <!-- Card 4: Serviq BPO Social Pilot -->
-    <article class="proto-card" data-category="growth">
+    <article class="proto-card" data-category="pilots">
       <div class="proto-preview-box" style="background: radial-gradient(circle, #1e3a8a, #0f2744);">
         <span class="proto-tag tag-gold">BPO & Enterprise Social</span>
         <div class="proto-overlay-icon">📊</div>
