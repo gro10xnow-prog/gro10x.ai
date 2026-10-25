@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serviq BPO AI Workforce Acceleration — Session 1 Field Guide & Operational SOP Manual</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Strict A4 Print Geometry */
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm 12mm 12mm;
+    }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      background-color: #F1F5F9;
+      color: #0F172A;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .heading-font { font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .bengali { font-family: 'Hind Siliguri', sans-serif; }
+
+    /* The 8 Canonical A4 Pages */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 12mm 14mm 12mm 14mm;
+      margin: 20px auto;
+      background: #FFFFFF;
+      color: #0F172A;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      border-radius: 2px;
+    }
+
+    @media print {
+      body {
+        background: #FFFFFF !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .page {
+        width: 100% !important;
+        min-height: 100vh !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        padding: 8mm 10mm !important;
+        page-break-after: always;
+        break-after: page;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="py-6">
+
+  <!-- ========================================================= -->
+  <!-- FLOATING SCREEN CONTROLLER (NO-PRINT)                     -->
+  <!-- ========================================================= -->
+  <div class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#0A101D]/90 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl">
+    <a href="/pitch/serviq-session1" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center gap-1.5">
+      📺 TV Presentation
+    </a>
+    <a href="/pitch/serviq-session1/copilot" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center gap-1.5">
+      📱 Presenter Co-Pilot
+    </a>
+    <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-black transition flex items-center gap-2 shadow-lg shadow-[#0284C7]/30 active:scale-95">
+      🖨️ Print / Save as 8-Page A4 PDF
+    </button>
+  </div>
+
+  <!-- ==================================================================================== -->
+  <!-- PAGE 1: CO-BRANDED COVER & EXECUTIVE JOINT LETTER                                     -->
+  <!-- ==================================================================================== -->
+  <div class="page" id="page-1">
+    <div>
+      <!-- Running Header -->
+      <header class="flex items-center justify-between border-b border-slate-200 pb-2 mb-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <span class="font-bold text-[#0284C7]">SERVIQ BPO × GRO10X HOLDINGS</span>
+        <span>AI Workforce Acceleration · Executive Field Guide</span>
+        <span>October 2026</span>
+      </header>
+
+      <!-- Co-Branded Top Badge -->
+      <div class="grid grid-cols-2 gap-4 border border-slate-200 rounded-xl p-3.5 bg-slate-50/70 mb-4">
+        <div class="border-r border-slate-200 pr-3">
+          <div class="text-[11px] font-mono font-bold text-indigo-700 tracking-wider uppercase">GRO10X HOLDINGS</div>
+          <div class="text-xs font-extrabold text-slate-800">Enterprise Growth &amp; AI Systems</div>
+          <div class="text-[10px] text-slate-500">Dhaka, Bangladesh · https://gro10x-ai.vercel.app</div>
+        </div>
+        <div class="pl-2">
+          <div class="text-[11px] font-mono font-bold text-[#0284C7] tracking-wider uppercase">SERVIQ BPO LIMITED</div>
+          <div class="text-xs font-extrabold text-slate-800">People · Solutions · Growth</div>
+          <div class="text-[10px] text-slate-500">House 31, Road 1/A, Block-I, Banani, Dhaka · www.serviq.limited</div>
+        </div>
+      </div>
+
+      <!-- Main Title -->
+      <div class="mb-4">
+        <div class="inline-block px-2.5 py-0.5 rounded-full bg-sky-100 text-[#0284C7] text-[10px] font-bold font-mono tracking-wider uppercase mb-1">
+          OFFICIAL CLIENT OPERATIONAL SOP · A4 FORMAT
+        </div>
+        <h1 class="heading-font text-2xl font-black text-slate-900 tracking-tight leading-tight">
+          AI Workforce Acceleration Program
+        </h1>
+        <h2 class="text-sm font-semibold text-slate-600">
+          Session 1 Field Guide &amp; Standard Operating Procedure (SOP) Manual
+        </h2>
+      </div>
+
+      <!-- Executive Joint Letter -->
+      <div class="border-l-4 border-[#0284C7] bg-slate-50/90 rounded-r-xl p-4 text-[11.5px] leading-relaxed text-slate-700 space-y-2.5 border-y border-r border-slate-200">
+        <div class="font-bold text-slate-900 text-xs">Dear Serviq Operational Leadership Team,</div>
+        <p>
+          Welcome to Day 1 of the <strong>Serviq BPO AI Workforce Acceleration Program</strong>. Serviq BPO Limited has built one of Bangladesh’s most respected operational backbones: managing <strong>4,700+ deployed personnel across all 64 districts</strong>, stewarding 22+ multinational enterprise accounts, and driving proprietary human capital platforms like Paylio. That level of scale is a testament to the discipline, grit, and tireless commitment of your leadership and operational leads.
+        </p>
+        <p>
+          However, scale often brings friction. Every single day, hundreds of repetitive inquiries flood your desks: answering the same salary clearing questions twenty times across phone and WhatsApp; deciphering messy handwritten attendance logs and blurry field photos; manually formatting fragmented daily notes into executive circulars; and wrestling with broken spreadsheet formulas. This friction consumes <strong>between 3.0 and 4.5 hours of every operational lead's working day</strong>—over 70 hours of human brainpower lost every month to robotic drudgery.
+        </p>
+        <div class="p-3 bg-sky-50 rounded-lg border border-sky-200 text-slate-900 font-medium italic text-[11px]">
+          "Our mission over this 5-session program is simple and uncompromising: We are not here to teach abstract academic computer science. We are here to eliminate those 3 wasted hours every single day, giving you back your time to focus on strategic execution, client excellence, and personal career growth."
+        </div>
+        <p>
+          This Field Guide is your permanent operational companion. Keep it bookmarked, print it for your workstation in Banani, and use its fill-in-the-blank prompt cards whenever you face a demanding client inquiry or a tangled operational spreadsheet. AI will not replace BPO professionals in Bangladesh, but BPO professionals who master the <strong>GRO10X RCTO Protocol</strong> will rapidly outperform those who remain trapped in manual copy-paste workflows.
+        </p>
+
+        <!-- Signatures -->
+        <div class="pt-2 grid grid-cols-2 gap-4 border-t border-slate-200 mt-2">
+          <div>
+            <div class="font-mono text-[10px] text-slate-400">__________________________________</div>
+            <div class="font-bold text-slate-900 text-[11px] mt-0.5">MERAJUL ISLAM</div>
+            <div class="text-[10px] text-slate-500 leading-tight">Managing Director &amp; CEO<br>Serviq BPO Limited</div>
+          </div>
+          <div>
+            <div class="font-mono text-[10px] text-slate-400">__________________________________</div>
+            <div class="font-bold text-slate-900 text-[11px] mt-0.5">FIROZ UDDIN AHMED (PLABON)</div>
+            <div class="text-[10px] text-slate-500 leading-tight">Founder &amp; Chief Executive Officer<br>GRO10X Holdings</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Metadata Strip -->
+      <div class="mt-3.5 grid grid-cols-3 gap-2 text-[10px] bg-white border border-slate-200 rounded-lg p-2.5">
+        <div>
+          <span class="font-bold text-slate-800 block">Core Curriculum:</span>
+          <span class="text-slate-500">Google Gemini 1.5 Pro, Docs, Sheets, Gmail, NotebookLM</span>
+        </div>
+        <div>
+          <span class="font-bold text-slate-800 block">Governing Standard:</span>
+          <span class="text-slate-500">The GRO10X RCTO Protocol (Role, Context, Task, Output)</span>
+        </div>
+        <div>
+          <span class="font-bold text-slate-800 block">Program Code:</span>
+          <span class="text-slate-500">PROP-2026-SERVIQ · Session 1 Kickoff</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Running Footer -->
+    <footer class="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px] font-mono text-slate-500">
+      <span>Internal Operational SOP · Serviq BPO Limited × GRO10X Holdings</span>
+      <span class="font-bold text-slate-700">Page 1 of 8</span>
+    </footer>
+  </div>
+
+  <!-- ==================================================================================== -->
+  <!-- PAGE 2: THE CORE MENTAL MODELS (DEEP NARRATIVE)                                       -->
+  <!-- ==================================================================================== -->
+  <div class="page" id="page-2">
+    <div>
+      <!-- Running Header -->
+      <header class="flex items-center justify-between border-b border-slate-200 pb-2 mb-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <span class="font-bold text-[#0284C7]">SERVIQ BPO × GRO10X HOLDINGS</span>
+        <span>AI Workforce Acceleration · Executive Field Guide</span>
+        <span>October 2026</span>
+      </header>
+
+      <div class="mb-3">
+        <div class="text-[10px] font-mono font-bold text-[#0284C7] uppercase tracking-wider">FOUNDATIONAL FRAMEWORKS</div>
+        <h2 class="heading-font text-xl font-black text-slate-900 tracking-tight">
+          Page 2: The Core Mental Models (Deep Narrative)
+        </h2>
+        <p class="text-xs text-slate-600">
+          Dismantling popular misconceptions to extract executive-grade precision from Large Language Models.
+        </p>
+      </div>
+
+      <!-- Diagram / Comparison Block -->
+      <div class="grid grid-cols-2 gap-3.5 mb-3.5">
+        <div class="border border-sky-200 bg-sky-50/60 rounded-xl p-3 text-xs">
+          <div class="flex items-center gap-1.5 font-bold text-sky-900 mb-1">
+            <span>🧠</span> Mental Model 1: The Tireless Intern
+          </div>
+          <p class="text-[11px] text-slate-700 leading-relaxed">
+            A top-ranking IBA/Harvard graduate who memorized every book on earth, but sits in a soundproof room with a <strong>completely blank clipboard</strong> until briefed by Serviq leads.
+          </p>
+        </div>
+        <div class="border border-purple-200 bg-purple-50/60 rounded-xl p-3 text-xs">
+          <div class="flex items-center gap-1.5 font-bold text-purple-900 mb-1">
+            <span>🔌</span> Mental Model 2: The 3-Layer Power Grid
+          </div>
+          <p class="text-[11px] text-slate-700 leading-relaxed">
+            Layer 1 Global Server Grid ➔ Layer 2 Foundation Brain (Gemini 1.5 Pro) ➔ <strong>Layer 3 The Serviq Workstation</strong> (where you reclaim 3 hours daily without writing code).
+          </p>
+        </div>
+      </div>
+
+      <!-- Deep Narrative 1 -->
+      <div class="border border-slate-200 rounded-xl p-3.5 mb-3 bg-white space-y-2 text-[11px] leading-relaxed text-slate-700">
+        <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#0284C7]"></span>
+          Mental Model 1: The "Tireless IBA Intern" Metaphor
+        </h3>
+        <p>
+          Imagine that this morning at 9:00 AM, a brilliant new junior executive walked into Serviq’s Banani headquarters. They graduated at the top of their class from IBA or Harvard Business School with a photographic memory: they have read every labor law, dictionary, business textbook, and marketing framework published in human history. They type at 1,000 words per minute and never suffer from afternoon fatigue or caffeine crashes.
+        </p>
+        <p>
+          <strong>However, there is one massive catch:</strong> This intern is sitting inside a soundproof glass office. They have never set foot in a Bangladeshi distribution hub. They do not know who Meraz Bhai is, they do not know what Paylio does, and they have no idea that Bangladesh Bank's BEFTN network had scheduled maintenance this morning. Their clipboard is completely blank.
+        </p>
+        <p>
+          If you open the door, casually toss your head in, and say: <em>"Hey, write an email about delayed salaries,"</em> what will happen? Because the intern has zero context, they will guess and produce a cold, robotic template: <em>"Dear Sir or Madam, We regret to inform you..."</em> Sending that to an MNC client causes panic and an angry escalation call to Meraz Bhai.
+        </p>
+        <div class="p-2 bg-amber-50 rounded border border-amber-200 text-amber-900 font-semibold text-[10.5px]">
+          ⚠️ The Golden Law of AI Delegation: AI does not fail because the model is flawed; it fails because the human manager provided an incomplete, lazy delegation.
+        </div>
+      </div>
+
+      <!-- Deep Narrative 2: Table -->
+      <div class="border border-slate-200 rounded-xl p-3.5 bg-white space-y-2 text-[11px] leading-relaxed text-slate-700">
+        <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+          Mental Model 2: The 3-Layer Enterprise Power Grid
+        </h3>
+        <p>
+          When you turn on the air conditioner in the Serviq conference room, you do not build a hydroelectric dam or string high-voltage power lines. You simply plug into the wall socket. Modern enterprise AI functions on the exact same three-layer architecture:
+        </p>
+
+        <div class="overflow-hidden border border-slate-200 rounded-lg">
+          <table class="w-full text-left border-collapse text-[10.5px]">
+            <thead>
+              <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-200">
+                <th class="p-2">Layer</th>
+                <th class="p-2">Technical Reality</th>
+                <th class="p-2">Plain Business Translation</th>
+                <th class="p-2">What Serviq Does</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="p-2 font-bold text-slate-900">Layer 1: Power Grid</td>
+                <td class="p-2">Planetary data centers, Nvidia H100 GPU clusters, gigawatts of power.</td>
+                <td class="p-2">The National Electric Grid (\$100B+ capital expenditure by Google/Nvidia).</td>
+                <td class="p-2 font-semibold text-emerald-700">Zero maintenance. We simply draw power via the browser.</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-2 font-bold text-slate-900">Layer 2: Foundation Brain</td>
+                <td class="p-2">Frontier Large Language Models (Google Gemini 1.5 Pro).</td>
+                <td class="p-2">The centralized intellect sitting inside the server farm.</td>
+                <td class="p-2 font-semibold text-purple-700">The reasoning engine. 2-million-word context memory.</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-bold text-slate-900">Layer 3: Serviq Desk</td>
+                <td class="p-2">Google Gemini Workspace, Docs, Sheets, Gmail, NotebookLM.</td>
+                <td class="p-2">The computer screen and mouse on Shabuddin’s, Rayhan’s, Ridhiya’s, and Partha’s desks.</td>
+                <td class="p-2 font-semibold text-[#0284C7]">Where our work happens. Automated client emails, rosters, and daily reports.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-[10px] text-slate-500 italic">
+          Key Takeaway for Leadership: Serviq does not need to build AI models. Your competitive advantage comes from mastering <strong>Layer 3 execution faster than any other BPO in South Asia.</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Running Footer -->
+    <footer class="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px] font-mono text-slate-500">
+      <span>Internal Operational SOP · Serviq BPO Limited × GRO10X Holdings</span>
+      <span class="font-bold text-slate-700">Page 2 of 8</span>
+    </footer>
+  </div>
+
+  <!-- ==================================================================================== -->
+  <!-- PAGE 3: THE UNIVERSAL RCTO PROMPTING BLUEPRINT & FORMULA CARD                        -->
+  <!-- ==================================================================================== -->
+  <div class="page" id="page-3">
+    <div>
+      <!-- Running Header -->
+      <header class="flex items-center justify-between border-b border-slate-200 pb-2 mb-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <span class="font-bold text-[#0284C7]">SERVIQ BPO × GRO10X HOLDINGS</span>
+        <span>AI Workforce Acceleration · Executive Field Guide</span>
+        <span>October 2026</span>
+      </header>
+
+      <div class="mb-3">
+        <div class="text-[10px] font-mono font-bold text-[#0284C7] uppercase tracking-wider">EXECUTION PROTOCOL</div>
+        <h2 class="heading-font text-xl font-black text-slate-900 tracking-tight">
+          Page 3: The Universal RCTO Framework &amp; Formula Card
+        </h2>
+        <p class="text-xs text-slate-600">
+          The four foundational pillars separating amateur 4-word requests from executive-grade operational execution.
+        </p>
+      </div>
+
+      <!-- 4 Pillars Table -->
+      <div class="grid grid-cols-4 gap-2 mb-3.5 text-center text-xs">
+        <div class="border border-[#0284C7]/30 bg-sky-50 rounded-xl p-2.5">
+          <div class="font-black text-lg text-[#0284C7] font-mono">R</div>
+          <div class="font-bold text-slate-900 text-[11px]">ROLE</div>
+          <div class="text-[10px] text-slate-600 mt-0.5">Who is speaking? Sets authority &amp; voice.</div>
+        </div>
+        <div class="border border-purple-200 bg-purple-50 rounded-xl p-2.5">
+          <div class="font-black text-lg text-purple-700 font-mono">C</div>
+          <div class="font-bold text-slate-900 text-[11px]">CONTEXT</div>
+          <div class="text-[10px] text-slate-600 mt-0.5">What happened? Ground facts &amp; client data.</div>
+        </div>
+        <div class="border border-emerald-200 bg-emerald-50 rounded-xl p-2.5">
+          <div class="font-black text-lg text-emerald-700 font-mono">T</div>
+          <div class="font-bold text-slate-900 text-[11px]">TASK</div>
+          <div class="text-[10px] text-slate-600 mt-0.5">What to produce? Specific deliverable.</div>
+        </div>
+        <div class="border border-amber-200 bg-amber-50 rounded-xl p-2.5">
+          <div class="font-black text-lg text-amber-700 font-mono">O</div>
+          <div class="font-bold text-slate-900 text-[11px]">OUTPUT</div>
+          <div class="text-[10px] text-slate-600 mt-0.5">Strict guardrails: format, tone, blacklist.</div>
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown -->
+      <div class="space-y-2 text-[11px] leading-relaxed text-slate-700 mb-3.5">
+        <div class="border border-slate-200 rounded-lg p-2.5 bg-white">
+          <span class="font-bold text-slate-900">1. R — ROLE (কে কথা বলছে?):</span> Establishes seniority and posture.
+          <div class="text-[10.5px] mt-1 text-slate-600">
+            • <em>Weak:</em> "You are an assistant."<br>
+            • <strong class="text-[#0284C7]">Serviq Standard:</strong> "You are a Senior Client Operations Manager at Serviq BPO Limited, managing 4,700+ payrolls across Bangladesh."
+          </div>
+        </div>
+        <div class="border border-slate-200 rounded-lg p-2.5 bg-white">
+          <span class="font-bold text-slate-900">2. C — CONTEXT (কী ঘটেছে? পুরো পটভূমি):</span> Injects factual ground realities.
+          <div class="text-[10.5px] mt-1 text-slate-600">
+            • <em>Weak:</em> "Some salaries are late."<br>
+            • <strong class="text-purple-700">Serviq Standard:</strong> "Sunday morning. Client HR Director inquired about 45 field promoters' SMS alerts. Bangladesh Bank BEFTN server maintenance until 1:00 PM. Payroll files dispatched Thursday before cutoff."
+          </div>
+        </div>
+        <div class="border border-slate-200 rounded-lg p-2.5 bg-white">
+          <span class="font-bold text-slate-900">3. T — TASK (নির্দিষ্ট করে কী বানাতে হবে?):</span> Clearly specifies the deliverable and business goal.
+          <div class="text-[10.5px] mt-1 text-slate-600">
+            • <em>Weak:</em> "Write an email to them."<br>
+            • <strong class="text-emerald-700">Serviq Standard:</strong> "Draft a reassuring, authoritative email update to HR Director Tanvir Ahmed. Clarify the banking window without sounding defensive, confirm 2:00 PM–4:30 PM reflection, and provide operations hotline."
+          </div>
+        </div>
+        <div class="border border-slate-200 rounded-lg p-2.5 bg-white">
+          <span class="font-bold text-slate-900">4. O — OUTPUT GUARDRAILS (কড়া নিয়ম ও ফরম্যাট):</span> Enforces word limits and structure.
+          <div class="text-[10.5px] mt-1 text-slate-600">
+            • <em>Weak:</em> "Keep it short."<br>
+            • <strong class="text-amber-700">Serviq Standard:</strong> "Max 140 words. Exactly 3 paragraphs. Include a 3-step bulleted timeline. Zero generic placeholders. Calm corporate empathy. Sign off formally from Serviq Operations Desk."
+          </div>
+        </div>
+      </div>
+
+      <!-- Tear-Out Formula Card -->
+      <div class="border-2 border-dashed border-[#0284C7] rounded-xl p-3 bg-slate-50/90 text-xs">
+        <div class="flex items-center justify-between border-b border-[#0284C7]/30 pb-1.5 mb-2">
+          <span class="font-mono font-bold text-[#0284C7] text-[11px] uppercase tracking-wider">✂️ TEAR-OUT / PIN TO DESKTOP: UNIVERSAL RCTO BUILDER</span>
+          <span class="text-[10px] text-slate-500 font-mono">Fill In The Brackets</span>
+        </div>
+        <div class="mono text-[10.5px] text-slate-800 space-y-1.5 bg-white p-2.5 rounded-lg border border-slate-200 leading-relaxed">
+          <div><strong class="text-[#0284C7]">ROLE:</strong> Act as [Exact Job Title, e.g. Senior Operations Lead at Serviq BPO] speaking with [Tone: authoritative / empathetic] posture.</div>
+          <div><strong class="text-purple-700">CONTEXT:</strong> Organization: Serviq BPO (4,700+ deployed workforce). Situation: [Describe incident, client account, dates]. Raw data: [Paste unformatted notes/roster].</div>
+          <div><strong class="text-emerald-700">TASK:</strong> Generate a [deliverable: email / status report / meeting circular] addressed to [Client HR Director / Field Team] to achieve [reassurance / task signoff].</div>
+          <div><strong class="text-amber-700">OUTPUT:</strong> (1) Under [X] words, (2) [3 bullet points], (3) [British English / Bangla], (4) Zero placeholders, (5) Sign off as Serviq Operations Command Desk.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Running Footer -->
+    <footer class="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px] font-mono text-slate-500">
+      <span>Internal Operational SOP · Serviq BPO Limited × GRO10X Holdings</span>
+      <span class="font-bold text-slate-700">Page 3 of 8</span>
+    </footer>
+  </div>
+
+  <!-- ==================================================================================== -->
+  <!-- PAGE 4: THE LIVE DEMONSTRATION CASE STUDY (ANNOTATED BREAKDOWN)                      -->
+  <!-- ==================================================================================== -->
+  <div class="page" id="page-4">
+    <div>
+      <!-- Running Header -->
+      <header class="flex items-center justify-between border-b border-slate-200 pb-2 mb-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <span class="font-bold text-[#0284C7]">SERVIQ BPO × GRO10X HOLDINGS</span>
+        <span>AI Workforce Acceleration · Executive Field Guide</span>
+        <span>October 2026</span>
+      </header>
+
+      <div class="mb-3">
+        <div class="text-[10px] font-mono font-bold text-[#0284C7] uppercase tracking-wider">CASE STUDY &amp; FORENSIC AUDIT</div>
+        <h2 class="heading-font text-xl font-black text-slate-900 tracking-tight">
+          Page 4: Live Shootout Case Study (Annotated Breakdown)
+        </h2>
+        <p class="text-xs text-slate-600">
+          Forensic head-to-head comparison: Why Prompt A triggers client panic while Prompt B reinforces enterprise trust.
+        </p>
+      </div>
+
+      <!-- Head to Head Cards -->
+      <div class="grid grid-cols-2 gap-3 mb-3 text-xs">
+        <div class="border border-red-200 bg-red-50/50 rounded-xl p-3">
+          <div class="flex items-center justify-between border-b border-red-200 pb-1 mb-2 font-mono">
+            <span class="font-bold text-red-700 text-[10.5px]">PROMPT A: THE LAZY PROMPT</span>
+            <span class="text-[10px] text-red-500">4 Words</span>
+          </div>
+          <div class="mono text-[10px] bg-white p-2 rounded border border-red-200 text-red-800 mb-2">
+            "Write an email to a client saying employee salaries are delayed due to bank holiday."
+          </div>
+          <div class="text-[10.5px] text-red-900 space-y-1">
+            <div>❌ <strong>Result: Failed &amp; Dangerous</strong></div>
+            <div>• Generic "Dear Sir or Madam" opening.</div>
+            <div>• Grovels and apologizes, creating false impression of internal error.</div>
+            <div>• Leaves client in high anxiety without a time resolution window.</div>
+          </div>
+        </div>
+
+        <div class="border border-emerald-200 bg-emerald-50/50 rounded-xl p-3">
+          <div class="flex items-center justify-between border-b border-emerald-200 pb-1 mb-2 font-mono">
+            <span class="font-bold text-emerald-800 text-[10.5px]">PROMPT B: PRODUCTION SERVIQ RCTO</span>
+            <span class="text-[10px] text-emerald-600">SOP Standard</span>
+          </div>
+          <div class="mono text-[10px] bg-white p-2 rounded border border-emerald-200 text-emerald-800 mb-2">
+            Role: Senior Client Ops Lead · Context: Tanvir Ahmed inquiry, Sunday BEFTN clearing window · Task: Reassuring update · Output: 3 paras, timeline bullets.
+          </div>
+          <div class="text-[10.5px] text-emerald-900 space-y-1">
+            <div>✓ <strong>Result: Production Excellence</strong></div>
+            <div>• Personal executive greeting to Tanvir Ahmed.</div>
+            <div>• Proves files dispatched Thursday; explains clearing window factually.</div>
+            <div>• Confirms exact 2:00 PM – 4:30 PM reflection + operations hotline.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Line-by-Line Anatomy -->
+      <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/60 mb-3 text-[10.5px] leading-relaxed">
+        <div class="font-bold text-slate-900 text-xs mb-1.5">🔍 Anatomy of the Production Serviq Prompt (Line-by-Line)</div>
+        <div class="space-y-1.5 mono">
+          <div class="bg-white p-2 rounded border border-slate-200">
+            <strong class="text-[#0284C7]">[LINE 1 - ROLE]</strong> Role: Senior Client Operations Manager at Serviq BPO Limited (4,700+ payrolls).<br>
+            <span class="text-slate-500 font-sans text-[10px]">↳ Annotation: Calibrates vocabulary to high-status B2B corporate language.</span>
+          </div>
+          <div class="bg-white p-2 rounded border border-slate-200">
+            <strong class="text-purple-700">[LINE 2 - CONTEXT]</strong> Context: Sunday morning; 45 field promoters; BEFTN window until 1:00 PM; files sent Thursday.<br>
+            <span class="text-slate-500 font-sans text-[10px]">↳ Annotation: Grounds the response in local financial facts. Proves Serviq met its SLA.</span>
+          </div>
+          <div class="bg-white p-2 rounded border border-slate-200">
+            <strong class="text-emerald-700">[LINE 3 - TASK]</strong> Task: Reassuring email to Tanvir Ahmed; explain clearing status; confirm 2 PM–4:30 PM SMS; add hotline.<br>
+            <span class="text-slate-500 font-sans text-[10px]">↳ Annotation: Directs the exact narrative arc: Acknowledge ➔ Explain ➔ Reassure ➔ Escalation.</span>
+          </div>
+          <div class="bg-white p-2 rounded border border-slate-200">
+            <strong class="text-amber-700">[LINE 4 - OUTPUT]</strong> Output: Calm corporate empathy; exactly 3 paragraphs under 140 words; bulleted timeline; zero placeholders.<br>
+            <span class="text-slate-500 font-sans text-[10px]">↳ Annotation: Eliminates formatting drift and ensures 100% copy-paste readiness.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actual Output Box -->
+      <div class="border border-slate-300 rounded-xl p-3 bg-white text-xs">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-1 mb-2 font-mono text-[10px] text-slate-500">
+          <span class="font-bold text-slate-800">💎 The 3-Second Production Result (Actual Gemini 1.5 Pro Output)</span>
+          <span>Turnaround: 4.2s</span>
+        </div>
+        <div class="mono text-[10.5px] text-slate-700 space-y-1.5 leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+          <div class="font-bold text-slate-900">Subject: Operational Update: Disbursement Status for Field Promotion Team (Ref: Oct Payroll)</div>
+          <div>Dear Mr. Tanvir,</div>
+          <div>Good morning. We are actively monitoring the salary disbursement for your 45 field promotion executives scheduled for today. To provide complete transparency regarding the banking timeline:</div>
+          <div class="pl-2">
+            • <strong>Thursday, 4:30 PM:</strong> Serviq finalized and transmitted all verified payroll clearing files.<br>
+            • <strong>Sunday, 9:00 AM – 1:00 PM:</strong> Bangladesh Bank (BEFTN/NPSB) conducted scheduled weekend server maintenance.<br>
+            • <strong>Sunday, 2:00 PM – 4:30 PM:</strong> Interbank settlement batches are clearing, and SMS credit alerts are reflecting across all accounts.
+          </div>
+          <div>Our systems indicate that all regional accounts will show credited funds before 4:30 PM today. Should any individual team member require immediate confirmation, please route them directly to our dedicated Operations Support Desk at +880 1674-007700.</div>
+          <div class="text-slate-500 text-[10px]">Warm regards,<br>Serviq BPO Operations Command Desk · House 31, Road 1/A, Block-I, Banani, Dhaka-1213</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Running Footer -->
+    <footer class="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px] font-mono text-slate-500">
+      <span>Internal Operational SOP · Serviq BPO Limited × GRO10X Holdings</span>
+      <span class="font-bold text-slate-700">Page 4 of 8</span>
+    </footer>
+  </div>
+
+  <!-- ==================================================================================== -->
+  <!-- PAGE 5: WORKSTATIONS 1 & 2 BLUEPRINTS (OPERATIONAL SOPS)                             -->
+  <!-- ==================================================================================== -->
+  <div class="page" id="page-5">
+    <div>
+      <!-- Running Header -->
+      <header class="flex items-center justify-between border-b border-slate-200 pb-2 mb-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <span class="font-bold text-[#0284C7]">SERVIQ BPO × GRO10X HOLDINGS</span>
+        <span>AI Workforce Acceleration · Executive Field Guide</span>
+        <span>October 2026</span>
+      </header>
+
+      <div class="mb-3">
+        <div class="text-[10px] font-mono font-bold text-[#0284C7] uppercase tracking-wider">DEPARTMENTAL SOPS</div>
+        <h2 class="heading-font text-xl font-black text-slate-900 tracking-tight">
+          Page 5: Workstations 1 &amp; 2 (Customer Ops &amp; Field Logistics)
+        </h2>
+        <p class="text-xs text-slate-600">
+          Precision operational playbooks engineered for Shabuddin Patwary and Khandaker Rayhan.
+        </p>
+      </div>
+
+      <!-- WORKSTATION 1: SHABUDDIN PATWARY -->
+      <div class="border border-slate-200 rounded-xl p-3.5 bg-white mb-3 text-xs leading-relaxed">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-2">
+          <div class="flex items-center gap-1.5 font-bold text-slate-900 text-sm">
+            <span>🎧</span> WORKSTATION 1: SHABUDDIN PATWARY — CUSTOMER OPERATIONS &amp; INGRESS
+          </div>
+          <span class="text-[10px] font-mono bg-sky-100 text-[#0284C7] px-2 py-0.5 rounded-full font-bold">SOP-CUST-01</span>
+        </div>
+        <div class="text-[11px] text-slate-600 mb-2">
+          <strong>Core Friction:</strong> Repetitive employee inquiries regarding salary disbursements, tax deduction certificates, leave approvals, and medical claims, resulting in inbox fatigue.<br>
+          <strong>The AI Superpower:</strong> <span class="text-[#0284C7] font-semibold">The 25-Scenario BPO Response Matrix</span> (sub-30-second verified replies).
+        </div>
+
+        <!-- Workflow Diagram Box -->
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] font-mono text-center flex items-center justify-between mb-2 text-slate-700">
+          <span>Incoming Query<br>(WhatsApp/Email)</span> ➔ 
+          <span>Gemini Intent Classification<br>(Salary/Tax/Leave)</span> ➔ 
+          <span>Bilingual RCTO Matrix Engine<br>(Empathetic, NBR Compliant)</span> ➔ 
+          <span class="font-bold text-[#0284C7]">Ready-to-Send Reply<br>(&lt; 30 Seconds)</span>
+        </div>
+
+        <!-- Step by Step SOP -->
+        <div class="bg-sky-50/60 border border-sky-200 rounded-lg p-2.5 space-y-1.5 text-[10.5px]">
+          <div><strong>Step 1 (Ingress Capture):</strong> Copy the recurring question (e.g., <em>"Amar ei masher salary theke tax keno keteche?"</em>).</div>
+          <div class="mono bg-white p-2 rounded border border-sky-200 text-slate-800 text-[10px]">
+            <strong>Customer Desk Master Prompt:</strong><br>
+            Role: Serviq BPO Employee Support Specialist.<br>
+            Context: Employee asks why tax was deducted. Serviq adheres strictly to NBR TDS brackets for FY 2026-27.<br>
+            Task: Draft a respectful, crystal-clear explanation in conversational Bangla.<br>
+            Output: Max 80 words. Bullet basic exemption threshold (BDT 3,50,000) &amp; payroll email (payroll@serviq.limited).
+          </div>
+          <div><strong>Step 2 (Human Verification &amp; Dispatch):</strong> Confirm name &amp; policy numbers, hit send. Resolution time drops from 8 minutes to 45 seconds.</div>
+        </div>
+      </div>
+
+      <!-- WORKSTATION 2: KHANDAKER RAYHAN -->
+      <div class="border border-slate-200 rounded-xl p-3.5 bg-white text-xs leading-relaxed">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-2">
+          <div class="flex items-center gap-1.5 font-bold text-slate-900 text-sm">
+            <span>🚚</span> WORKSTATION 2: KHANDAKER RAYHAN — FIELD LOGISTICS &amp; WORKFORCE
+          </div>
+          <span class="text-[10px] font-mono bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">SOP-OPS-02</span>
+        </div>
+        <div class="text-[11px] text-slate-600 mb-2">
+          <strong>Core Friction:</strong> Managing 4,700+ deployed personnel across nationwide hubs; supervisors send messy handwritten paper logs and fragmented WhatsApp voice notes.<br>
+          <strong>The AI Superpower:</strong> <span class="text-purple-700 font-semibold">Multimodal Unstructured Incident Extraction</span>.
+        </div>
+
+        <!-- Workflow Diagram Box -->
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] font-mono text-center flex items-center justify-between mb-2 text-slate-700">
+          <span>Messy Field Input<br>(Photo of handwritten roster)</span> ➔ 
+          <span>Gemini 1.5 Pro Vision OCR<br>(Bangla handwriting translation)</span> ➔ 
+          <span>Clean Markdown Table<br>(Hub | ID | Delay | Substitute)</span> ➔ 
+          <span class="font-bold text-purple-700">Management Brief<br>(Immediate alert for Moon Bhai)</span>
+        </div>
+
+        <!-- Step by Step SOP -->
+        <div class="bg-purple-50/60 border border-purple-200 rounded-lg p-2.5 space-y-1.5 text-[10.5px]">
+          <div><strong>Step 1 (Input Handling):</strong> When a regional supervisor in Chittagong or Bogra sends a photo of a shift roster:</div>
+          <div class="mono bg-white p-2 rounded border border-purple-200 text-slate-800 text-[10px]">
+            <strong>Logistics Extraction Prompt:</strong><br>
+            Role: Serviq Field Operations Data Coordinator.<br>
+            Context: Below is an unformatted message from Rangpur hub regarding delivery delays and absent rider substitutions.<br>
+            Task: Extract into clean Markdown table: [Hub Location | Rider Name | Employee ID | Delay Reason | Substitute Assigned | Action Required].<br>
+            Output: Return ONLY the table, followed by a 2-bullet executive summary highlighting unassigned delivery zones for Moon Bhai.
+          </div>
+          <div><strong>Step 2 (Deployment):</strong> Paste clean table into daily tracker; dispatch summary bullets to executive leadership.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Running Footer -->
+    <footer class="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px] font-mono text-slate-500">
+      <span>Internal Operational SOP · Serviq BPO Limited × GRO10X Holdings</span>
+      <span class="font-bold text-slate-700">Page 5 of 8</span>
+    </footer>
+  </div>
+
+  <!-- ==================================================================================== -->
+  <!-- PAGE 6: WORKSTATIONS 3 & 4 BLUEPRINTS (OPERATIONAL SOPS)                             -->
+  <!-- ==================================================================================== -->
+  <div class="page" id="page-6">
+    <div>
+      <!-- Running Header -->
+      <header class="flex items-center justify-between border-b border-slate-200 pb-2 mb-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <span class="font-bold text-[#0284C7]">SERVIQ BPO × GRO10X HOLDINGS</span>
+        <span>AI Workforce Acceleration · Executive Field Guide</span>
+        <span>October 2026</span>
+      </header>
+
+      <div class="mb-3">
+        <div class="text-[10px] font-mono font-bold text-[#0284C7] uppercase tracking-wider">DEPARTMENTAL SOPS</div>
+        <h2 class="heading-font text-xl font-black text-slate-900 tracking-tight">
+          Page 6: Workstations 3 &amp; 4 (Admin Digests &amp; Spreadsheet Reporting)
+        </h2>
+        <p class="text-xs text-slate-600">
+          Precision operational playbooks engineered for Ridhiya Islam and Partha Nath Sarker.
+        </p>
+      </div>
+
+      <!-- WORKSTATION 3: RIDHIYA ISLAM -->
+      <div class="border border-slate-200 rounded-xl p-3.5 bg-white mb-3 text-xs leading-relaxed">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-2">
+          <div class="flex items-center gap-1.5 font-bold text-slate-900 text-sm">
+            <span>📑</span> WORKSTATION 3: RIDHIYA ISLAM — ADMIN, HR &amp; EXECUTIVE DIGESTS
+          </div>
+          <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">SOP-ADM-03</span>
+        </div>
+        <div class="text-[11px] text-slate-600 mb-2">
+          <strong>Core Friction:</strong> Afternoon chasing across departments, consolidating unstructured notes into the master <em>Daily Work Update</em>, and drafting formal executive circulars.<br>
+          <strong>The AI Superpower:</strong> <span class="text-emerald-700 font-semibold">The Master Multi-Department Digest Engine</span>.
+        </div>
+
+        <!-- Workflow Diagram Box -->
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] font-mono text-center flex items-center justify-between mb-2 text-slate-700">
+          <span>Raw Daily Notes<br>(Dept 1 + 2 + 3 + Field)</span> ➔ 
+          <span>Executive Synthesis Prompt<br>(Filters noise, catches gaps)</span> ➔ 
+          <span>Standardized Master Update<br>(Clean executive typography)</span> ➔ 
+          <span class="font-bold text-emerald-700">CXO Briefing<br>(Delivered before 6:30 PM)</span>
+        </div>
+
+        <!-- Step by Step SOP -->
+        <div class="bg-emerald-50/60 border border-emerald-200 rounded-lg p-2.5 space-y-1.5 text-[10.5px]">
+          <div><strong>Step 1 (Batch Collection):</strong> Collect raw, bulleted daily notes from department leads.</div>
+          <div class="mono bg-white p-2 rounded border border-emerald-200 text-slate-800 text-[10px]">
+            <strong>Master Digest Prompt:</strong><br>
+            Role: Executive Operations Officer to the CEO &amp; COO at Serviq BPO Limited.<br>
+            Context: Below are 4 unformatted end-of-day bullet lists submitted by Admin, HR, Payroll, Facilities.<br>
+            Task: Synthesize into official "Serviq Daily Operational Update" format.<br>
+            Output: 3 strict headings: (1) Critical Milestone Attainments, (2) Cross-Department Blockers, (3) Priority Actions for Tomorrow Morning. Crisp, executive tone. Bold financial commitments.
+          </div>
+          <div><strong>Step 2 (Executive Transmission):</strong> Verify accuracy against records; transmit directly to Meraz Bhai &amp; Moon Bhai.</div>
+        </div>
+      </div>
+
+      <!-- WORKSTATION 4: PARTHA NATH SARKER -->
+      <div class="border border-slate-200 rounded-xl p-3.5 bg-white text-xs leading-relaxed">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-2">
+          <div class="flex items-center gap-1.5 font-bold text-slate-900 text-sm">
+            <span>📊</span> WORKSTATION 4: PARTHA NATH SARKER — OPERATIONS &amp; DATA REPORTING
+          </div>
+          <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">SOP-REP-04</span>
+        </div>
+        <div class="text-[11px] text-slate-600 mb-2">
+          <strong>Core Friction:</strong> Authoring complex Google Sheets formulas (REGEX, QUERY, nested IFs), spreadsheet calculation errors, and writing repetitive narrative status summaries.<br>
+          <strong>The AI Superpower:</strong> <span class="text-amber-700 font-semibold">Natural Language Formula Building &amp; Self-Cleaning Dashboards</span>.
+        </div>
+
+        <!-- Workflow Diagram Box -->
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] font-mono text-center flex items-center justify-between mb-2 text-slate-700">
+          <span>Plain English Request<br>("Compare Col A with Col D")</span> ➔ 
+          <span>Gemini Code Generator<br>(Optimized Sheets syntax)</span> ➔ 
+          <span>Robust ArrayFormula<br>(=ARRAYFORMULA(IF(...)))</span> ➔ 
+          <span class="font-bold text-amber-700">Automated Narrative<br>(Explains 98.4% SLA adherence)</span>
+        </div>
+
+        <!-- Step by Step SOP -->
+        <div class="bg-amber-50/60 border border-amber-200 rounded-lg p-2.5 space-y-1.5 text-[10.5px]">
+          <div><strong>Step 1 (Formula Architecture):</strong> Describe the logical relationship in plain English rather than wrestling with nested commas:</div>
+          <div class="mono bg-white p-2 rounded border border-amber-200 text-slate-800 text-[10px]">
+            <strong>Formula Architecture Prompt:</strong><br>
+            Role: Senior Google Sheets &amp; Enterprise Data Architect.<br>
+            Context: Serviq attendance sheet with 4,700 rows. Col B = Employee IDs, Col E = Check-In, Col F = Check-Out.<br>
+            Task: Write single performant ARRAYFORMULA for G2 calculating total hours, flagging &lt;8.0 hrs as "SHORT SHIFT", ignoring blanks.<br>
+            Output: Formula code block + 1-sentence paste instruction without breaking existing sheet formulas.
+          </div>
+          <div><strong>Step 2 (Data-to-Narrative Synthesis):</strong> Prompt Gemini to author a 150-word Executive Client Review explaining trends and SLA achievement. Export to PDF in 10 minutes instead of 2 hours.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Running Footer -->
+    <footer class="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px] font-mono text-slate-500">
+      <span>Internal Operational SOP · Serviq BPO Limited × GRO10X Holdings</span>
+      <span class="font-bold text-slate-700">Page 6 of 8</span>
+    </footer>
+  </div>
+
+  <!-- ==================================================================================== -->
+  <!-- PAGE 7: ENTERPRISE SECURITY SHIELD & PII REDACTION TABLE                             -->
+  <!-- ==================================================================================== -->
+  <div class="page" id="page-7">
+    <div>
+      <!-- Running Header -->
+      <header class="flex items-center justify-between border-b border-slate-200 pb-2 mb-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <span class="font-bold text-[#0284C7]">SERVIQ BPO × GRO10X HOLDINGS</span>
+        <span>AI Workforce Acceleration · Executive Field Guide</span>
+        <span>October 2026</span>
+      </header>
+
+      <div class="mb-3">
+        <div class="text-[10px] font-mono font-bold text-emerald-700 uppercase tracking-wider">DATA GOVERNANCE &amp; LEGAL SAFETY</div>
+        <h2 class="heading-font text-xl font-black text-slate-900 tracking-tight">
+          Page 7: Enterprise Security Shield &amp; PII Redaction Table
+        </h2>
+        <p class="text-xs text-slate-600">
+          Upholding client confidentiality, data privacy boundaries, and ethical governance standards.
+        </p>
+      </div>
+
+      <!-- 3 Golden Laws -->
+      <div class="grid grid-cols-3 gap-2.5 mb-3 text-xs">
+        <div class="border border-sky-200 bg-sky-50 rounded-xl p-3">
+          <div class="font-bold text-sky-900 mb-1">1. Commercial Boundary</div>
+          <p class="text-[10.5px] text-slate-700 leading-relaxed">
+            Google Workspace Enterprise and commercial Gemini licenses <strong>DO NOT</strong> use Serviq data to train public foundation models.
+          </p>
+        </div>
+        <div class="border border-amber-200 bg-amber-50 rounded-xl p-3">
+          <div class="font-bold text-amber-900 mb-1">2. The Redaction Rule</div>
+          <p class="text-[10.5px] text-slate-700 leading-relaxed">
+            <strong>NEVER</strong> paste unredacted National IDs, banking passwords, or personal account numbers into chat prompts. Always use tokens.
+          </p>
+        </div>
+        <div class="border border-emerald-200 bg-emerald-50 rounded-xl p-3">
+          <div class="font-bold text-emerald-900 mb-1">3. Human Gatekeeper</div>
+          <p class="text-[10.5px] text-slate-700 leading-relaxed">
+            AI is your drafting intern; you are the executive manager. AI drafts, human eyes verify, and a human always hits "Send".
+          </p>
+        </div>
+      </div>
+
+      <!-- The 6-Row PII Conversion Table -->
+      <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs">
+        <div class="font-bold text-slate-900 text-xs mb-1.5 flex items-center justify-between">
+          <span>🛡️ The Definitive 6-Row PII Tokenized Redaction Table</span>
+          <span class="text-[10px] font-mono text-slate-500">Standard Conversion Guide</span>
+        </div>
+
+        <div class="overflow-hidden border border-slate-200 rounded-lg">
+          <table class="w-full text-left border-collapse text-[10.5px]">
+            <thead>
+              <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-200">
+                <th class="p-2 w-1/4">Sensitive Category</th>
+                <th class="p-2 w-1/3 text-red-700">Real Example (DO NOT PASTE)</th>
+                <th class="p-2 w-1/4 text-emerald-700">Tokenized Format (SAFE)</th>
+                <th class="p-2">Operational Reason</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 leading-tight">
+              <tr>
+                <td class="p-2 font-bold text-slate-800">1. Client Brand Name</td>
+                <td class="p-2 text-red-700 font-mono">"BATB" or "Unilever"</td>
+                <td class="p-2 font-mono font-bold text-emerald-700 bg-emerald-50/50">[Client_MNC_01]</td>
+                <td class="p-2 text-slate-600">Protects client corporate identity.</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-2 font-bold text-slate-800">2. Employee Full Name</td>
+                <td class="p-2 text-red-700 font-mono">"Khandaker Rayhan, ID 40892"</td>
+                <td class="p-2 font-mono font-bold text-emerald-700 bg-emerald-50/50">[Employee_Logistics_Lead]</td>
+                <td class="p-2 text-slate-600">Preserves role context without exposing personal identity.</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-bold text-slate-800">3. National ID / NID</td>
+                <td class="p-2 text-red-700 font-mono">"NID: 19912692801000452"</td>
+                <td class="p-2 font-mono font-bold text-emerald-700 bg-emerald-50/50">[NID_VERIFIED_10DIGIT]</td>
+                <td class="p-2 text-slate-600">Government identification numbers are legally confidential.</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-2 font-bold text-slate-800">4. Bank Account &amp; Branch</td>
+                <td class="p-2 text-red-700 font-mono">"DBBL A/C 115.120.45892 (Gulshan)"</td>
+                <td class="p-2 font-mono font-bold text-emerald-700 bg-emerald-50/50">[Bank_DBBL_Primary]</td>
+                <td class="p-2 text-slate-600">Prevents banking account harvesting while verifying flow.</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-bold text-slate-800">5. Personal Mobile Phone</td>
+                <td class="p-2 text-red-700 font-mono">"+880 1844-231433"</td>
+                <td class="p-2 font-mono font-bold text-emerald-700 bg-emerald-50/50">[Phone_Hotline_01]</td>
+                <td class="p-2 text-slate-600">Prevents harvesting of executive and field telephone numbers.</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-2 font-bold text-slate-800">6. Individual Base Salary</td>
+                <td class="p-2 text-red-700 font-mono">"Basic BDT 45,000 + 15,000"</td>
+                <td class="p-2 font-mono font-bold text-emerald-700 bg-emerald-50/50">[Tier_2_Base_Comp]</td>
+                <td class="p-2 text-slate-600">Allows percentage/tax calculations without disclosing pay.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Real-World Demonstration Box -->
+      <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/70 text-xs">
+        <div class="font-bold text-slate-900 text-xs mb-1.5">🚨 Real-World Redaction Demonstration</div>
+        <div class="grid grid-cols-2 gap-3 text-[10.5px]">
+          <div class="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-900 space-y-1">
+            <span class="font-bold block text-red-700">❌ DANGEROUS INPUT (RAW DATA):</span>
+            <div class="mono text-[10px]">
+              "Write a reprimand letter to Partha Nath Sarker (NID 8291029381, Phone 01711223344, Salary 35,000 BDT) for missing the courier handover at Unilever Tejgaon warehouse."
+            </div>
+          </div>
+          <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-1">
+            <span class="font-bold block text-emerald-700">✅ SAFE PRODUCTION INPUT (REDACTED):</span>
+            <div class="mono text-[10px]">
+              "Write a firm, professional operational inquiry letter to [Employee_Ops_04] for failing to execute the scheduled courier handover at [Client_Account_A] [Location_Tejgaon] warehouse yesterday. Reiterate our strict SLA standard."
+            </div>
+          </div>
+        </div>
+        <p class="text-[10.5px] text-slate-600 mt-2 italic">
+          Notice: The AI produces the exact same high-quality professional document without ever seeing Partha's real telephone number, national ID, or company salary.
+        </p>
+      </div>
+    </div>
+
+    <!-- Running Footer -->
+    <footer class="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px] font-mono text-slate-500">
+      <span>Internal Operational SOP · Serviq BPO Limited × GRO10X Holdings</span>
+      <span class="font-bold text-slate-700">Page 7 of 8</span>
+    </footer>
+  </div>
+
+  <!-- ==================================================================================== -->
+  <!-- PAGE 8: DAY 1 HOMEWORK SHEET & 5-SESSION FLIGHT PLAN                                 -->
+  <!-- ==================================================================================== -->
+  <div class="page" id="page-8">
+    <div>
+      <!-- Running Header -->
+      <header class="flex items-center justify-between border-b border-slate-200 pb-2 mb-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <span class="font-bold text-[#0284C7]">SERVIQ BPO × GRO10X HOLDINGS</span>
+        <span>AI Workforce Acceleration · Executive Field Guide</span>
+        <span>October 2026</span>
+      </header>
+
+      <div class="mb-3">
+        <div class="text-[10px] font-mono font-bold text-[#0284C7] uppercase tracking-wider">ACTION PLAN &amp; ROADMAP</div>
+        <h2 class="heading-font text-xl font-black text-slate-900 tracking-tight">
+          Page 8: Day 1 Homework Sheet &amp; 5-Session Flight Plan
+        </h2>
+        <p class="text-xs text-slate-600">
+          Immediate zero-friction action items and the full 5-session roadmap toward autonomous operational velocity.
+        </p>
+      </div>
+
+      <!-- 2-Minute Homework Checklist -->
+      <div class="border border-emerald-300 bg-emerald-50/70 rounded-xl p-3.5 mb-3.5 text-xs">
+        <div class="flex items-center justify-between border-b border-emerald-200 pb-1 mb-2 font-mono">
+          <span class="font-bold text-emerald-900 text-sm">⏱️ THE 2-MINUTE ZERO-FRICTION HOMEWORK CHECKLIST</span>
+          <span class="text-emerald-700 text-[10.5px]">Due Tuesday @ 3:00 PM BST</span>
+        </div>
+        <p class="text-[11px] text-slate-700 mb-2.5">
+          Zero typing. Zero prompt generation. Exactly two minutes of preparation before Session 2:
+        </p>
+        <div class="space-y-2 mono text-[10.5px] bg-white p-3 rounded-lg border border-emerald-200 text-slate-800">
+          <div class="flex items-start gap-2">
+            <span class="font-bold text-emerald-600 text-base leading-none">☐</span>
+            <div>
+              <strong>STEP 1: VERIFY BROWSER ACCESS (30 Seconds)</strong><br>
+              Open Google Chrome on your work laptop. Visit <code>https://gemini.google.com</code>. Confirm you are signed in with your registered corporate email.
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="font-bold text-emerald-600 text-base leading-none">☐</span>
+            <div>
+              <strong>STEP 2: HARVEST ONE DAILY FRUSTRATION (90 Seconds)</strong><br>
+              Do NOT write prompts. Simply identify ONE task from today that felt tedious, slow, or repetitive:
+              <ul class="font-sans text-[10px] text-slate-600 list-disc pl-4 mt-0.5 space-y-0.5">
+                <li><strong>Shabuddin:</strong> An email inquiry you had to answer multiple times today.</li>
+                <li><strong>Rayhan:</strong> A messy field WhatsApp text or handwritten roster that took time to decode.</li>
+                <li><strong>Ridhiya:</strong> An administrative update you had to chase someone for.</li>
+                <li><strong>Partha:</strong> A spreadsheet formula that broke or a report that took hours.</li>
+              </ul>
+              Save that single text snippet or scenario in a basic notepad file.
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="font-bold text-emerald-600 text-base leading-none">☐</span>
+            <div>
+              <strong>STEP 3: BRING IT TO SESSION 2</strong><br>
+              Come to Session 2 ready with your scenario. The trainer will take your actual daily headache and automate it live on screen!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5-Session Acceleration Roadmap -->
+      <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs">
+        <div class="font-bold text-slate-900 text-xs mb-1.5 flex items-center justify-between">
+          <span>🚀 The 5-Session Serviq Flight Plan: Path to Full Acceleration</span>
+          <span class="text-[10px] font-mono text-[#0284C7]">5-Phase Trajectory</span>
+        </div>
+
+        <div class="overflow-hidden border border-slate-200 rounded-lg">
+          <table class="w-full text-left border-collapse text-[10.5px]">
+            <thead>
+              <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-200">
+                <th class="p-2 w-1/4">Session &amp; Date</th>
+                <th class="p-2 w-1/3">Topic &amp; Venue</th>
+                <th class="p-2">Target Milestone / Outcome</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 leading-tight">
+              <tr>
+                <td class="p-2 font-bold text-slate-900">Session 1<br><span class="text-[10px] text-slate-500 font-normal">Mon, Oct 26 @ 3:00 PM</span></td>
+                <td class="p-2 font-medium">Foundations &amp; The RCTO<br><span class="text-slate-500">Google Meet (Online)</span></td>
+                <td class="p-2 text-slate-600">Mental model mastery, power grid architecture, live shootout comparison.</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-2 font-bold text-slate-900">Session 2<br><span class="text-[10px] text-slate-500 font-normal">Tue, Oct 27 @ 3:00 PM</span></td>
+                <td class="p-2 font-medium">Multimodal Ingress &amp; Support<br><span class="text-slate-500">Google Meet (Online)</span></td>
+                <td class="p-2 text-slate-600">Vision AI for field rosters, automated customer query matrix for Shabuddin.</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-bold text-slate-900">Session 3<br><span class="text-[10px] text-slate-500 font-normal">Wed, Oct 28 @ 3:00 PM</span></td>
+                <td class="p-2 font-medium">Workspace AI &amp; Smart Sheets<br><span class="text-slate-500">Google Meet (Online)</span></td>
+                <td class="p-2 text-slate-600">Gemini in Docs/Gmail, automated formula building for Partha &amp; Ridhiya.</td>
+              </tr>
+              <tr class="bg-sky-50/50">
+                <td class="p-2 font-bold text-[#0284C7]">Session 4<br><span class="text-[10px] text-slate-500 font-normal">Sat, Oct 31 (Morning)</span></td>
+                <td class="p-2 font-bold text-slate-900">Hands-On Laptop Lab<br><span class="text-slate-600">Serviq Head Office (Banani)</span></td>
+                <td class="p-2 text-slate-700">Screen-to-screen workflow rebuild on trainees' real operational files.</td>
+              </tr>
+              <tr class="bg-purple-50/50">
+                <td class="p-2 font-bold text-purple-800">Session 5<br><span class="text-[10px] text-slate-500 font-normal">Sat, Oct 31 (Afternoon)</span></td>
+                <td class="p-2 font-bold text-slate-900">Founders' Command Center<br><span class="text-slate-600">Serviq Head Office (Banani)</span></td>
+                <td class="p-2 text-slate-700">Capstone live demos, executive CEO dashboard for Meraz &amp; Moon Bhai, Graduation.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Support & Helpdesk -->
+      <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/90 text-xs">
+        <div class="grid grid-cols-2 gap-4 text-[10.5px]">
+          <div>
+            <span class="font-bold text-slate-900 block">📞 Program Coordinator &amp; Trainer</span>
+            <span class="text-slate-600">Firoz Uddin Ahmed (Plabon) — Founder &amp; CEO, GRO10X Holdings</span><br>
+            <span class="text-slate-500">Dedicated Channel: <code>AI Training (Serviq)</code> WhatsApp Operations Mesh</span>
+          </div>
+          <div>
+            <span class="font-bold text-slate-900 block">🌐 Canonical Web Resource</span>
+            <span class="text-[#0284C7] font-mono">https://gro10x-ai.vercel.app/pitch/serviq-session1/takeaway</span><br>
+            <span class="text-slate-500">Official Asynchronous Client Reference Manual · Version 1.0 Production</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Running Footer -->
+    <footer class="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px] font-mono text-slate-500">
+      <span>Internal Operational SOP · Serviq BPO Limited × GRO10X Holdings</span>
+      <span class="font-bold text-slate-700">Page 8 of 8</span>
+    </footer>
+  </div>
+
+</body>
+</html>

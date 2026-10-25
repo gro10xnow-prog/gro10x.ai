@@ -143,6 +143,8 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('The Truth About AI');
       expect(res.text).toContain('Leadership Thoughts');
       expect(res.text).toContain('downloadPdfDeck()');
+      expect(res.text).toContain('href="/pitch/serviq-session1/takeaway"');
+      expect(res.text).toContain('target="_blank"');
     });
   });
 
@@ -269,6 +271,127 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('id="btn-save-notes-desktop"');
       expect(res.text).toContain('id="active-spoken-text"');
       expect(res.text).toContain('contenteditable');
+    });
+  });
+
+  describe('Surface C: 8-Page Print-Calibrated A4 Takeaway Manual (/pitch/serviq-session1/takeaway)', () => {
+    test('serves the Takeaway Manual at /pitch/serviq-session1/takeaway with status 200 and html content', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.status).toBe(200);
+      expect(res.headers['content-type']).toMatch(/text\/html/);
+    });
+
+    test('serves the Takeaway Manual with trailing slash at /pitch/serviq-session1/takeaway/', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway/');
+      expect(res.status).toBe(200);
+      expect(res.headers['content-type']).toMatch(/text\/html/);
+    });
+
+    test('renders A4 print stylesheet and exactly 8 .page containers (#page-1 to #page-8)', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('size: A4 portrait');
+      expect(res.text).toContain('@media print');
+      
+      const pageMatches = res.text.match(/class="page"/g);
+      expect(pageMatches).not.toBeNull();
+      expect(pageMatches.length).toBe(8);
+
+      for (let i = 1; i <= 8; i++) {
+        expect(res.text).toContain(`id="page-${i}"`);
+      }
+      expect(res.text).not.toContain('id="page-9"');
+    });
+
+    test('verifies Page 1: Cover & Executive Joint Letter', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('SERVIQ BPO LIMITED');
+      expect(res.text).toContain('GRO10X HOLDINGS');
+      expect(res.text).toContain('AI Workforce Acceleration Program');
+      expect(res.text).toContain('Session 1 Field Guide');
+      expect(res.text).toContain('MERAJUL ISLAM');
+      expect(res.text).toContain('FIROZ UDDIN AHMED');
+      expect(res.text).toContain('PROP-2026-SERVIQ');
+    });
+
+    test('verifies Page 2: The Core Mental Models', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('The Core Mental Models');
+      expect(res.text).toContain('The Tireless Intern');
+      expect(res.text).toContain('The 3-Layer Power Grid');
+      expect(res.text).toContain('Layer 1: Power Grid');
+      expect(res.text).toContain('Layer 2: Foundation Brain');
+      expect(res.text).toContain('Layer 3: Serviq Desk');
+      expect(res.text).toContain('Tireless IBA Intern');
+    });
+
+    test('verifies Page 3: The Universal RCTO Framework & Reusable Prompt Card', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('Universal RCTO Framework');
+      expect(res.text).toContain('TEAR-OUT / PIN TO DESKTOP: UNIVERSAL RCTO BUILDER');
+      expect(res.text).toContain('ROLE:');
+      expect(res.text).toContain('CONTEXT:');
+      expect(res.text).toContain('TASK:');
+      expect(res.text).toContain('OUTPUT:');
+      expect(res.text).toContain('Senior Client Operations Manager at Serviq BPO Limited');
+    });
+
+    test('verifies Page 4: Live Shootout Case Study', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('Live Shootout Case Study');
+      expect(res.text).toContain('PROMPT A: THE LAZY PROMPT');
+      expect(res.text).toContain('PROMPT B: PRODUCTION SERVIQ RCTO');
+      expect(res.text).toContain('Tanvir Ahmed');
+      expect(res.text).toContain('BEFTN');
+    });
+
+    test('verifies Page 5: Workstations 1 & 2 (Shabuddin & Rayhan)', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('WORKSTATION 1: SHABUDDIN PATWARY');
+      expect(res.text).toContain('CUSTOMER OPERATIONS &amp; INGRESS');
+      expect(res.text).toContain('WORKSTATION 2: KHANDAKER RAYHAN');
+      expect(res.text).toContain('FIELD LOGISTICS &amp; WORKFORCE');
+      expect(res.text).toContain('SOP-CUST-01');
+      expect(res.text).toContain('SOP-OPS-02');
+    });
+
+    test('verifies Page 6: Workstations 3 & 4 (Ridhiya & Partha)', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('WORKSTATION 3: RIDHIYA ISLAM');
+      expect(res.text).toContain('ADMIN, HR &amp; EXECUTIVE DIGESTS');
+      expect(res.text).toContain('WORKSTATION 4: PARTHA NATH SARKER');
+      expect(res.text).toContain('OPERATIONS &amp; DATA REPORTING');
+      expect(res.text).toContain('SOP-ADM-03');
+      expect(res.text).toContain('SOP-REP-04');
+    });
+
+    test('verifies Page 7: Enterprise Security Shield & 6-Row PII Tokenized Redaction Table', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('Enterprise Security Shield');
+      expect(res.text).toContain('6-Row PII Tokenized Redaction Table');
+      expect(res.text).toContain('[Client_MNC_01]');
+      expect(res.text).toContain('[Employee_Logistics_Lead]');
+      expect(res.text).toContain('[NID_VERIFIED_10DIGIT]');
+      expect(res.text).toContain('Real-World Redaction Demonstration');
+      expect(res.text).toContain('DANGEROUS INPUT (RAW DATA)');
+      expect(res.text).toContain('SAFE PRODUCTION INPUT (REDACTED)');
+    });
+
+    test('verifies Page 8: Day 1 Zero-Friction Homework & 5-Session Flight Plan', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('THE 2-MINUTE ZERO-FRICTION HOMEWORK CHECKLIST');
+      expect(res.text).toContain('STEP 1: VERIFY BROWSER ACCESS');
+      expect(res.text).toContain('STEP 2: HARVEST ONE DAILY FRUSTRATION');
+      expect(res.text).toContain('STEP 3: BRING IT TO SESSION 2');
+      expect(res.text).toContain('The 5-Session Serviq Flight Plan: Path to Full Acceleration');
+      expect(res.text).toContain('https://gro10x-ai.vercel.app/pitch/serviq-session1/takeaway');
+    });
+
+    test('verifies floating action bar and navigation controls', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/takeaway');
+      expect(res.text).toContain('window.print()');
+      expect(res.text).toContain('Print / Save as 8-Page A4 PDF');
+      expect(res.text).toContain('/pitch/serviq-session1');
+      expect(res.text).toContain('/pitch/serviq-session1/copilot');
     });
   });
 

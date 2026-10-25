@@ -588,6 +588,9 @@ app.get(['/pitch/serviq-session1', '/pitch/serviq-session1/'], (req, res) => {
 app.get(['/pitch/serviq-session1/copilot', '/pitch/serviq-session1/copilot.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pitch/serviq-session1/copilot.html'));
 });
+app.get(['/pitch/serviq-session1/takeaway', '/pitch/serviq-session1/takeaway/', '/pitch/serviq-session1/takeaway/index.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/serviq-session1/takeaway/index.html'));
+});
 app.use('/pitch', express.static(path.join(__dirname, 'public/pitch')));
 
 // Central Prototype Showroom & Staged Client Prototypes

@@ -229,6 +229,10 @@
       "dest": "/public/pitch/serviq-session1/copilot.html"
     },
     {
+      "src": "/pitch/serviq-session1/takeaway(.*)",
+      "dest": "/public/pitch/serviq-session1/takeaway/index.html"
+    },
+    {
       "src": "/pitch/serviq-session1(/.*)?",
       "dest": "/public/pitch/serviq-session1/index.html"
     },
