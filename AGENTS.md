@@ -393,4 +393,43 @@ To prevent route hijacking and unexpected fallback redirects across production d
 2. **Verification Gate**:
    - Any new route or presentation portal mounted under an existing prefix must be accompanied by an automated HTTP route-resolution test verifying that the child URL returns HTTP 200 with its own title and markup rather than the parent portal.
 
+---
 
+### 25. The Dual Stakeholder Broadcast Invariant (Zero Silent Publishing)
+Whenever any public post, video short, or client marketing artifact is published to live production:
+1. **Zero Silent Publishing Rule:** A channel lead (`[S3]`, `[MED-LI]`, `[MED-FB]`) is **strictly forbidden** from merely updating internal JSON manifests or logging database receipts.
+2. **Mandatory Dual Broadcast Delivery:** Upon receiving the live public URL from the Founder, the channel lead must immediately output two complete, copy-paste broadcast templates in their primary visible response:
+   - **Surface A (Viral / Community / Client Group):** High-curiosity copy tailored for WhatsApp/Telegram broadcast lists, client leadership groups, and community nodes, containing the live URL, strategic hook, and an explicit advocacy CTA (like, comment, repost).
+   - **Surface B (Holdings Management / Team Channel):** Operational attainment receipt detailing technical compliance, QA verification scores, and next sprint transition.
+3. No publication task is marked closed until both broadcast templates are presented to the Founder.
+
+---
+
+### 26. The Decentralized Channel Lead ➔ Phase 2 Consumer QA Handshake Protocol
+To eliminate Central Chief of Staff as an operational drafting bottleneck and maintain high squad velocity:
+1. **Zero Un-Audited Draft Submissions:** No channel lead is permitted to submit an un-audited draft to Central CoS.
+2. **Autonomous Phase 2 Ingress Generation:** When a channel lead finishes drafting copy and compiling visual media (e.g., PDF carousel, 1080x1080 graphic, or video cut):
+   - The channel lead must **automatically generate** the complete, copy-paste **Phase 2 Blind Audit Brief** addressed to `[IND-QA]` (Chief Consumer Quality Officer).
+   - The brief must explicitly contain: target consumer persona, raw un-spun copy, compiled file paths, and ruthless evaluation rubrics (hook friction, visual truth, readability, math logic).
+3. **The Direct Remediation Loop:**
+   - The Founder relays the brief directly to `[IND-QA]`.
+   - If `[IND-QA]` issues a `🔴 REJECT`, the Founder pastes the defects directly back to the channel lead to remediate and recompile.
+   - Only when `[IND-QA]` issues an official `🟢 PASS` does the channel lead instruct the Founder to publish.
+4. **Central CoS Escalation:** Central CoS is notified **only after** publication, verification, and broadcast dispatches are complete.
+
+---
+
+### 27. The Option B Native Code Invariant for Infographics & Data Creatives
+For all social media graphics, financial comparisons, service portfolios, and document carousels:
+1. **The Option B Default:** All data-heavy, typography-focused, and comparison assets must be authored natively via **Option B (Programmatic HTML/CSS + Headless Chromium PDF/PNG Compilation)**.
+2. **Strict Prohibition on Option A for Data Assets:** Generative AI image prompts (Option A) are strictly prohibited for infographics to eliminate AI hallucinations, distorted currency symbols, spelling errors, and layout warping. Option A is reserved exclusively for human emotional photography or lifestyle scenes.
+3. **The Authentic Asset Embedding Mandate (Zero Mock CSS Proxies):** Channel leads are strictly forbidden from fabricating mock CSS placeholders (e.g. `<div class="brand-mark">S</div>` or `<span class="dot"></span>`). Official brand vector or PNG assets (`image2.png`, `gro10x_logo.png`) must be directly embedded via local paths or base64.
+
+---
+
+### 28. The Daily 1-Day Production Cadence Invariant
+To prevent cognitive overload, preserve strict daily QA standards, and match authentic platform publishing rhythms:
+1. **Zero Bulk Dumps:** Digital leads are strictly forbidden from dumping 5 to 7 days of raw social content at once.
+2. **The Daily Single-Asset Lifecycle:** Content production operates strictly **1 Day at a Time**:
+   - Day N is drafted, rendered, audited by `[IND-QA]`, published, and broadcasted.
+   - Only upon successful closure of Day N does the squad initiate Day N+1.
