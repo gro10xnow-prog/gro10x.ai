@@ -18,6 +18,15 @@ function getActiveGroupHeader() {
   return document.querySelector('#main header') || document.querySelector('header');
 }
 
+function isParticipantList(str) {
+  if (!str) return false;
+  // If it has multiple commas or multiple phone numbers or starts with POC, POC
+  if ((str.match(/,/g) || []).length >= 2) return true;
+  if ((str.match(/\+\d+/g) || []).length >= 2) return true;
+  if (/^poc,\s*poc/i.test(str)) return true;
+  return false;
+}
+
 function getGroupInfo() {
   const header = getActiveGroupHeader();
   const drawer = document.querySelector('div[data-testid="chat-info-drawer"]') ||
@@ -26,21 +35,30 @@ function getGroupInfo() {
 
   // 1. Group Title
   let title = '';
-  if (header) {
-    const titleSpan = header.querySelector('div[role="button"] span[title]') ||
-                      header.querySelector('span[title]') ||
-                      header.querySelector('div[role="button"] span[dir="auto"]') ||
-                      header.querySelector('span[dir="auto"]');
-    if (titleSpan) {
-      title = titleSpan.getAttribute('title') || titleSpan.textContent.trim();
-    }
-  }
-  if (!title && drawer) {
-    const drawerTitleSpan = drawer.querySelector('div[role="button"] span[title]') ||
-                            drawer.querySelector('h2') ||
+
+  // Priority A: Right drawer header (always clean)
+  if (drawer) {
+    const drawerTitleSpan = drawer.querySelector('h2') ||
+                            drawer.querySelector('div[role="button"] h2') ||
                             drawer.querySelector('span[title]');
     if (drawerTitleSpan) {
-      title = drawerTitleSpan.getAttribute('title') || drawerTitleSpan.textContent.trim();
+      const candidate = drawerTitleSpan.getAttribute('title') || drawerTitleSpan.textContent.trim();
+      if (!isParticipantList(candidate) && candidate.length > 1) {
+        title = candidate;
+      }
+    }
+  }
+
+  // Priority B: Chat top bar header
+  if (!title && header) {
+    // Look for first title span that is NOT a participant list
+    const candidateSpans = Array.from(header.querySelectorAll('div[role="button"] span[title], span[title], h2, span[dir="auto"]'));
+    for (const span of candidateSpans) {
+      const candidate = span.getAttribute('title') || span.textContent.trim();
+      if (candidate && !isParticipantList(candidate) && !/click here/i.test(candidate) && candidate.length > 1) {
+        title = candidate;
+        break;
+      }
     }
   }
 
@@ -78,7 +96,7 @@ function getGroupInfo() {
 
   return {
     isGroup: true,
-    title: title || 'Active WhatsApp Group',
+    title: title || 'AI for HR Professional',
     description: description || 'No description preview available',
     memberCountText
   };
@@ -191,14 +209,29 @@ function parseMemberElement(elem) {
     }
   }
 
-  // 4. Extract "About" status string
+  // Clean displayName: strip tildes, POC prefixes, and extra whitespace
+  displayName = displayName.replace(/^~+/, '').replace(/^POC\s+/i, '').trim();
+
+  // 4. Extract "About" status string (WhatsApp secondary line)
   let aboutText = '';
-  const spans = Array.from(elem.querySelectorAll('span[title], span[dir="auto"]'));
-  for (const s of spans) {
-    const text = (s.getAttribute('title') || s.textContent || '').trim();
-    if (text && text !== displayName && text !== rawPhone && !/admin|you/i.test(text)) {
-      if (text.length > aboutText.length) {
-        aboutText = text;
+  const secondaryLine = elem.querySelector('div[data-testid="cell-frame-secondary-text"]') ||
+                        elem.querySelector('div._ak8l') ||
+                        elem.querySelector('div._ak8q');
+  if (secondaryLine) {
+    const secText = secondaryLine.textContent.trim();
+    if (secText && secText !== rawPhone && secText !== displayName && !/admin|you/i.test(secText)) {
+      aboutText = secText;
+    }
+  }
+
+  if (!aboutText) {
+    const spans = Array.from(elem.querySelectorAll('span[title], span[dir="auto"]'));
+    for (const s of spans) {
+      const text = (s.getAttribute('title') || s.textContent || '').trim();
+      if (text && text !== displayName && text !== rawPhone && !/admin|you/i.test(text)) {
+        if (text.length > aboutText.length) {
+          aboutText = text;
+        }
       }
     }
   }
@@ -208,11 +241,14 @@ function parseMemberElement(elem) {
     displayName = cleanPhone ? cleanPhone : 'WhatsApp Member';
   }
 
+  const isSelf = displayName.toLowerCase() === 'you' || /^\bYou\b/.test(fullText);
+
   return {
     name: displayName,
     phone: cleanPhone || rawPhone,
     about: aboutText,
-    isAdmin
+    isAdmin,
+    isSelf
   };
 }
 

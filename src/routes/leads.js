@@ -1307,22 +1307,34 @@ router.post('/ai-enrich', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'No members provided in payload' });
     }
 
-    const cleanGroupName = String(group_name || 'Business Group').trim();
-    const cleanTargetOffer = String(target_offer || '').trim();
+    const cleanGroupName = String(group_name || 'AI for HR Professional').trim();
+    const cleanTargetOffer = String(target_offer || 'Corporate AI Training & Workforce Upskilling (Engine 2 Academy)').trim();
 
-    const enrichedMembers = members.map((m, idx) => {
+    const filteredMembers = members.filter(m => {
+      const name = String(m.name || m.displayName || '').trim().toLowerCase();
+      return name !== 'you' && !m.isSelf;
+    });
+
+    const enrichedMembers = filteredMembers.map((m, idx) => {
       const rawName = String(m.name || m.contactPerson || m.displayName || '').trim();
       const rawPhone = String(m.phone || m.whatsapp || '').trim();
       const rawAbout = String(m.about || m.status || '').trim();
       const isAdmin = Boolean(m.isAdmin || m.is_admin || String(m.role || '').toLowerCase().includes('admin'));
 
       // Friendly display name fallback
-      let cleanName = rawName;
+      let cleanName = rawName.replace(/^~+/, '').replace(/^POC\s+/i, '').trim();
       if (!cleanName || cleanName.startsWith('+') || /^\d+$/.test(cleanName.replace(/\D/g, ''))) {
-        cleanName = rawName.includes('~') ? rawName.replace(/^~/, '').trim() : (rawPhone || `Member #${idx + 1}`);
+        cleanName = rawPhone || `Member #${idx + 1}`;
       }
 
       const combinedText = `${cleanName} ${rawAbout}`.toLowerCase();
+
+      // Extract Designation if comma separated e.g. "Md. Ali Reza, DM, LDD"
+      let designation = '';
+      if (cleanName.includes(',')) {
+        const parts = cleanName.split(',');
+        designation = parts.slice(1).join(',').trim();
+      }
 
       // 1. Seniority Inference
       let seniority = 'Professional / Practitioner';
@@ -1335,7 +1347,7 @@ router.post('/ai-enrich', async (req, res) => {
         seniority = 'Director / VP';
       } else if (/manager|lead|supervisor|coordinator/.test(combinedText)) {
         seniority = 'Manager / Team Lead';
-      } else if (/doctor|dr\.|advocate|lawyer|architect|consultant|investor|trader/.test(combinedText)) {
+      } else if (/doctor|dr\.|advocate|lawyer|architect|consultant|investor|trader|specialist/.test(combinedText)) {
         seniority = 'Senior Professional / Consultant';
       }
 
@@ -1346,7 +1358,7 @@ router.post('/ai-enrich', async (req, res) => {
       if (seniority.includes('C-Level') || (isAdmin && seniority.includes('Admin')) || /enterprise|corporate|real estate|holding|investor|fintech/.test(combinedText)) {
         leadTier = 'Tier 1 (High Ticket Enterprise)';
         score = 88;
-      } else if (seniority.includes('Director') || seniority.includes('Senior Professional') || /agency|e-commerce|business|founder|trader/.test(combinedText)) {
+      } else if (seniority.includes('Director') || seniority.includes('Manager') || seniority.includes('Senior Professional') || /agency|e-commerce|business|founder|trader/.test(combinedText)) {
         leadTier = 'Tier 2 (Growth Retainer)';
         score = 75;
       } else if (rawAbout.length > 5 || cleanName.length > 3) {
@@ -1357,45 +1369,59 @@ router.post('/ai-enrich', async (req, res) => {
         score = 45;
       }
 
-      if (isAdmin) score += 10;
+      if (isAdmin) score += 8;
       if (score > 98) score = 98;
 
       // 3. Match Offer Mapping
-      let matchOffer = cleanTargetOffer || 'Engine 2: Bespoke Agency Tech & Turnkey MVPs';
-      if (!cleanTargetOffer) {
-        if (/ecommerce|shop|store|brand|retail|fmcg|product/.test(combinedText)) {
-          matchOffer = 'Engine 3: Commerce10x & Dynamic Commerce Engine';
-        } else if (/voice|call|bot|telegram|support|automation|agent/.test(combinedText)) {
-          matchOffer = 'Engine 1: Agent10x Autonomous AI Bot Mesh';
-        } else if (/media|video|marketing|youtube|content|ads|viral/.test(combinedText)) {
-          matchOffer = 'Engine 5: Media10x Viral Broadcast Network';
-        } else if (/loan|finance|invest|capital|credit|fund/.test(combinedText)) {
-          matchOffer = 'Engine 6: GRO10X Capital & SME Financing';
-        } else if (/enterprise|hospital|township|real estate|governance/.test(combinedText)) {
-          matchOffer = 'Engine 4: Enterprise Township & Platform OS';
+      let matchOffer = cleanTargetOffer;
+      const isTrainingOffer = /training|upskilling|masterclass|academy/i.test(matchOffer) || /hr/i.test(cleanGroupName);
+
+      // 4. Clean Salutation (Avoid ~Md., POC, or pure phone numbers)
+      let salutation = 'Leader';
+      if (/^(WhatsApp Member|Member\s*#\d+)$/i.test(cleanName) || /^\+?\d+$/.test(cleanName.replace(/\D/g, ''))) {
+        salutation = 'HR Professional';
+      } else if (cleanName.startsWith('@')) {
+        salutation = cleanName.substring(1).replace(/[_.]/g, ' ').replace(/\d+$/, '').trim() || 'HR Professional';
+      } else {
+        const nameParts = cleanName.split(',')[0].trim().split(/\s+/);
+        if (nameParts[0].replace(/\./g, '').toLowerCase() === 'md' && nameParts.length > 1) {
+          salutation = nameParts[1];
+        } else {
+          salutation = nameParts[0] || 'Leader';
         }
       }
 
-      // 4. Contextual Personalized Icebreakers
-      const firstName = cleanName.split(' ')[0] || 'Friend';
       let icebreakerEn = '';
       let icebreakerBn = '';
 
-      if (isAdmin) {
-        icebreakerEn = `Hi ${firstName}, saw you administering ${cleanGroupName}! Huge respect for leading this community. At GRO10X, we partner with community & business leaders to deploy custom AI agents and enterprise systems. Would love to share high-level ideas with you when convenient.`;
-        icebreakerBn = `সালাম ${firstName} ভাই, ${cleanGroupName} গ্রুপটি আপনি চমৎকারভাবে লিড দিচ্ছেন দেখে কানেক্ট করলাম। আমরা GRO10X-এ কমিউনিটি ও বিজনেস ওনারদের জন্য অটোমেটেড AI সল্যুশন ও টেক সিস্টেম ডেভেলপ করি। ফ্রি সময়ে কথা বলার সুযোগ আছে কি?`;
-      } else if (seniority.includes('C-Level') || seniority.includes('Founder')) {
-        icebreakerEn = `Hi ${firstName}, came across your profile in ${cleanGroupName}. At GRO10X, we engineer high-leverage AI workflows and turn-key bespoke software for ambitious founders. Would love to share a 2-minute overview of our recent client wins.`;
-        icebreakerBn = `সালাম ${firstName} ভাই, ${cleanGroupName} গ্রুপ থেকে আপনার প্রোফাইলটি নজরে এলো। আমরা GRO10X-এ প্রতিষ্ঠাতা ও লিডারদের জন্য অটোমেটেড AI সিস্টেম ও কাস্টম টেক তৈরি করি। আপনার বিজনেসের গ্রোথে এটি কীভাবে ভ্যালু যোগ করতে পারে, সংক্ষেপে শেয়ার করতে পারি?`;
+      if (isTrainingOffer) {
+        if (isAdmin) {
+          icebreakerEn = `Hi ${salutation}, saw you administering ${cleanGroupName}! Huge respect for leading this HR community. We recently led an executive AI workforce acceleration masterclass for Serviq BPO in Banani (generative AI for HR workflows, prompt engineering, and policy drafting). Would love to share our 1-page corporate AI curriculum with you!`;
+          icebreakerBn = `সালাম ${salutation} ভাই, ${cleanGroupName} গ্রুপটি আপনি দারুণভাবে পরিচালনা করছেন দেখে কানেক্ট করলাম। আমরা সম্প্রতি Banani-তে Serviq BPO-এর জন্য কর্পোরেট AI ট্রেনিং ও অটোমেশন মাস্টারক্লাস পরিচালনা করেছি (Gemini Pro ও HR টিম প্রডাক্টিভিটি)। আপনার প্রতিষ্ঠানের জন্য আমাদের ট্রেনিং সিলেবাস সংক্ষেপে শেয়ার করতে পারি?`;
+        } else if (seniority.includes('Head') || seniority.includes('Manager') || seniority.includes('Director')) {
+          icebreakerEn = `Hi ${salutation}, noticed you in the "${cleanGroupName}" community! We recently led a hands-on corporate AI training masterclass for Serviq BPO (focusing on generative AI for HR operations, policy drafting, and workflow automation). Would love to share our executive training outline with you when convenient.`;
+          icebreakerBn = `সালাম ${salutation} ভাই/আপু, "${cleanGroupName}" গ্রুপে আপনার প্রোফাইলটি নজরে এলো। আমরা সম্প্রতি Serviq BPO-এর পুরো টিমের জন্য কর্পোরেট AI ট্রেনিং ও অটোমেশন মাস্টারক্লাস করিয়েছি (HR ডকুমেন্টেশন, অটোমেটেড ট্র্যাকিং ও প্রম্পট টেকনিক)। আপনার টিমের জন্য আমাদের ট্রেনিং মডিউলের একটা সংক্ষিপ্ত রূপরেখা শেয়ার করতে পারি?`;
+        } else {
+          icebreakerEn = `Hi ${salutation}, noticed you in the "${cleanGroupName}" community! We conduct practical corporate AI masterclasses for HR teams and professionals (generative tools, prompt engineering, and automated reporting). Would love to share some insights relevant to your space!`;
+          icebreakerBn = `সালাম ${salutation} ভাই/আপু, "${cleanGroupName}" গ্রুপ থেকে কানেক্ট করছি। আমরা HR পেশাজীবী ও টিমদের জন্য ব্যবহারিক AI ট্রেনিং ও ওয়ার্কফোর্স অটোমেশন নিয়ে কাজ করছি। আপনার সাথে কানেক্টেড থাকতে পেরে সম্মানিত বোধ করব!`;
+        }
       } else {
-        icebreakerEn = `Hi ${firstName}, noticed you in ${cleanGroupName}! We build production AI tools and automated revenue systems at GRO10X. Would love to connect and share some insights relevant to your space!`;
-        icebreakerBn = `সালাম ${firstName} ভাই/আপু, ${cleanGroupName} গ্রুপ থেকে আপনার সাথে কানেক্ট করছি। আমরা GRO10X-এ আধুনিক AI টুলস ও ডিজিটাল সিস্টেম নিয়ে কাজ করছি। আপনার সাথে কানেক্টেড থাকতে পেরে সম্মানিত বোধ করব!`;
+        if (isAdmin) {
+          icebreakerEn = `Hi ${salutation}, saw you administering ${cleanGroupName}! Huge respect for leading this community. At GRO10X, we partner with community leaders to deploy custom AI agents and enterprise systems. Would love to share high-level ideas with you when convenient.`;
+          icebreakerBn = `সালাম ${salutation} ভাই, ${cleanGroupName} গ্রুপটি আপনি চমৎকারভাবে লিড দিচ্ছেন দেখে কানেক্ট করলাম। আমরা GRO10X-এ অটোমেটেড AI সল্যুশন ও টেক সিস্টেম ডেভেলপ করি। ফ্রি সময়ে কথা বলার সুযোগ আছে কি?`;
+        } else {
+          icebreakerEn = `Hi ${salutation}, noticed you in ${cleanGroupName}! We build production AI tools and automated revenue systems at GRO10X. Would love to connect and share some insights relevant to your space!`;
+          icebreakerBn = `সালাম ${salutation} ভাই/আপু, ${cleanGroupName} গ্রুপ থেকে আপনার সাথে কানেক্ট করছি। আমরা GRO10X-এ আধুনিক AI টুলস ও ডিজিটাল সিস্টেম নিয়ে কাজ করছি। আপনার সাথে কানেক্টেড থাকতে পেরে সম্মানিত বোধ করব!`;
+        }
       }
+
+      const waLink = rawPhone ? `https://wa.me/${rawPhone.replace(/[^\d]/g, '')}` : '';
 
       return {
         id: `WH-${Date.now().toString(36).toUpperCase()}-${idx + 1}`,
         name: cleanName,
         phone: rawPhone,
+        whatsapp_link: waLink,
         about: rawAbout,
         is_admin: isAdmin,
         seniority,

@@ -289,6 +289,25 @@ body {
   text-overflow: ellipsis;
 }
 
+.group-title-input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.group-title-input:focus {
+  border-color: var(--cyan-neon);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+}
+
 .group-description {
   font-size: 11px;
   color: var(--text-muted);

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const connStatus = document.getElementById('connStatus');
   const connText = document.getElementById('connText');
-  const groupTitle = document.getElementById('groupTitle');
+  const groupTitle = document.getElementById('groupTitleInput') || document.getElementById('groupTitle');
   const groupDescription = document.getElementById('groupDescription');
   const btnRefreshGroup = document.getElementById('btnRefreshGroup');
   const targetOfferSelect = document.getElementById('targetOfferSelect');
@@ -133,13 +133,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const apiUrl = apiUrlInput.value.trim().replace(/\/+$/, '');
     const targetOffer = targetOfferSelect.value;
+    const currentGroupName = (groupTitle.value || groupTitle.textContent || currentGroup.title || 'AI for HR Professional').trim();
 
     try {
       const response = await fetch(`${apiUrl}/api/leads/ai-enrich`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          group_name: currentGroup.title || 'WhatsApp Community',
+          group_name: currentGroupName,
           group_description: currentGroup.description || '',
           target_offer: targetOffer,
           members: extractedMembers
@@ -169,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            group_name: currentGroup.title || 'WhatsApp Community',
+            group_name: currentGroupName,
             group_description: currentGroup.description || '',
             target_offer: targetOffer,
             members: extractedMembers
@@ -197,10 +198,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 4. Export CSV Rail (UTF-8 BOM for flawless Excel display)
   btnExportCsv.addEventListener('click', () => {
     if (extractedMembers.length === 0) return;
-    const csvContent = generateCsv(extractedMembers, currentGroup.title);
+    const currentGroupName = (groupTitle.value || groupTitle.textContent || currentGroup.title || 'AI for HR Professional').trim();
+    const csvContent = generateCsv(extractedMembers, currentGroupName);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const filename = `gro10x_leads_${sanitize(currentGroup.title || 'whatsapp')}_${Date.now()}.csv`;
+    const filename = `gro10x_leads_${sanitize(currentGroupName)}_${Date.now()}.csv`;
 
     downloadFile(url, filename);
     logTerminal(`EXPORT: Downloaded ${extractedMembers.length} leads as CSV.`);
@@ -413,7 +415,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderGroupInfo(group) {
-    groupTitle.textContent = group.title || 'Active WhatsApp Group';
+    const title = group.title || 'AI for HR Professional';
+    if (groupTitle.tagName === 'INPUT') {
+      groupTitle.value = title;
+    } else {
+      groupTitle.textContent = title;
+    }
     groupDescription.textContent = group.description || group.memberCountText || 'No group description preview detected.';
   }
 
