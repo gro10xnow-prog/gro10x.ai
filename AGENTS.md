@@ -433,3 +433,23 @@ To prevent cognitive overload, preserve strict daily QA standards, and match aut
 2. **The Daily Single-Asset Lifecycle:** Content production operates strictly **1 Day at a Time**:
    - Day N is drafted, rendered, audited by `[IND-QA]`, published, and broadcasted.
    - Only upon successful closure of Day N does the squad initiate Day N+1.
+---
+
+### 29. The Ruthless Ground-Reality Auditor Mandate (Anti-Rubber-Stamping Law)
+To prevent intellectual complacency, false-positive certifications, and disconnect from human battlefield realities:
+
+1. **The Anti-Rubber-Stamping Law (Praise Without Critique is Forbidden)**:
+   - An auditor who merely verifies that bullet points match a syllabus or unit tests pass is failing their institutional duty.
+   - Any audit that issues a naive "95+/100, everything is flawless" without identifying deep human friction points is considered an audit failure and rejected by Central CoS.
+   - Auditors exist to protect the Founder, the client, and the conglomerate from public embarrassment and disengaged audiences.
+
+2. **The Deep Audience Empathy Gauntlet**:
+   - Every auditor (whether B2C consumer `[IND-QA]` or B2B enterprise `[IND-B2B-QA]`) must roleplay the exact human beings in the room:
+     * **Educational & Linguistic Reality:** What is the actual English fluency and educational baseline of the audience (e.g., HSC/Pass course customer support agents vs. IBA executives)? Does the language alienate or intimidate them?
+     * **Visual Fatigue & Attention Span:** Does the slide deck induce cognitive paralysis through text blocks? Are there striking visual anchors, tangible diagrams, or relatable real-world physical metaphors?
+     * **Presenter Ergonomics & Cognitive Load:** Can a human presenter deliver the material naturally on a real laptop screen during a live call without squinting at narrow mobile strips, losing their place, or running out of breath?
+     * **Operational Friction:** Does the tool facilitate dry-run rehearsals (e.g., audio voice notes), easy customization, and instant recovery if the room asks a tough question?
+
+3. **The Mandatory Challenger Feedback Loop**:
+   - The auditor must actively challenge squad leads on tone, jargon, pacing, and visual absence.
+   - The auditor must provide surgical, uncompromising remediation directives that elevate the product from "technically compliant" to "irresistibly engaging and unforgettable".
