@@ -43,8 +43,10 @@ PRJ-PITCH-ARIF-DECK      Mother OS Engine 2    Pitch & Presentation Lead     10-
 PRJ-MEDIA10X-PILOT-01    Media10x Pilutics     Media10x [S1]-[S4] Squad      Short #01 Bangladesh, 1080p, YouTube LIVE COMPLETED    7   25,000    ৳ 50,000
 PRJ-BINIYOG-FOODPANDA    Mother OS Engine 2    Pitch & Presentation Lead     Biniyog.io × Foodpanda Pitch Deck & HUD  COMPLETED   20   35,000    ৳ 70,000
 PRJ-MADMAN-3D-PROTOTYPE  Foundry Lab Engine 2  Rapid Prototyper              Madman 3D Kinetic Sculpture & GPU Tiering COMPLETED   10   25,000    ৳ 50,000
+PRJ-COMMERCE10X-FOOTWEAR-CAPSULE Commerce10x Engine 3 Commerce10x Lead + CoS    10X Footwear Capsule, 5 Tees & 5 Sneakers COMPLETED   12   35,000    ৳ 70,000
+PRJ-MEDIA10X-PILOT-02    Media10x Pilutics     Media10x [S1]-[S4] Squad      Short #02 Next Country, 1080p, Subtitles  CHARTERED     0   25,000    ৳ 50,000
 ====================================================================================================================================
-CONGLOMERATE TOTALS: 27 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,272  805,000  ৳1,610,000
+CONGLOMERATE TOTALS: 29 SPRINT PROJECTS CHARTERED & AUDITED                                           100% GREEN 1,284  870,000  ৳1,740,000
 ====================================================================================================================================
 ```
 
