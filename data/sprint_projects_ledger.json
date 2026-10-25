@@ -721,14 +721,37 @@
       "completedDate": "2026-10-25",
       "liveUrl": "https://gro10x-ai.vercel.app/pitch/serviq-session1",
       "auditScore": "97.0/100.0 Composite (Surface A: 96.0, Surface C Takeaway: 98.0)"
+    },
+    {
+      "id": "PRJ-SHOWROOM-OVERHAUL",
+      "code": "[V1-MOTHER-OS]",
+      "venture": "GRO10X Mother OS (Public Showroom & Ingress)",
+      "engine": "Engine 4: Platforms & Operating Systems",
+      "port": 3000,
+      "sprint": "Sprint 31: Central Prototype Showroom Overhaul, ToffeeCon Simulation Sandbox & PitchOS Integration",
+      "status": "COMPLETED",
+      "pricingType": "Internal Platform Infrastructure & Commercial Showroom Suite",
+      "creditValuation": 25000,
+      "bdtValuation": 50000,
+      "usdValuation": 412.5,
+      "testsCertified": 77,
+      "artifacts": [
+        "Dedicated ToffeeCon EOS Simulation Sandbox: public/prototypes/toffeecon/index.html",
+        "Overhauled Prototype Showroom: public/prototypes/index.html (16 Live Staged Assets)",
+        "5-Tier Category Filter Architecture (Spatial 3D, PitchOS, Enterprise OS, Growth Pilots)",
+        "Flagship Ingress Integration: Serviq Masterclass, Biniyog Foodpanda, 10X Capsule 3D"
+      ],
+      "charteredDate": "2026-10-25",
+      "completedDate": "2026-10-25",
+      "liveUrl": "https://gro10x-ai.vercel.app/prototypes"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 30,
-    "totalSprintsCompleted": 29,
-    "totalCreditsGenerated": 895000,
-    "totalBdtValuation": 1790000,
-    "totalUsdValuation": 14767.5,
+    "totalSprintsChartered": 31,
+    "totalSprintsCompleted": 30,
+    "totalCreditsGenerated": 920000,
+    "totalBdtValuation": 1840000,
+    "totalUsdValuation": 15180,
     "totalTestsPassingAcrossHoldings": 1333
   }
 }
