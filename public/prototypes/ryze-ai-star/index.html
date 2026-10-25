@@ -3,913 +3,1529 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>BANGLALINK RYZE — Gen-Z AI Brand Film Star Simulator</title>
+  <title>BANGLALINK RYZE — Interactive Co-Star Web Experience</title>
 
+  <!-- Typography: Space Grotesk, Plus Jakarta Sans, Space Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     :root {
       --ryze-orange: #FF5500;
-      --ryze-purple: #8A2BE2;
-      --ryze-violet: #A855F7;
       --ryze-cyan: #00F0FF;
-      --ryze-dark: #0A0B0E;
+      --ryze-purple: #AA55FF;
+      --ryze-gold: #FFD700;
+      --ryze-dark: #07090E;
     }
     body {
       font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
       background-color: var(--ryze-dark);
-      color: #f3f4f6;
+      color: #F3F4F6;
       overflow-x: hidden;
       touch-action: pan-y;
       -webkit-font-smoothing: antialiased;
     }
     .mono { font-family: 'Space Mono', monospace; }
 
-    /* Cyber scanlines */
+    /* Scanline FX */
     .scanlines {
       background: linear-gradient(
         to bottom,
         rgba(255, 255, 255, 0),
         rgba(255, 255, 255, 0) 50%,
-        rgba(0, 0, 0, 0.3) 50%,
-        rgba(0, 0, 0, 0.3)
+        rgba(0, 0, 0, 0.35) 50%,
+        rgba(0, 0, 0, 0.35)
       );
       background-size: 100% 4px;
     }
 
-    .ryze-gradient {
-      background: linear-gradient(135deg, #FF5500 0%, #8A2BE2 55%, #00F0FF 100%);
+    /* Glow utilities */
+    .glow-cyan {
+      box-shadow: 0 0 25px -4px rgba(0, 240, 255, 0.5);
+    }
+    .glow-purple {
+      box-shadow: 0 0 25px -4px rgba(170, 85, 255, 0.5);
+    }
+    .glow-gold {
+      box-shadow: 0 0 25px -4px rgba(255, 215, 0, 0.5);
+    }
+    .glow-orange {
+      box-shadow: 0 0 25px -4px rgba(255, 85, 0, 0.5);
     }
 
-    .orange-glow {
-      box-shadow: 0 0 30px -5px rgba(255, 85, 0, 0.5);
+    /* Custom range slider styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
     }
-    .purple-glow {
-      box-shadow: 0 0 30px -5px rgba(138, 43, 226, 0.5);
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 14px;
+      width: 14px;
+      border-radius: 50%;
+      background: #00F0FF;
+      cursor: pointer;
+      box-shadow: 0 0 8px #00F0FF;
     }
 
-    /* Pulse animation */
+    /* Radar scan */
     @keyframes radarScan {
-      0% { top: 0%; opacity: 0.8; }
+      0% { top: 0%; opacity: 0.9; }
       50% { opacity: 1; }
       100% { top: 100%; opacity: 0.2; }
     }
     .radar-beam {
-      animation: radarScan 2s linear infinite;
+      animation: radarScan 2.2s linear infinite;
     }
 
-    /* Custom Scrollbar */
+    /* Custom scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0A0B0E; }
-    ::-webkit-scrollbar-thumb { background: #262938; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--ryze-orange); }
+    ::-webkit-scrollbar-track { background: #07090E; }
+    ::-webkit-scrollbar-thumb { background: #1F2433; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--ryze-cyan); }
   </style>
 </head>
-<body class="bg-[#0A0B0E] min-h-screen text-gray-100 relative selection:bg-[#FF5500] selection:text-white">
+<body class="bg-[#07090E] min-h-screen text-gray-100 relative selection:bg-[#FF5500] selection:text-white">
 
-  <!-- Ambient Top Ambient Gradient -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-80 bg-gradient-to-b from-[#8A2BE2]/20 via-[#FF5500]/10 to-transparent blur-3xl pointer-events-none z-0"></div>
+  <!-- Ambient Top Gradients -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-[#00F0FF]/15 via-[#AA55FF]/10 to-transparent blur-3xl pointer-events-none z-0"></div>
+  <div class="fixed top-40 right-10 w-80 h-80 bg-[#FF5500]/10 rounded-full blur-3xl pointer-events-none z-0"></div>
 
   <!-- ========================================================= -->
-  <!-- TOP FIXED HEADER                                          -->
+  <!-- TOP FIXED NAVIGATION HEADER                               -->
   <!-- ========================================================= -->
-  <header class="fixed top-0 left-0 right-0 z-50 bg-[#0A0B0E]/90 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3.5 flex justify-between items-center">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#07090E]/90 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3.5 flex justify-between items-center transition">
     
-    <!-- Banglalink Ryze Brand -->
+    <!-- Brand Lockup -->
     <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FF5500] to-[#8A2BE2] flex items-center justify-center font-black text-white text-base shadow-[0_0_15px_rgba(255,85,0,0.6)]">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#FF5500] via-[#AA55FF] to-[#00F0FF] flex items-center justify-center font-black text-white text-base shadow-[0_0_18px_rgba(0,240,255,0.5)]">
         ⚡
       </div>
       <div>
-        <div class="font-extrabold tracking-tighter text-base sm:text-lg leading-tight flex items-center gap-2">
-          <span>BANGLALINK <span class="text-[#FF5500]">RYZE</span></span>
-          <span class="text-[10px] mono uppercase tracking-widest bg-white/10 text-[#00F0FF] px-1.5 py-0.5 rounded border border-[#00F0FF]/30">AI Star v2.4</span>
+        <div class="font-extrabold tracking-tight text-base sm:text-lg leading-tight flex items-center gap-2">
+          <span>BANGLALINK <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5500] to-[#00F0FF]">RYZE</span></span>
+          <span class="text-[10px] mono uppercase tracking-widest bg-cyan-950/80 text-[#00F0FF] px-2 py-0.5 rounded-full border border-[#00F0FF]/40 font-bold">5G Turbo</span>
         </div>
         <div class="text-[10px] text-gray-400 font-medium hidden sm:block tracking-wide">
-          The Cadbury / Shah Rukh Khan Generative Model Tailored for Gen-Z
+          Interactive Co-Star Web Experience // Campaign Sprint 3 Phase 2
         </div>
       </div>
     </div>
 
-    <!-- Quick Navigation / Back Link -->
-    <div class="flex items-center gap-2 sm:gap-3">
-      <a href="/prototypes/madmen-os/" class="text-xs text-gray-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-xl transition flex items-center gap-1">
-        <span>← Madmen OS</span>
+    <!-- Quick Navigation Links -->
+    <div class="flex items-center gap-2 sm:gap-4">
+      <a href="#player-section" class="text-xs text-gray-300 hover:text-[#00F0FF] transition hidden md:inline-flex font-semibold">
+        Multi-Cut Player
       </a>
-      <a href="/prototypes" class="hidden sm:inline-flex text-xs text-gray-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-xl transition">
-        Showroom
+      <a href="#personas-section" class="text-xs text-gray-300 hover:text-[#AA55FF] transition hidden md:inline-flex font-semibold">
+        Co-Star Personas
       </a>
-      <button onclick="resetSimulator()" class="bg-white/10 hover:bg-white/20 text-xs font-bold px-3 py-1.5 rounded-xl transition text-gray-300">
-        Reset ↺
-      </button>
+      <a href="#poster-section" class="text-xs text-gray-300 hover:text-[#FFD700] transition hidden md:inline-flex font-semibold">
+        VIP Pass Generator
+      </a>
+      <a href="#ingress-section" class="text-xs bg-gradient-to-r from-[#FF5500] to-[#AA55FF] hover:brightness-110 text-white font-bold px-3.5 py-1.5 rounded-xl shadow-lg transition">
+        Get RYZE 5G ⚡
+      </a>
     </div>
   </header>
 
   <!-- ========================================================= -->
-  <!-- MAIN WORKFLOW ENGINE: MULTI-STEP SIMULATOR                -->
+  <!-- MAIN CONTAINER                                            -->
   <!-- ========================================================= -->
-  <main class="pt-24 pb-20 px-4 sm:px-6 max-w-5xl mx-auto relative z-10">
+  <main class="pt-24 pb-24 px-4 sm:px-6 max-w-6xl mx-auto relative z-10">
 
-    <!-- Hero Card Banner -->
-    <div class="rounded-3xl border border-white/10 bg-gradient-to-br from-[#12141e] via-[#0e1017] to-[#161224] p-6 sm:p-10 shadow-2xl relative overflow-hidden mb-8">
-      <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-[#FF5500]/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -left-10 -top-10 w-64 h-64 bg-[#8A2BE2]/15 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- HERO BANNER & CAMPAIGN TELEMETRY TICKER -->
+    <div class="rounded-3xl border border-white/10 bg-gradient-to-br from-[#0E121B] via-[#0A0D14] to-[#141120] p-6 sm:p-10 shadow-2xl relative overflow-hidden mb-10">
+      <div class="absolute -right-10 -bottom-10 w-72 h-72 bg-[#00F0FF]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-10 -top-10 w-72 h-72 bg-[#FF5500]/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div class="max-w-2xl relative z-10">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF5500]/15 border border-[#FF5500]/40 text-[#FF5500] text-xs font-bold uppercase tracking-wider mb-4">
-          <span>🔥</span> #RyzeYourVibe Nationwide Campaign
+      <div class="relative z-10 max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-4">
+          <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-ping"></span>
+          <span>#RyzeYourVibe // Nationwide Youth Network</span>
         </div>
 
-        <h1 class="text-2xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight mb-3">
-          Star in the Next <br/>
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5500] via-[#A855F7] to-[#00F0FF]">
-            Ryze Brand Film
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight mb-4">
+          Live the Beat. <br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-[#AA55FF] to-[#FF5500]">
+            Star in Banglalink RYZE.
           </span>
         </h1>
 
-        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-xl">
-          Upload your selfie or choose a sample avatar. Our neural pipeline maps your face into Banglalink Ryze's high-octane 4K youth film with synchronized beat-music and instant TikTok/Reel story cards.
+        <p class="text-sm sm:text-base text-gray-300 leading-relaxed max-w-2xl mb-6">
+          Experience the high-octane 5G commercial across 3 cinematic broadcast cuts. Explore our trio of Gen-Z Co-Stars, test real-time prompt matrices, and mint your personalized VIP Pass for instant TikTok & Reels flex.
         </p>
 
-        <!-- Progress Pills -->
-        <div class="flex flex-wrap items-center gap-2 mt-6 text-xs font-bold">
-          <div id="step-pill-1" class="px-3 py-1 rounded-xl bg-[#FF5500] text-white">1. Face Intake</div>
-          <span class="text-gray-600">›</span>
-          <div id="step-pill-2" class="px-3 py-1 rounded-xl bg-gray-800 text-gray-400">2. Vibe Persona</div>
-          <span class="text-gray-600">›</span>
-          <div id="step-pill-3" class="px-3 py-1 rounded-xl bg-gray-800 text-gray-400">3. AI Neural Blend</div>
-          <span class="text-gray-600">›</span>
-          <div id="step-pill-4" class="px-3 py-1 rounded-xl bg-gray-800 text-gray-400">4. 4K Video & Poster</div>
+        <!-- Live Network Telemetry Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-white/10 text-xs">
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2.5">
+            <div class="text-[10px] text-gray-400 mono uppercase">5G Turbo Bandwidth</div>
+            <div class="text-sm font-bold text-[#00F0FF] mono mt-0.5">1.2 Gbps Peak</div>
+          </div>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2.5">
+            <div class="text-[10px] text-gray-400 mono uppercase">Neural Latency</div>
+            <div class="text-sm font-bold text-[#AA55FF] mono mt-0.5">&lt; 12ms Edge</div>
+          </div>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2.5">
+            <div class="text-[10px] text-gray-400 mono uppercase">Active Co-Stars</div>
+            <div class="text-sm font-bold text-[#FFD700] mono mt-0.5">14,892 Cast</div>
+          </div>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2.5">
+            <div class="text-[10px] text-gray-400 mono uppercase">Master Audio</div>
+            <div class="text-sm font-bold text-[#FF5500] mono mt-0.5">24-Bit / 48kHz</div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- ========================================================= -->
-    <!-- STEP 1: PHOTO / SELFIE INTAKE & FACE LANDMARK SCAN        -->
+    <!-- MANDATE 1: CINEMATIC MULTI-CUT BROADCAST PLAYER          -->
     <!-- ========================================================= -->
-    <div id="section-step-1" class="bg-[#0f1118] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl mb-8">
-      <div class="flex justify-between items-start mb-6">
+    <section id="player-section" class="bg-[#0A0D15] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl mb-12 relative overflow-hidden">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-[#FF5500] mono">STEP 1 • BIOMETRIC INTAKE</span>
-          <h2 class="text-xl sm:text-2xl font-bold text-white mt-1">Provide Your Face for Generative Inpainting</h2>
-        </div>
-        <span class="text-xs text-gray-400 mono hidden sm:block">Zero Data Retained • Client-Side Simulation</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        
-        <!-- Left: Upload Box & Instant Samples -->
-        <div>
-          <!-- File Drop Zone -->
-          <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="border-2 border-dashed border-white/20 hover:border-[#FF5500] rounded-2xl p-6 text-center cursor-pointer transition bg-black/40 hover:bg-black/60 group">
-            <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
-            <div class="text-4xl mb-3 group-hover:scale-110 transition">📸</div>
-            <div class="text-sm font-bold text-white mb-1">Click to Upload or Drag Selfie</div>
-            <div class="text-xs text-gray-400">High-contrast, frontal face photo works best</div>
+          <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#00F0FF] mono mb-1">
+            <span>🎬 MANDATE 1</span>
+            <span>•</span>
+            <span>BROADCAST STREAMING SUITE</span>
           </div>
-
-          <!-- Instant Demo Test Avatars -->
-          <div class="mt-4 pt-4 border-t border-white/10">
-            <div class="text-xs text-gray-400 font-bold mb-2.5 flex items-center gap-1.5">
-              <span>⚡</span> Or Select Instant Sample Pitch Avatar:
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <button onclick="selectSampleAvatar('aryan')" class="bg-[#181a24] hover:bg-[#232736] border border-white/10 hover:border-[#FF5500] p-2.5 rounded-xl text-left transition">
-                <div class="text-xl mb-1">👦</div>
-                <div class="text-xs font-bold text-white">Aryan</div>
-                <div class="text-[10px] text-gray-400">Street Vibe</div>
-              </button>
-              <button onclick="selectSampleAvatar('tanha')" class="bg-[#181a24] hover:bg-[#232736] border border-white/10 hover:border-[#8A2BE2] p-2.5 rounded-xl text-left transition">
-                <div class="text-xl mb-1">👧</div>
-                <div class="text-xs font-bold text-white">Tanha</div>
-                <div class="text-[10px] text-gray-400">Esports Pro</div>
-              </button>
-              <button onclick="selectSampleAvatar('zayan')" class="bg-[#181a24] hover:bg-[#232736] border border-white/10 hover:border-[#00F0FF] p-2.5 rounded-xl text-left transition">
-                <div class="text-xl mb-1">🧑</div>
-                <div class="text-xs font-bold text-white">Zayan</div>
-                <div class="text-[10px] text-gray-400">Cyberpunk</div>
-              </button>
-            </div>
-          </div>
-
-          <!-- User Name & Handle Inputs -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-            <div>
-              <label class="block text-[11px] font-bold text-gray-300 uppercase mono mb-1">Star Name *</label>
-              <input type="text" id="user-name" value="Aryan Chowdhury" class="w-full bg-black/60 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#FF5500]">
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-gray-300 uppercase mono mb-1">Social Handle (@) *</label>
-              <input type="text" id="user-handle" value="@aryanchy_07" class="w-full bg-black/60 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#8A2BE2]">
-            </div>
-          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Cinematic Multi-Cut Broadcast Player</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">Switch seamlessly between the 60s TVC Master, 30s Digital Bumper, and 15s Vertical Reels cut.</p>
         </div>
 
-        <!-- Right: Interactive Face Biometric Alignment Scanner -->
-        <div class="flex flex-col items-center">
-          <div class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-black/80 border-2 border-white/15 overflow-hidden flex items-center justify-center shadow-2xl">
-            
-            <!-- Avatar Face Image Preview -->
-            <img id="face-preview" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80" alt="Face Preview" class="w-full h-full object-cover">
-
-            <!-- Face Detection Oval Overlay -->
-            <div class="absolute inset-4 rounded-[45%] border-2 border-dashed border-[#00F0FF] pointer-events-none flex items-center justify-center">
-              <!-- Radar Beam Scanline -->
-              <div class="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent shadow-[0_0_12px_#00F0FF] radar-beam"></div>
-            </div>
-
-            <!-- Landmark Points Overlay -->
-            <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div class="w-2 h-2 rounded-full bg-[#FF5500] absolute top-28 left-24 shadow-[0_0_8px_#FF5500]"></div>
-              <div class="w-2 h-2 rounded-full bg-[#FF5500] absolute top-28 right-24 shadow-[0_0_8px_#FF5500]"></div>
-              <div class="w-2 h-2 rounded-full bg-[#00F0FF] absolute top-36 left-1/2 -translate-x-1/2 shadow-[0_0_8px_#00F0FF]"></div>
-              <div class="w-2 h-2 rounded-full bg-[#8A2BE2] absolute top-44 left-1/2 -translate-x-1/2 shadow-[0_0_8px_#8A2BE2]"></div>
-            </div>
-
-            <!-- Status Tag -->
-            <div class="absolute bottom-2 left-2 right-2 bg-black/85 backdrop-blur-md px-2.5 py-1 rounded-xl text-center border border-white/10 text-[10px] mono text-[#00F0FF]">
-              ● 68 Facial Landmarks Aligned (99.4% Fit)
-            </div>
-          </div>
-
-          <button onclick="goToStep(2)" class="mt-5 w-full max-w-xs bg-gradient-to-r from-[#FF5500] to-[#8A2BE2] hover:brightness-110 text-white font-extrabold py-3.5 rounded-2xl text-xs sm:text-sm shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2">
-            <span>Proceed to Persona Vibe</span>
-            <span>→</span>
+        <!-- Cut Selector Switch -->
+        <div class="inline-flex p-1.5 bg-[#121622] rounded-2xl border border-white/15 shadow-inner">
+          <button id="btn-cut-60" onclick="switchVideoCut('60s')" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#00F0FF] text-black shadow-lg">
+            <span>60s Master</span>
+            <span class="text-[10px] font-mono px-1 rounded bg-black/20 text-black font-extrabold">16:9</span>
+          </button>
+          <button id="btn-cut-30" onclick="switchVideoCut('30s')" class="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition flex items-center gap-1.5">
+            <span>30s Bumper</span>
+            <span class="text-[10px] font-mono px-1 rounded bg-white/10 text-gray-300">16:9</span>
+          </button>
+          <button id="btn-cut-15" onclick="switchVideoCut('15s')" class="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition flex items-center gap-1.5">
+            <span>15s Reels</span>
+            <span class="text-[10px] font-mono px-1 rounded bg-white/10 text-gray-300">9:16</span>
           </button>
         </div>
-
       </div>
-    </div>
+
+      <!-- Player Stage Container (Responsive aspect transitions) -->
+      <div class="flex justify-center items-center py-2">
+        <div id="player-frame-wrapper" class="relative w-full max-w-4xl aspect-video rounded-3xl bg-black border border-white/20 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] transition-all duration-500 ease-in-out group">
+          
+          <!-- Native HTML5 Video Element -->
+          <video 
+            id="main-broadcast-video"
+            class="w-full h-full object-cover transition duration-300"
+            src="/ryze_media/ryze_hero_60s.mp4"
+            poster="/ryze_media/ryze_poster_cover_16x9.png"
+            playsinline
+            preload="metadata">
+          </video>
+
+          <!-- Subtle Scanlines Overlay -->
+          <div class="absolute inset-0 scanlines pointer-events-none opacity-30"></div>
+
+          <!-- Top Status Bar Badges -->
+          <div class="absolute top-4 left-4 right-4 z-20 flex justify-between items-center pointer-events-none">
+            <div class="flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 text-xs font-bold text-white shadow-lg">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#00F0FF] animate-pulse"></span>
+              <span id="player-cut-badge" class="tracking-wide">60s MASTER FILM // BROADCAST 16:9</span>
+            </div>
+            <div class="bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 text-[11px] mono text-[#FF5500] font-bold shadow-lg">
+              RYZE 5G TURBO • CRF 17
+            </div>
+          </div>
+
+          <!-- Big Center Play / Pause Indicator Button -->
+          <button 
+            id="center-play-btn" 
+            onclick="togglePlayPause()" 
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-20 h-20 rounded-full bg-black/60 hover:bg-[#00F0FF] text-white hover:text-black border-2 border-white/30 hover:border-[#00F0FF] backdrop-blur-md flex items-center justify-center transition-all duration-300 transform group-hover:scale-105 shadow-2xl">
+            <span id="center-play-icon" class="text-3xl ml-1">▶</span>
+          </button>
+
+          <!-- Glassmorphic Neon Bottom Control Bar -->
+          <div class="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-4 sm:p-5 pt-8 flex flex-col gap-2.5 transition duration-300">
+            
+            <!-- Timeline Scrubber Bar -->
+            <div class="relative w-full flex items-center cursor-pointer group/scrubber" onclick="seekVideo(event)" id="scrubber-track">
+              <!-- Buffer Track -->
+              <div class="w-full h-1.5 bg-white/20 rounded-full overflow-hidden relative">
+                <div id="video-progress-bar" class="h-full bg-gradient-to-r from-[#FF5500] via-[#AA55FF] to-[#00F0FF] rounded-full transition-all duration-75" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Controls Row -->
+            <div class="flex justify-between items-center text-xs">
+              
+              <!-- Left: Play/Pause, Volume, Timestamps -->
+              <div class="flex items-center gap-3">
+                <button onclick="togglePlayPause()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+                  <span id="ctrl-play-icon">▶</span>
+                </button>
+
+                <button onclick="toggleMute()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+                  <span id="ctrl-vol-icon">🔊</span>
+                </button>
+
+                <!-- Digital Time Elapsed -->
+                <div class="mono text-[11px] text-gray-300 font-bold bg-black/50 px-2.5 py-1 rounded-md border border-white/10">
+                  <span id="time-current">00:00</span> <span class="text-gray-500">/</span> <span id="time-duration">01:00</span>
+                </div>
+              </div>
+
+              <!-- Right: Audio Profile & Fullscreen Toggle -->
+              <div class="flex items-center gap-2.5">
+                <span class="hidden sm:inline-flex mono text-[10px] text-[#00F0FF] bg-[#00F0FF]/10 px-2 py-1 rounded border border-[#00F0FF]/30">
+                  AAC 48kHz Master
+                </span>
+
+                <button onclick="toggleFullscreen()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition text-xs" title="Toggle Fullscreen">
+                  ⛶
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Cut Specifications Strip -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <div id="card-cut-info-1" class="bg-[#121622] border-2 border-[#00F0FF] rounded-2xl p-3.5 transition">
+          <div class="flex items-center justify-between font-bold mb-1">
+            <span class="text-white">60s Film Master</span>
+            <span class="text-[#00F0FF] mono">1440 Frames</span>
+          </div>
+          <div class="text-[11px] text-gray-400 leading-relaxed">
+            Full 14-scene narrative journey: Dhanmondi rooftop, Curzon Hall AR cyclone, and 3D Banglalink logo lockup.
+          </div>
+        </div>
+
+        <div id="card-cut-info-2" class="bg-[#121622] border border-white/10 rounded-2xl p-3.5 transition">
+          <div class="flex items-center justify-between font-bold mb-1">
+            <span class="text-white">30s Digital Bumper</span>
+            <span class="text-gray-400 mono">720 Frames</span>
+          </div>
+          <div class="text-[11px] text-gray-400 leading-relaxed">
+            High-velocity cutdown for YouTube Non-Skippable ads with immediate 5-second Farhan & Tanha punch.
+          </div>
+        </div>
+
+        <div id="card-cut-info-3" class="bg-[#121622] border border-white/10 rounded-2xl p-3.5 transition">
+          <div class="flex items-center justify-between font-bold mb-1">
+            <span class="text-white">15s Reels / Vertical</span>
+            <span class="text-gray-400 mono">360 Frames (9:16)</span>
+          </div>
+          <div class="text-[11px] text-gray-400 leading-relaxed">
+            Ultra-fast TikTok/Instagram Reels hook featuring center safe-zone focal tracking and vertical outro lockup.
+          </div>
+        </div>
+      </div>
+
+    </section>
 
     <!-- ========================================================= -->
-    <!-- STEP 2: PERSONA VIBE SELECTOR                             -->
+    <!-- MANDATE 2: INTERACTIVE CO-STAR PERSONA SWITCHER          -->
     <!-- ========================================================= -->
-    <div id="section-step-2" class="hidden bg-[#0f1118] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl mb-8">
-      <div class="flex justify-between items-start mb-6">
+    <section id="personas-section" class="bg-[#0A0D15] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl mb-12">
+      
+      <!-- Section Title -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-[#8A2BE2] mono">STEP 2 • PERSONA CASTING</span>
-          <h2 class="text-xl sm:text-2xl font-bold text-white mt-1">Select Your Ryze Brand Film Persona</h2>
+          <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#AA55FF] mono mb-1">
+            <span>🎭 MANDATE 2</span>
+            <span>•</span>
+            <span>CO-STAR CASTING MATRIX</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Interactive Co-Star Persona Switcher</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">Select a Co-Star to inspect their prompt formula, live telemetry specs, and sonic synthesis stem.</p>
         </div>
-        <button onclick="goToStep(1)" class="text-xs text-gray-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-xl">
-          ← Re-align Face
+
+        <!-- Synthesizer Audio Preview Toggle -->
+        <button id="synth-sound-btn" onclick="togglePersonaAudio()" class="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition flex items-center gap-2">
+          <span id="synth-speaker-icon">🎵</span>
+          <span id="synth-sound-status">Preview Sonic Stem: Farhan Drill 808</span>
         </button>
       </div>
 
-      <!-- 3 Persona Cards -->
+      <!-- 3 Persona Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
         
-        <!-- Persona 1: Runway Fashion Icon -->
-        <div id="persona-card-fashion" onclick="selectPersona('fashion')" class="group cursor-pointer bg-[#141620] hover:bg-[#1a1d2c] border-2 border-[#8A2BE2] rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden shadow-xl">
-          <div class="text-4xl mb-3">⚡</div>
-          <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#8A2BE2]/20 text-[#A855F7] border border-[#8A2BE2]/40">
-              High Fashion & Cyber
-            </span>
-            <h3 class="text-lg font-bold text-white mt-2 group-hover:text-[#A855F7] transition">Runway Cyber Icon</h3>
-            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
-              Metallic puffers, dark sunglasses, neon strobe catwalk, and heavy bass drop.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-white/10 text-xs font-bold text-[#A855F7] flex items-center justify-between">
-            <span>Selected Style</span>
-            <span>✓</span>
-          </div>
-        </div>
-
-        <!-- Persona 2: Underground Streetwear Beatmaker -->
-        <div id="persona-card-street" onclick="selectPersona('street')" class="group cursor-pointer bg-[#141620] hover:bg-[#1a1d2c] border-2 border-transparent hover:border-[#FF5500] rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden">
-          <div class="text-4xl mb-3">🛹</div>
-          <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#FF5500]/20 text-[#FF5500] border border-[#FF5500]/40">
-              Dhaka Streetwear
-            </span>
-            <h3 class="text-lg font-bold text-white mt-2 group-hover:text-[#FF5500] transition">Underground Beatmaker</h3>
-            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
-              Dhanmondi rooftop at golden hour, oversized bombers, MPC drum pads, and smoke flares.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-white/10 text-xs font-bold text-gray-500 flex items-center justify-between">
-            <span>Select Style</span>
-            <span>→</span>
-          </div>
-        </div>
-
-        <!-- Persona 3: Neon Esports Champion -->
-        <div id="persona-card-gamer" onclick="selectPersona('gamer')" class="group cursor-pointer bg-[#141620] hover:bg-[#1a1d2c] border-2 border-transparent hover:border-[#00F0FF] rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden">
-          <div class="text-4xl mb-3">🎮</div>
-          <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/40">
-              Esports Arena
-            </span>
-            <h3 class="text-lg font-bold text-white mt-2 group-hover:text-[#00F0FF] transition">Neon Esports Champion</h3>
-            <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
-              Hyper-focused gaming arena, RGB battle headsets, hologram HUDs, and trophy confetti.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-white/10 text-xs font-bold text-gray-500 flex items-center justify-between">
-            <span>Select Style</span>
-            <span>→</span>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="text-center">
-        <button onclick="startAiSynthesis()" class="w-full max-w-sm bg-gradient-to-r from-[#FF5500] via-[#8A2BE2] to-[#00F0FF] hover:brightness-110 text-white font-extrabold py-4 rounded-2xl text-sm shadow-2xl transition transform active:scale-95 inline-flex items-center justify-center gap-2">
-          <span>🚀 Generate My Ryze Brand Film</span>
-          <span>(Simulate Inpainting)</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- ========================================================= -->
-    <!-- STEP 3: AI VIDEO PIPELINE SIMULATOR (LIVE SYNTHESIS)      -->
-    <!-- ========================================================= -->
-    <div id="section-step-3" class="hidden bg-[#0f1118] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-xl mb-8">
-      <div class="text-center max-w-lg mx-auto mb-8">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FF5500] to-[#8A2BE2] mx-auto flex items-center justify-center text-xl shadow-lg mb-3 animate-spin">
-          ⚙️
-        </div>
-        <h2 class="text-xl sm:text-2xl font-bold text-white" id="synth-status-title">
-          Synthesizing Brand Film Scene...
-        </h2>
-        <p class="text-xs text-gray-400 mt-1" id="synth-status-desc">
-          Mapping your facial geometry onto the Ryze protagonist master sequence.
-        </p>
-      </div>
-
-      <!-- Animated Progress Bar -->
-      <div class="max-w-xl mx-auto mb-8">
-        <div class="flex justify-between text-xs font-bold mono mb-2 text-gray-300">
-          <span id="synth-stage-name">Stage 1: Landmark Normalization</span>
-          <span id="synth-percent" class="text-[#FF5500]">0%</span>
-        </div>
-        <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden p-0.5 border border-white/10">
-          <div id="synth-bar" class="h-full bg-gradient-to-r from-[#FF5500] via-[#8A2BE2] to-[#00F0FF] rounded-full transition-all duration-300" style="width: 5%"></div>
-        </div>
-      </div>
-
-      <!-- Neural Terminal Diagnostics -->
-      <div class="bg-black/80 border border-white/10 rounded-2xl p-4 max-w-xl mx-auto font-mono text-[11px] text-gray-400 max-h-40 overflow-y-auto" id="synth-terminal">
-        <div class="text-[#00F0FF]">[0.00s] Initializing Latent Diffusion UNet (512x512 latent grid)...</div>
-      </div>
-    </div>
-
-    <!-- ========================================================= -->
-    <!-- STEP 4: DYNAMIC 4K VIDEO PLAYER & STORY CARD GENERATOR    -->
-    <!-- ========================================================= -->
-    <div id="section-step-4" class="hidden space-y-8">
-      
-      <!-- Video Player Preview Container -->
-      <div class="bg-[#0f1118] border border-[#FF5500]/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
-          <div>
-            <span class="text-xs font-bold uppercase tracking-wider text-[#FF5500] mono">🎬 RENDER COMPLETE</span>
-            <h2 class="text-xl sm:text-2xl font-bold text-white mt-0.5">
-              Your Ryze Brand Film Master Cut
-            </h2>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/40">
-              ● 4K Master Rendered
-            </span>
-            <button onclick="goToStep(2)" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl font-bold transition">
-              Change Persona
-            </button>
-          </div>
-        </div>
-
-        <!-- Simulated Player Canvas -->
-        <div class="relative w-full aspect-video rounded-2xl bg-black border border-white/15 overflow-hidden shadow-2xl flex items-center justify-center group">
+        <!-- Persona 1: Farhan (#00F0FF cyan glow) -->
+        <div 
+          id="persona-card-farhan" 
+          onclick="selectPersona('farhan')" 
+          class="cursor-pointer bg-[#121622] border-2 border-[#00F0FF] rounded-3xl p-6 transition flex flex-col justify-between relative overflow-hidden glow-cyan group">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-[#00F0FF]/10 rounded-full blur-2xl pointer-events-none"></div>
           
-          <!-- Background Scene Canvas (Moving procedural lights & protagonist) -->
-          <canvas id="video-canvas" class="w-full h-full object-cover"></canvas>
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-3xl">🎧</span>
+              <span class="mono text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40">
+                CO-STAR #01
+              </span>
+            </div>
 
-          <!-- Scanline overlay -->
-          <div class="absolute inset-0 scanlines pointer-events-none opacity-40"></div>
+            <h3 class="text-xl font-black text-white group-hover:text-[#00F0FF] transition">Farhan</h3>
+            <div class="text-xs font-bold text-[#00F0FF] mono mt-0.5">Sound Producer & 808 Beatmaker</div>
+            
+            <p class="text-xs text-gray-300 mt-3 leading-relaxed">
+              Dhanmondi underground studio creator crafting seismic 808 bass drops, MPC finger drumming, and heavy Dhaka youth anthems.
+            </p>
+          </div>
 
-          <!-- Protagonist Face Dynamic Overlay Badge -->
-          <div class="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/75 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/15">
-            <img id="player-face-thumbnail" src="" class="w-9 h-9 rounded-full object-cover border-2 border-[#FF5500]">
-            <div>
-              <div class="font-bold text-xs text-white" id="player-user-name">Aryan Chowdhury</div>
-              <div class="text-[10px] text-[#00F0FF] mono">Lead Actor • Ryze Hero</div>
+          <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-[#00F0FF]">
+            <span id="badge-status-farhan">Active Persona ✓</span>
+            <span class="text-base">→</span>
+          </div>
+        </div>
+
+        <!-- Persona 2: Tanha (#AA55FF purple glow) -->
+        <div 
+          id="persona-card-tanha" 
+          onclick="selectPersona('tanha')" 
+          class="cursor-pointer bg-[#121622] border-2 border-transparent hover:border-[#AA55FF]/60 rounded-3xl p-6 transition flex flex-col justify-between relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-[#AA55FF]/10 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-3xl">🧬</span>
+              <span class="mono text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-[#AA55FF]/15 text-[#AA55FF] border border-[#AA55FF]/40">
+                CO-STAR #02
+              </span>
+            </div>
+
+            <h3 class="text-xl font-black text-white group-hover:text-[#AA55FF] transition">Tanha</h3>
+            <div class="text-xs font-bold text-[#AA55FF] mono mt-0.5">Research Scholar & AR Data Explorer</div>
+
+            <p class="text-xs text-gray-300 mt-3 leading-relaxed">
+              Curzon Hall scholar interfacing with holographic 5G point-cloud meshes, volumetric spatial models, and zero-latency campus nodes.
+            </p>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-gray-500">
+            <span id="badge-status-tanha">Select Co-Star</span>
+            <span class="text-base">→</span>
+          </div>
+        </div>
+
+        <!-- Persona 3: Zayan (#FFD700 gold glow) -->
+        <div 
+          id="persona-card-zayan" 
+          onclick="selectPersona('zayan')" 
+          class="cursor-pointer bg-[#121622] border-2 border-transparent hover:border-[#FFD700]/60 rounded-3xl p-6 transition flex flex-col justify-between relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-[#FFD700]/10 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-3xl">🌇</span>
+              <span class="mono text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-[#FFD700]/15 text-[#FFD700] border border-[#FFD700]/40">
+                CO-STAR #03
+              </span>
+            </div>
+
+            <h3 class="text-xl font-black text-white group-hover:text-[#FFD700] transition">Zayan</h3>
+            <div class="text-xs font-bold text-[#FFD700] mono mt-0.5">Creator & Dhaka Rooftop Host</div>
+
+            <p class="text-xs text-gray-300 mt-3 leading-relaxed">
+              Dhaka skyline storyteller conducting the nationwide #RyzeYourVibe movement against sunset horizon flaring with 5G connectivity.
+            </p>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-gray-500">
+            <span id="badge-status-zayan">Select Co-Star</span>
+            <span class="text-base">→</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Active Persona Deep Dive: Telemetry & Prompt Formula -->
+      <div class="bg-[#0E121B] border border-white/15 rounded-3xl p-6 sm:p-7 relative overflow-hidden">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Left: Persona Telemetry Specs -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase mono text-gray-400">Persona Neural Telemetry</span>
+              <span id="telemetry-pill" class="text-[10px] mono font-bold px-2 py-0.5 rounded bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30">FARHAN // AUDIO STACK</span>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between text-gray-300 mb-1">
+                  <span>Generative Synthesis Model</span>
+                  <span id="spec-engine" class="font-bold text-white mono">Omni-Flash Sonic LoRA v3.2</span>
+                </div>
+                <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                  <div id="spec-bar-engine" class="h-full bg-[#00F0FF] rounded-full" style="width: 95%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-gray-300 mb-1">
+                  <span>Banglalink 5G Latency Target</span>
+                  <span id="spec-latency" class="font-bold text-white mono">18ms Ultra-Low</span>
+                </div>
+                <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                  <div id="spec-bar-latency" class="h-full bg-[#00F0FF] rounded-full" style="width: 88%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-gray-300 mb-1">
+                  <span>Audio Cadence & Stems</span>
+                  <span id="spec-audio" class="font-bold text-white mono">140 BPM Heavy Drill & 808 Bass</span>
+                </div>
+                <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                  <div id="spec-bar-audio" class="h-full bg-[#00F0FF] rounded-full" style="width: 92%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-gray-300 mb-1">
+                  <span>Target Scene Safe-Zone</span>
+                  <span id="spec-safezone" class="font-bold text-white mono">Studio Console & DJ Booth Center</span>
+                </div>
+                <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                  <div id="spec-bar-safezone" class="h-full bg-[#00F0FF] rounded-full" style="width: 96%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sonic Frequency Visualizer Simulator -->
+            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+              <div class="flex items-end gap-1 h-5">
+                <div class="w-1 bg-[#00F0FF] rounded-full animate-bounce" style="height: 60%"></div>
+                <div class="w-1 bg-[#00F0FF] rounded-full animate-bounce" style="height: 100%; animation-delay: 0.1s"></div>
+                <div class="w-1 bg-[#00F0FF] rounded-full animate-bounce" style="height: 75%; animation-delay: 0.2s"></div>
+                <div class="w-1 bg-[#00F0FF] rounded-full animate-bounce" style="height: 40%; animation-delay: 0.15s"></div>
+                <div class="w-1 bg-[#00F0FF] rounded-full animate-bounce" style="height: 90%; animation-delay: 0.05s"></div>
+                <span class="text-[10px] mono text-gray-400 ml-1.5" id="spec-audio-tag">Web Audio API Active Preview</span>
+              </div>
+
+              <button onclick="playActivePersonaSound()" class="text-[11px] font-bold text-[#00F0FF] hover:underline flex items-center gap-1">
+                <span>Play Sound Snippet</span> <span>▶</span>
+              </button>
             </div>
           </div>
 
-          <!-- Official Ryze Watermark -->
-          <div class="absolute bottom-16 right-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-xl border border-white/10 text-xs font-extrabold text-white">
-            <span class="text-[#FF5500]">⚡</span> RYZE BRAND FILM
+          <!-- Right: Prompt Matrix Formula Snippet -->
+          <div class="flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold uppercase mono text-gray-400">Prompt Matrix (Omni-Flash v1.1)</span>
+                <button onclick="copyPromptFormula()" id="btn-copy-prompt" class="text-[10px] font-bold text-gray-300 hover:text-white bg-white/10 px-2.5 py-1 rounded-lg border border-white/15 transition flex items-center gap-1">
+                  <span>📋 Copy Prompt</span>
+                </button>
+              </div>
+
+              <div class="bg-black/80 rounded-2xl p-4 border border-white/10 font-mono text-[11px] text-gray-300 leading-relaxed max-h-44 overflow-y-auto" id="prompt-matrix-box">
+                "Cinematic 8k close-up shot of Farhan in Dhaka neon underground sound studio, tapping heavy 808 bass synth on glowing MPC console, volumetric cyan lighting, floating holographic audio equalizers, Banglalink RYZE 5G badge pinned top-left, photorealistic motion blur, anamorphic 2.39:1 flare."
+              </div>
+            </div>
+
+            <!-- Persona Ingress Action -->
+            <div class="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <span class="text-[11px] text-gray-400">Generate your personalized share pass with this Co-Star track:</span>
+              <button onclick="syncPersonaToPoster()" class="bg-[#00F0FF] hover:brightness-110 text-black font-extrabold text-xs px-4 py-2 rounded-xl transition shadow-lg flex items-center gap-1.5" id="btn-sync-poster">
+                <span>Load into VIP Pass Generator</span>
+                <span>↓</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Audio Equalizer Bars (Pulsating to audio beat) -->
-          <div class="absolute bottom-16 left-4 z-20 flex items-end gap-1 h-6">
-            <div class="w-1.5 bg-[#FF5500] rounded-full animate-bounce" style="height: 60%"></div>
-            <div class="w-1.5 bg-[#8A2BE2] rounded-full animate-bounce" style="height: 100%; animation-delay: 0.1s"></div>
-            <div class="w-1.5 bg-[#00F0FF] rounded-full animate-bounce" style="height: 80%; animation-delay: 0.2s"></div>
-            <div class="w-1.5 bg-[#FF5500] rounded-full animate-bounce" style="height: 45%; animation-delay: 0.15s"></div>
-            <span class="text-[10px] mono text-gray-300 ml-1">#RyzeYourVibe Anthem</span>
-          </div>
+        </div>
 
-          <!-- Play / Pause Overlay Button -->
-          <button id="play-pause-btn" onclick="togglePlay()" class="absolute z-20 bg-black/70 hover:bg-[#FF5500] text-white p-5 rounded-full transition transform group-hover:scale-110 shadow-2xl border border-white/20">
-            <span id="play-icon" class="text-2xl">▶</span>
+      </div>
+
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- MANDATE 3: PERSONALIZED POSTER GENERATOR (HTML5 CANVAS)   -->
+    <!-- ========================================================= -->
+    <section id="poster-section" class="bg-[#0A0D15] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl mb-12">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+          <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FFD700] mono mb-1">
+            <span>🪪 MANDATE 3</span>
+            <span>•</span>
+            <span>CLIENT-SIDE CANVAS ENGINE</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Client-Side VIP Pass & Poster Generator</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">Mint your 1080×1920 Banglalink RYZE 5G VIP Pass with real-time biometric alignment and dynamic QR code.</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="downloadVipCard()" class="bg-gradient-to-r from-[#FF5500] to-[#FFD700] hover:brightness-110 text-black font-extrabold px-5 py-2.5 rounded-xl text-xs transition shadow-lg flex items-center gap-2">
+            <span>📥 Download VIP Pass (PNG)</span>
+          </button>
+          <button onclick="copyTikTokCaption()" id="btn-copy-caption" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition border border-white/15 flex items-center gap-1.5">
+            <span>📋 Copy Share Text</span>
           </button>
         </div>
-
-        <!-- Video Player Bottom Controls -->
-        <div class="mt-4 flex flex-wrap justify-between items-center gap-4 text-xs">
-          <div class="flex items-center gap-3">
-            <button onclick="toggleAudio()" id="audio-toggle-btn" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5">
-              <span>🔊</span> <span id="audio-status-text">Audio: On (Synth Beat)</span>
-            </button>
-            <span class="text-gray-400 mono">Aspect: 16:9 4K Cinema • Color: Cyberpunk LUT</span>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="applyVisualFilter('neon')" class="px-2.5 py-1 rounded-lg bg-[#FF5500]/20 text-[#FF5500] font-bold border border-[#FF5500]/40">Neon LUT</button>
-            <button onclick="applyVisualFilter('violet')" class="px-2.5 py-1 rounded-lg bg-[#8A2BE2]/20 text-[#A855F7] font-bold border border-[#8A2BE2]/40">Violet Glitch</button>
-            <button onclick="applyVisualFilter('gold')" class="px-2.5 py-1 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] font-bold border border-[#00F0FF]/40">Cyan Drift</button>
-          </div>
-        </div>
       </div>
 
-      <!-- Story Frame Download (Instagram Reel / TikTok Story 1080x1920) -->
-      <div class="bg-[#0f1118] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl">
-        <div class="flex flex-wrap justify-between items-end gap-4 mb-6">
-          <div>
-            <span class="text-xs font-bold uppercase tracking-wider text-[#00F0FF] mono">📱 SHAREABLE STORY POSTER</span>
-            <h3 class="text-xl font-bold text-white mt-0.5">Download Vertical Story Poster (1080×1920)</h3>
-            <p class="text-xs text-gray-400 mt-1">Ready for Instagram Stories, TikTok, and WhatsApp Status with official Banglalink Ryze badge.</p>
-          </div>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left Column: Controls, Inputs & Avatar Selection (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
           
-          <div class="flex gap-2">
-            <button onclick="generateAndDownloadPoster()" class="bg-[#FF5500] hover:brightness-110 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs transition shadow-lg flex items-center gap-2">
-              <span>📸 Download Story (PNG)</span>
-            </button>
-            <button onclick="copyShareCaption()" id="copy-btn" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5">
-              <span>📋 Copy TikTok Caption</span>
+          <!-- Step A: Avatar / Photo Intake -->
+          <div class="bg-[#121622] border border-white/10 rounded-2xl p-5">
+            <div class="text-xs font-bold uppercase mono text-gray-400 mb-3 flex items-center justify-between">
+              <span>Step 1: Avatar Biometrics</span>
+              <span class="text-[#00F0FF]">Frontal Face / High Contrast</span>
+            </div>
+
+            <!-- Upload Drop Area -->
+            <div onclick="document.getElementById('file-avatar-input').click()" class="border-2 border-dashed border-white/20 hover:border-[#00F0FF] rounded-2xl p-4 text-center cursor-pointer transition bg-black/40 hover:bg-black/60 group mb-3">
+              <input type="file" id="file-avatar-input" accept="image/*" class="hidden" onchange="handleUserAvatarUpload(event)">
+              <div class="text-2xl mb-1 group-hover:scale-110 transition">📸</div>
+              <div class="text-xs font-bold text-white">Upload Your Selfie or Avatar Photo</div>
+              <div class="text-[10px] text-gray-400">Instantly rendered client-side on HTML5 canvas (no server upload)</div>
+            </div>
+
+            <!-- Sample Pitch Avatars -->
+            <div class="pt-2">
+              <div class="text-[11px] text-gray-400 font-semibold mb-2">Or select instant campaign star:</div>
+              <div class="grid grid-cols-4 gap-2">
+                <button onclick="selectSampleUser('farhan')" class="bg-black/50 hover:bg-[#00F0FF]/20 border border-white/10 hover:border-[#00F0FF] p-2 rounded-xl text-left transition">
+                  <div class="text-base mb-0.5">🎧</div>
+                  <div class="text-xs font-bold text-white">Farhan</div>
+                  <div class="text-[9px] text-[#00F0FF] mono">808 Beat</div>
+                </button>
+                <button onclick="selectSampleUser('tanha')" class="bg-black/50 hover:bg-[#AA55FF]/20 border border-white/10 hover:border-[#AA55FF] p-2 rounded-xl text-left transition">
+                  <div class="text-base mb-0.5">🧬</div>
+                  <div class="text-xs font-bold text-white">Tanha</div>
+                  <div class="text-[9px] text-[#AA55FF] mono">AR Scholar</div>
+                </button>
+                <button onclick="selectSampleUser('zayan')" class="bg-black/50 hover:bg-[#FFD700]/20 border border-white/10 hover:border-[#FFD700] p-2 rounded-xl text-left transition">
+                  <div class="text-base mb-0.5">🌇</div>
+                  <div class="text-xs font-bold text-white">Zayan</div>
+                  <div class="text-[9px] text-[#FFD700] mono">Host Vibe</div>
+                </button>
+                <button onclick="selectSampleUser('samira')" class="bg-black/50 hover:bg-[#FF5500]/20 border border-white/10 hover:border-[#FF5500] p-2 rounded-xl text-left transition">
+                  <div class="text-base mb-0.5">⚡</div>
+                  <div class="text-xs font-bold text-white">Samira</div>
+                  <div class="text-[9px] text-[#FF5500] mono">Esports</div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step B: Star Metadata & Track Selection -->
+          <div class="bg-[#121622] border border-white/10 rounded-2xl p-5">
+            <div class="text-xs font-bold uppercase mono text-gray-400 mb-3">
+              Step 2: Creator Handle & Track
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-300 uppercase mono mb-1">Star Name</label>
+                <input type="text" id="input-star-name" value="Farhan Ahmed" oninput="renderPosterCanvas()" class="w-full bg-black/60 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F0FF]">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-300 uppercase mono mb-1">Social Handle (@)</label>
+                <input type="text" id="input-star-handle" value="@farhan_808" oninput="renderPosterCanvas()" class="w-full bg-black/60 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#AA55FF]">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-300 uppercase mono mb-1">Co-Star Persona Track</label>
+                <select id="select-poster-track" onchange="onPosterTrackChange()" class="w-full bg-black/60 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F0FF]">
+                  <option value="farhan">Co-Star #01 // Farhan (Sound Producer & 808 Beatmaker)</option>
+                  <option value="tanha">Co-Star #02 // Tanha (Research Scholar & AR Data)</option>
+                  <option value="zayan">Co-Star #03 // Zayan (Creator & Rooftop Host)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-300 uppercase mono mb-1">VIP Pass Motto / Badge</label>
+                <input type="text" id="input-star-motto" value="UNSTOPPABLE 808 PRODIGY" oninput="renderPosterCanvas()" class="w-full bg-black/60 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#FFD700]">
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Pass Security & Telemetry -->
+          <div class="bg-black/40 border border-white/5 rounded-2xl p-4 text-xs flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="mono text-[11px] text-gray-300">
+                PASS SERIAL: <span id="pass-serial-id" class="text-white font-bold">RYZE-5G-8924-VIP</span>
+              </span>
+            </div>
+            <button onclick="regenerateSerial()" class="text-[11px] mono text-[#00F0FF] hover:underline">
+              Regen ID ↺
             </button>
           </div>
+
         </div>
 
-        <!-- Hidden Canvas Used for 1080x1920 Poster Generation -->
-        <canvas id="poster-canvas" width="1080" height="1920" class="hidden"></canvas>
+        <!-- Right Column: Live Poster Canvas Live Render Preview (5 cols) -->
+        <div class="lg:col-span-5 flex flex-col items-center">
+          
+          <!-- Hidden Native Canvas (1080x1920) -->
+          <canvas id="vip-canvas" width="1080" height="1920" class="hidden"></canvas>
 
-        <!-- Preview Card -->
-        <div class="bg-black/60 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-6">
-          <div class="w-36 h-64 rounded-xl bg-gray-900 overflow-hidden border border-white/20 shrink-0 shadow-lg relative">
-            <img id="poster-mini-preview" src="" class="w-full h-full object-cover">
+          <!-- Rendered Interactive Preview Frame -->
+          <div class="relative w-72 sm:w-80 aspect-[9/16] rounded-3xl bg-black border-2 border-white/20 overflow-hidden shadow-2xl glow-cyan" id="poster-preview-container">
+            <img id="poster-img-preview" src="" alt="VIP Pass Preview" class="w-full h-full object-cover">
+            
+            <!-- Scanlines & Watermark -->
+            <div class="absolute inset-0 scanlines pointer-events-none opacity-20"></div>
           </div>
-          <div class="text-xs space-y-2 text-gray-300">
-            <div class="font-bold text-sm text-white flex items-center gap-2">
-              <span>✨ Official Ryze Brand Star Certificate</span>
-              <span class="text-[10px] bg-[#00F0FF]/20 text-[#00F0FF] px-2 py-0.5 rounded">QR Enabled</span>
+
+          <div class="mt-4 text-center">
+            <div class="text-[11px] text-gray-400 mono">
+              1080×1920 9:16 Canvas • High-DPI PNG Output
             </div>
-            <p class="leading-relaxed">
-              Anyone who scans the QR code embedded on your story poster will spawn directly into this interactive simulator to cast themselves alongside you.
-            </p>
-            <div class="bg-black/40 p-2.5 rounded-lg border border-white/5 mono text-[11px] text-gray-400">
-              #RyzeYourVibe • Banglalink Youth Network • AI Star Campaign 2026
+            <div class="flex items-center justify-center gap-3 mt-2">
+              <button onclick="downloadVipCard()" class="text-xs bg-[#FF5500] hover:brightness-110 text-white font-bold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-lg">
+                <span>📸 Save Share Pass</span>
+              </button>
+              <button onclick="copyTikTokCaption()" class="text-xs bg-white/10 hover:bg-white/20 text-gray-300 font-bold px-3 py-2 rounded-xl transition">
+                Share Caption
+              </button>
             </div>
           </div>
+
         </div>
 
       </div>
 
-    </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- MANDATE 4: CONVERSION END-CARD & APP INGRESS              -->
+    <!-- ========================================================= -->
+    <section id="ingress-section" class="rounded-3xl border border-[#FF5500]/40 bg-gradient-to-br from-[#1C0E07] via-[#0D0B14] to-[#0A131F] p-8 sm:p-12 shadow-2xl relative overflow-hidden">
+      
+      <!-- Ambient Lighting -->
+      <div class="absolute -top-20 -right-20 w-80 h-80 bg-[#FF5500]/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-[#00F0FF]/15 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 max-w-3xl mx-auto text-center">
+        
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FF5500]/15 border border-[#FF5500]/40 text-[#FF5500] text-xs font-bold uppercase tracking-wider mb-4">
+          <span>🚀 MANDATE 4 // MYBL CONVERSION INGRESS</span>
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight mb-4">
+          Power Your Vibe with <br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5500] via-[#AA55FF] to-[#00F0FF]">
+            Banglalink RYZE 5G Turbo
+          </span>
+        </h2>
+
+        <p class="text-sm sm:text-base text-gray-300 leading-relaxed mb-8 max-w-2xl mx-auto">
+          Unlock uncapped 5G speeds, zero-latency cloud AI compute, and exclusive RYZE Co-Star creator packages directly in the MyBL Super App.
+        </p>
+
+        <!-- Primary Conversion Buttons with UTM Telemetry -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+          
+          <!-- Upgrade to RYZE 5G Button -->
+          <a 
+            href="https://mybl.banglalink.net/ryze?utm_source=ryze_star_web&utm_medium=interactive_player&utm_campaign=ryzeyourvibe" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-full sm:w-auto bg-gradient-to-r from-[#FF5500] to-[#AA55FF] hover:brightness-110 text-white font-extrabold px-8 py-4 rounded-2xl text-sm shadow-[0_0_30px_rgba(255,85,0,0.5)] transition transform active:scale-95 flex items-center justify-center gap-2.5">
+            <span>⚡ Upgrade to RYZE 5G on MyBL App</span>
+            <span class="text-lg">→</span>
+          </a>
+
+          <!-- Claim 5GB Bonus Data -->
+          <a 
+            href="https://mybl.banglalink.net/claim?code=RYZE5G&utm_source=ryze_star_web&utm_medium=interactive_player&utm_campaign=ryzeyourvibe" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold px-7 py-4 rounded-2xl text-sm transition flex items-center justify-center gap-2">
+            <span>🎁 Claim 5GB Free RYZE Data</span>
+          </a>
+
+        </div>
+
+        <!-- 3 Feature Pillars Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-6 border-t border-white/10 text-xs">
+          <div class="bg-black/40 rounded-2xl p-4 border border-white/5">
+            <div class="text-lg mb-1">⚡</div>
+            <div class="font-bold text-white mb-0.5">Uncapped 5G Speeds</div>
+            <div class="text-[11px] text-gray-400">Up to 1.2 Gbps peak throughput with 4x4 MIMO beamforming.</div>
+          </div>
+          <div class="bg-black/40 rounded-2xl p-4 border border-white/5">
+            <div class="text-lg mb-1">🎧</div>
+            <div class="font-bold text-white mb-0.5">Unlimited Youth Packs</div>
+            <div class="text-[11px] text-gray-400">Zero data charges for Spotify, TikTok, YouTube & Discord.</div>
+          </div>
+          <div class="bg-black/40 rounded-2xl p-4 border border-white/5">
+            <div class="text-lg mb-1">🤖</div>
+            <div class="font-bold text-white mb-0.5">Free Co-Star AI Studio</div>
+            <div class="text-[11px] text-gray-400">10,000 monthly neural tokens to mint your personal AI brand films.</div>
+          </div>
+        </div>
+
+        <!-- Conversion Live Ticker -->
+        <div class="mt-6 inline-flex items-center gap-2 text-xs mono text-gray-400 bg-black/60 px-4 py-2 rounded-xl border border-white/10">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>14,892 Banglalink subscribers upgraded in the last 24h</span>
+        </div>
+
+      </div>
+
+    </section>
 
   </main>
 
   <!-- ========================================================= -->
-  <!-- JAVASCRIPT: GENERATIVE VIDEO SIMULATION & CANVAS ENGINE   -->
+  <!-- FOOTER                                                    -->
+  <!-- ========================================================= -->
+  <footer class="border-t border-white/10 bg-[#07090E] py-8 px-4 text-center text-xs text-gray-500 relative z-10">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-white">BANGLALINK RYZE 5G</span>
+        <span>•</span>
+        <span>#RyzeYourVibe 2026</span>
+      </div>
+      <div class="mono text-[11px]">
+        Engineered for Banglalink GSM & Telecom // GRO10X OS Platform
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/prototypes" class="hover:text-white transition">Showroom</a>
+        <a href="/prototypes/madmen-os" class="hover:text-white transition">Madmen OS</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- CLIENT JAVASCRIPT ENGINE                                  -->
   <!-- ========================================================= -->
   <script>
-    // State
-    let currentStep = 1;
-    let selectedPersona = 'fashion';
-    let currentAvatarUrl = 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80';
-    let isPlaying = false;
-    let isAudioOn = true;
-    let activeFilter = 'neon';
-
-    const SAMPLE_AVATARS = {
-      aryan: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
-      tanha: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
-      zayan: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80'
+    /* =========================================================
+       1. MULTI-CUT BROADCAST VIDEO PLAYER ENGINE
+       ========================================================= */
+    const CUTS = {
+      '60s': {
+        src: '/ryze_media/ryze_hero_60s.mp4',
+        poster: '/ryze_media/ryze_poster_cover_16x9.png',
+        aspect: '16:9',
+        badge: '60s MASTER FILM // BROADCAST 16:9',
+        durationText: '01:00',
+        wrapperClass: 'relative w-full max-w-4xl aspect-video rounded-3xl bg-black border border-white/20 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] transition-all duration-500 ease-in-out group'
+      },
+      '30s': {
+        src: '/ryze_media/ryze_bumper_30s.mp4',
+        poster: '/ryze_media/ryze_poster_cover_16x9.png',
+        aspect: '16:9',
+        badge: '30s DIGITAL BUMPER // 16:9 NON-SKIPPABLE',
+        durationText: '00:30',
+        wrapperClass: 'relative w-full max-w-4xl aspect-video rounded-3xl bg-black border border-white/20 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] transition-all duration-500 ease-in-out group'
+      },
+      '15s': {
+        src: '/ryze_media/ryze_vertical_15s.mp4',
+        poster: '/ryze_media/ryze_poster_cover_9x16.png',
+        aspect: '9:16',
+        badge: '15s REELS / VERTICAL // 9:16 SAFE-ZONE',
+        durationText: '00:15',
+        wrapperClass: 'relative w-full max-w-[360px] aspect-[9/16] rounded-3xl bg-black border border-white/20 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] transition-all duration-500 ease-in-out group mx-auto'
+      }
     };
 
-    function selectSampleAvatar(key) {
-      if (SAMPLE_AVATARS[key]) {
-        currentAvatarUrl = SAMPLE_AVATARS[key];
-        document.getElementById('face-preview').src = currentAvatarUrl;
-        if (key === 'aryan') {
-          document.getElementById('user-name').value = 'Aryan Chowdhury';
-          document.getElementById('user-handle').value = '@aryanchy_07';
-        } else if (key === 'tanha') {
-          document.getElementById('user-name').value = 'Tanha Tasnia';
-          document.getElementById('user-handle').value = '@tanha_gaming';
-        } else if (key === 'zayan') {
-          document.getElementById('user-name').value = 'Zayan Al-Din';
-          document.getElementById('user-handle').value = '@zayan_cyber';
+    let activeCut = '60s';
+    const video = document.getElementById('main-broadcast-video');
+    const wrapper = document.getElementById('player-frame-wrapper');
+    const cutBadge = document.getElementById('player-cut-badge');
+    const timeCurrent = document.getElementById('time-current');
+    const timeDuration = document.getElementById('time-duration');
+    const progressBar = document.getElementById('video-progress-bar');
+    const centerPlayBtn = document.getElementById('center-play-btn');
+    const centerPlayIcon = document.getElementById('center-play-icon');
+    const ctrlPlayIcon = document.getElementById('ctrl-play-icon');
+    const ctrlVolIcon = document.getElementById('ctrl-vol-icon');
+
+    function switchVideoCut(cutKey) {
+      if (!CUTS[cutKey]) return;
+      activeCut = cutKey;
+      const data = CUTS[cutKey];
+
+      // Update Button Styles
+      ['60', '30', '15'].forEach(k => {
+        const btn = document.getElementById(`btn-cut-${k}`);
+        const card = document.getElementById(`card-cut-info-${k === '60' ? 1 : (k === '30' ? 2 : 3)}`);
+        if (k + 's' === cutKey) {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#00F0FF] text-black shadow-lg';
+          if (card) card.className = 'bg-[#121622] border-2 border-[#00F0FF] rounded-2xl p-3.5 transition';
+        } else {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition flex items-center gap-1.5';
+          if (card) card.className = 'bg-[#121622] border border-white/10 rounded-2xl p-3.5 transition';
         }
+      });
+
+      // Update Video Properties
+      const wasPlaying = !video.paused;
+      video.pause();
+      video.src = data.src;
+      video.poster = data.poster;
+      video.load();
+
+      wrapper.className = data.wrapperClass;
+      cutBadge.textContent = data.badge;
+      timeDuration.textContent = data.durationText;
+      progressBar.style.width = '0%';
+
+      if (wasPlaying) {
+        video.play().catch(() => {});
+      }
+      updatePlayIcons(false);
+    }
+
+    function togglePlayPause() {
+      if (video.paused || video.ended) {
+        video.play().catch(e => console.log('Autoplay policy note:', e));
+        updatePlayIcons(true);
+      } else {
+        video.pause();
+        updatePlayIcons(false);
       }
     }
 
-    function handleFileSelect(event) {
+    function updatePlayIcons(isPlaying) {
+      if (isPlaying) {
+        centerPlayIcon.textContent = '❚❚';
+        ctrlPlayIcon.textContent = '❚❚';
+        centerPlayBtn.style.opacity = '0';
+      } else {
+        centerPlayIcon.textContent = '▶';
+        ctrlPlayIcon.textContent = '▶';
+        centerPlayBtn.style.opacity = '1';
+      }
+    }
+
+    function toggleMute() {
+      video.muted = !video.muted;
+      ctrlVolIcon.textContent = video.muted ? '🔇' : '🔊';
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+        else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    function seekVideo(event) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, clickX / rect.width));
+      if (video.duration) {
+        video.currentTime = pct * video.duration;
+      }
+    }
+
+    // Video Event Listeners
+    video.addEventListener('timeupdate', () => {
+      if (video.duration) {
+        const pct = (video.currentTime / video.duration) * 100;
+        progressBar.style.width = `${pct}%`;
+        const m = Math.floor(video.currentTime / 60);
+        const s = Math.floor(video.currentTime % 60);
+        timeCurrent.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      }
+    });
+
+    video.addEventListener('loadedmetadata', () => {
+      const m = Math.floor(video.duration / 60);
+      const s = Math.floor(video.duration % 60);
+      timeDuration.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    });
+
+    video.addEventListener('play', () => updatePlayIcons(true));
+    video.addEventListener('pause', () => updatePlayIcons(false));
+    video.addEventListener('ended', () => updatePlayIcons(false));
+
+
+    /* =========================================================
+       2. INTERACTIVE CO-STAR PERSONA SWITCHER ENGINE
+       ========================================================= */
+    const PERSONAS = {
+      farhan: {
+        name: 'Farhan',
+        role: 'Sound Producer & 808 Beatmaker',
+        number: 'CO-STAR #01',
+        themeColor: '#00F0FF',
+        glowClass: 'glow-cyan',
+        borderClass: 'border-[#00F0FF]',
+        badgeText: 'FARHAN // AUDIO STACK',
+        engine: 'Omni-Flash Sonic LoRA v3.2',
+        enginePct: '95%',
+        latency: '18ms Ultra-Low',
+        latencyPct: '88%',
+        audio: '140 BPM Heavy Drill & 808 Bass',
+        audioPct: '92%',
+        safezone: 'Studio Console & DJ Booth Center',
+        safezonePct: '96%',
+        prompt: '"Cinematic 8k close-up shot of Farhan in Dhaka neon underground sound studio, tapping heavy 808 bass synth on glowing MPC console, volumetric cyan lighting, floating holographic audio equalizers, Banglalink RYZE 5G badge pinned top-left, photorealistic motion blur, anamorphic 2.39:1 flare."',
+        motto: 'UNSTOPPABLE 808 PRODIGY',
+        handle: '@farhan_808',
+        fullName: 'Farhan Ahmed',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80'
+      },
+      tanha: {
+        name: 'Tanha',
+        role: 'Research Scholar & AR Data Explorer',
+        number: 'CO-STAR #02',
+        themeColor: '#AA55FF',
+        glowClass: 'glow-purple',
+        borderClass: 'border-[#AA55FF]',
+        badgeText: 'TANHA // SPATIAL AR STACK',
+        engine: 'Bio-AR Diffusion Mesh v4.0',
+        enginePct: '98%',
+        latency: '14ms Zero-Buffer',
+        latencyPct: '94%',
+        audio: '85 BPM Ambient Hologram Pads & Crystal Arps',
+        audioPct: '89%',
+        safezone: 'Curzon Hall AR Hologram & Library Safe-Zone',
+        safezonePct: '97%',
+        prompt: '"Photorealistic medium cinematic shot of Tanha wearing smart AR spectacles in Curzon Hall Dhaka, interacting with floating holographic data constellation, Banglalink 5G ultra-low latency beam, purple and violet neon glow, deep atmospheric lens flares, sharp photoreal textures."',
+        motto: 'CURZON HALL AR EXPLORER',
+        handle: '@tanha_research',
+        fullName: 'Tanha Tasnia',
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80'
+      },
+      zayan: {
+        name: 'Zayan',
+        role: 'Creator & Dhaka Rooftop Host',
+        number: 'CO-STAR #03',
+        themeColor: '#FFD700',
+        glowClass: 'glow-gold',
+        borderClass: 'border-[#FFD700]',
+        badgeText: 'ZAYAN // SKYLINE ANTHEM STACK',
+        engine: 'Pan-Bangladesh Aerial LoRA v2.9',
+        enginePct: '96%',
+        latency: '12ms Edge Sync',
+        latencyPct: '96%',
+        audio: '128 BPM Uplifting Anthem Chords & Rooftop Flare',
+        audioPct: '95%',
+        safezone: 'Dhanmondi Rooftop Skyline & Golden Hour Flare',
+        safezonePct: '94%',
+        prompt: '"Cinematic drone pan around Zayan standing on Dhanmondi rooftop at sunset, holding Banglalink 5G smartphone, cyclone of youth AR avatars, warm golden hour flares, 3200K cinematic color grade, 4k broadcast finish."',
+        motto: 'DHAKA SKYLINE STORYTELLER',
+        handle: '@zayan_dhaka',
+        fullName: 'Zayan Al-Din',
+        avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80'
+      }
+    };
+
+    let selectedPersonaKey = 'farhan';
+
+    function selectPersona(key) {
+      if (!PERSONAS[key]) return;
+      selectedPersonaKey = key;
+      const p = PERSONAS[key];
+
+      // Update Persona Cards UI
+      ['farhan', 'tanha', 'zayan'].forEach(k => {
+        const card = document.getElementById(`persona-card-${k}`);
+        const badgeStatus = document.getElementById(`badge-status-${k}`);
+        if (k === key) {
+          card.className = `cursor-pointer bg-[#121622] border-2 ${p.borderClass} rounded-3xl p-6 transition flex flex-col justify-between relative overflow-hidden ${p.glowClass} group`;
+          badgeStatus.textContent = 'Active Persona ✓';
+          badgeStatus.style.color = p.themeColor;
+        } else {
+          card.className = `cursor-pointer bg-[#121622] border-2 border-transparent hover:border-white/20 rounded-3xl p-6 transition flex flex-col justify-between relative overflow-hidden group`;
+          badgeStatus.textContent = 'Select Co-Star';
+          badgeStatus.style.color = '#6b7280';
+        }
+      });
+
+      // Update Telemetry Panel
+      document.getElementById('telemetry-pill').textContent = p.badgeText;
+      document.getElementById('telemetry-pill').style.color = p.themeColor;
+      document.getElementById('telemetry-pill').style.borderColor = p.themeColor;
+
+      document.getElementById('spec-engine').textContent = p.engine;
+      document.getElementById('spec-bar-engine').style.width = p.enginePct;
+      document.getElementById('spec-bar-engine').style.backgroundColor = p.themeColor;
+
+      document.getElementById('spec-latency').textContent = p.latency;
+      document.getElementById('spec-bar-latency').style.width = p.latencyPct;
+      document.getElementById('spec-bar-latency').style.backgroundColor = p.themeColor;
+
+      document.getElementById('spec-audio').textContent = p.audio;
+      document.getElementById('spec-bar-audio').style.width = p.audioPct;
+      document.getElementById('spec-bar-audio').style.backgroundColor = p.themeColor;
+
+      document.getElementById('spec-safezone').textContent = p.safezone;
+      document.getElementById('spec-bar-safezone').style.width = p.safezonePct;
+      document.getElementById('spec-bar-safezone').style.backgroundColor = p.themeColor;
+
+      document.getElementById('prompt-matrix-box').textContent = p.prompt;
+
+      // Update Sonic Status button
+      document.getElementById('synth-sound-status').textContent = `Preview Sonic Stem: ${p.name} (${p.audio.split('&')[0].trim()})`;
+
+      // Play synthesized stem
+      playActivePersonaSound();
+    }
+
+    function copyPromptFormula() {
+      const text = document.getElementById('prompt-matrix-box').textContent.trim();
+      navigator.clipboard.writeText(text);
+      const btn = document.getElementById('btn-copy-prompt');
+      btn.innerHTML = '<span>✅ Copied!</span>';
+      setTimeout(() => {
+        btn.innerHTML = '<span>📋 Copy Prompt</span>';
+      }, 2000);
+    }
+
+    function syncPersonaToPoster() {
+      const p = PERSONAS[selectedPersonaKey];
+      document.getElementById('select-poster-track').value = selectedPersonaKey;
+      document.getElementById('input-star-name').value = p.fullName;
+      document.getElementById('input-star-handle').value = p.handle;
+      document.getElementById('input-star-motto').value = p.motto;
+      currentUserAvatarUrl = p.avatarUrl;
+      renderPosterCanvas();
+
+      // Scroll smoothly to poster section
+      document.getElementById('poster-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+
+    /* =========================================================
+       3. WEB AUDIO API SYNTHESIZER (SONIC STEMS)
+       ========================================================= */
+    let audioCtx = null;
+    let isSynthMuted = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function togglePersonaAudio() {
+      isSynthMuted = !isSynthMuted;
+      document.getElementById('synth-speaker-icon').textContent = isSynthMuted ? '🔇' : '🎵';
+      if (!isSynthMuted) {
+        playActivePersonaSound();
+      }
+    }
+
+    function playActivePersonaSound() {
+      if (isSynthMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+
+        if (selectedPersonaKey === 'farhan') {
+          // Drill 808 Kick & Cyber Hi-Hat
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.exponentialRampToValueAtTime(32, now + 0.35);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+          osc.start(now);
+          osc.stop(now + 0.4);
+
+          // Hi-hat burst
+          setTimeout(() => {
+            if (isSynthMuted) return;
+            const c2 = getAudioContext();
+            const osc2 = c2.createOscillator();
+            const gain2 = c2.createGain();
+            osc2.type = 'sawtooth';
+            osc2.frequency.setValueAtTime(800, c2.currentTime);
+            gain2.gain.setValueAtTime(0.08, c2.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.001, c2.currentTime + 0.1);
+            osc2.connect(gain2);
+            gain2.connect(c2.destination);
+            osc2.start(c2.currentTime);
+            osc2.stop(c2.currentTime + 0.1);
+          }, 150);
+
+        } else if (selectedPersonaKey === 'tanha') {
+          // Bio-AR Ethereal Holographic Chords
+          [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            gain.gain.setValueAtTime(0, now + idx * 0.08);
+            gain.gain.linearRampToValueAtTime(0.07, now + idx * 0.08 + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.6);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.65);
+          });
+
+        } else if (selectedPersonaKey === 'zayan') {
+          // Anthemic Rooftop Sunset Synthesizer
+          [329.63, 392.00, 493.88, 587.33].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+            gain.gain.setValueAtTime(0.1, now + idx * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.5);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.06);
+            osc.stop(now + idx * 0.06 + 0.55);
+          });
+        }
+      } catch (err) {
+        console.log('Web Audio Note:', err);
+      }
+    }
+
+
+    /* =========================================================
+       4. CLIENT-SIDE VIP PASS & POSTER GENERATOR (HTML5 CANVAS)
+       ========================================================= */
+    let currentUserAvatarUrl = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80';
+    let passSerial = 'RYZE-5G-8924-VIP';
+
+    const SAMPLE_USERS = {
+      farhan: {
+        name: 'Farhan Ahmed',
+        handle: '@farhan_808',
+        motto: 'UNSTOPPABLE 808 PRODIGY',
+        track: 'farhan',
+        url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80'
+      },
+      tanha: {
+        name: 'Tanha Tasnia',
+        handle: '@tanha_research',
+        motto: 'CURZON HALL AR EXPLORER',
+        track: 'tanha',
+        url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80'
+      },
+      zayan: {
+        name: 'Zayan Al-Din',
+        handle: '@zayan_dhaka',
+        motto: 'DHAKA SKYLINE STORYTELLER',
+        track: 'zayan',
+        url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80'
+      },
+      samira: {
+        name: 'Samira Khan',
+        handle: '@samira_esports',
+        motto: 'ZERO-LATENCY 5G GAMER',
+        track: 'farhan',
+        url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80'
+      }
+    };
+
+    function selectSampleUser(key) {
+      if (!SAMPLE_USERS[key]) return;
+      const u = SAMPLE_USERS[key];
+      document.getElementById('input-star-name').value = u.name;
+      document.getElementById('input-star-handle').value = u.handle;
+      document.getElementById('input-star-motto').value = u.motto;
+      document.getElementById('select-poster-track').value = u.track;
+      currentUserAvatarUrl = u.url;
+      renderPosterCanvas();
+    }
+
+    function onPosterTrackChange() {
+      const track = document.getElementById('select-poster-track').value;
+      if (PERSONAS[track]) {
+        document.getElementById('input-star-motto').value = PERSONAS[track].motto;
+      }
+      renderPosterCanvas();
+    }
+
+    function handleUserAvatarUpload(event) {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          currentAvatarUrl = e.target.result;
-          document.getElementById('face-preview').src = currentAvatarUrl;
+          currentUserAvatarUrl = e.target.result;
+          renderPosterCanvas();
         };
         reader.readAsDataURL(file);
       }
     }
 
-    function selectPersona(p) {
-      selectedPersona = p;
-      ['fashion', 'street', 'gamer'].forEach(k => {
-        const card = document.getElementById(`persona-card-${k}`);
-        if (!card) return;
-        if (k === p) {
-          card.className = 'group cursor-pointer bg-[#141620] border-2 border-[#FF5500] rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden shadow-xl';
-        } else {
-          card.className = 'group cursor-pointer bg-[#141620] hover:bg-[#1a1d2c] border-2 border-transparent hover:border-white/20 rounded-3xl p-5 transition flex flex-col justify-between relative overflow-hidden';
-        }
-      });
+    function regenerateSerial() {
+      const randNum = Math.floor(1000 + Math.random() * 9000);
+      passSerial = `RYZE-5G-${randNum}-VIP`;
+      document.getElementById('pass-serial-id').textContent = passSerial;
+      renderPosterCanvas();
     }
 
-    function goToStep(step) {
-      currentStep = step;
-      [1, 2, 3, 4].forEach(s => {
-        const sec = document.getElementById(`section-step-${s}`);
-        const pill = document.getElementById(`step-pill-${s}`);
-        if (sec) {
-          if (s === step) sec.classList.remove('hidden');
-          else sec.classList.add('hidden');
-        }
-        if (pill) {
-          if (s === step) pill.className = 'px-3 py-1 rounded-xl bg-[#FF5500] text-white';
-          else if (s < step) pill.className = 'px-3 py-1 rounded-xl bg-emerald-600 text-white';
-          else pill.className = 'px-3 py-1 rounded-xl bg-gray-800 text-gray-400';
-        }
-      });
-      window.scrollTo({ top: 180, behavior: 'smooth' });
-    }
-
-    function resetSimulator() {
-      goToStep(1);
-      isPlaying = false;
-    }
-
-    // 3. SYNTHESIS PIPELINE ANIMATOR
-    function startAiSynthesis() {
-      goToStep(3);
-      const titleEl = document.getElementById('synth-status-title');
-      const descEl = document.getElementById('synth-status-desc');
-      const stageNameEl = document.getElementById('synth-stage-name');
-      const percentEl = document.getElementById('synth-percent');
-      const barEl = document.getElementById('synth-bar');
-      const terminalEl = document.getElementById('synth-terminal');
-
-      terminalEl.innerHTML = '';
-      function logMsg(msg, color = '#00F0FF') {
-        const line = document.createElement('div');
-        line.style.color = color;
-        line.textContent = `[${(performance.now()/1000).toFixed(2)}s] ${msg}`;
-        terminalEl.appendChild(line);
-        terminalEl.scrollTop = terminalEl.scrollHeight;
-      }
-
-      logMsg('Initiating Ryze Generative Pipeline v2.4...');
-      logMsg('Extracting 68 3D facial landmarks from source...');
-
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 4;
-        if (progress > 100) progress = 100;
-
-        percentEl.textContent = `${progress}%`;
-        barEl.style.width = `${progress}%`;
-
-        if (progress === 24) {
-          stageNameEl.textContent = 'Stage 1: Landmark Alignment';
-          logMsg('Landmark mesh warped to protagonist head rotation (yaw: -4.2°, pitch: +2.1°)');
-        } else if (progress === 52) {
-          stageNameEl.textContent = 'Stage 2: Latent Diffusion Inpainting';
-          titleEl.textContent = 'Diffusion UNet Running Denoising Steps...';
-          logMsg('Applying Ryze Cyberpunk LoRA weights (alpha: 0.85)...', '#FF5500');
-          logMsg('Step 25/50: Latent space photoreal blend converging (loss: 0.0124)', '#A855F7');
-        } else if (progress === 80) {
-          stageNameEl.textContent = 'Stage 3: 4K Temporal Upscale & Sonic Grade';
-          titleEl.textContent = 'Temporal Super-Resolution & Sonic Master...';
-          logMsg('ESRGAN 4K Upscale: 1080p -> 3840x2160 @ 60 FPS', '#BFFF04');
-          logMsg('Mixing 24-bit 48kHz #RyzeYourVibe audio stems...', '#00F0FF');
-        } else if (progress >= 100) {
-          clearInterval(interval);
-          logMsg('✓ Master Render Complete! Launching Cinema Player...', '#BFFF04');
-          setTimeout(() => {
-            initPlayerAndPoster();
-            goToStep(4);
-          }, 800);
-        }
-      }, 120);
-    }
-
-    // 4. CANVAS VIDEO PLAYER SIMULATOR
-    let canvas, ctx, animFrameId;
-    let playerTime = 0;
-
-    function initPlayerAndPoster() {
-      const nameVal = document.getElementById('user-name').value || 'Ryze Star';
-      document.getElementById('player-user-name').textContent = nameVal;
-      document.getElementById('player-face-thumbnail').src = currentAvatarUrl;
-
-      canvas = document.getElementById('video-canvas');
+    function renderPosterCanvas() {
+      const canvas = document.getElementById('vip-canvas');
       if (!canvas) return;
-      canvas.width = 1280;
-      canvas.height = 720;
-      ctx = canvas.getContext('2d');
-
-      isPlaying = true;
-      document.getElementById('play-icon').textContent = '❚❚';
-
-      // Load avatar image into memory for live drawing
-      const avatarImg = new Image();
-      avatarImg.crossOrigin = 'anonymous';
-      avatarImg.onload = () => {
-        runPlayerLoop(avatarImg);
-        generateMiniPoster(avatarImg);
-      };
-      avatarImg.src = currentAvatarUrl;
-
-      // Start Synthesized Web Audio
-      startSynthBeat();
-    }
-
-    function runPlayerLoop(avatarImg) {
-      if (animFrameId) cancelAnimationFrame(animFrameId);
-
-      function loop() {
-        if (isPlaying) {
-          playerTime += 0.035;
-        }
-
-        // Draw cinematic background
-        ctx.fillStyle = '#08090d';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Dynamic laser beams
-        const beamX = (Math.sin(playerTime * 1.5) * 0.5 + 0.5) * canvas.width;
-        const grad = ctx.createRadialGradient(beamX, 100, 20, beamX, 100, 600);
-        grad.addColorStop(0, selectedPersona === 'street' ? 'rgba(255, 85, 0, 0.45)' : 'rgba(138, 43, 226, 0.45)');
-        grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Cyber Grid Lines on Floor
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.15)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < canvas.width; i += 80) {
-          ctx.beginPath();
-          ctx.moveTo(i, 400);
-          ctx.lineTo(i + (i - canvas.width / 2) * 1.5, canvas.height);
-          ctx.stroke();
-        }
-
-        // Protagonist Body Silhouette
-        ctx.fillStyle = '#11131c';
-        ctx.beginPath();
-        ctx.moveTo(canvas.width / 2 - 160, canvas.height);
-        ctx.lineTo(canvas.width / 2 - 100, 380);
-        ctx.lineTo(canvas.width / 2 + 100, 380);
-        ctx.lineTo(canvas.width / 2 + 160, canvas.height);
-        ctx.fill();
-
-        // Jacket Neon Accents
-        ctx.strokeStyle = activeFilter === 'neon' ? '#FF5500' : (activeFilter === 'violet' ? '#A855F7' : '#00F0FF');
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        // Composited Protagonist Head with Avatar Face
-        const headX = canvas.width / 2;
-        const headY = 260 + Math.sin(playerTime * 2) * 8; // subtle breathing motion
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(headX, headY, 110, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(avatarImg, headX - 110, headY - 110, 220, 220);
-        ctx.restore();
-
-        // Neon Cyber Visor / Lighting Overlay
-        ctx.save();
-        ctx.strokeStyle = activeFilter === 'neon' ? 'rgba(255, 85, 0, 0.7)' : 'rgba(0, 240, 255, 0.7)';
-        ctx.lineWidth = 6;
-        ctx.beginPath();
-        ctx.arc(headX, headY, 112, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-
-        // Futuristic Glitch Artifacts
-        if (Math.random() > 0.92) {
-          ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
-          ctx.fillRect(headX - 120, headY - 20, 240, 8);
-        }
-
-        animFrameId = requestAnimationFrame(loop);
-      }
-
-      loop();
-    }
-
-    function togglePlay() {
-      isPlaying = !isPlaying;
-      document.getElementById('play-icon').textContent = isPlaying ? '❚❚' : '▶';
-    }
-
-    function applyVisualFilter(type) {
-      activeFilter = type;
-    }
-
-    // 5. WEB AUDIO API SYNTHESIZER BEAT (#RyzeYourVibe)
-    let audioCtx = null;
-    let audioInterval = null;
-
-    function toggleAudio() {
-      isAudioOn = !isAudioOn;
-      const statusText = document.getElementById('audio-status-text');
-      if (isAudioOn) {
-        statusText.textContent = 'Audio: On (Synth Beat)';
-        startSynthBeat();
-      } else {
-        statusText.textContent = 'Audio: Muted';
-        stopSynthBeat();
-      }
-    }
-
-    function startSynthBeat() {
-      if (!isAudioOn) return;
-      try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
-        stopSynthBeat();
-
-        let beatStep = 0;
-        audioInterval = setInterval(() => {
-          if (!isPlaying || !isAudioOn) return;
-
-          // Kick & Bass
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-
-          if (beatStep % 4 === 0) {
-            // Heavy 808 Kick
-            osc.frequency.setValueAtTime(140, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.18);
-            gain.gain.setValueAtTime(0.28, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
-          } else if (beatStep % 2 === 1) {
-            // Cyber Synth Pluck
-            osc.type = 'sawtooth';
-            const notes = [220, 261.6, 293.7, 329.6];
-            const note = notes[Math.floor(Math.random() * notes.length)];
-            osc.frequency.setValueAtTime(note, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
-          }
-
-          beatStep = (beatStep + 1) % 16;
-        }, 180);
-      } catch (e) {}
-    }
-
-    function stopSynthBeat() {
-      if (audioInterval) clearInterval(audioInterval);
-    }
-
-    // 6. 1080x1920 HIGH-RES STORY POSTER GENERATOR
-    function generateMiniPoster(avatarImg) {
-      const pCanvas = document.getElementById('poster-canvas');
-      const pCtx = pCanvas.getContext('2d');
+      const ctx = canvas.getContext('2d');
       const W = 1080;
       const H = 1920;
 
-      // Dark Cyberpunk Background
-      pCtx.fillStyle = '#07080c';
-      pCtx.fillRect(0, 0, W, H);
+      const starName = (document.getElementById('input-star-name').value || 'RYZE CREATOR').toUpperCase();
+      const starHandle = document.getElementById('input-star-handle').value || '@creator';
+      const starMotto = (document.getElementById('input-star-motto').value || 'UNSTOPPABLE VIBE').toUpperCase();
+      const trackKey = document.getElementById('select-poster-track').value || 'farhan';
+      const persona = PERSONAS[trackKey] || PERSONAS.farhan;
 
-      // Gradient glows
-      const rad = pCtx.createRadialGradient(W / 2, 850, 100, W / 2, 850, 800);
-      rad.addColorStop(0, selectedPersona === 'street' ? 'rgba(255, 85, 0, 0.4)' : 'rgba(138, 43, 226, 0.45)');
-      rad.addColorStop(1, 'transparent');
-      pCtx.fillStyle = rad;
-      pCtx.fillRect(0, 0, W, H);
+      // 1. Deep Cyber Background
+      ctx.fillStyle = '#06080E';
+      ctx.fillRect(0, 0, W, H);
 
-      // Top Brand Header
-      pCtx.fillStyle = '#ffffff';
-      pCtx.font = 'bold 44px sans-serif';
-      pCtx.fillText('⚡ BANGLALINK RYZE', 90, 160);
+      // 2. Persona Atmospheric Radial Glows
+      const rad1 = ctx.createRadialGradient(W / 2, 780, 100, W / 2, 780, 850);
+      rad1.addColorStop(0, persona.themeColor === '#00F0FF' ? 'rgba(0, 240, 255, 0.45)' : (persona.themeColor === '#AA55FF' ? 'rgba(170, 85, 255, 0.45)' : 'rgba(255, 215, 0, 0.45)'));
+      rad1.addColorStop(0.6, 'rgba(255, 85, 0, 0.15)');
+      rad1.addColorStop(1, 'transparent');
+      ctx.fillStyle = rad1;
+      ctx.fillRect(0, 0, W, H);
 
-      pCtx.fillStyle = '#00F0FF';
-      pCtx.font = 'bold 28px monospace';
-      pCtx.fillText('OFFICIAL BRAND FILM STAR • 2026', 90, 215);
+      // 3. Grid Lines on Backdrop
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 90) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+      for (let y = 0; y < H; y += 90) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
 
-      // Draw Avatar Hero Face
-      pCtx.save();
-      pCtx.beginPath();
-      pCtx.arc(W / 2, 880, 360, 0, Math.PI * 2);
-      pCtx.clip();
-      pCtx.drawImage(avatarImg, W / 2 - 360, 880 - 360, 720, 720);
-      pCtx.restore();
+      // 4. Outer Holographic Border
+      ctx.strokeStyle = persona.themeColor;
+      ctx.lineWidth = 8;
+      ctx.strokeRect(40, 40, W - 80, H - 80);
 
-      // Holographic Ring
-      pCtx.strokeStyle = '#FF5500';
-      pCtx.lineWidth = 14;
-      pCtx.beginPath();
-      pCtx.arc(W / 2, 880, 370, 0, Math.PI * 2);
-      pCtx.stroke();
+      // Thin Inner Border
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(55, 55, W - 110, H - 110);
 
-      // User Title & Name
-      const userName = document.getElementById('user-name').value || 'Aryan Chowdhury';
-      const userHandle = document.getElementById('user-handle').value || '@aryanchy_07';
+      // 5. Header: Banglalink RYZE Official Badge
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 52px "Space Grotesk", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('BANGLALINK RYZE ⚡', 90, 150);
 
-      pCtx.fillStyle = '#ffffff';
-      pCtx.font = 'bold 72px sans-serif';
-      pCtx.textAlign = 'center';
-      pCtx.fillText(userName.toUpperCase(), W / 2, 1380);
+      ctx.fillStyle = persona.themeColor;
+      ctx.font = '700 24px "Space Mono", monospace';
+      ctx.fillText(`5G TURBO CO-STAR VIP PASS // ${persona.number}`, 90, 195);
 
-      pCtx.fillStyle = '#FF5500';
-      pCtx.font = 'bold 38px monospace';
-      pCtx.fillText(`${userHandle} • #RyzeYourVibe`, W / 2, 1445);
+      // Pass ID in Header Right
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '700 24px "Space Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(passSerial, W - 90, 150);
 
-      // Draw Persona Badge
-      pCtx.fillStyle = '#8A2BE2';
-      pCtx.font = 'bold 32px sans-serif';
-      const personaLabels = {
-        fashion: 'RUNWAY CYBER ICON',
-        street: 'UNDERGROUND BEATMAKER',
-        gamer: 'NEON ESPORTS CHAMPION'
+      ctx.fillStyle = '#34D399';
+      ctx.font = '700 20px "Space Mono", monospace';
+      ctx.fillText('● VERIFIED STAR', W - 90, 195);
+
+      // 6. Avatar Image Rendering
+      const avatarImg = new Image();
+      avatarImg.crossOrigin = 'anonymous';
+      avatarImg.onload = () => {
+        // Draw Avatar Clipped in Circle
+        const centerX = W / 2;
+        const centerY = 660;
+        const radius = 290;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(avatarImg, centerX - radius, centerY - radius, radius * 2, radius * 2);
+        ctx.restore();
+
+        // Neon Glow Ring around Avatar
+        ctx.strokeStyle = persona.themeColor;
+        ctx.lineWidth = 14;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius + 8, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Secondary Outer Subtle Ring
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius + 24, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Continue Drawing Text After Image Ready
+        drawRemainingPosterContent(ctx, W, H, starName, starHandle, starMotto, persona);
       };
-      pCtx.fillText(`[ ${personaLabels[selectedPersona]} ]`, W / 2, 1510);
-
-      // Footer Call to Action
-      pCtx.fillStyle = '#94a3b8';
-      pCtx.font = '30px sans-serif';
-      pCtx.fillText('Scan QR to Star in the Ryze Brand Film with Me', W / 2, 1720);
-
-      pCtx.fillStyle = '#00F0FF';
-      pCtx.font = 'bold 28px monospace';
-      pCtx.fillText('https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/', W / 2, 1775);
-
-      // Load QR Code onto Poster Canvas
-      const qrImg = new Image();
-      qrImg.crossOrigin = 'anonymous';
-      const shareUrl = 'https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/';
-      qrImg.onload = () => {
-        pCtx.drawImage(qrImg, W / 2 - 60, 1550, 120, 120);
-        document.getElementById('poster-mini-preview').src = pCanvas.toDataURL('image/png');
+      avatarImg.onerror = () => {
+        drawRemainingPosterContent(ctx, W, H, starName, starHandle, starMotto, persona);
       };
-      qrImg.onerror = () => {
-        document.getElementById('poster-mini-preview').src = pCanvas.toDataURL('image/png');
-      };
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareUrl)}`;
+      avatarImg.src = currentUserAvatarUrl;
     }
 
-    function generateAndDownloadPoster() {
-      const pCanvas = document.getElementById('poster-canvas');
-      const userName = document.getElementById('user-name').value || 'Ryze-Star';
+    function drawRemainingPosterContent(ctx, W, H, starName, starHandle, starMotto, persona) {
+      // 7. Creator Name & Handle
+      ctx.textAlign = 'center';
+
+      // Motto Tag Pill
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+      const mottoWidth = ctx.measureText(starMotto).width + 80;
+      ctx.fillRect(W / 2 - mottoWidth / 2, 1020, mottoWidth, 48);
+      ctx.strokeStyle = persona.themeColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(W / 2 - mottoWidth / 2, 1020, mottoWidth, 48);
+
+      ctx.fillStyle = persona.themeColor;
+      ctx.font = '700 22px "Space Mono", monospace';
+      ctx.fillText(starMotto, W / 2, 1052);
+
+      // Star Name
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '900 68px "Space Grotesk", sans-serif';
+      ctx.fillText(starName, W / 2, 1145);
+
+      // Star Handle
+      ctx.fillStyle = '#FF5500';
+      ctx.font = '700 34px "Space Mono", monospace';
+      ctx.fillText(`${starHandle} • #RyzeYourVibe`, W / 2, 1200);
+
+      // 8. Telemetry Data Box
+      ctx.fillStyle = '#0E121B';
+      ctx.fillRect(100, 1250, W - 200, 260);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(100, 1250, W - 200, 260);
+
+      // Spec Grid inside box
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '600 22px "Space Mono", monospace';
+      ctx.fillText('NETWORK TIER:', 140, 1310);
+      ctx.fillText('SPEED / BANDWIDTH:', 140, 1365);
+      ctx.fillText('EDGE LATENCY:', 140, 1420);
+      ctx.fillText('CO-STAR TRACK:', 140, 1475);
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '700 22px "Space Mono", monospace';
+      ctx.fillText('BANGLALINK 5G TURBO VIP', W - 140, 1310);
+      ctx.fillStyle = '#00F0FF';
+      ctx.fillText('1.2 GBPS (UNCAPPED)', W - 140, 1365);
+      ctx.fillStyle = '#34D399';
+      ctx.fillText('< 12MS EDGE ZERO-BUFFER', W - 140, 1420);
+      ctx.fillStyle = persona.themeColor;
+      ctx.fillText(persona.role.toUpperCase(), W - 140, 1475);
+
+      // 9. QR Code & Viral Outro Ingress
+      const qrSize = 160;
+      const qrX = 140;
+      const qrY = 1570;
+
+      // Draw QR Box
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(qrX, qrY, qrSize, qrSize);
+
+      // Draw embedded QR via image
+      const qrImg = new Image();
+      qrImg.crossOrigin = 'anonymous';
+      const shareUrl = `https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/?ref=${encodeURIComponent(starHandle)}`;
+      qrImg.onload = () => {
+        ctx.drawImage(qrImg, qrX + 8, qrY + 8, qrSize - 16, qrSize - 16);
+        updatePosterPreview();
+      };
+      qrImg.onerror = () => {
+        updatePosterPreview();
+      };
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+
+      // Text next to QR
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '800 32px "Space Grotesk", sans-serif';
+      ctx.fillText('SCAN TO STAR ALONGSIDE ME', qrX + qrSize + 40, qrY + 50);
+
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '500 22px "Space Grotesk", sans-serif';
+      ctx.fillText('Join Banglalink RYZE Co-Star AI Experience', qrX + qrSize + 40, qrY + 95);
+
+      ctx.fillStyle = persona.themeColor;
+      ctx.font = '700 20px "Space Mono", monospace';
+      ctx.fillText('mybl.banglalink.net/ryze', qrX + qrSize + 40, qrY + 140);
+
+      // Footer legal note
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#6B7280';
+      ctx.font = '500 18px "Space Grotesk", sans-serif';
+      ctx.fillText('BANGLALINK TELECOMMUNICATIONS LTD. • 2026 OFFICIAL YOUTH COMMERCIAL RELEASE', W / 2, 1840);
+
+      updatePosterPreview();
+    }
+
+    function updatePosterPreview() {
+      const canvas = document.getElementById('vip-canvas');
+      const preview = document.getElementById('poster-img-preview');
+      if (canvas && preview) {
+        preview.src = canvas.toDataURL('image/png');
+      }
+    }
+
+    function downloadVipCard() {
+      const canvas = document.getElementById('vip-canvas');
+      const handle = (document.getElementById('input-star-handle').value || '@creator').replace(/[^a-zA-Z0-9_]/g, '');
       const link = document.createElement('a');
-      link.download = `Ryze-AI-Star-${userName.replace(/\s+/g, '-')}.png`;
-      link.href = pCanvas.toDataURL('image/png');
+      link.download = `Banglalink-RYZE-5G-VIP-Pass-${handle}.png`;
+      link.href = canvas.toDataURL('image/png');
       link.click();
     }
 
-    function copyShareCaption() {
-      const userName = document.getElementById('user-name').value || 'Me';
-      const userHandle = document.getElementById('user-handle').value || '@me';
-      const shareText = `Yo! I just got cast as the lead in the new @Banglalink Ryze brand film using generative AI! 🔥 Check my official 4K cut & star in the film with me here: https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/ 🚀⚡ #RyzeYourVibe #Banglalink #GenZ`;
+    function copyTikTokCaption() {
+      const handle = document.getElementById('input-star-handle').value || '@creator';
+      const name = document.getElementById('input-star-name').value || 'Me';
+      const motto = document.getElementById('input-star-motto').value || 'Unstoppable';
+      const shareUrl = `https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/?ref=${encodeURIComponent(handle)}`;
 
-      navigator.clipboard.writeText(shareText);
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = '✅ Copied!';
+      const caption = `Yo! I just got minted as an official Co-Star in the new @Banglalink RYZE 5G TV Commercial! ⚡🔥\n\nTrack: ${motto}\nPass ID: ${passSerial}\n\nStar alongside me & stream our 4K film here: ${shareUrl}\n\n#RyzeYourVibe #BanglalinkRYZE #Banglalink5G #RyzeCoStar #GenZDhaka`;
+
+      navigator.clipboard.writeText(caption);
+      const btn = document.getElementById('btn-copy-caption');
+      btn.innerHTML = '<span>✅ Copied Caption!</span>';
       setTimeout(() => {
-        btn.textContent = '📋 Copy TikTok Caption';
+        btn.innerHTML = '<span>📋 Copy Share Text</span>';
       }, 2500);
     }
+
+    // Initial Boot Render
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPosterCanvas();
+    });
   </script>
 </body>
 </html>

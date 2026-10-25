@@ -614,7 +614,7 @@ app.get(['/prototypes/madmen-os', '/prototypes/madmen-os/'], (req, res) => {
 });
 
 // Banglalink Ryze "Gen-Z Star" AI Video Simulator Prototype
-app.get(['/prototypes/ryze-ai-star', '/prototypes/ryze-ai-star/'], (req, res) => {
+app.get(['/prototypes/ryze-ai-star', '/prototypes/ryze-ai-star/', '/ryze', '/ryze/', '/ryze-ai-star', '/ryze-ai-star/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/ryze-ai-star/index.html'));
 });
 
