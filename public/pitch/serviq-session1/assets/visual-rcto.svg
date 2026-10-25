@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070B12"/>
+      <stop offset="50%" stop-color="#0E1626"/>
+      <stop offset="100%" stop-color="#070B12"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#bgGrad)" rx="20"/>
+
+  <!-- Title / Tagline -->
+  <text x="400" y="45" text-anchor="middle" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700" letter-spacing="2">THE GRO10X RCTO FORMULA</text>
+  <text x="400" y="75" text-anchor="middle" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="800">নিখুঁত উত্তরের ৪টি চাবিকাঠি</text>
+
+  <!-- Flow Conduits connecting R -> C -> T -> O -> Output -->
+  <path d="M 125 210 L 675 210" stroke="#00F0FF" stroke-opacity="0.3" stroke-width="4" stroke-dasharray="6 4"/>
+
+  <!-- =============================== -->
+  <!-- BLOCK 1: R (ROLE)               -->
+  <!-- =============================== -->
+  <g transform="translate(40, 110)">
+    <rect x="0" y="0" width="160" height="200" rx="14" fill="#0E1626" stroke="#00F0FF" stroke-width="2" filter="url(#glow)"/>
+    <rect x="10" y="10" width="140" height="180" rx="8" fill="#00F0FF" fill-opacity="0.04"/>
+
+    <!-- Icon Badge -->
+    <circle cx="80" cy="50" r="26" fill="#00F0FF" fill-opacity="0.15" stroke="#00F0FF" stroke-width="1.5"/>
+    <text x="71" y="58" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="24" font-weight="900">R</text>
+
+    <text x="80" y="100" text-anchor="middle" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">ROLE</text>
+    <text x="80" y="120" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700">কে কথা বলছে?</text>
+
+    <line x1="25" y1="135" x2="135" y2="135" stroke="#00F0FF" stroke-opacity="0.2"/>
+
+    <text x="80" y="155" text-anchor="middle" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">পরিচয় ও গাম্ভীর্য সেট করা</text>
+    <text x="80" y="172" text-anchor="middle" fill="#A5F3FC" font-family="monospace" font-size="9" font-weight="bold">Senior EOR Lead</text>
+  </g>
+
+  <!-- Connection Joint 1 -->
+  <polygon points="215,210 205,203 205,217" fill="#00F0FF"/>
+
+  <!-- =============================== -->
+  <!-- BLOCK 2: C (CONTEXT)            -->
+  <!-- =============================== -->
+  <g transform="translate(225, 110)">
+    <rect x="0" y="0" width="160" height="200" rx="14" fill="#0E1626" stroke="#8B5CF6" stroke-width="2" filter="url(#glow)"/>
+    <rect x="10" y="10" width="140" height="180" rx="8" fill="#8B5CF6" fill-opacity="0.04"/>
+
+    <!-- Icon Badge -->
+    <circle cx="80" cy="50" r="26" fill="#8B5CF6" fill-opacity="0.15" stroke="#8B5CF6" stroke-width="1.5"/>
+    <text x="70" y="58" fill="#C4B5FD" font-family="'Space Grotesk', sans-serif" font-size="24" font-weight="900">C</text>
+
+    <text x="80" y="100" text-anchor="middle" fill="#C4B5FD" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">CONTEXT</text>
+    <text x="80" y="120" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700">কী ঘটেছে?</text>
+
+    <line x1="25" y1="135" x2="135" y2="135" stroke="#8B5CF6" stroke-opacity="0.2"/>
+
+    <text x="80" y="155" text-anchor="middle" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">বাস্তব প্রেক্ষাপট জানানো</text>
+    <text x="80" y="172" text-anchor="middle" fill="#C4B5FD" font-family="monospace" font-size="9" font-weight="bold">BEFTN Server Window</text>
+  </g>
+
+  <!-- Connection Joint 2 -->
+  <polygon points="400,210 390,203 390,217" fill="#8B5CF6"/>
+
+  <!-- =============================== -->
+  <!-- BLOCK 3: T (TASK)               -->
+  <!-- =============================== -->
+  <g transform="translate(410, 110)">
+    <rect x="0" y="0" width="160" height="200" rx="14" fill="#0E1626" stroke="#10B981" stroke-width="2" filter="url(#glow)"/>
+    <rect x="10" y="10" width="140" height="180" rx="8" fill="#10B981" fill-opacity="0.04"/>
+
+    <!-- Icon Badge -->
+    <circle cx="80" cy="50" r="26" fill="#10B981" fill-opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
+    <text x="72" y="58" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="24" font-weight="900">T</text>
+
+    <text x="80" y="100" text-anchor="middle" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">TASK</text>
+    <text x="80" y="120" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700">কী বানাতে হবে?</text>
+
+    <line x1="25" y1="135" x2="135" y2="135" stroke="#10B981" stroke-opacity="0.2"/>
+
+    <text x="80" y="155" text-anchor="middle" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">সুনির্দিষ্ট কাজের ধরন</text>
+    <text x="80" y="172" text-anchor="middle" fill="#6EE7B7" font-family="monospace" font-size="9" font-weight="bold">Reassuring Client Email</text>
+  </g>
+
+  <!-- Connection Joint 3 -->
+  <polygon points="585,210 575,203 575,217" fill="#10B981"/>
+
+  <!-- =============================== -->
+  <!-- BLOCK 4: O (OUTPUT GUARDRAILS)  -->
+  <!-- =============================== -->
+  <g transform="translate(595, 110)">
+    <rect x="0" y="0" width="165" height="200" rx="14" fill="#0E1626" stroke="#F59E0B" stroke-width="2" filter="url(#glow)"/>
+    <rect x="10" y="10" width="145" height="180" rx="8" fill="#F59E0B" fill-opacity="0.04"/>
+
+    <!-- Icon Badge -->
+    <circle cx="82" cy="50" r="26" fill="#F59E0B" fill-opacity="0.15" stroke="#F59E0B" stroke-width="1.5"/>
+    <text x="72" y="58" fill="#F59E0B" font-family="'Space Grotesk', sans-serif" font-size="24" font-weight="900">O</text>
+
+    <text x="82" y="100" text-anchor="middle" fill="#F59E0B" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">OUTPUT</text>
+    <text x="82" y="120" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700">কড়া নিয়মাবলি</text>
+
+    <line x1="25" y1="135" x2="140" y2="135" stroke="#F59E0B" stroke-opacity="0.2"/>
+
+    <text x="82" y="155" text-anchor="middle" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">শব্দসীমা, ফরম্যাট ও টোন</text>
+    <text x="82" y="172" text-anchor="middle" fill="#FCD34D" font-family="monospace" font-size="9" font-weight="bold">&lt; 150 Words · 3 Bullets</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- BOTTOM RESULT: DIAMOND-GRADE EXECUTIVE OUT -->
+  <!-- ========================================== -->
+  <g transform="translate(140, 345)">
+    <rect x="0" y="0" width="520" height="95" rx="16" fill="#0A101D" stroke="#00F0FF" stroke-opacity="0.4" stroke-width="2"/>
+    
+    <g transform="translate(30, 20)">
+      <circle cx="28" cy="28" r="24" fill="#00F0FF" fill-opacity="0.15"/>
+      <text x="18" y="36" fill="#00F0FF" font-size="22">💎</text>
+    </g>
+
+    <g transform="translate(100, 28)">
+      <text x="0" y="0" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="1">GUARANTEED RESULT</text>
+      <text x="0" y="22" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="800">Boardroom-Grade Executive Output in 4 Seconds</text>
+      <text x="0" y="42" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">কোনো গৎবাঁধা জেনেরিক উত্তর নয় — ১০০% অথোরিটেটিভ ক্লায়েন্ট কম্যুনিকেশন</text>
+    </g>
+  </g>
+</svg>

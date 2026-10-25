@@ -34,102 +34,112 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
 
     test('contains Slide 1: Welcome & Mission Launch with 4,700+ workforce in 64 districts', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain('Serviq BPO AI Workforce Acceleration:');
-      expect(res.text).toContain('Day 1 Kickoff');
+      expect(res.text).toContain('AI Workforce Acceleration:');
+      expect(res.text).toContain('শুরু হচ্ছে নতুন এক অধ্যায়');
       expect(res.text).toContain('4,700+ deployed personnel across 64 districts');
-      expect(res.text).toContain('Built Specifically for Serviq');
-      expect(res.text).toContain('The 3-Hour Daily Reclaim');
-      expect(res.text).toMatch(/Executive (&|&amp;) Team Alignment/);
+      expect(res.text).toContain('Built for Serviq (১০০% কাস্টমাইজড)');
+      expect(res.text).toContain('Reclaim 3 Hours Daily (সময় বাঁচানো)');
+      expect(res.text).toContain('Zero Tech Friction (সহজ প্রয়োগ)');
     });
 
     test('contains Slide 2: The Core Mental Model ("The Junior Executive Intern")', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain("Stop Thinking 'Search Engine' — Start Thinking 'Tireless MBA Intern'");
-      expect(res.text).toContain('Tier-1 Ivy League / IBA Graduate');
-      expect(res.text).toContain('Photographic Memory');
-      expect(res.text).toContain('Zero (Until Briefed)');
+      expect(res.text).toContain("AI কোনো জাদুকর না — এটা আপনার tireless 'Junior Executive'");
+      expect(res.text).toContain('Stop Searching. Start Delegating.');
+      expect(res.text).toContain('প্রচণ্ড মুখস্থবিদ্যা');
+      expect(res.text).toContain('নির্দেশের অপেক্ষা');
+      expect(res.text).toContain('visual-intern.svg');
     });
 
     test('contains Slide 3: The 3-Layer Enterprise Power Grid (Power Grid / Brain in a Jar / Desk)', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain('How Modern AI Works: The Power Grid, The Brain, and The Desk');
-      expect(res.text).toContain('The National Power Grid');
-      expect(res.text).toContain('The Brain in a Jar');
-      expect(res.text).toContain('The Workstation Desk');
+      expect(res.text).toContain('কীভাবে কাজ করে আধুনিক AI? সহজ ৩টি স্তর');
+      expect(res.text).toContain('The Power Grid, The Brain, and Your Workstation');
+      expect(res.text).toContain('বিদ্যুৎ কেন্দ্র');
+      expect(res.text).toContain('সুপার ব্রেন');
+      expect(res.text).toContain('আমাদের কাজের টেবিল');
+      expect(res.text).toContain('visual-powergrid.svg');
     });
 
     test('contains Slide 4: Why BPO is Ground Zero for AI Leverage', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toMatch(/The Repetitive Communication (&|&amp;) Data Bottleneck/);
-      expect(res.text).toContain('Traditional BPO Model');
-      expect(res.text).toContain('AI-Accelerated Serviq');
-      expect(res.text).toContain('The Unfair Market Advantage');
+      expect(res.text).toContain('BPO অপারেশন্সে AI কেন সবচেয়ে বেশি শক্তিশালী?');
+      expect(res.text).toContain('হাজারো মেসেজ ও রিকোয়েস্ট');
+      expect(res.text).toContain('ভিন্ন ভিন্ন ফরম্যাট');
+      expect(res.text).toContain('সবার আগে সার্ভিস ডেলিভারি');
+      expect(res.text).toContain('visual-bpo-contrast.svg');
     });
 
     test('contains Slide 5: The "Lazy Prompt" Trap', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain('Why Most People Give Up on AI After 48 Hours');
-      expect(res.text).toContain('The Typical 4-Word Disaster');
+      expect(res.text).toContain('অধিকাংশ মানুষ কেন AI দিয়ে ভালো ফল পায় না?');
+      expect(res.text).toContain('The "Lazy 4-Word Prompt" Trap');
       expect(res.text).toContain('Write an email to a client saying salaries are delayed.');
+      expect(res.text).toContain('Generic Garbage');
+      expect(res.text).toContain('ভুল তথ্যের ঝুঁকি');
     });
 
     test('contains Slide 6: The Proprietary GRO10X RCTO Protocol (R-C-T-O)', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain('The Master Blueprint for Flawless AI Execution: R-C-T-O');
-      expect(res.text).toContain('Role · Who is Speaking?');
-      expect(res.text).toContain('Context · What Happened?');
-      expect(res.text).toContain('Task · What to Produce?');
-      expect(res.text).toContain('Output · Guardrails');
+      expect(res.text).toContain('নিখুঁত উত্তরের ৪টি চাবিকাঠি: R - C - T - O');
+      expect(res.text).toContain('Role · Context · Task · Output Guardrails');
+      expect(res.text).toContain('R · ROLE');
+      expect(res.text).toContain('C · CONTEXT');
+      expect(res.text).toContain('visual-rcto.svg');
     });
 
     test('contains Slide 7: Live Masterclass Shootout (Prompt A vs Prompt B)', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain('Live Demonstration: Resolving an Urgent Client Payroll Inquiry');
+      expect(res.text).toContain('লাইভ প্রমাণ: ক্লায়েন্টের টেন্সড স্যালারি প্রশ্নের সমাধান');
+      expect(res.text).toContain('Lazy Prompt vs. Serviq Production RCTO');
       expect(res.text).toContain('Prompt A · The Lazy Request');
       expect(res.text).toContain('Prompt B · Serviq RCTO Protocol');
+      expect(res.text).toContain('Tanvir Ahmed');
     });
 
     test('contains Slide 8: The 4 Serviq Desks (Shabuddin, Rayhan, Ridhiya, Partha)', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain("Precision-Tailored for Each Team Member's Real Daily Tasks");
-      expect(res.text).toContain('Shabuddin');
-      expect(res.text).toContain('Khandaker Rayhan');
-      expect(res.text).toContain('Ridhiya Islam');
-      expect(res.text).toContain('Partha Nath Sarker');
+      expect(res.text).toContain('Serviq-এর ৪টি ডেস্কে ৪টি আলাদা AI ইঞ্জিন');
+      expect(res.text).toContain('Shabuddin · Rayhan · Ridhiya · Partha');
+      expect(res.text).toContain('Customer Operations');
+      expect(res.text).toContain('Field Logistics');
+      expect(res.text).toMatch(/Admin (&|&amp;) Data Engine/);
+      expect(res.text).toContain('visual-4desks.svg');
     });
 
     test('contains Slide 9: Enterprise Governance & The Security Shield', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toMatch(/Enterprise Governance: Protecting Client Data (&|&amp;) Company Trust/);
-      expect(res.text).toContain('No Public AI Training');
-      expect(res.text).toContain('Zero Raw PII in Prompts');
+      expect(res.text).toContain('কোম্পানির তথ্য ও গোপনীয়তা: ১০০% নিরাপদ');
+      expect(res.text).toContain('Strict Data Boundary');
+      expect(res.text).toContain('The Redaction Rule');
       expect(res.text).toContain('Human-in-the-Loop');
     });
 
     test('contains Slide 10: The 5-Session Flight Plan', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain('From Zero-Friction Foundations to Live Office Execution');
-      expect(res.text).toMatch(/Foundations (&|&amp;) RCTO/);
-      expect(res.text).toMatch(/Gemini (&|&amp;) Multimodal/);
-      expect(res.text).toMatch(/Workspace (&|&amp;) Sheets/);
-      expect(res.text).toContain('In-Person Lab');
-      expect(res.text).toContain('Founders Command');
+      expect(res.text).toContain('৫ সেশনের সুপরিকল্পিত ফ্লাইট প্ল্যান');
+      expect(res.text).toContain('Session 1–3 (অনলাইন ফাউন্ডেশন)');
+      expect(res.text).toContain('Session 4 (বনানী ল্যাব - হ্যান্ডস-অন)');
+      expect(res.text).toContain('Session 5 (ফাউন্ডার্স ড্যাশবোর্ড)');
     });
 
     test('contains Slide 11: 2-Minute Zero-Friction Homework', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain('Your Mission Before Tuesday:');
-      expect(res.text).toContain('Zero Typing, Zero Stress');
+      expect(res.text).toContain('মঙ্গলবারের আগের কাজ:');
+      expect(res.text).toContain('মাত্র ২ মিনিটের একটি প্রস্তুতি');
       expect(res.text).toContain('gemini.google.com');
-      expect(res.text).toContain('Pick 1 Annoying Task');
-      expect(res.text).toContain('Do Not Prompt Yet!');
+      expect(res.text).toContain('Step 1 (লগইন চেক - ৩০ সেকেন্ড)');
+      expect(res.text).toContain('Step 2 (একটি বিরক্তিকর কাজ বাছুন)');
+      expect(res.text).toContain('Step 3 (কিছু প্রম্পট করবেন না!)');
     });
 
     test('contains Slide 12: Open Floor Discussion & PDF Download action', async () => {
       const res = await request(app).get('/pitch/serviq-session1');
-      expect(res.text).toContain("The Floor is Yours: Let's Address Every Question Directly");
-      expect(res.text).toContain('Zero Judgment Zone');
-      expect(res.text).toContain('The Replacement Question');
+      expect(res.text).toContain('এবার আপনাদের পালা:');
+      expect(res.text).toContain('মন খুলে কথা বলুন');
+      expect(res.text).toContain('No Silly Questions');
+      expect(res.text).toContain('The Truth About AI');
+      expect(res.text).toContain('Leadership Thoughts');
       expect(res.text).toContain('downloadPdfDeck()');
     });
   });
@@ -154,9 +164,9 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('switchTimerMode()');
     });
 
-    test('contains speaker notes for all 12 slides from the curriculum blueprint', async () => {
+    test('contains speaker notes for all 12 slides with spoken Banglish cues', async () => {
       const res = await request(app).get('/pitch/serviq-session1/copilot');
-      expect(res.text).toMatch(/Welcome (&|&amp;) Mission Launch/);
+      expect(res.text).toContain('Welcome & Mission Launch');
       expect(res.text).toContain('The Core Mental Model');
       expect(res.text).toContain('The 3-Layer Enterprise Power Grid');
       expect(res.text).toContain('Why BPO is Ground Zero for AI');
@@ -168,6 +178,13 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('The 5-Session Flight Plan');
       expect(res.text).toContain('2-Minute Zero-Friction Homework');
       expect(res.text).toMatch(/Open Floor: Questions (&|&amp;) Fear Dissolution/);
+
+      // Verify authentic Banglish spoken dialogues
+      expect(res.text).toContain('আসসালামু আলাইকুম মেরাজ ভাই');
+      expect(res.text).toContain('আইবিএ বা হার্ভার্ড থেকে ফার্স্ট ক্লাস');
+      expect(res.text).toContain('শাবউদ্দিন ভাই, রায়হান ভাই');
+      expect(res.text).toContain('R - C - T - O');
+      expect(res.text).toContain('BEFTN');
     });
 
     test('renders Live Shootout drawer with 1-tap copy for Prompt A and Prompt B', async () => {

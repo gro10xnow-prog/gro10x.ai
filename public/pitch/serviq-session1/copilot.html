@@ -5,26 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Serviq Masterclass — Presenter Co-Pilot HUD (Session 1)</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Typography: Hind Siliguri + Plus Jakarta Sans + Space Grotesk + JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
       background-color: #070B12;
       color: #E2E8F0;
       -webkit-tap-highlight-color: transparent;
     }
-    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .heading-font { font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif; }
     .mono { font-family: 'JetBrains Mono', monospace; }
+    .bengali { font-family: 'Hind Siliguri', sans-serif; }
     
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
     .glow-cyan { box-shadow: 0 0 16px rgba(0, 240, 255, 0.35); }
     .glow-purple { box-shadow: 0 0 16px rgba(139, 92, 246, 0.35); }
+
+    /* Custom Toast Notification */
+    #toast {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col pb-24 select-none bg-[#070B12]">
@@ -45,7 +52,7 @@
             PLABON CO-PILOT
             <span class="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse"></span>
           </div>
-          <div class="text-[9px] text-gray-400 mono">Serviq BPO · Session 1 Kickoff</div>
+          <div class="text-[9px] text-gray-400 mono">Serviq BPO · Kickoff HUD</div>
         </div>
       </div>
 
@@ -93,210 +100,350 @@
     <section id="tab-notes" class="tab-content space-y-3">
       
       <div class="p-3 bg-gradient-to-r from-[#00F0FF]/10 via-[#8B5CF6]/10 to-transparent rounded-2xl border border-white/10 mb-2">
-        <div class="text-[10px] uppercase font-mono font-bold text-[#00F0FF]">Plabon's Masterclass Strategy</div>
-        <div class="text-xs text-gray-200 mt-0.5">
-          Zero trainee screen-sharing today. Maintain psychological safety. Focus on <strong class="text-white">"The Tireless MBA Intern"</strong> and <strong class="text-[#00F0FF]">The RCTO Protocol</strong>.
+        <div class="text-[10px] uppercase font-mono font-bold text-[#00F0FF]">Plabon's Presentation Playbook</div>
+        <div class="text-xs text-gray-200 mt-0.5 bengali leading-relaxed">
+          কোনো ট্রেইনি স্ক্রিন শেয়ারিং নেই আজ। সাইকোলজিক্যাল সেফটি তৈরি করুন। ফোকাস রাখুন <strong class="text-white">"The Tireless MBA Intern"</strong> এবং <strong class="text-[#00F0FF]">The RCTO Protocol</strong>-এ।
         </div>
       </div>
 
       <!-- Slide 1 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden" open>
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">01</span>
-            <span class="text-xs font-bold text-white">Welcome & Mission Launch</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">Welcome & Mission Launch</span>
+              <span class="text-[10px] text-gray-400 bengali">শুরু হচ্ছে নতুন এক অধ্যায় (৪,৭০০+ কর্মী)</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">Opening Words:</strong> "Welcome Meraz Bhai, Moon Bhai, Ridhiya, Rayhan, Shabuddin, and Partha. Today is not about turning you into computer programmers or data scientists."</p>
-          <p><strong class="text-[#00F0FF]">The Vision:</strong> "Today marks the transition of Serviq BPO from a traditional manual operations house into Bangladesh’s most tech-accelerated Employer of Record managing 4,700+ deployed personnel across 64 districts."</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20">
+            <div class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "আসসালামু আলাইকুম মেরাজ ভাই, মুন ভাই এবং সার্ভিকের পুরো টিম! সবাইকে আজকের সেশনে স্বাগতম। আজকে আমরা এখানে কোনো কঠিন কম্পিউটার প্রোগ্রামিং শিখতে আসিনি। আজকে আমরা এসেছি একটা সাধারণ কিন্তু অসম্ভব পাওয়ারফুল মিশনে—সার্ভিকের ৪,৭০০+ কর্মীর এই বিশাল অপারেশন সামলাতে গিয়ে প্রতিদিন আপনাদের যে অপ্রয়োজনীয় খাটুনি আর সময় নষ্ট হয়, সেখান থেকে প্রতিদিন অন্তত ৩ ঘণ্টা সময় কীভাবে মুক্ত করা যায়।"
+            </p>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-amber-300 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+            <span>⏸️</span>
+            <span><strong>Pause & Breathe:</strong> ২ সেকেন্ড থামুন। হাসিমুখে সবার দিকে তাকান।</span>
+          </div>
+          <div class="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20 text-gray-200">
+            <div class="text-[10px] font-mono font-bold text-[#C4B5FD] uppercase mb-1">🎯 Audience Callout</div>
+            <p class="bengali text-xs">
+              "মেরাজ ভাই, মুন ভাই—আপনাদের এই কোর চারজন যোদ্ধা প্রতিদিন যে ঘাম ঝরায়, এই ৫টা সেশন শেষে ওদের আউটপুট দেখবেন কীভাবে ডাবল স্পিডে চলে যায়।"
+            </p>
+          </div>
         </div>
       </details>
 
       <!-- Slide 2 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">02</span>
-            <span class="text-xs font-bold text-white">The Core Mental Model · The MBA Intern</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">The Core Mental Model</span>
+              <span class="text-[10px] text-gray-400 bengali">The Tireless MBA Intern (ক্লিপবোর্ড শূন্য)</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">The Metaphor:</strong> "When you open Gemini, don't think of Google Search. Google Search finds existing pages. Gemini writes brand-new work from scratch."</p>
-          <p><strong class="text-white">The Persona:</strong> "Treat Gemini like a top-ranking IBA or Ivy League graduate who walked into your Banani office at 9:00 AM today. They have memorized every dictionary and business book, but have zero local context about Serviq until you give them an executive brief."</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-[#8B5CF6]/10 rounded-xl border border-[#8B5CF6]/20">
+            <div class="text-[10px] font-mono font-bold text-[#C4B5FD] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "শাবউদ্দিন ভাই, রায়হান ভাই—যখনই এআই বা জেমিনাই নিয়ে বসবেন, কখনো ভাববেন না এটা গুগল সার্চের মতো কিছু। গুগল সার্চ কি করে? ইন্টারনেটে থাকা পুরনো লিংক খুঁজে দেয়। কিন্তু এআই সম্পূর্ণ নতুন লেখা তৈরি করে। আপনারা মনে করেন, আইবিএ বা হার্ভার্ড থেকে ফার্স্ট ক্লাস পেয়ে আজকেই সকাল ৯টায় আপনাদের বনানী অফিসে জয়েন করেছে। পৃথিবীর সব ডিকশনারি আর বিজনেস রুল তার মুখস্থ! কিন্তু একটা বড় ঝামেলা আছে—সে একটা বন্ধ কাঁচের ঘরে বসে আছে। সে চেনে না মেরাজ ভাইকে, সে জানে না সার্ভিক কী করে, সে জানে না আজকে সকালে সিলেটে কী সমস্যা হয়েছে! ওর ক্লিপবোর্ডটা কিন্তু একদম ফাঁকা। আপনি যদি ওকে দরজা খুলে বলেন 'এই, একটা মেইল লেখো তো!'—সে আকাশ-পাতাল আন্দাজে একটা ফালতু জিনিস লিখে দেবে। কিন্তু আপনি যদি ওকে সুন্দর একটা ব্রিফ দেন—সে এমন অসাধারণ কাজ করবে, যা দেখে ক্লায়েন্ট চমকে যাবে!"
+            </p>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-amber-300 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+            <span>⏸️</span>
+            <span><strong>Pause & Breathe:</strong> ৩ সেকেন্ড পজ নিন যাতে মেটাফোরটা সবার মাথায় ঢোকে।</span>
+          </div>
+          <div class="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20 text-gray-200">
+            <div class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase mb-1">🎯 Direct Question (Shabuddin Bhai)</div>
+            <p class="bengali text-xs">
+              "শাবউদ্দিন ভাই, কথাটা রিলেট করতে পারছেন? একটা নতুন ছেলে জয়েন করলে তাকে তো আগে বুঝিয়ে বলতে হয়, তাই না?"
+            </p>
+          </div>
         </div>
       </details>
 
       <!-- Slide 3 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">03</span>
-            <span class="text-xs font-bold text-white">The 3-Layer Enterprise Power Grid</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">The 3-Layer Enterprise Power Grid</span>
+              <span class="text-[10px] text-gray-400 bengali">বিদ্যুৎ কেন্দ্র ➔ মস্তিষ্ক ➔ আপনার টেবিল</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">The 3 Layers:</strong></p>
-          <ul class="space-y-1.5 text-gray-300">
-            <li>• <strong class="text-white">Layer 1 (The Power Grid):</strong> Google & Nvidia server farms. You don't build power stations; you plug in.</li>
-            <li>• <strong class="text-white">Layer 2 (The Brain in a Jar):</strong> Gemini 1.5 Pro. The brilliant mind waiting for orders.</li>
-            <li>• <strong class="text-[#00F0FF]">Layer 3 (The Desk):</strong> Google Workspace, Sheets, Gmail, NotebookLM. Where Serviq leads reclaim 3 hours every day.</li>
-          </ul>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20">
+            <div class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "এখন আসেন, এই এআই আসলে চলে কীভাবে? একদম সহজ ৩টা লেয়ারে বুঝাই। প্রথম লেয়ার হলো বিদ্যুৎ কেন্দ্র—গুগল আর এনভিডিয়া হাজার হাজার কোটি টাকা খরচ করে বিশাল সার্ভার বানিয়েছে। আপনি বনানী অফিসে এসি চালাতে গিয়ে কি পাওয়ার স্টেশন বানাতে যান? যান না, শুধু প্লাগে সুইচ দেন। সেকেন্ড লেয়ার হলো এআই-এর মস্তিষ্ক—যেমন Gemini 1.5 Pro। এটা একটা ঘরের মধ্যে বসে থাকা বিশাল ব্রেন। আর থার্ড লেয়ার—যেটা আমাদের আসল টেবিল! গুগল ডকস, শিটস, জিমেইল আর নোটবুকএলএম। আমাদের কাজ হলো শুধু এই থার্ড লেয়ারের টেবিলে বসে আমাদের ইন্টার্নকে সঠিক কাজটা বুঝিয়ে দেওয়া।"
+            </p>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-amber-300 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+            <span>⏸️</span>
+            <span><strong>Pause & Breathe:</strong> স্লাইডের ৩টি টায়ারের দিকে পয়েন্টার ঘুরিয়ে লেয়ার ৩-এ থামুন।</span>
+          </div>
         </div>
       </details>
 
       <!-- Slide 4 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">04</span>
-            <span class="text-xs font-bold text-white">Why BPO is Ground Zero for AI</span>
+            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">04</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">Why BPO is Ground Zero for AI</span>
+              <span class="text-[10px] text-gray-400 bengali">দৈনন্দিন ৩ ঘণ্টার অপ্রয়োজনীয় খাটুনি শেষ</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">The Friction:</strong> "Serviq manages 4,700 payrolls across 64 districts. That generates thousands of questions every single week."</p>
-          <p><strong class="text-emerald-400">The Edge:</strong> "Your competitors answer those manually one email at a time. Serviq is about to answer them with instant, flawless AI speed, winning multinational client accounts."</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
+            <div class="text-[10px] font-mono font-bold text-[#C4B5FD] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "কেন বিপিও অপারেশনেই এআই সবচেয়ে বড় বিপ্লব ঘটাবে? রায়হান ভাই, পার্থ ভাই—আপনারা দিনে কয়টা ফোন আর মেসেজের জবাব দেন? শত শত! কেউ বলছে স্যালারি আসেনি, কারো শিফট বদলাতে হবে, কারো ছুটির হিসেব মিলছে না। এই যে সারাদিন একই কথা বারবার লেখা, অগোছালো ছবি দেখে দেখে এক্সেলে তোলা—এইসব কাজই হলো মানুষের ব্রেন এনার্জি নষ্ট করার আসল কালপ্রিট। এআই আসার কারণে এই পুরো রুটিন কাজগুলো কয়েক সেকেন্ডের ব্যাপার হয়ে দাঁড়াবে।"
+            </p>
+          </div>
+          <div class="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-gray-200">
+            <div class="text-[10px] font-mono font-bold text-amber-300 uppercase mb-1">🎯 Audience Callout (Rayhan & Partha)</div>
+            <p class="bengali text-xs">
+              রায়হান ও পার্থর দিকে ইঙ্গিত করুন: "রায়হান ভাই, কাল মাঠ থেকে আসা ৩০০ ছবি এক মিনিটে সর্ট হবে!"
+            </p>
+          </div>
         </div>
       </details>
 
       <!-- Slide 5 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center font-black text-xs font-mono">05</span>
-            <span class="text-xs font-bold text-white">The "Lazy Prompt" Trap</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">The "Lazy Prompt" Trap</span>
+              <span class="text-[10px] text-gray-400 bengali">কেন এআই-এর কাজে মানুষ হতাশ হয়</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">The Trap:</strong> "If Meraz Bhai tells a junior employee 'Do some work today' and walks away, what happens? Nothing useful."</p>
-          <p><strong class="text-red-400">The 4-Word Trap:</strong> "Typing 'Write a client email' gives you corporate garbage. Today we eliminate the lazy prompt forever."</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-red-500/10 rounded-xl border border-red-500/20">
+            <div class="text-[10px] font-mono font-bold text-red-400 uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "এবার আসেন সবচেয়ে বড় ভুলের জায়গায়। অনেকে বলে 'ভাই, আমি এআই দিয়ে ট্রাই করেছিলাম, ভালো রেজাল্ট আসে না!' কেন আসে না জানেন? কারণ আমরা অলসতা করি। আমরা লিখি: 'Write an email about salary delay.' ব্যস! এআই তো বোকা ইন্টার্ন, সে একটা পানসে রোবোটিক প্যারাগ্রাফ লিখে দিলো, যেখানে লেখা 'Dear Sir or Madam, We regret to inform you...' এই মেইল কি আপনি কোনো এমএনসি ক্লায়েন্টকে পাঠাতে পারবেন? পাঠালেই তো ক্লায়েন্ট খেপে গিয়ে মেরাজ ভাইকে ফোন দেবে! ভুলটা কিন্তু এআই-এর না, ভুলটা হলো আমাদের অলস প্রম্পটিংয়ের।"
+            </p>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-amber-300 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+            <span>⏸️</span>
+            <span><strong>Pause & Breathe:</strong> ড্রামাটিক পজ দিন। হাসুন।</span>
+          </div>
         </div>
       </details>
 
       <!-- Slide 6 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">06</span>
-            <span class="text-xs font-bold text-white">The GRO10X RCTO Protocol</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">The GRO10X RCTO Protocol</span>
+              <span class="text-[10px] text-gray-400 bengali">নিখুঁত উত্তরের ৪টি চাবিকাঠি (R - C - T - O)</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">Memorize R-C-T-O:</strong></p>
-          <p>• <strong class="text-[#00F0FF]">R (Role):</strong> Senior EOR Operations Lead at Serviq BPO.</p>
-          <p>• <strong class="text-[#C4B5FD]">C (Context):</strong> 45 promoters, bank clearing maintenance window.</p>
-          <p>• <strong class="text-emerald-400">T (Task):</strong> Reassuring email update to HR Director Tanvir Ahmed.</p>
-          <p>• <strong class="text-amber-400">O (Output):</strong> 3 paragraphs, under 150 words, timeline bullets.</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20">
+            <div class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "তাহলে সমাধান কী? এই চারটা অক্ষর আপনারা মুখস্থ করে ফেলেন: R - C - T - O! 'R' মানে Role—তাকে একটা পরিচয় দিন, সে কে? 'C' মানে Context—ঘটনাটা কী ঘটেছে বিস্তারিত বলুন। 'T' মানে Task—তাকে পরিষ্কার বলুন কী লিখতে হবে। আর 'O' মানে Output Guardrails—কয় প্যারায় লিখবে, টোন কেমন হবে, কোন কথা বলা যাবে না। এই চারটা জিনিস যখনই আপনি ইনপুট দেবেন, ফলাফল দেখবেন জাদুর মতো চোখের সামনে চলে আসবে।"
+            </p>
+          </div>
         </div>
       </details>
 
       <!-- Slide 7 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">07</span>
-            <span class="text-xs font-bold text-white">Live Shootout: Client Payroll Scenario</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">Live Shootout: Real Serviq Scenario</span>
+              <span class="text-[10px] text-gray-400 bengali">বাস্তব বনাম অলস: লাইভ প্রম্পট যুদ্ধ</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">Execution Cue:</strong> Switch to Gemini tab on Meet. Paste Prompt A first. Highlight the cold, robotic text. Then paste Prompt B. Show the 4-second transformation.</p>
-          <p><strong class="text-[#00F0FF]">Key Takeaway:</strong> "The machine is identical. The difference is the prompt architecture."</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+            <div class="text-[10px] font-mono font-bold text-emerald-400 uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "চলুন, মুখে না বলে সরাসরি লাইভ স্ক্রিনে প্রমাণ দেখি। শাবউদ্দিন ভাই, স্ক্রিনটা খুব ভালো করে খেয়াল করেন। রবিবারে বাংলাদেশ ব্যাংকের BEFTN রক্ষণাবেক্ষণের কারণে ৪৭০০ কর্মীর কয়েকজনের স্যালারি এসএমএস যেতে দেরি হয়েছে। আমি প্রথমে দিলাম আমাদের সেই অলস প্রম্পটটা... দেখেন কী ফালতু উত্তর এলো! এবার আমি দিচ্ছি আমাদের সার্ভিকের অফিশিয়াল RCTO প্রম্পট... দেখুন! মাত্র ৪ সেকেন্ডে ক্লায়েন্ট তানভীর আহমেদের নামে এমন একটা শান্ত, প্রফেশনাল মেইল লিখে দিলো যেখানে সুন্দর একটা টাইমলাইন দেওয়া আছে। সার্ভিকের কোনো দোষ নেই, বাংলাদেশ ব্যাংকের ক্লিয়ারিং শিডিউল সুন্দর করে বুঝিয়ে দেওয়া হয়েছে। শাবউদ্দিন ভাই, এটা লিখতে আপনার কয় মিনিট লাগত? আর এখন কতক্ষণ লাগল?"
+            </p>
+          </div>
+          <div class="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20 text-gray-200">
+            <div class="text-[10px] font-mono font-bold text-[#C4B5FD] uppercase mb-1">🎯 Audience Interaction (Shabuddin Bhai)</div>
+            <p class="bengali text-xs">
+              শাবউদ্দিনকে আনমিউট করতে বলুন বা প্রতিক্রিয়া জানতে চান: "শাবউদ্দিন ভাই, কতক্ষণ লাগল?"
+            </p>
+          </div>
+          <!-- Quick 1-Tap Copy in Notes -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="copyElementText('prompt-a-text')" class="py-2 px-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 text-[11px] font-bold transition flex items-center justify-center gap-1">
+              📋 Copy Prompt A
+            </button>
+            <button onclick="copyElementText('prompt-b-text')" class="py-2 px-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[11px] font-bold transition flex items-center justify-center gap-1">
+              📋 Copy Prompt B
+            </button>
+          </div>
         </div>
       </details>
 
       <!-- Slide 8 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">08</span>
-            <span class="text-xs font-bold text-white">The 4 Serviq Desks Ahead</span>
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">08</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">The 4 Serviq Desks Ahead</span>
+              <span class="text-[10px] text-gray-400 bengali">প্রতিটি বিভাগের সুনির্দিষ্ট এআই রোডম্যাপ</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">Call out each lead by name:</strong></p>
-          <p>• <strong>Shabuddin:</strong> Customer query matrix automation.</p>
-          <p>• <strong>Rayhan:</strong> Field logistics multimodal image extraction.</p>
-          <p>• <strong>Ridhiya:</strong> Admin policy circular digests.</p>
-          <p>• <strong>Partha:</strong> Google Sheets formula automation & daily status reporting.</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20">
+            <div class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "আমি প্রথম দিনেই কথা দিয়েছিলাম—গ্রো-টেন-এক্সের ট্রেনিং মানে কোনো জেনেরিক লেকচার না। আপনারা যে চারজন আছেন, আপনাদের প্রত্যেকের টেবিল আলাদা করে সাজানো হয়েছে। শাবউদ্দিন ভাইয়ের জন্য কাস্টমার সাপোর্ট ইঞ্জিন, রায়হান ভাইয়ের জন্য মাঠের ছবি স্ক্যান করার টুল, রিদিয়া আপুর জন্য প্রতিদিনের অ্যাডমিন ডাইজেস্ট, আর পার্থ ভাইয়ের জন্য এক্সেল শিটের ফর্মুলা জাদুকর। আগামী দিনগুলোতে আপনারা নিজের চোখেই দেখবেন আপনাদের প্রতিদিনের মাথাব্যথা কীভাবে শেষ হচ্ছে।"
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[10px] font-mono pt-1 text-gray-300">
+            <div class="p-2 rounded-lg bg-black/40 border border-white/5">• Shabuddin: Client Ops</div>
+            <div class="p-2 rounded-lg bg-black/40 border border-white/5">• Rayhan: Field OCR</div>
+            <div class="p-2 rounded-lg bg-black/40 border border-white/5">• Ridhiya: Admin Digest</div>
+            <div class="p-2 rounded-lg bg-black/40 border border-white/5">• Partha: Sheet Formula</div>
+          </div>
         </div>
       </details>
 
       <!-- Slide 9 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">09</span>
-            <span class="text-xs font-bold text-white">Security, Privacy & PII Shield</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">Security, Privacy & PII Shield</span>
+              <span class="text-[10px] text-gray-400 bengali">কোম্পানি ও ক্লায়েন্টের ডাটার সর্বোচ্চ সুরক্ষা</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">Reassure Meraz & Moon Bhai:</strong></p>
-          <p>1. No public model training on enterprise Workspace documents.</p>
-          <p>2. The Golden Redaction Rule: Zero unredacted national IDs or passwords.</p>
-          <p>3. Human-in-the-Loop: AI drafts; a human always reviews and sends.</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+            <div class="text-[10px] font-mono font-bold text-emerald-400 uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "মেরাজ ভাই এবং মুন ভাই—এই স্লাইডটা আপনাদের জন্য। কোম্পানির ডাটা সিকিউরিটি আমাদের কাছে এক নম্বর প্রায়োরিটি। আমরা যে কমার্শিয়াল গুগল লাইসেন্স ব্যবহার করব, সেখানে সার্ভিকের কোনো ডকুমেন্ট বাইরের পাবলিক ট্রেনিংয়ে যাবে না। তবে একটা গোল্ডেন রুল আমরা সবাইকে শিখিয়ে দেব—এনআইডি নম্বর বা ব্যক্তিগত পাসওয়ার্ড কখনো প্রম্পটে সরাসরি পেস্ট করব না। আর সবচেয়ে বড় কথা—AI হলো ড্রাফটার, ফাইনাল অথরিটি কিন্তু আপনি। চোখ দিয়ে পড়ে ভেরিফাই না করে কোনো ফাইল সেন্ড হবে না।"
+            </p>
+          </div>
+          <div class="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-gray-200">
+            <div class="text-[10px] font-mono font-bold text-amber-300 uppercase mb-1">🎯 Founder Assurance</div>
+            <p class="bengali text-xs">
+              মেরাজ ভাই ও মুন ভাইয়ের চোখে চোখ রেখে বলুন: "আপনার বিজনেস ইন্টেলিজেন্স ১০০% এনক্রিপ্টেড থাকবে।"
+            </p>
+          </div>
         </div>
       </details>
 
       <!-- Slide 10 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">10</span>
-            <span class="text-xs font-bold text-white">The 5-Session Flight Plan</span>
+            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">10</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">The 5-Session Flight Plan</span>
+              <span class="text-[10px] text-gray-400 bengali">৫ সেশনের সুপরিকল্পিত ফ্লাইট প্ল্যান</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">Roadmap Narrative:</strong> "Today is the foundation. Sessions 2 & 3 are online tool mastery. Sessions 4 & 5 are in-person laptop restructuring at your Banani headquarters."</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
+            <div class="text-[10px] font-mono font-bold text-[#C4B5FD] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "আমাদের জার্নিটা কেমন হবে? প্রথম ৩টা সেশন অনলাইনে হবে—যেখানে আমরা টুলগুলোর ক্ষমতা বুঝব আর হাত পাকা করব। আর আসল ম্যাজিক ঘটবে যখন আমরা বনানী অফিসে সামনাসামনি বসব ল্যাপটপ নিয়ে! সেখানে আপনারা নিজের ল্যাপটপে আপনাদের আসল কাজ সমাধান করবেন। আর ফাইনাল সেশনে মেরাজ ভাই আর মুন ভাইয়ের সামনে আপনারা নিজেরা ডেমো দিয়ে দেখাবেন যে কীভাবে কাজ আগের চেয়ে দ্বিগুণ গতিতে করছেন।"
+            </p>
+          </div>
         </div>
       </details>
 
       <!-- Slide 11 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">11</span>
-            <span class="text-xs font-bold text-white">2-Minute Zero-Friction Homework</span>
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">11</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">2-Minute Zero-Friction Homework</span>
+              <span class="text-[10px] text-gray-400 bengali">মঙ্গলবারের আগের কাজ: মাত্র ২ মিনিটের প্রস্তুতি</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">Set Zero Anxiety:</strong> "Only 2 minutes: Log into `gemini.google.com` to verify access, and write down ONE annoying task. Do not prompt yet! Bring it to Session 2."</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20">
+            <div class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "আজকের সেশন শেষে কিন্তু আপনাদের কোনো বড় হোমওয়ার্ক নেই। সারাদিন কাজ করার পর আমরা আপনাদের ওপর বাড়তি বোঝা চাপাতে চাই না। শুধু দুইটা কাজ—প্রথমত, gemini.google.com খুলে একবার দেখে নিবেন আপনার অফিস মেইল দিয়ে লগইন হচ্ছে কি না। আর দ্বিতীয়ত, আজকের সারাদিনে এমন একটা কাজ মনে মনে ভাবেন যেটা করতে গিয়ে আপনার বিরক্তি লেগেছিল—হতে পারে একটা লম্বা মেইল, বা কারো পেছনে তাগাদা দেওয়া। শুধু ওই কাজের কথা মাথায় রেখে কাল ক্লাসে চলে আসবেন, বাকিটা আমি লাইভ স্ক্রিনে সমাধান করে দেব!"
+            </p>
+          </div>
         </div>
       </details>
 
       <!-- Slide 12 -->
       <details class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
-        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
           <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center font-black text-xs font-mono">12</span>
-            <span class="text-xs font-bold text-white">Open Floor: Questions & Fear Dissolution</span>
+            <span class="w-6 h-6 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] flex items-center justify-center font-black text-xs font-mono">12</span>
+            <div class="text-left">
+              <span class="text-xs font-bold text-white block">Open Floor: Questions & Fear Dissolution</span>
+              <span class="text-[10px] text-gray-400 bengali">এবার আপনাদের পালা: মন খুলে কথা বলুন</span>
+            </div>
           </div>
           <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
         </summary>
-        <div class="p-4 text-xs space-y-2 text-gray-300 leading-relaxed bg-black/20">
-          <p><strong class="text-white">Trigger Open Floor:</strong> "Meraz Bhai, Moon Bhai, team—unmute your mics. Ask me anything, even if you think it's too basic or sounds too good to be true."</p>
+        <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+          <div class="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20">
+            <div class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase mb-1">🎙️ Spoken Words (Banglish)</div>
+            <p class="bengali text-gray-100 text-[13px] leading-relaxed">
+              "এবার আমি একদম চুপ করব, ফ্লোর আপনাদের! মেরাজ ভাই, মুন ভাই, শাবউদ্দিন ভাই, রায়হান ভাই, রিদিয়া আপু, পার্থ ভাই—সবাই মাইক আনমিউট করুন। কোনো প্রশ্ন ছোট না। যদি মনে হয় 'ভাই, এআই কি ভুল তথ্য দেয়?' বা 'এআই আসলে কি আমাদের চাকরি নিয়ে টানাটানি করবে?'—সব প্রশ্ন খোলামেলা করুন। আমরা এখানে পরিবার হিসেবে শিখতে এসেছি।"
+            </p>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-amber-300 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+            <span>⏸️</span>
+            <span><strong>Pause & Wait:</strong> ৫ থেকে ১০ সেকেন্ড সম্পূর্ণ নীরব থাকুন, হাসিমুখে সবার প্রতিক্রিয়া শুনুন।</span>
+          </div>
         </div>
       </details>
 
     </section>
 
     <!-- ───────────────────────────────────────────────────────── -->
-    <!-- TAB 2: LIVE SHOOTOUT (1-TAP PROMPTS)                      -->
+    <!-- TAB 2: LIVE SHOOTOUT PROMPTS                              -->
     <!-- ───────────────────────────────────────────────────────── -->
     <section id="tab-shootout" class="tab-content hidden space-y-3">
       
-      <div class="p-3 bg-[#00F0FF]/10 rounded-2xl border border-[#00F0FF]/20 text-xs text-[#00F0FF] mb-2">
-        <strong>1-Tap Masterclass Shootout:</strong> Tap copy on Prompt A, paste in Gemini. Then tap copy on Prompt B to show the senior transformation.
+      <div class="p-3 bg-[#00F0FF]/10 rounded-2xl border border-[#00F0FF]/20 text-xs text-gray-200 mb-2 bengali">
+        <strong>লাইভ শুটআউট ডেমো:</strong> নিচের বাটন ট্যাপ করে প্রম্পট কপি করুন এবং সরাসরি <code>gemini.google.com</code>-এ পেস্ট করে পার্থক্য দেখান।
       </div>
 
       <!-- Prompt A Card -->
@@ -308,7 +455,7 @@
         <div id="prompt-a-text" class="text-xs text-red-300 bg-black/40 p-3 rounded-xl border border-red-500/20 font-mono leading-relaxed">
 Write an email to a client saying employee salaries are delayed due to bank holiday.
         </div>
-        <button onclick="copyElementText('prompt-a-text')" class="w-full py-2.5 px-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs font-bold transition flex items-center justify-center gap-1.5">
+        <button onclick="copyElementText('prompt-a-text')" class="w-full py-2.5 px-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95">
           📋 Copy Prompt A (Lazy)
         </button>
       </div>
@@ -319,7 +466,7 @@ Write an email to a client saying employee salaries are delayed due to bank holi
           <span class="font-bold text-emerald-400 font-mono">PROMPT B (SERVIQ RCTO PROTOCOL)</span>
           <span class="text-[10px] text-emerald-400 font-mono font-bold">Production Standard</span>
         </div>
-        <div id="prompt-b-text" class="text-xs text-emerald-300 bg-black/40 p-3 rounded-xl border border-emerald-500/20 font-mono leading-relaxed max-h-48 overflow-y-auto">
+        <div id="prompt-b-text" class="text-xs text-emerald-300 bg-black/40 p-3 rounded-xl border border-emerald-500/20 font-mono leading-relaxed max-h-56 overflow-y-auto">
 Role: You are a Senior Client Operations Manager at Serviq BPO Limited, a premier tech-enabled Employer of Record (EOR) managing 4,700+ payrolls in Bangladesh.
 
 Context: One of our multinational corporate accounts has inquired why their 45 field promoters have not yet received salary credit alerts this morning. Today is Sunday, and Bangladesh Bank's BEFTN/NPSB interbank clearing network experienced a scheduled server maintenance window until 1:00 PM. All payroll files were dispatched by Serviq on Thursday before cutoff.
@@ -332,7 +479,7 @@ Output Guardrails:
 3. Include a bulleted 3-step timeline (Thursday File Dispatch -> Bank Server Maintenance -> Expected SMS Reflection).
 4. Do not use generic placeholders; sign off formally on behalf of Serviq BPO Operations Desk.
         </div>
-        <button onclick="copyElementText('prompt-b-text')" class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
+        <button onclick="copyElementText('prompt-b-text')" class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 active:scale-95">
           📋 Copy Prompt B (Serviq RCTO)
         </button>
       </div>
@@ -344,16 +491,16 @@ Output Guardrails:
     <!-- ───────────────────────────────────────────────────────── -->
     <section id="tab-governance" class="tab-content hidden space-y-3">
       
-      <div class="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-xs text-emerald-300 mb-2">
-        <strong>Executive Data Defense:</strong> Present these 3 laws to address Meraz Bhai & Moon Bhai's governance priorities.
+      <div class="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-xs text-emerald-300 mb-2 bengali">
+        <strong>ডাটা সুরক্ষার ৩টি সোনালী নিয়ম:</strong> মেরাজ ভাই ও মুন ভাইকে আশ্বস্ত করার মূল পয়েন্টগুলো।
       </div>
 
       <div class="p-4 bg-[#0E1626] rounded-2xl border border-white/10 space-y-2">
         <div class="text-xs font-bold text-white flex items-center gap-2">
           <span class="text-[#00F0FF]">1.</span> Commercial Data Boundary
         </div>
-        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
-          "Google Workspace Enterprise and commercial Gemini licenses do not use proprietary client spreadsheets, candidate CVs, or internal communications to train public foundation models."
+        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5 bengali">
+          "গুগল ওয়ার্কস্পেস ও পেইড জেমিনাই লাইসেন্সে ক্লায়েন্টের এক্সেল শিট বা ইন্টারনাল ফাইল দিয়ে কখনো পাবলিক এআই মডেল ট্রেইন করা হয় না।"
         </p>
       </div>
 
@@ -361,8 +508,8 @@ Output Guardrails:
         <div class="text-xs font-bold text-white flex items-center gap-2">
           <span class="text-amber-400">2.</span> The Golden Redaction Rule
         </div>
-        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
-          "Never paste unredacted personal identification numbers (NIDs), unmasked bank account numbers, or passwords into chat prompts. Use dummy tokens (e.g., [Employee_01], [Bank_A])."
+        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5 bengali">
+          "প্রম্পটে কখনো আসল এনআইডি নম্বর, পাসওয়ার্ড বা গোপন ব্যাংক অ্যাকাউন্ট পেস্ট করবেন না। সবসময় ডামি নাম বা টোকেন ব্যবহার করুন।"
         </p>
       </div>
 
@@ -370,14 +517,21 @@ Output Guardrails:
         <div class="text-xs font-bold text-white flex items-center gap-2">
           <span class="text-emerald-400">3.</span> The Human Gatekeeper Law
         </div>
-        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5">
-          "AI is your tireless drafting intern; you are the executive manager. AI drafts, human eyes verify facts, and a human always hits 'Send'. You are 100% accountable for the final output."
+        <p class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/5 bengali">
+          "এআই আপনার ড্রাফটার ইন্টার্ন, কিন্তু ফাইনাল সিদ্ধান্ত আপনার। নিজে চোখ দিয়ে পড়ে ভেরিফাই না করে কোনো ইমেইল বা রিপোর্ট সেন্ড করা যাবে না।"
         </p>
       </div>
 
     </section>
 
   </main>
+
+  <!-- ========================================================= -->
+  <!-- TOAST NOTIFICATION                                        -->
+  <!-- ========================================================= -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#00F0FF] text-black font-black px-4 py-2 rounded-full text-xs shadow-2xl opacity-0 pointer-events-none translate-y-4">
+    Copied to Clipboard!
+  </div>
 
   <!-- ========================================================= -->
   <!-- JAVASCRIPT LOGIC & TIMER                                  -->
@@ -466,13 +620,30 @@ Output Guardrails:
       updateTimerDisplay();
     }
 
+    // Show Toast
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      if (toast) {
+        toast.textContent = msg;
+        toast.classList.remove('opacity-0', 'translate-y-4');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        setTimeout(() => {
+          toast.classList.remove('opacity-100', 'translate-y-0');
+          toast.classList.add('opacity-0', 'translate-y-4');
+        }, 2000);
+      }
+    }
+
     // Clipboard Copy Helper
     function copyElementText(elementId) {
-      const text = document.getElementById(elementId).innerText.trim();
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText.trim();
       navigator.clipboard.writeText(text).then(() => {
-        alert('Prompt copied to clipboard! Paste into Gemini.');
+        showToast('Prompt Copied! Paste in Gemini.');
       }).catch(err => {
         console.error('Failed to copy', err);
+        showToast('Copied to clipboard!');
       });
     }
   </script>

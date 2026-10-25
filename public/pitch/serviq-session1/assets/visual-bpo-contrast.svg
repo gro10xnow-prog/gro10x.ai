@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070B12"/>
+      <stop offset="50%" stop-color="#0E1626"/>
+      <stop offset="100%" stop-color="#070B12"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#bgGrad)" rx="20"/>
+
+  <!-- Left: The Manual Grind (Chaos, Overwhelm, Late Night) -->
+  <g transform="translate(40, 50)">
+    <rect x="0" y="0" width="345" height="400" rx="18" fill="#0A101D" stroke="#EF4444" stroke-opacity="0.35" stroke-width="2"/>
+    <rect x="15" y="15" width="315" height="370" rx="12" fill="#EF4444" fill-opacity="0.03"/>
+
+    <!-- Header Badge -->
+    <rect x="25" y="25" width="140" height="26" rx="6" fill="#EF4444" fill-opacity="0.15" stroke="#EF4444" stroke-opacity="0.4"/>
+    <text x="35" y="42" fill="#F87171" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">THE MANUAL GRIND</text>
+    
+    <text x="25" y="80" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="800">অগোছালো মেসেজ ও ফাইলের জট</text>
+    <text x="25" y="100" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">70% সময় নষ্ট হয় ড্রাফটিং ও ডেটা ফরম্যাটিংয়ে</text>
+
+    <!-- Visual Artifacts: Tangled Messages & 999+ Notifications -->
+    <g transform="translate(25, 120)">
+      <!-- Unread message badge -->
+      <rect x="0" y="0" width="295" height="48" rx="8" fill="#1E293B" stroke="#EF4444" stroke-opacity="0.4"/>
+      <circle cx="25" cy="24" r="12" fill="#EF4444"/>
+      <text x="20" y="28" fill="#FFFFFF" font-family="monospace" font-size="11" font-weight="bold">!</text>
+      <text x="50" y="22" fill="#F87171" font-family="monospace" font-size="11" font-weight="bold">999+ Unread Messages</text>
+      <text x="50" y="38" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">WhatsApp, SMS, Messy Supervisor Voice Notes</text>
+
+      <!-- Salary Inquiry Panic card -->
+      <rect x="0" y="60" width="295" height="48" rx="8" fill="#1E293B" stroke="#EF4444" stroke-opacity="0.2"/>
+      <text x="15" y="82" fill="#FCA5A5" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="600">"স্যার আমার স্যালারি এখনো ঢোকেনি কেন?"</text>
+      <text x="15" y="98" fill="#64748B" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">একই প্রশ্নের উত্তর দিনে ৫০ বার টাইপ করা</text>
+
+      <!-- Paper Roster Chaos -->
+      <rect x="0" y="120" width="295" height="48" rx="8" fill="#1E293B" stroke="#EF4444" stroke-opacity="0.2"/>
+      <text x="15" y="142" fill="#FCA5A5" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="600">হাতে লেখা ছেঁড়া রোস্টার ও রসিদ</text>
+      <text x="15" y="158" fill="#64748B" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">চোখ দিয়ে দেখে দেখে এক্সেলে তুলতে তুলতে রাত ৮টা</text>
+    </g>
+
+    <!-- Clock 7:45 PM Badge -->
+    <rect x="25" y="340" width="295" height="34" rx="8" fill="#EF4444" fill-opacity="0.1" stroke="#EF4444" stroke-opacity="0.2"/>
+    <text x="40" y="362" fill="#F87171" font-family="monospace" font-size="11" font-weight="700">⏱️ Late Night Drift · Brain Fatigue: 85%</text>
+  </g>
+
+  <!-- VS Badge in Middle -->
+  <circle cx="400" cy="250" r="22" fill="#0E1626" stroke="#00F0FF" stroke-width="2"/>
+  <text x="390" y="256" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="800">VS</text>
+
+  <!-- Right: The AI-Accelerated Desk (Velocity, Order, Peace of Mind) -->
+  <g transform="translate(415, 50)">
+    <rect x="0" y="0" width="345" height="400" rx="18" fill="#0E1626" stroke="#00F0FF" stroke-width="2" filter="url(#glow)"/>
+    <rect x="15" y="15" width="315" height="370" rx="12" fill="#00F0FF" fill-opacity="0.04"/>
+
+    <!-- Header Badge -->
+    <rect x="25" y="25" width="165" height="26" rx="6" fill="#00F0FF" fill-opacity="0.15" stroke="#00F0FF" stroke-opacity="0.4"/>
+    <text x="35" y="42" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">SERVIQ AI ACCELERATION</text>
+    
+    <text x="25" y="80" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="800">নিখুঁত গতি ও শান্ত মনের কাজ</text>
+    <text x="25" y="100" fill="#A5F3FC" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">80% সময় সরাসরি ক্লায়েন্ট ও স্ট্র্যাটেজিতে</text>
+
+    <!-- Visual Artifacts: Clean Categorized Cards & Speedometer -->
+    <g transform="translate(25, 120)">
+      <!-- Instant Resolution Card -->
+      <rect x="0" y="0" width="295" height="48" rx="8" fill="#0A101D" stroke="#00F0FF" stroke-opacity="0.3"/>
+      <circle cx="25" cy="24" r="12" fill="#10B981"/>
+      <path d="M 20 24 L 24 28 L 30 20" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+      <text x="50" y="22" fill="#00F0FF" font-family="monospace" font-size="11" font-weight="bold">4-Second Executive Drafts</text>
+      <text x="50" y="38" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">RCTO ইঞ্জিন দিয়ে যেকোনো মেইলের নিখুঁত উত্তর</text>
+
+      <!-- Instant Image Extraction Card -->
+      <rect x="0" y="60" width="295" height="48" rx="8" fill="#0A101D" stroke="#00F0FF" stroke-opacity="0.3"/>
+      <circle cx="25" cy="84" r="12" fill="#8B5CF6"/>
+      <text x="18" y="89" fill="#FFFFFF" font-size="12">📷</text>
+      <text x="50" y="82" fill="#C4B5FD" font-family="monospace" font-size="11" font-weight="bold">Photo-to-Table Auto Extract</text>
+      <text x="50" y="98" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">ছবির ডেটা মুহূর্তেই সাজানো গুগল শিটে রূপান্তর</text>
+
+      <!-- 10x Client SLA Win -->
+      <rect x="0" y="120" width="295" height="48" rx="8" fill="#0A101D" stroke="#10B981" stroke-opacity="0.4"/>
+      <circle cx="25" cy="144" r="12" fill="#10B981"/>
+      <text x="18" y="149" fill="#FFFFFF" font-size="12">⚡</text>
+      <text x="50" y="142" fill="#6EE7B7" font-family="monospace" font-size="11" font-weight="bold">10x Client Response SLA</text>
+      <text x="50" y="158" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">এমএনসি ক্লায়েন্ট সন্তুষ্ট, বিজনেস গ্রোথ নিশ্চিত</text>
+    </g>
+
+    <!-- 5:00 PM Clean Exit Badge -->
+    <rect x="25" y="340" width="295" height="34" rx="8" fill="#10B981" fill-opacity="0.1" stroke="#10B981" stroke-opacity="0.3"/>
+    <text x="40" y="362" fill="#10B981" font-family="monospace" font-size="11" font-weight="700">✓ Work Finished at 5:00 PM · Zero Backlog</text>
+  </g>
+</svg>

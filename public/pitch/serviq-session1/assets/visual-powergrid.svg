@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070B12"/>
+      <stop offset="50%" stop-color="#0E1626"/>
+      <stop offset="100%" stop-color="#070B12"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#bgGrad)" rx="20"/>
+
+  <!-- Connecting Energy Conduits / Pipelines -->
+  <line x1="400" y1="410" x2="400" y2="80" stroke="#00F0FF" stroke-opacity="0.3" stroke-width="4" stroke-dasharray="8 6"/>
+  
+  <!-- ========================================== -->
+  <!-- TIER 1: THE NATIONAL POWER GRID (BOTTOM)   -->
+  <!-- ========================================== -->
+  <g transform="translate(140, 340)">
+    <!-- Base Platform -->
+    <rect x="0" y="0" width="520" height="110" rx="16" fill="#0A101D" stroke="#F59E0B" stroke-opacity="0.4" stroke-width="2"/>
+    <rect x="15" y="15" width="490" height="80" rx="10" fill="#F59E0B" fill-opacity="0.04"/>
+
+    <!-- Industrial Turbine & Server Rack Icons -->
+    <g transform="translate(30, 25)">
+      <rect x="0" y="0" width="60" height="60" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+      <circle cx="30" cy="30" r="18" fill="none" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4 2"/>
+      <circle cx="30" cy="30" r="6" fill="#F59E0B"/>
+      <path d="M 30 12 L 30 48 M 12 30 L 48 30" stroke="#F59E0B" stroke-width="1.5"/>
+    </g>
+
+    <!-- Content Block -->
+    <g transform="translate(110, 32)">
+      <div class="badge" style="display:inline">
+        <text x="0" y="0" fill="#F59E0B" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="1">LAYER 1 · THE POWER GRID (GLOBAL HARDWARE)</text>
+      </div>
+      <text x="0" y="24" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="800">Google &amp; Nvidia Planetary Data Centers</text>
+      <text x="0" y="44" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">হাজার কোটি ডলারের ইলেকট্রিক গ্রিড — আমাদের শুধু প্লাগ লাগাতে হবে</text>
+    </g>
+
+    <text x="440" y="62" fill="#F59E0B" font-family="monospace" font-size="20" font-weight="bold">⚡ 100%</text>
+  </g>
+
+  <!-- Flow Arrow 1 -->
+  <polygon points="400,315 392,330 408,330" fill="#F59E0B"/>
+
+  <!-- ========================================== -->
+  <!-- TIER 2: THE BRAIN IN A JAR (MIDDLE)        -->
+  <!-- ========================================== -->
+  <g transform="translate(140, 195)">
+    <!-- Middle Platform -->
+    <rect x="0" y="0" width="520" height="110" rx="16" fill="#0A101D" stroke="#8B5CF6" stroke-opacity="0.6" stroke-width="2" filter="url(#glow)"/>
+    <rect x="15" y="15" width="490" height="80" rx="10" fill="#8B5CF6" fill-opacity="0.06"/>
+
+    <!-- Glowing Luminescent Brain Sphere -->
+    <g transform="translate(30, 25)">
+      <circle cx="30" cy="30" r="28" fill="#8B5CF6" fill-opacity="0.15" stroke="#8B5CF6" stroke-width="2"/>
+      <circle cx="30" cy="30" r="16" fill="#0E1626" stroke="#C4B5FD" stroke-width="1.5"/>
+      <text x="21" y="36" fill="#C4B5FD" font-size="18">🧠</text>
+    </g>
+
+    <!-- Content Block -->
+    <g transform="translate(110, 32)">
+      <text x="0" y="0" fill="#C4B5FD" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="1">LAYER 2 · THE FOUNDATION BRAIN (INTELLIGENCE)</text>
+      <text x="0" y="24" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="800">Gemini 1.5 Pro Engine (2 Million Tokens)</text>
+      <text x="0" y="44" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">অসীম মেমোরিসম্পন্ন মস্তিষ্ক — রুমে বসে এক্সিকিউটিভ ব্রিফের অপেক্ষায়</text>
+    </g>
+
+    <text x="440" y="62" fill="#C4B5FD" font-family="monospace" font-size="16" font-weight="bold">2M CTX</text>
+  </g>
+
+  <!-- Flow Arrow 2 -->
+  <polygon points="400,170 392,185 408,185" fill="#00F0FF"/>
+
+  <!-- ========================================== -->
+  <!-- TIER 3: THE SERVIQ WORKSTATION DESK (TOP) -->
+  <!-- ========================================== -->
+  <g transform="translate(140, 50)">
+    <!-- Top Platform (Highlighted for Serviq) -->
+    <rect x="0" y="0" width="520" height="110" rx="16" fill="#0E1626" stroke="#00F0FF" stroke-width="2.5" filter="url(#glow)"/>
+    <rect x="15" y="15" width="490" height="80" rx="10" fill="#00F0FF" fill-opacity="0.08"/>
+
+    <!-- Workstation Laptop / Checkmark Icon -->
+    <g transform="translate(30, 25)">
+      <rect x="0" y="5" width="60" height="42" rx="4" fill="#1E293B" stroke="#00F0FF" stroke-width="1.5"/>
+      <path d="M -5 47 L 65 47 L 55 55 L 5 55 Z" fill="#00F0FF"/>
+      <circle cx="30" cy="26" r="10" fill="#10B981"/>
+      <path d="M 26 26 L 29 29 L 35 23" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+    </g>
+
+    <!-- Content Block -->
+    <g transform="translate(110, 32)">
+      <text x="0" y="0" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="1">LAYER 3 · SERVIQ'S WORKSTATION DESK (WHERE YOU LIVE)</text>
+      <text x="0" y="24" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="800">Gmail · Google Docs · Sheets · NotebookLM</text>
+      <text x="0" y="44" fill="#A5F3FC" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="600">যেখানে শাবউদ্দিন, রায়হান, রিদিয়া ও পার্থ প্রতিদিন ৩ ঘণ্টা সময় বাঁচাবেন</text>
+    </g>
+
+    <text x="440" y="62" fill="#10B981" font-family="monospace" font-size="15" font-weight="bold">+3h/DAY</text>
+  </g>
+</svg>
