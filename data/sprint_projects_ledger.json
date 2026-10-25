@@ -706,7 +706,7 @@
       "creditValuation": 25000,
       "bdtValuation": 50000,
       "usdValuation": 412.5,
-      "testsCertified": 39,
+      "testsCertified": 42,
       "artifacts": [
         "Curriculum Blueprint: SERVIQ_SESSION_1_CURRICULUM_BLUEPRINT.md",
         "Enriched Master Manual: SERVIQ_SESSION_1_ENRICHED_TAKEAWAY_MANUAL.md",
@@ -714,7 +714,8 @@
         "Surface B Presenter Co-Pilot 2.0 HUD: public/pitch/serviq-session1/copilot.html",
         "Surface C 8-Page A4 Takeaway Manual: public/pitch/serviq-session1/takeaway/index.html",
         "Jest Tri-Surface Test Suite: tests/pitch_serviq_session1.test.js (39/39 Passing)",
-        "Independent Auditor Receipt: QA_SERVIQ_SESSION1_B2B_AUDIT_RECEIPT.json (Score: 98.0/100)"
+        "Independent Auditor Receipt: QA_SERVIQ_SESSION1_B2B_AUDIT_RECEIPT.json (Score: 98.0/100)",
+        "16:9 Widescreen Space Calibration & Native Inlined SVGs (Commit: 0cbb0e5)"
       ],
       "charteredDate": "2026-10-25",
       "completedDate": "2026-10-25",
@@ -728,6 +729,6 @@
     "totalCreditsGenerated": 895000,
     "totalBdtValuation": 1790000,
     "totalUsdValuation": 14767.5,
-    "totalTestsPassingAcrossHoldings": 1330
+    "totalTestsPassingAcrossHoldings": 1333
   }
 }
