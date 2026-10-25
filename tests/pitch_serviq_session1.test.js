@@ -144,7 +144,7 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
     });
   });
 
-  describe('Surface B: Private Presenter Co-Pilot HUD (/pitch/serviq-session1/copilot)', () => {
+  describe('Surface B: Private Presenter Co-Pilot 2.0 HUD (/pitch/serviq-session1/copilot)', () => {
     test('serves the copilot HUD at /pitch/serviq-session1/copilot and .html alias', async () => {
       const res1 = await request(app).get('/pitch/serviq-session1/copilot');
       expect(res1.status).toBe(200);
@@ -170,7 +170,6 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       expect(res.text).toContain('The Core Mental Model');
       expect(res.text).toContain('The 3-Layer Enterprise Power Grid');
       expect(res.text).toContain('Why BPO is Ground Zero for AI');
-      expect(res.text).toContain('The "Lazy Prompt" Trap');
       expect(res.text).toContain('The GRO10X RCTO Protocol');
       expect(res.text).toContain('Live Shootout');
       expect(res.text).toContain('The 4 Serviq Desks Ahead');
@@ -210,6 +209,43 @@ describe('Serviq BPO AI Masterclass — Session 1 Dual Pitch Asset (PitchOS)', (
       const res = await request(app).get('/pitch/serviq-session1/copilot');
       expect(res.text).toContain('/pitch/serviq-session1');
       expect(res.text).toContain('TV Deck');
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW MANDATORY CAPABILITIES (CO-PILOT 2.0 UPGRADE)
+    // ─────────────────────────────────────────────────────────────
+    test('renders Desktop Dual-Pane vs. Mobile View toggle with localStorage persistence', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/copilot');
+      expect(res.text).toContain('id="view-mode-toggle-btn"');
+      expect(res.text).toContain('toggleViewMode()');
+      expect(res.text).toContain('copilot_view_mode');
+      expect(res.text).toContain('id="desktop-layout"');
+      expect(res.text).toContain('id="mobile-layout"');
+      expect(res.text).toContain('id="desktop-slide-list"');
+    });
+
+    test('renders slide-by-slide audio rehearsal recorder with MediaRecorder & Web Audio API triggers', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/copilot');
+      expect(res.text).toContain('toggleAudioRecordingActive()');
+      expect(res.text).toContain('startAudioRecordingActive()');
+      expect(res.text).toContain('stopAudioRecordingActive()');
+      expect(res.text).toContain('navigator.mediaDevices.getUserMedia');
+      expect(res.text).toContain('MediaRecorder');
+      expect(res.text).toContain('serviq_audio_slide_');
+      expect(res.text).toContain('id="btn-record-audio-desktop"');
+      expect(res.text).toContain('id="audio-player-desktop"');
+    });
+
+    test('renders in-browser editable presenter notes with localStorage persistence', async () => {
+      const res = await request(app).get('/pitch/serviq-session1/copilot');
+      expect(res.text).toContain('editNotesActive()');
+      expect(res.text).toContain('saveNotesActive()');
+      expect(res.text).toContain('resetNotesActive()');
+      expect(res.text).toContain('serviq_notes_slide_');
+      expect(res.text).toContain('id="btn-edit-notes-desktop"');
+      expect(res.text).toContain('id="btn-save-notes-desktop"');
+      expect(res.text).toContain('id="active-spoken-text"');
+      expect(res.text).toContain('contenteditable');
     });
   });
 
