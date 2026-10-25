@@ -301,7 +301,7 @@
     },
     {
       "id": "PRJ-TOFFEECON-RISHKA-DUAL-QUOTE",
-      "venture": "ToffeeCon 2026 Platform \u00d7 Rishka Connects",
+      "venture": "ToffeeCon 2026 Platform × Rishka Connects",
       "engine": "Engine 2: Bespoke Agency Services (Tools & Products)",
       "port": 3000,
       "sprint": "Dual Official Quotation PDFs (350K / 550K), AI Voice Dubbing Architecture & Hardware Scope Decoupling",
@@ -351,13 +351,13 @@
       "pricingType": "Productized Micro-SaaS Ingress",
       "creditValuation": 30000,
       "bdtValuation": 60000,
-      "usdValuation": 495.0,
+      "usdValuation": 495,
       "testsCertified": 7,
       "artifacts": [
         "High-Converting PitchOS Landing Page & Live Dual-Surface Comparison (public/pitch/index.html)",
         "Interactive Deck Intake Form & File Upload Pipeline",
         "API Route POST /api/pitch/intake with Lead Validation & Telegram Alert",
-        "3-Tier Commercial Pricing Matrix (\u09f325k / \u09f345k / \u09f375k)",
+        "3-Tier Commercial Pricing Matrix (৳25k / ৳45k / ৳75k)",
         "Automated Test Coverage Suite (tests/pitchos_intake.test.js)"
       ],
       "charteredDate": "2026-10-23",
@@ -368,12 +368,12 @@
       "venture": "GRO10X Capital (Capital10x)",
       "engine": "Engine 6: Fintech & Capital Markets",
       "port": 3000,
-      "sprint": "Sprint 0: 360\u00b0 Forensic Audit, 26-Table Supabase Schema Sync & Squad Indexing",
+      "sprint": "Sprint 0: 360° Forensic Audit, 26-Table Supabase Schema Sync & Squad Indexing",
       "status": "COMPLETED",
       "pricingType": "Proprietary Venture Equity R&D",
       "creditValuation": 50000,
       "bdtValuation": 100000,
-      "usdValuation": 825.0,
+      "usdValuation": 825,
       "testsCertified": 36,
       "artifacts": [
         "Next.js 16 App Router & Turbopack Core (D:\\gro10x-capital)",
@@ -395,14 +395,14 @@
       "pricingType": "Proprietary Venture Equity R&D",
       "creditValuation": 30000,
       "bdtValuation": 60000,
-      "usdValuation": 495.0,
+      "usdValuation": 495,
       "testsCertified": 12,
       "artifacts": [
         "Asynchronous Notification Queue Worker (/api/cron/process-notifications) with atomic batch locks",
         "bKash Webhook & Settlement Bridge (/api/payments/bkash-webhook) with HMAC-SHA256 & atomic RPC (rpc_settle_bkash_booking)",
         "Primary Allocation bKash Gateway Modal with real-time Postgres polling & celebration holding receipt",
         "Admin Command Center Tab 14 (Bot Management) with Notification Queue Live Telemetry & 1-click worker execution",
-        "Telegram MiniApp Admin & Investor Views with live queue telemetry and [bKash Verified \u26a1] badges",
+        "Telegram MiniApp Admin & Investor Views with live queue telemetry and [bKash Verified ⚡] badges",
         "3-Bot Command Matrix Integration (@gro10xmanbot, @gro10xcapbot, @gro10xbizbot)",
         "Playwright E2E Hardening Suite (tests/e2e/test_sprint1_hardening.mjs) with 7 photographic audit artifacts (12/12 assertions green)"
       ],
@@ -419,7 +419,7 @@
       "pricingType": "Proprietary Venture Equity R&D",
       "creditValuation": 50000,
       "bdtValuation": 100000,
-      "usdValuation": 825.0,
+      "usdValuation": 825,
       "testsCertified": 78,
       "artifacts": [
         "Multi-Organization Database Schema (002_conglomerate_42_employees.sql) with 7 Orgs, 43 Personas & 5 Stakeholder PIN Accounts",
@@ -448,7 +448,7 @@
       "artifacts": [
         "adminRouteGuard Middleware & HTTP 302 Redirects on /admin, /control, and /simulation",
         "Sensitive Admin APIs Protected with requireDirectorAuth Header (x-director-auth: toffeecon-2026-secure)",
-        "Smart \ud83d\udcf2 Download App Button with Chromium beforeinstallprompt & iOS Safari 3-Step Guidance Modal",
+        "Smart 📲 Download App Button with Chromium beforeinstallprompt & iOS Safari 3-Step Guidance Modal",
         "PWA Standalone Mode Auto-Detection & Button Suppression (display-mode: standalone)",
         "Scrubbed Public Surfaces (landing.html & portal.html) Free of Admin Links",
         "Sanitized AI & Media Locker Endpoints with Redacted Filesystem Paths",
@@ -462,7 +462,7 @@
       "venture": "ToffeeCon 2026",
       "engine": "Engine 4 Satellite #4",
       "port": 5000,
-      "sprint": "Sprint 2.1: Mobile PWA UI Refinement, Header Overhaul & 360\u00b0 Prototype-to-Production Purge",
+      "sprint": "Sprint 2.1: Mobile PWA UI Refinement, Header Overhaul & 360° Prototype-to-Production Purge",
       "status": "COMPLETED",
       "pricingType": "Commercial Satellite Retainer",
       "creditValuation": 15000,
@@ -470,7 +470,7 @@
       "usdValuation": 247.5,
       "testsCertified": 21,
       "artifacts": [
-        "56px Unclipped Mobile Header with Swirl Logo and \u25cf LIVE 6G SYNC Badge",
+        "56px Unclipped Mobile Header with Swirl Logo and ● LIVE 6G SYNC Badge",
         "Safe-Area Navigation Inset (env(safe-area-inset-bottom)) for Android 3-Button & iOS Gesture Bars",
         "Public Header Sanitization (Purged Stage LED & VIP Greetings; Added About, Agenda, Booths, Venue)",
         "Dynamic localStorage Media Locker with Graceful Empty States (Purged Static Erik Aas Mock Stubs)",
@@ -491,7 +491,7 @@
       "pricingType": "Commercial Satellite Retainer",
       "creditValuation": 40000,
       "bdtValuation": 80000,
-      "usdValuation": 660.0,
+      "usdValuation": 660,
       "testsCertified": 41,
       "artifacts": [
         "60-Guest Enterprise VIP Whitelist & Cryptographic Token Generator (TC26-VIP-[4DIGIT]-[HEX4])",
@@ -515,7 +515,7 @@
       "pricingType": "Commercial Satellite Retainer",
       "creditValuation": 30000,
       "bdtValuation": 60000,
-      "usdValuation": 495.0,
+      "usdValuation": 495,
       "testsCertified": 53,
       "artifacts": [
         "Atomic 12-Beat Event Schedule Store (server/data/event_schedule.json) Ingested Verbatim from Official Client Slide",
@@ -539,12 +539,12 @@
       "pricingType": "Enterprise Media Commercial Retainer",
       "creditValuation": 50000,
       "bdtValuation": 100000,
-      "usdValuation": 825.0,
+      "usdValuation": 825,
       "testsCertified": 7,
       "artifacts": [
         "60-Second Progressive Broadcast Golden Master (RYZE_COSTAR_AI_BROADCAST_FINAL_DELIVERY_60S.mp4, 21.85 MB, 1440 frames @ 24fps)",
         "EBU R128 Master Balanced Audio Bed (ryze_master_audio_balanced_60s.wav, exact -16.0 LUFS, -1.6 dBFS true peak headroom)",
-        "Cleaned & Synced Kinetic Subtitles (kinetic_subtitles_60s.ass with Line 26 'Shhh... \u09b2\u09be\u0987\u09ac\u09cd\u09b0\u09c7\u09b0\u09bf \u0995\u09bf\u09a8\u09cd\u09a4\u09c1...')",
+        "Cleaned & Synced Kinetic Subtitles (kinetic_subtitles_60s.ass with Line 26 'Shhh... লাইব্রেরি কিন্তু...')",
         "Visual & Metrology Remediation Receipt (AUDIT_REMEDIATION_S2_RECEIPT.md)",
         "Acoustic Stems & Dynamic Ducking Verification Receipt (AUDIT_VERIFICATION_RECEIPT_AUDIO_SUBTITLE_S1.md)",
         "Independent Forensic Quality & Consumer Hype Clearance Dossier (CERT-2026-RYZE-60S-BROADCAST-FINAL-v5.0, 7.6/10 Consumer Score)"
@@ -604,7 +604,7 @@
       "venture": "Mother OS HQ / Engine 2",
       "engine": "Engine 2: Bespoke Agency Services & Solutions",
       "port": 3000,
-      "sprint": "Sprint: Biniyog.io \u00d7 Foodpanda Revenue-Linked Murabaha Partnership Deck & Presenter Co-Pilot",
+      "sprint": "Sprint: Biniyog.io × Foodpanda Revenue-Linked Murabaha Partnership Deck & Presenter Co-Pilot",
       "status": "COMPLETED",
       "pricingType": "Commercial Productized Presentation (PitchOS)",
       "creditValuation": 35000,
@@ -615,7 +615,7 @@
         "10-Slide Fullscreen Boardroom Presentation Deck (public/pitch/biniyog-foodpanda/index.html mounted at /pitch/biniyog-foodpanda)",
         "Mobile Smartphone Presenter Co-Pilot HUD (public/pitch/biniyog-foodpanda/copilot.html with 15-min pacing timer and objection handling)",
         "Delivery Hero Pakistan ABHI Case Anchor & Strategic Battlecard vs Conventional Banks",
-        "Transparent Deal Economics Math (\u09f3300k advance, 10% Murabaha markup, \u09f327.5k weekly escrow deduction)",
+        "Transparent Deal Economics Math (৳300k advance, 10% Murabaha markup, ৳27.5k weekly escrow deduction)",
         "Foodpanda Executive Ingress with Direct WhatsApp to Shabab Bhai (+8801673113566) and 1-Click Print A4 PDF Export",
         "Automated Jest Test Suite (tests/pitch_biniyog_foodpanda.test.js, 20/20 green)"
       ],
@@ -693,14 +693,38 @@
       "charteredDate": "2026-10-25",
       "completedDate": "2026-10-25",
       "liveUrl": "https://youtube.com/shorts/pvICsaK_9g8"
+    },
+    {
+      "id": "PRJ-SERVIQ-SESSION1",
+      "code": "[E2-AGENCY]",
+      "venture": "GRO10X Bespoke Agency Services (Engine 2 / Serviq BPO)",
+      "engine": "Engine 2: Bespoke Agency Services & Solutions (Tools & Products)",
+      "port": 3000,
+      "sprint": "Sprint 30: Serviq AI Workforce Acceleration — Session 1 Dual PitchOS Asset & B2B Persona Audit",
+      "status": "COMPLETED",
+      "pricingType": "Bespoke Corporate AI Masterclass & PitchOS Co-Pilot System",
+      "creditValuation": 25000,
+      "bdtValuation": 50000,
+      "usdValuation": 412.5,
+      "testsCertified": 22,
+      "artifacts": [
+        "Curriculum Blueprint: SERVIQ_SESSION_1_CURRICULUM_BLUEPRINT.md",
+        "Boardroom TV Presentation Deck: public/pitch/serviq-session1/index.html",
+        "Presenter Co-Pilot HUD: public/pitch/serviq-session1/copilot.html",
+        "Jest Test Harness: tests/pitch_serviq_session1.test.js (22/22 Passing)",
+        "Independent B2B Persona QA Certification: QA_SERVIQ_SESSION1_B2B_AUDIT_RECEIPT.json (Score: 94.0/100)"
+      ],
+      "charteredDate": "2026-10-25",
+      "completedDate": "2026-10-25",
+      "liveUrl": "https://gro10x-ai.vercel.app/pitch/serviq-session1"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 29,
-    "totalSprintsCompleted": 28,
-    "totalCreditsGenerated": 870000,
-    "totalBdtValuation": 1740000,
-    "totalUsdValuation": 14355.0,
-    "totalTestsPassingAcrossHoldings": 1291
+    "totalSprintsChartered": 30,
+    "totalSprintsCompleted": 29,
+    "totalCreditsGenerated": 895000,
+    "totalBdtValuation": 1790000,
+    "totalUsdValuation": 14767.5,
+    "totalTestsPassingAcrossHoldings": 1313
   }
 }
