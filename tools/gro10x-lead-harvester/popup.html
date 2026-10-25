@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X LeadHarvester & AI Profiler</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="harvester-container">
+    <!-- Top Header -->
+    <header class="harvester-header">
+      <div class="brand-badge">
+        <div class="logo-icon">⚡</div>
+        <div>
+          <h1 class="brand-title">GRO10X <span class="accent-text">HARVESTER</span></h1>
+          <p class="brand-sub">WhatsApp AI Profiler & CRM Ingress</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnSettingsToggle" class="icon-btn" title="API & Engine Settings">⚙️</button>
+        <div id="connStatus" class="status-pill status-disconnected" title="WhatsApp Web Tab Status">
+          <span class="status-dot"></span> <span id="connText">Checking...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Settings Drawer (Collapsible) -->
+    <div id="settingsDrawer" class="settings-drawer hidden">
+      <div class="drawer-header">
+        <span>⚙️ Configuration</span>
+        <button id="btnCloseSettings" class="close-btn">✕</button>
+      </div>
+      <div class="setting-row">
+        <label for="apiUrlInput">Mother OS API Base URL:</label>
+        <div class="input-with-presets">
+          <input type="text" id="apiUrlInput" value="http://localhost:3000" placeholder="http://localhost:3000">
+        </div>
+        <div class="preset-links">
+          <button class="preset-pill" data-url="http://localhost:3000">Local (3000)</button>
+          <button class="preset-pill" data-url="https://gro10x-ai.vercel.app">Production Vercel</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label for="scrollSpeedSelect">Auto-Scroll Pacing:</label>
+        <select id="scrollSpeedSelect">
+          <option value="250">⚡ High-Speed (250ms)</option>
+          <option value="350" selected>⚖️ Balanced (350ms - Recommended)</option>
+          <option value="550">🛡️ Deep Inspection (550ms)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Active Group Card -->
+    <section class="group-card">
+      <div class="group-card-header">
+        <span class="card-tag">ACTIVE GROUP DETECTED</span>
+        <button id="btnRefreshGroup" class="btn-text-action" title="Rescan Group Details">🔄 Refresh</button>
+      </div>
+      <h2 id="groupTitle" class="group-title">Open a WhatsApp Group to begin</h2>
+      <p id="groupDescription" class="group-description">Click any WhatsApp Web chat or group header to auto-detect members and group context.</p>
+    </section>
+
+    <!-- Target Offer Selector -->
+    <section class="selector-card">
+      <label class="field-label" for="targetOfferSelect">🎯 TARGET GRO10X ENGINE OFFER:</label>
+      <select id="targetOfferSelect" class="cyber-select">
+        <option value="Engine 2: Bespoke Agency Tech & Turnkey MVPs" selected>Engine 2: Bespoke Agency Tech & Turnkey MVPs</option>
+        <option value="Engine 1: Agent10x Autonomous AI Bot Mesh & Voice Ingress">Engine 1: Agent10x Autonomous AI Bot Mesh & Voice</option>
+        <option value="Engine 3: Commerce10x & Dynamic Commerce Engine">Engine 3: Commerce10x & DigiVault Subscriptions</option>
+        <option value="Engine 4: Enterprise Township & Platform OS">Engine 4: Enterprise Township & Platform OS</option>
+        <option value="Engine 5: Media10x Viral Broadcast Network">Engine 5: Media10x Viral Broadcast Network</option>
+        <option value="Engine 6: GRO10X Capital & SME Financing">Engine 6: GRO10X Capital & SME Financing</option>
+      </select>
+    </section>
+
+    <!-- Scan & Action Trigger Bar -->
+    <section class="action-grid">
+      <button id="btnScan" class="cyber-btn primary-glow">
+        <span class="btn-icon">⚡</span>
+        <span class="btn-label" id="btnScanLabel">Scan & Auto-Scroll Members</span>
+      </button>
+
+      <button id="btnEnrich" class="cyber-btn purple-glow" disabled>
+        <span class="btn-icon">🤖</span>
+        <span class="btn-label">AI Lead Profile & Enrich</span>
+      </button>
+    </section>
+
+    <!-- Live Telemetry / Progress Bar -->
+    <div id="progressContainer" class="progress-container hidden">
+      <div class="progress-meta">
+        <span id="progressStatusText">Extracting members...</span>
+        <span id="progressCountText">0 members</span>
+      </div>
+      <div class="progress-track">
+        <div id="progressBar" class="progress-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Output Rails: Download CSV / JSON & 1-Click Sync -->
+    <section id="outputRail" class="output-rail hidden">
+      <div class="output-rail-header">
+        <span>EXPORT & CRM RAILS</span>
+        <span id="leadCountBadge" class="count-badge">0 Leads</span>
+      </div>
+      <div class="output-buttons">
+        <button id="btnExportCsv" class="rail-btn" title="Download Excel-compatible UTF-8 CSV">
+          <span>📥 CSV</span>
+        </button>
+        <button id="btnExportJson" class="rail-btn" title="Download Structured JSON">
+          <span>📋 JSON</span>
+        </button>
+        <button id="btnSyncCrm" class="rail-btn sync-btn" title="Sync directly to Mother OS CRM">
+          <span>☁️ Sync to CRM</span>
+        </button>
+      </div>
+      <div id="syncFeedback" class="sync-feedback hidden"></div>
+    </section>
+
+    <!-- Live Preview List -->
+    <section class="preview-deck">
+      <div class="preview-header">
+        <span class="section-title">HARVESTED LEADS FEED</span>
+        <div class="filter-pills">
+          <span class="pill-active">All</span>
+          <span id="tier1Counter" class="tier-pill tier-1-pill">Tier 1: 0</span>
+        </div>
+      </div>
+
+      <div id="leadList" class="lead-list-scroll">
+        <div class="empty-feed-placeholder">
+          <div class="placeholder-icon">📡</div>
+          <p>No members scanned yet.</p>
+          <small>Open a WhatsApp group in the active tab and click <b>[Scan & Auto-Scroll Members]</b>.</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- Terminal Status Footer -->
+    <footer class="harvester-footer">
+      <div id="terminalStatus" class="terminal-text">SYS: Idle. Ready for WhatsApp Web handshake.</div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

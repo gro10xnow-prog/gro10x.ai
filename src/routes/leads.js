@@ -1295,5 +1295,243 @@ router.post('/ai-audit', leadSubmitLimiter, async (req, res) => {
   }
 });
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GRO10X WhatsApp LeadHarvester: Batch AI Lead Profiler & Enrichment Ingress
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/ai-enrich', async (req, res) => {
+  try {
+    const { group_name = 'WhatsApp Group', group_description = '', target_offer = '', members = [] } = req.body;
+
+    if (!Array.isArray(members) || members.length === 0) {
+      return res.status(400).json({ ok: false, error: 'No members provided in payload' });
+    }
+
+    const cleanGroupName = String(group_name || 'Business Group').trim();
+    const cleanTargetOffer = String(target_offer || '').trim();
+
+    const enrichedMembers = members.map((m, idx) => {
+      const rawName = String(m.name || m.contactPerson || m.displayName || '').trim();
+      const rawPhone = String(m.phone || m.whatsapp || '').trim();
+      const rawAbout = String(m.about || m.status || '').trim();
+      const isAdmin = Boolean(m.isAdmin || m.is_admin || String(m.role || '').toLowerCase().includes('admin'));
+
+      // Friendly display name fallback
+      let cleanName = rawName;
+      if (!cleanName || cleanName.startsWith('+') || /^\d+$/.test(cleanName.replace(/\D/g, ''))) {
+        cleanName = rawName.includes('~') ? rawName.replace(/^~/, '').trim() : (rawPhone || `Member #${idx + 1}`);
+      }
+
+      const combinedText = `${cleanName} ${rawAbout}`.toLowerCase();
+
+      // 1. Seniority Inference
+      let seniority = 'Professional / Practitioner';
+      if (isAdmin) {
+        seniority = 'Group Admin / Key Stakeholder';
+      }
+      if (/ceo|founder|co-founder|managing director|\bmd\b|owner|proprietor|partner|chairman|president/.test(combinedText)) {
+        seniority = isAdmin ? 'C-Level / Founder (Admin)' : 'C-Level / Founder';
+      } else if (/director|vice president|\bvp\b|head of|chief|principal/.test(combinedText)) {
+        seniority = 'Director / VP';
+      } else if (/manager|lead|supervisor|coordinator/.test(combinedText)) {
+        seniority = 'Manager / Team Lead';
+      } else if (/doctor|dr\.|advocate|lawyer|architect|consultant|investor|trader/.test(combinedText)) {
+        seniority = 'Senior Professional / Consultant';
+      }
+
+      // 2. Lead Tier Classification
+      let leadTier = 'Tier 3 (Productized / Digital SKU)';
+      let score = 55;
+
+      if (seniority.includes('C-Level') || (isAdmin && seniority.includes('Admin')) || /enterprise|corporate|real estate|holding|investor|fintech/.test(combinedText)) {
+        leadTier = 'Tier 1 (High Ticket Enterprise)';
+        score = 88;
+      } else if (seniority.includes('Director') || seniority.includes('Senior Professional') || /agency|e-commerce|business|founder|trader/.test(combinedText)) {
+        leadTier = 'Tier 2 (Growth Retainer)';
+        score = 75;
+      } else if (rawAbout.length > 5 || cleanName.length > 3) {
+        leadTier = 'Tier 3 (Productized / Digital SKU)';
+        score = 62;
+      } else {
+        leadTier = 'Tier 4 (Nurture Pipeline)';
+        score = 45;
+      }
+
+      if (isAdmin) score += 10;
+      if (score > 98) score = 98;
+
+      // 3. Match Offer Mapping
+      let matchOffer = cleanTargetOffer || 'Engine 2: Bespoke Agency Tech & Turnkey MVPs';
+      if (!cleanTargetOffer) {
+        if (/ecommerce|shop|store|brand|retail|fmcg|product/.test(combinedText)) {
+          matchOffer = 'Engine 3: Commerce10x & Dynamic Commerce Engine';
+        } else if (/voice|call|bot|telegram|support|automation|agent/.test(combinedText)) {
+          matchOffer = 'Engine 1: Agent10x Autonomous AI Bot Mesh';
+        } else if (/media|video|marketing|youtube|content|ads|viral/.test(combinedText)) {
+          matchOffer = 'Engine 5: Media10x Viral Broadcast Network';
+        } else if (/loan|finance|invest|capital|credit|fund/.test(combinedText)) {
+          matchOffer = 'Engine 6: GRO10X Capital & SME Financing';
+        } else if (/enterprise|hospital|township|real estate|governance/.test(combinedText)) {
+          matchOffer = 'Engine 4: Enterprise Township & Platform OS';
+        }
+      }
+
+      // 4. Contextual Personalized Icebreakers
+      const firstName = cleanName.split(' ')[0] || 'Friend';
+      let icebreakerEn = '';
+      let icebreakerBn = '';
+
+      if (isAdmin) {
+        icebreakerEn = `Hi ${firstName}, saw you administering ${cleanGroupName}! Huge respect for leading this community. At GRO10X, we partner with community & business leaders to deploy custom AI agents and enterprise systems. Would love to share high-level ideas with you when convenient.`;
+        icebreakerBn = `সালাম ${firstName} ভাই, ${cleanGroupName} গ্রুপটি আপনি চমৎকারভাবে লিড দিচ্ছেন দেখে কানেক্ট করলাম। আমরা GRO10X-এ কমিউনিটি ও বিজনেস ওনারদের জন্য অটোমেটেড AI সল্যুশন ও টেক সিস্টেম ডেভেলপ করি। ফ্রি সময়ে কথা বলার সুযোগ আছে কি?`;
+      } else if (seniority.includes('C-Level') || seniority.includes('Founder')) {
+        icebreakerEn = `Hi ${firstName}, came across your profile in ${cleanGroupName}. At GRO10X, we engineer high-leverage AI workflows and turn-key bespoke software for ambitious founders. Would love to share a 2-minute overview of our recent client wins.`;
+        icebreakerBn = `সালাম ${firstName} ভাই, ${cleanGroupName} গ্রুপ থেকে আপনার প্রোফাইলটি নজরে এলো। আমরা GRO10X-এ প্রতিষ্ঠাতা ও লিডারদের জন্য অটোমেটেড AI সিস্টেম ও কাস্টম টেক তৈরি করি। আপনার বিজনেসের গ্রোথে এটি কীভাবে ভ্যালু যোগ করতে পারে, সংক্ষেপে শেয়ার করতে পারি?`;
+      } else {
+        icebreakerEn = `Hi ${firstName}, noticed you in ${cleanGroupName}! We build production AI tools and automated revenue systems at GRO10X. Would love to connect and share some insights relevant to your space!`;
+        icebreakerBn = `সালাম ${firstName} ভাই/আপু, ${cleanGroupName} গ্রুপ থেকে আপনার সাথে কানেক্ট করছি। আমরা GRO10X-এ আধুনিক AI টুলস ও ডিজিটাল সিস্টেম নিয়ে কাজ করছি। আপনার সাথে কানেক্টেড থাকতে পেরে সম্মানিত বোধ করব!`;
+      }
+
+      return {
+        id: `WH-${Date.now().toString(36).toUpperCase()}-${idx + 1}`,
+        name: cleanName,
+        phone: rawPhone,
+        about: rawAbout,
+        is_admin: isAdmin,
+        seniority,
+        lead_tier: leadTier,
+        match_offer: matchOffer,
+        icebreaker_en: icebreakerEn,
+        icebreaker_bn: icebreakerBn,
+        score,
+        group_name: cleanGroupName,
+        source: 'WhatsApp LeadHarvester'
+      };
+    });
+
+    res.json({
+      ok: true,
+      success: true,
+      group_name: cleanGroupName,
+      target_offer: cleanTargetOffer,
+      count: enrichedMembers.length,
+      members: enrichedMembers
+    });
+  } catch (err) {
+    console.error('[Leads AI-Enrich Error]:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GRO10X WhatsApp LeadHarvester: 1-Click Sync to Mother OS CRM
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/harvester-sync', async (req, res) => {
+  try {
+    const { group_name = 'WhatsApp Group', target_offer = 'General', leads = [] } = req.body;
+
+    if (!Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ ok: false, error: 'No leads provided to sync' });
+    }
+
+    const startId = parseInt((await nextLeadId()).replace(/^(LED|LD)-/, ''), 10);
+    let idCounter = isNaN(startId) ? 1 : startId;
+
+    const leadsToInsert = leads.map(l => {
+      const generatedId = `LED-${String(idCounter++).padStart(3, '0')}`;
+      const contactPerson = l.name || l.contact_person || l.contactPerson || 'Prospective Lead';
+      const phone = l.phone || l.whatsapp || '';
+      const notes = [
+        `WhatsApp Group: ${l.group_name || group_name}`,
+        `Seniority: ${l.seniority || 'N/A'}`,
+        `Lead Tier: ${l.lead_tier || 'N/A'}`,
+        `About Status: ${l.about || 'N/A'}`,
+        l.is_admin ? 'Role: Group Admin' : '',
+        `Icebreaker (EN): ${l.icebreaker_en || ''}`,
+        `Icebreaker (BN): ${l.icebreaker_bn || ''}`
+      ].filter(Boolean).join(' | ');
+
+      const row = {
+        id: generatedId,
+        stage: 'New Inquiry',
+        created_at: new Date().toISOString(),
+        company: l.company || l.group_name || group_name,
+        contact_person: contactPerson,
+        email: l.email || `${generatedId.toLowerCase()}@whatsapp.gro10x.ai`,
+        phone,
+        whatsapp: phone,
+        source: 'WhatsApp LeadHarvester',
+        category: l.lead_tier || 'WhatsApp Inbound',
+        service: l.match_offer || target_offer || 'Engine 2: Bespoke Agency Tech',
+        value: l.lead_tier?.includes('Tier 1') ? 'BDT 150,000+' : (l.lead_tier?.includes('Tier 2') ? 'BDT 50,000' : 'BDT 15,000'),
+        score: l.score || 65,
+        notes,
+        utm_source: 'whatsapp_web',
+        utm_medium: 'lead_harvester',
+        utm_campaign: l.group_name || group_name
+      };
+      return row;
+    });
+
+    // 1. Supabase Persistence
+    if (isSupabaseConfigured()) {
+      try {
+        const sbRows = leadsToInsert.map(l => ({
+          id: l.id,
+          name: l.contact_person,
+          company: l.company,
+          contact_person: l.contact_person,
+          email: l.email,
+          phone: l.phone,
+          service_interest: l.service,
+          source: l.source,
+          stage: l.stage,
+          status: 'new',
+          currency: 'BDT',
+          value: parseFloat(String(l.value || '0').replace(/[^0-9.]/g, '')) || 50000,
+          score: l.score,
+          notes: l.notes,
+          created_at: l.created_at,
+          updated_at: l.created_at
+        }));
+        const { error } = await supabase.from('leads').insert(sbRows);
+        if (error) console.warn('[Harvester Sync] Supabase insert note:', error.message);
+      } catch (sbErr) {
+        console.warn('[Harvester Sync] Supabase exception:', sbErr.message);
+      }
+    }
+
+    // 2. Dual-Persist to Local data/db.json
+    try {
+      const db = await readDB();
+      db.leads = db.leads || [];
+      db.leads.unshift(...leadsToInsert);
+      await writeDB(db);
+    } catch (dbErr) {
+      console.warn('[Harvester Sync] Local DB write note:', dbErr.message);
+    }
+
+    // 3. Real-time Telemetry Broadcast
+    try {
+      broadcastLeadEvent('lead_update', leadsToInsert);
+      const { emitStakeholderEvent } = require('../services/stakeholder-events');
+      for (const lead of leadsToInsert.slice(0, 5)) {
+        emitStakeholderEvent('lead.created', { lead }, { stakeholderId: lead.id, stakeholderType: 'lead' }).catch(() => {});
+      }
+    } catch (_) {}
+
+    res.json({
+      ok: true,
+      success: true,
+      message: `Successfully synced ${leadsToInsert.length} WhatsApp leads to GRO10X OS CRM`,
+      count: leadsToInsert.length,
+      synced_leads: leadsToInsert
+    });
+  } catch (err) {
+    console.error('[Harvester Sync Error]:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
 

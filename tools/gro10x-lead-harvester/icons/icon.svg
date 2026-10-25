@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="28" fill="#070b12" stroke="#00f2fe" stroke-width="6"/>
+  <defs>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe"/>
+      <stop offset="50%" stop-color="#7928ca"/>
+      <stop offset="100%" stop-color="#ff007a"/>
+    </linearGradient>
+  </defs>
+  <polygon points="66,20 33,69 61,69 51,107 95,56 66,56" fill="url(#boltGrad)"/>
+  <circle cx="97" cy="30" r="8" fill="#00df89"/>
+</svg>

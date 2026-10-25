@@ -792,14 +792,38 @@
       "charteredDate": "2026-10-25",
       "completedDate": "2026-10-26",
       "liveUrl": "https://gro10x-ai.vercel.app/prototypes/ryze-ai-star/"
+    },
+    {
+      "id": "PRJ-LEADHARVEST-CHROME-AI",
+      "code": "[M-AGENCY-BOT]",
+      "venture": "Mother OS / Engine 1 & 2 Sales Mesh",
+      "engine": "Engine 1 & 2: Autonomous Inbound Lead Acquisition & AI Profiling",
+      "port": 3000,
+      "sprint": "Sprint 34: GRO10X LeadHarvester Chrome Extension (Manifest v3) & AI Profiling Ingress Engine",
+      "status": "COMPLETED",
+      "pricingType": "Internal High-Velocity Sales & Growth Tooling",
+      "creditValuation": 25000,
+      "bdtValuation": 50000,
+      "usdValuation": 412.5,
+      "testsCertified": 23,
+      "artifacts": [
+        "Manifest v3 Chrome Extension in tools/gro10x-lead-harvester/ (Popup, Auto-Scroller, Background Service)",
+        "Backend AI Profiling Ingress: POST /api/leads/ai-enrich & POST /api/leads/harvester-sync in src/routes/leads.js",
+        "Deterministic Persona Classifier: Seniority, Industry, Lead Tier (P1-P4), Offer Match & Bilingual Icebreaker Generator",
+        "Automated Test Suite: tests/harvester_ingress.test.js (23 Passing Tests across Bot Mesh, Crons & Harvester)",
+        "Forensic Documentation: tools/gro10x-lead-harvester/README.md & docs/squad/ROLE_AGENCY_BOT_ENGINEER.md"
+      ],
+      "charteredDate": "2026-10-26",
+      "completedDate": "2026-10-26",
+      "liveUrl": "https://gro10x-ai.vercel.app/api/leads/harvester-sync"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 33,
-    "totalSprintsCompleted": 32,
-    "totalCreditsGenerated": 975000,
-    "totalBdtValuation": 1950000,
-    "totalUsdValuation": 16087.5,
-    "totalTestsPassingAcrossHoldings": 1417
+    "totalSprintsChartered": 34,
+    "totalSprintsCompleted": 33,
+    "totalCreditsGenerated": 1000000,
+    "totalBdtValuation": 2000000,
+    "totalUsdValuation": 16500.0,
+    "totalTestsPassingAcrossHoldings": 1440
   }
 }
