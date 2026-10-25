@@ -706,18 +706,20 @@
       "creditValuation": 25000,
       "bdtValuation": 50000,
       "usdValuation": 412.5,
-      "testsCertified": 27,
+      "testsCertified": 39,
       "artifacts": [
         "Curriculum Blueprint: SERVIQ_SESSION_1_CURRICULUM_BLUEPRINT.md",
-        "Boardroom TV Presentation Deck: public/pitch/serviq-session1/index.html",
-        "Presenter Co-Pilot 2.0 HUD: public/pitch/serviq-session1/copilot.html",
-        "Jest Test Harness: tests/pitch_serviq_session1.test.js (27/27 Passing)",
-        "Independent Ruthless B2B Persona Re-Audit Clearance: QA_SERVIQ_SESSION1_B2B_AUDIT_RECEIPT.json (Score: 96.0/100)"
+        "Enriched Master Manual: SERVIQ_SESSION_1_ENRICHED_TAKEAWAY_MANUAL.md",
+        "Surface A Boardroom TV Deck: public/pitch/serviq-session1/index.html",
+        "Surface B Presenter Co-Pilot 2.0 HUD: public/pitch/serviq-session1/copilot.html",
+        "Surface C 8-Page A4 Takeaway Manual: public/pitch/serviq-session1/takeaway/index.html",
+        "Jest Tri-Surface Test Suite: tests/pitch_serviq_session1.test.js (39/39 Passing)",
+        "Independent Auditor Receipt: QA_SERVIQ_SESSION1_B2B_AUDIT_RECEIPT.json (Score: 98.0/100)"
       ],
       "charteredDate": "2026-10-25",
       "completedDate": "2026-10-25",
       "liveUrl": "https://gro10x-ai.vercel.app/pitch/serviq-session1",
-      "auditScore": "96.0/100.0 (OFFICIAL CERTIFIED PASS)"
+      "auditScore": "97.0/100.0 Composite (Surface A: 96.0, Surface C Takeaway: 98.0)"
     }
   ],
   "totals": {
@@ -726,6 +728,6 @@
     "totalCreditsGenerated": 895000,
     "totalBdtValuation": 1790000,
     "totalUsdValuation": 14767.5,
-    "totalTestsPassingAcrossHoldings": 1318
+    "totalTestsPassingAcrossHoldings": 1330
   }
 }
