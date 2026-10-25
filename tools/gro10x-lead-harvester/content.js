@@ -20,26 +20,46 @@ function getActiveGroupHeader() {
 
 function getGroupInfo() {
   const header = getActiveGroupHeader();
-  if (!header) {
-    return { isGroup: false, title: '', description: '', memberCountText: '' };
-  }
+  const drawer = document.querySelector('div[data-testid="chat-info-drawer"]') ||
+                 document.querySelector('div[data-testid="group-info-drawer"]') ||
+                 document.querySelector('section');
 
   // 1. Group Title
   let title = '';
-  const titleSpan = header.querySelector('div[role="button"] span[title]') ||
-                    header.querySelector('span[title]') ||
-                    header.querySelector('span[dir="auto"]');
-  if (titleSpan) {
-    title = titleSpan.getAttribute('title') || titleSpan.textContent.trim();
+  if (header) {
+    const titleSpan = header.querySelector('div[role="button"] span[title]') ||
+                      header.querySelector('span[title]') ||
+                      header.querySelector('div[role="button"] span[dir="auto"]') ||
+                      header.querySelector('span[dir="auto"]');
+    if (titleSpan) {
+      title = titleSpan.getAttribute('title') || titleSpan.textContent.trim();
+    }
+  }
+  if (!title && drawer) {
+    const drawerTitleSpan = drawer.querySelector('div[role="button"] span[title]') ||
+                            drawer.querySelector('h2') ||
+                            drawer.querySelector('span[title]');
+    if (drawerTitleSpan) {
+      title = drawerTitleSpan.getAttribute('title') || drawerTitleSpan.textContent.trim();
+    }
   }
 
   // 2. Subtitle / Member count text in header
   let memberCountText = '';
-  const subtitleElem = header.querySelector('div[role="button"] ~ div span') ||
-                       header.querySelector('span[title="click here for group info"]') ||
-                       header.querySelector('span._amk6');
-  if (subtitleElem) {
-    memberCountText = subtitleElem.textContent.trim();
+  if (header) {
+    const subtitleElem = header.querySelector('div[role="button"] ~ div span') ||
+                         header.querySelector('span[title="click here for group info"]') ||
+                         header.querySelector('span._amk6');
+    if (subtitleElem) {
+      memberCountText = subtitleElem.textContent.trim();
+    }
+  }
+  if (!memberCountText && drawer) {
+    const drawerMemberElem = Array.from(drawer.querySelectorAll('span, div')).find(el => {
+      const txt = (el.textContent || '').trim();
+      return /^\d+\s*(members|participants|সদস্য)/i.test(txt);
+    });
+    if (drawerMemberElem) memberCountText = drawerMemberElem.textContent.trim();
   }
 
   // 3. Group Description (from Right Sidebar if opened)
@@ -50,6 +70,10 @@ function getGroupInfo() {
                     document.querySelector('div._amk4 span');
   if (descElem) {
     description = descElem.getAttribute('title') || descElem.textContent.trim();
+  }
+
+  if (!title && !header && !drawer) {
+    return { isGroup: false, title: '', description: '', memberCountText: '' };
   }
 
   return {

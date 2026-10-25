@@ -107,15 +107,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       logTerminal('SYS: Scanning & virtual scroll loop initiated...');
 
       const speed = parseInt(scrollSpeedSelect.value, 10) || 350;
-      chrome.tabs.sendMessage(activeTabId, { type: 'START_SCAN', scrollDelay: speed }, (res) => {
-        if (chrome.runtime.lastError) {
-          logTerminal(`ERR: ${chrome.runtime.lastError.message}`);
+      sendMessageToTab({ type: 'START_SCAN', scrollDelay: speed }, (res) => {
+        if (!res) {
           resetScanButton();
         }
       });
     } else {
       // Stop Scan
-      chrome.tabs.sendMessage(activeTabId, { type: 'STOP_SCAN' });
+      sendMessageToTab({ type: 'STOP_SCAN' });
       resetScanButton();
       logTerminal('SYS: Stop signal sent to content script.');
     }
@@ -325,6 +324,58 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Helper Functions
   // ───────────────────────────────────────────────────────────────────────────
 
+  async function ensureContentScriptInjected() {
+    if (!activeTabId) return false;
+    try {
+      if (chrome.scripting && chrome.scripting.executeScript) {
+        await chrome.scripting.executeScript({
+          target: { tabId: activeTabId },
+          files: ['content.js']
+        });
+        return true;
+      }
+    } catch (err) {
+      console.warn('Script injection notice:', err);
+    }
+    return false;
+  }
+
+  function sendMessageToTab(message, callback) {
+    if (!activeTabId) {
+      if (callback) callback(null);
+      return;
+    }
+    chrome.tabs.sendMessage(activeTabId, message, async (res) => {
+      if (chrome.runtime.lastError) {
+        const err = chrome.runtime.lastError.message || '';
+        if (err.includes('Receiving end does not exist') || err.includes('Could not establish connection')) {
+          logTerminal('SYS: Ingress bridge initializing. Injecting content script...');
+          const injected = await ensureContentScriptInjected();
+          if (injected) {
+            setTimeout(() => {
+              chrome.tabs.sendMessage(activeTabId, message, (retryRes) => {
+                if (chrome.runtime.lastError) {
+                  logTerminal('TIP: Please refresh (F5) WhatsApp Web tab to initialize.');
+                  if (callback) callback(null);
+                } else {
+                  if (callback) callback(retryRes);
+                }
+              });
+            }, 300);
+            return;
+          } else {
+            logTerminal('TIP: Please refresh (F5) WhatsApp Web tab.');
+          }
+        } else {
+          logTerminal(`ERR: ${err}`);
+        }
+        if (callback) callback(null);
+        return;
+      }
+      if (callback) callback(res);
+    });
+  }
+
   async function checkActiveTab() {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -334,6 +385,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         connStatus.className = 'status-pill status-connected';
         connText.textContent = 'WhatsApp Web Connected';
         logTerminal('SYS: Active WhatsApp Web tab attached.');
+        // Proactively ensure content script is injected in case tab was loaded prior to extension
+        await ensureContentScriptInjected();
         await refreshGroupContext();
       } else {
         connStatus.className = 'status-pill status-disconnected';
@@ -347,16 +400,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function refreshGroupContext() {
     if (!activeTabId) return;
-    chrome.tabs.sendMessage(activeTabId, { type: 'GET_GROUP_INFO' }, (info) => {
-      if (chrome.runtime.lastError) {
-        logTerminal(`SYS: ${chrome.runtime.lastError.message}`);
-        return;
-      }
+    sendMessageToTab({ type: 'GET_GROUP_INFO' }, (info) => {
       if (info && info.title) {
         currentGroup = info;
         setStorage({ cachedGroup: currentGroup });
         renderGroupInfo(currentGroup);
         logTerminal(`GROUP: Detected "${info.title}" (${info.memberCountText || 'active chat'})`);
+      } else {
+        logTerminal('TIP: Open a WhatsApp group chat and click the group header.');
       }
     });
   }
