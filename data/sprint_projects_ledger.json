@@ -816,10 +816,34 @@
       "charteredDate": "2026-10-26",
       "completedDate": "2026-10-26",
       "liveUrl": "https://gro10x-ai.vercel.app/api/leads/harvester-sync"
+    },
+    {
+      "id": "PRJ-DATA10X-SP1-10MS-INGEST",
+      "code": "[V8-DATA10X]",
+      "venture": "Data10X: Sovereign Data & Identity Graph Engine",
+      "engine": "Engine 4: Platforms & Operating Systems / Conglomerate Shared Assets",
+      "port": "Workspace D:\\data10x",
+      "sprint": "Sprint 35: 10 Minute School 12-Month Historical Sales Ingestion, Deduplication & Temporal Identity Graph",
+      "status": "CHARTERED",
+      "pricingType": "Sovereign Proprietary Data Asset & Identity Graph",
+      "creditValuation": 35000,
+      "bdtValuation": 70000,
+      "usdValuation": 577.5,
+      "testsCertified": 0,
+      "artifacts": [
+        "12-Month Historical Sales Ingestion Pipeline (D:\\data10x)",
+        "Unified Identity Deduplication Engine (+880 Phone Normalization & Entity Stitching)",
+        "2021 -> 2026 Temporal Career Aging & Life Stage Classifier (SSC/HSC/Admission/Professional)",
+        "High-Speed CLI & Query Interface (view_profile.js, query_cohorts.js)",
+        "Stage 4 Forensic QA Data Metrology & Checksum Receipt"
+      ],
+      "charteredDate": "2026-10-26",
+      "completedDate": null,
+      "liveUrl": "file:///D:/data10x"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 34,
+    "totalSprintsChartered": 35,
     "totalSprintsCompleted": 33,
     "totalCreditsGenerated": 1000000,
     "totalBdtValuation": 2000000,
