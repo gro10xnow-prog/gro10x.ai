@@ -591,6 +591,12 @@ app.get(['/pitch/serviq-session1/copilot', '/pitch/serviq-session1/copilot.html'
 app.get(['/pitch/serviq-session1/takeaway', '/pitch/serviq-session1/takeaway/', '/pitch/serviq-session1/takeaway/index.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pitch/serviq-session1/takeaway/index.html'));
 });
+app.get(['/pitch/ryze-dop', '/pitch/ryze-dop/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/ryze-dop/index.html'));
+});
+app.get(['/pitch/ryze-dop/copilot', '/pitch/ryze-dop/copilot.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/ryze-dop/copilot.html'));
+});
 app.use('/pitch', express.static(path.join(__dirname, 'public/pitch')));
 
 // Central Prototype Showroom & Staged Client Prototypes

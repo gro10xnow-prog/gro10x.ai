@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Ryze DOP Cinematography & AI Face Swap — Presenter Co-Pilot HUD</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      background-color: #070B12;
+      color: #E2E8F0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .heading-font { font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .bengali { font-family: 'Hind Siliguri', sans-serif; }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glow-amber { box-shadow: 0 0 16px rgba(245, 158, 11, 0.35); }
+    .glow-cyan { box-shadow: 0 0 16px rgba(0, 240, 255, 0.35); }
+    .glow-emerald { box-shadow: 0 0 16px rgba(16, 185, 129, 0.35); }
+
+    .slide-nav-item.active {
+      border-color: #F59E0B;
+      background: rgba(245, 158, 11, 0.12);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-20 select-none bg-[#070B12]">
+
+  <!-- ========================================================= -->
+  <!-- TOP STICKY CONTROLLER HUD                                 -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-50 bg-[#0A101D]/95 backdrop-blur-md border-b border-white/10 px-4 py-2.5 shadow-2xl">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Identity & Live Pulse -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#F59E0B] via-[#EF4444] to-[#00F0FF] flex items-center justify-center text-white font-black text-sm shadow-md">
+          ⚡
+        </div>
+        <div>
+          <div class="text-[11px] font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+            <span>RYZE DOP CO-PILOT</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></span>
+          </div>
+          <div class="text-[9px] text-gray-400 mono">PITCH-RYZE-DOP-CINEMA-V1</div>
+        </div>
+      </div>
+
+      <!-- Controls: Layout Switcher + Timer -->
+      <div class="flex items-center gap-2">
+        <!-- View Mode Switcher -->
+        <button id="view-mode-toggle-btn" onclick="toggleViewMode()" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-[11px] font-mono text-gray-300 transition flex items-center gap-1">
+          <span id="view-mode-icon">🖥️</span>
+          <span id="view-mode-label" class="hidden sm:inline">Desktop View</span>
+        </button>
+
+        <!-- Live Presentation Pacing Timer (15-Minute Pitch Stopwatch) -->
+        <div class="flex items-center gap-2 bg-black/60 px-3 py-1 rounded-xl border border-white/10">
+          <div class="text-right">
+            <div class="text-[8px] text-gray-400 uppercase mono font-bold">15m Timer</div>
+            <div id="timer-display" class="text-sm font-black mono text-[#F59E0B] leading-none">15:00</div>
+          </div>
+          <button id="timer-btn" onclick="toggleTimer()" class="w-7 h-7 rounded-lg bg-[#F59E0B]/20 hover:bg-[#F59E0B]/30 text-[#F59E0B] flex items-center justify-center text-xs transition active:scale-90 font-bold" title="Play/Pause">
+            ▶
+          </button>
+          <button onclick="resetTimer()" class="text-[10px] text-gray-400 hover:text-white px-1 font-mono" title="Reset">
+            ↺
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-6xl mx-auto mt-2 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-0.5">
+      <div class="flex items-center gap-1.5">
+        <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-[#F59E0B] text-black transition shrink-0">
+          🎙️ Spoken Scripts (1-8)
+        </button>
+        <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+          ⚔️ 1-Tap DOP Objections
+        </button>
+        <button onclick="switchTab('checklist')" id="tab-btn-checklist" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+          📋 5 Camera Rules Cheat Sheet
+        </button>
+      </div>
+
+      <!-- TV Presentation Link -->
+      <a href="/pitch/ryze-dop" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-[#00F0FF] border border-[#00F0FF]/30 transition shrink-0 flex items-center gap-1">
+        📺 TV Deck ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN CONTAINER (DUAL LAYOUT: DESKTOP OR MOBILE)           -->
+  <!-- ========================================================= -->
+  <main class="w-full px-4 pt-3 flex-1 max-w-6xl mx-auto">
+
+    <!-- DESKTOP DUAL-PANE CONTAINER -->
+    <div id="desktop-layout" class="hidden md:grid grid-cols-12 gap-5 mt-2">
+      
+      <!-- Left Column: Synchronized Slide Deck Directory -->
+      <div class="col-span-4 space-y-2">
+        <div class="text-[10px] uppercase font-mono font-bold text-gray-400 px-1 mb-1">
+          SLIDE ROSTER (2 MINS / SLIDE)
+        </div>
+        <div id="desktop-slide-list" class="space-y-1.5">
+          <!-- Slide cards injected via JS -->
+        </div>
+      </div>
+
+      <!-- Right Column: Active Slide Spoken Script & Live Prompts -->
+      <div class="col-span-8 space-y-4">
+        
+        <!-- Active Slide Title & Duration Card -->
+        <div class="glass-card p-4 rounded-2xl border border-white/10 flex items-center justify-between">
+          <div>
+            <div class="text-[10px] font-mono font-bold text-[#F59E0B] uppercase tracking-wider" id="active-slide-badge">
+              SLIDE 01 • THE PARTNERSHIP
+            </div>
+            <h3 class="text-lg font-bold text-white heading-font mt-0.5" id="active-slide-title">
+              Real Cinema Lighting + AI Face Swap
+            </h3>
+          </div>
+          <div class="text-right">
+            <span class="text-xs px-2.5 py-1 rounded-lg bg-[#10B981]/20 text-[#34D399] font-mono font-bold border border-[#10B981]/30">
+              Target: 2 Mins
+            </span>
+          </div>
+        </div>
+
+        <!-- Spoken Script Card in Authentic Bangla -->
+        <div class="glass-card p-6 rounded-2xl border border-[#F59E0B]/30 glow-amber relative">
+          <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B] animate-ping"></span>
+              <span class="text-xs font-mono font-bold text-[#F59E0B] uppercase">Spoken Script (মুখোমুখি ডায়লগ)</span>
+            </div>
+            <button onclick="copyActiveScript()" class="text-xs px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-gray-200 font-mono transition flex items-center gap-1 active:scale-95">
+              📋 1-Tap Copy
+            </button>
+          </div>
+
+          <div class="bengali text-lg sm:text-xl text-white leading-relaxed font-normal bg-black/40 p-4 rounded-xl border border-white/5" id="active-spoken-text">
+            "ভাই, আমরা আপনার ক্যামেরার লাইটিং বা সিনেম্যাটিক ফিল নষ্ট করতে আসিনি। আপনি যেভাবে ড্রামাটিক লাইটিং করবেন, আমাদের AI ওই লাইটিংয়ের সাথে ম্যাচ করে ফেসটা বসাবে। লুকটা থাকবে ১০০% আপনার অরিজিনাল ক্যামেরার। শুধু ফেস সোয়াপ যেন একদম হলিউড লেভেলের স্মুথ হয়, সেজন্য ক্যামেরায় ৫টা ছোট প্র্যাকটিক্যাল বিষয় খেয়াল রাখতে হবে।"
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
+            <span>Tone: <strong class="text-white">Respectful Colleague, Collaborative, Pragmatic</strong></span>
+            <span class="mono text-[#00F0FF]">Rule: Zero Jargon, 100% Practical</span>
+          </div>
+        </div>
+
+        <!-- Slide Key Anchors & Reminders -->
+        <div class="grid grid-cols-3 gap-3" id="active-slide-chips">
+          <!-- Injected dynamically -->
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- MOBILE / SINGLE-COLUMN VIEW -->
+    <div id="mobile-layout" class="md:hidden space-y-4 max-w-md mx-auto">
+      
+      <!-- Mobile Tabs Content -->
+      <section id="tab-notes-mobile" class="tab-content space-y-3">
+        <div class="p-3 bg-gradient-to-r from-[#F59E0B]/15 via-[#00F0FF]/15 to-transparent rounded-2xl border border-white/10 mb-2">
+          <div class="text-[10px] uppercase font-mono font-bold text-[#F59E0B]">DOP Pitching Strategy</div>
+          <div class="text-xs text-gray-200 mt-0.5">
+            Frame AI as the <strong class="text-white">assistant to the cinematographer's vision</strong>, not a replacement. Protect his lighting, lenses, and grade.
+          </div>
+        </div>
+
+        <!-- Accordion for each slide on mobile -->
+        <div id="mobile-slide-accordion" class="space-y-2.5">
+          <!-- Injected via JS -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 2: 1-TAP DOP OBJECTIONS DRAWER (GLOBAL)               -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-objections" class="tab-content hidden space-y-4 max-w-4xl mx-auto py-2">
+      
+      <div class="p-4 bg-gradient-to-r from-[#EF4444]/15 via-[#F59E0B]/15 to-transparent rounded-2xl border border-white/10">
+        <div class="text-xs uppercase font-mono font-bold text-red-400">Cinematographer Rapid Response</div>
+        <div class="text-sm text-gray-200 mt-1">
+          When the DOP raises technical concerns about shutter angle, sunglasses, or darkness, tap to view or copy the instant resolution:
+        </div>
+      </div>
+
+      <!-- Objection 1: Shutter / Strobe -->
+      <div class="glass-card p-5 rounded-2xl border border-white/10 hover:border-[#F59E0B]/40 transition space-y-2.5">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs font-mono font-bold text-red-400">OBJECTION 01 · SHUTTER &amp; MOTION BLUR</span>
+          <button onclick="copyText('obj-1-ans')" class="text-xs px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-gray-300 font-mono transition">
+            📋 Copy Reply
+          </button>
+        </div>
+        <div class="text-sm font-bold text-white bengali">
+          "১/১০০s শাটারে ভিডিও স্ট্রোব বা বেশি শার্প লাগবে না?"
+        </div>
+        <div id="obj-1-ans" class="bengali text-base text-gray-300 leading-relaxed bg-black/40 p-3.5 rounded-xl border border-white/5">
+          "না ভাই, আমরা আফটার ইফেক্টসে মোশন ভেক্টর পাস দিয়ে ন্যাচারাল ১৮০ ডিগ্রি ব্লার ফিরিয়ে দিব। কিন্তু ট্র্যাকিংয়ের জন্য আমাদের ক্রিস্প পিক্সেল লাগে।"
+        </div>
+      </div>
+
+      <!-- Objection 2: Sunglasses -->
+      <div class="glass-card p-5 rounded-2xl border border-white/10 hover:border-[#F59E0B]/40 transition space-y-2.5">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs font-mono font-bold text-red-400">OBJECTION 02 · SUNGLASSES &amp; EYE OCCLUSION</span>
+          <button onclick="copyText('obj-2-ans')" class="text-xs px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-gray-300 font-mono transition">
+            📋 Copy Reply
+          </button>
+        </div>
+        <div class="text-sm font-bold text-white bengali">
+          "অভিনেতার যদি সানগ্লাস পরার দৃশ্য থাকে?"
+        </div>
+        <div id="obj-2-ans" class="bengali text-base text-gray-300 leading-relaxed bg-black/40 p-3.5 rounded-xl border border-white/5">
+          "সানগ্লাস পরার ঠিক আগের ফ্রেমে বা খোলার ঠিক পরের ফ্রেমে ফেস সোয়াপ করব। সানগ্লাস চোখে থাকা অবস্থায় আই-ট্র্যাকিং হয় না।"
+        </div>
+      </div>
+
+      <!-- Objection 3: Night Dark Look -->
+      <div class="glass-card p-5 rounded-2xl border border-white/10 hover:border-[#F59E0B]/40 transition space-y-2.5">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs font-mono font-bold text-red-400">OBJECTION 03 · EXTREME SHADOWS &amp; NIGHT CAR</span>
+          <button onclick="copyText('obj-3-ans')" class="text-xs px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-gray-300 font-mono transition">
+            📋 Copy Reply
+          </button>
+        </div>
+        <div class="text-sm font-bold text-white bengali">
+          "রাতের সিনে যদি আমরা একদম ডার্ক ড্রামাটিক লুক চাই?"
+        </div>
+        <div id="obj-3-ans" class="bengali text-base text-gray-300 leading-relaxed bg-black/40 p-3.5 rounded-xl border border-white/5">
+          "ডার্ক ড্রামাটিক ব্যাকগ্রাউন্ড রাখেন ভাই, কিন্তু মুখের ওপর হালকা ৫% অ্যাম্বিয়েন্ট সফট ফিল দেন—চোখ দুটো যেন ০ আইআরই ব্ল্যাক না হয়ে যায়।"
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 3: 5 CAMERA RULES CHEAT SHEET                         -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-checklist" class="tab-content hidden space-y-3 max-w-4xl mx-auto py-2">
+      
+      <div class="glass-card p-5 rounded-2xl border border-white/10">
+        <h3 class="text-base font-bold text-white heading-font mb-3 flex items-center gap-2">
+          <span class="text-[#F59E0B]">⚡</span> The 5 Golden Rules Quick Reference
+        </h3>
+        
+        <div class="space-y-3 text-xs sm:text-sm">
+          <div class="p-3 bg-black/40 rounded-xl border border-white/5 flex items-start gap-3">
+            <span class="font-mono font-bold text-[#10B981] text-base leading-none">01</span>
+            <div>
+              <strong class="text-white block bengali">Two-Eye Rule (দুটো চোখের নিয়ম):</strong>
+              <span class="text-gray-300 bengali">মাথা সর্বোচ্চ ৪৫ ডিগ্রি ঘুরবে। ৯০ ডিগ্রি সাইড প্রোফাইল হওয়ার আগেই কাট নিন।</span>
+            </div>
+          </div>
+
+          <div class="p-3 bg-black/40 rounded-xl border border-white/5 flex items-start gap-3">
+            <span class="font-mono font-bold text-[#00F0FF] text-base leading-none">02</span>
+            <div>
+              <strong class="text-white block bengali">Shutter Speed (শাটার স্পিড):</strong>
+              <span class="text-gray-300 bengali">১/১০০s বা ১/১২৫s শাটার ব্যবহার করুন। মোশন ব্লার ভিএফএক্সে ফিরিয়ে দেওয়া হবে।</span>
+            </div>
+          </div>
+
+          <div class="p-3 bg-black/40 rounded-xl border border-white/5 flex items-start gap-3">
+            <span class="font-mono font-bold text-red-400 text-base leading-none">03</span>
+            <div>
+              <strong class="text-white block bengali">Face Occlusion (মুখে হাত নয়):</strong>
+              <span class="text-gray-300 bengali">হাত কলারবোনের নিচে থাকবে। মুখে প্রপস বা আলগা চুল আটকানো নিষিদ্ধ।</span>
+            </div>
+          </div>
+
+          <div class="p-3 bg-black/40 rounded-xl border border-white/5 flex items-start gap-3">
+            <span class="font-mono font-bold text-[#F59E0B] text-base leading-none">04</span>
+            <div>
+              <strong class="text-white block bengali">Soft Diffused Lighting (সফট আলো):</strong>
+              <span class="text-gray-300 bengali">১০০% ক্লিপ করা রোদের আলো এড়ান। রাতের গাড়িতে চোখে ৫–১০% সফট অ্যাম্বিয়েন্ট ফিল রাখুন।</span>
+            </div>
+          </div>
+
+          <div class="p-3 bg-black/40 rounded-xl border border-white/5 flex items-start gap-3">
+            <span class="font-mono font-bold text-[#8B5CF6] text-base leading-none">05</span>
+            <div>
+              <strong class="text-white block bengali">Portrait Lenses (৩৫মিমি বা ৫০মিমি):</strong>
+              <span class="text-gray-300 bengali">ক্লোজ-আপের জন্য ৩৫মিমি, ৫০মিমি বা ৮৫মিমি লেন্স। মুখের কাছে ১৮মিমি আল্ট্রা-ওয়াইড নয়।</span>
+            </div>
+          </div>
+
+          <div class="p-3 bg-emerald-950/40 rounded-xl border border-emerald-500/30 flex items-start gap-3">
+            <span class="font-mono font-bold text-[#10B981] text-base leading-none">★</span>
+            <div>
+              <strong class="text-[#34D399] block bengali">Bonus: 60-Second RAW Gift:</strong>
+              <span class="text-gray-200 bengali">প্রতি লাইটিংয়ে ক্যামেরায় ৫টি কুইক র' স্টিল তুলুন—পোস্টের ৩ দিন বেঁচে যাবে!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- TOAST NOTIFICATION CONTAINER                              -->
+  <!-- ========================================================= -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-[#F59E0B] text-black font-bold text-xs rounded-full shadow-2xl opacity-0 pointer-events-none transition duration-200">
+    Copied to clipboard!
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT CONTROLLER FOR CO-PILOT HUD                    -->
+  <!-- ========================================================= -->
+  <script>
+    const slidesData = [
+      {
+        id: 1,
+        badge: "SLIDE 01 • THE PARTNERSHIP",
+        title: "Real Cinema Lighting + AI Face Swap",
+        script: "ভাই, আমরা আপনার ক্যামেরার লাইটিং বা সিনেম্যাটিক ফিল নষ্ট করতে আসিনি। আপনি যেভাবে ড্রামাটিক লাইটিং করবেন, আমাদের AI ওই লাইটিংয়ের সাথে ম্যাচ করে ফেসটা বসাবে। লুকটা থাকবে ১০০% আপনার অরিজিনাল ক্যামেরার। শুধু ফেস সোয়াপ যেন একদম হলিউড লেভেলের স্মুথ হয়, সেজন্য ক্যামেরায় ৫টা ছোট প্র্যাকটিক্যাল বিষয় খেয়াল রাখতে হবে।",
+        chips: [
+          { icon: "🎥", title: "Real Optics First", text: "ক্যামেরা, লেন্স ও কালার টোন ১০০% অপরিবর্তিত" },
+          { icon: "🧠", title: "Identity Swap Only", text: "AI শুধু আসল আলোর ভেতরে মুখটা বসাবে" },
+          { icon: "🤝", title: "Zero Reshoots", text: "৫টা নিয়ম মানলে কোনো রিটেক লাগবে না" }
+        ]
+      },
+      {
+        id: 2,
+        badge: "RULE 01 • HEAD ROTATION",
+        title: "The \"Two-Eye\" Rule (দুটো চোখের নিয়ম)",
+        script: "প্রথম নিয়মটা হলো 'দুটো চোখের রুল'। AI তখনই পারফেক্টলি ট্র্যাক করতে পারে যখন ফ্রেমের ভেতর দুটো চোখই অন্তত কিছুটা দেখা যায়। ফ্রন্ট বা ৩/৪ এঙ্গেলে (৪৫ ডিগ্রি) কোনো সমস্যা নাই। কিন্তু অভিনেতা যদি ৯০ ডিগ্রি একদম সাইড প্রোফাইল হয়ে যায়—যেখানে একটা চোখ হারিয়ে যায়—তখন AI মুখ খুঁজে পায় না। তাই গাড়ি চালানোর সময় সে পাশে তাকালে, ফুল সাইড প্রোফাইল হওয়ার আগেই আমরা কাট নিব।",
+        chips: [
+          { icon: "🟢", title: "Safe Zone (±45°)", text: "ফ্রন্ট শট ও ৩/৪ এঙ্গেলে পারফেক্ট ট্র্যাকিং" },
+          { icon: "🔴", title: "Danger Zone (90°)", text: "১টা চোখ হারিয়ে গেলে AI ফেস ট্র্যাক হারায়" },
+          { icon: "✂️", title: "The Cut Rule", text: "সাইড প্রোফাইল হওয়ার আগেই কাট নিন" }
+        ]
+      },
+      {
+        id: 3,
+        badge: "RULE 02 • SHUTTER & MOTION",
+        title: "The \"Pause-Button\" Test (শাটার স্পিড)",
+        script: "দ্বিতীয়টা শাটার স্পিড—'পজ বাটন টেস্ট'। সাধারণ ১/৫০ শাটারে দ্রুত মাথা নাড়লে পজ করলে মুখটা ঘোলা লাগে। AI তখন বুঝতে পারে না চোখ কোথায়, ফলে ফেস কাঁপে। শাটারটা একটু বাড়িয়ে ১/১০০ বা ১/১২৫ করে দিলে প্রতিটা ফ্রেম ছবির মতো ক্রিস্প থাকবে। শট বেশি শার্প হয়ে যাবে ভেবে ভয় পাবেন না, ফেস বসানোর পর আমরা আফটার ইফেক্টসে সিনেম্যাটিক মোশন ব্লার আবার ন্যাচারালি অ্যাড করে দিব।",
+        chips: [
+          { icon: "⚡", title: "Camera 1/100s–1/125s", text: "সাধারণ ১/৫০s এর বদলে ক্রিস্প শাটার স্পিড" },
+          { icon: "🔍", title: "Zero Smudge", text: "মাথা ঝাঁকালেও ফ্রেম পজ করলে ক্রিস্প এজ" },
+          { icon: "🎬", title: "VFX Blur Restore", text: "সোয়াপের পর ন্যাচারাল মোশন ব্লার ফিরবে" }
+        ]
+      },
+      {
+        id: 4,
+        badge: "RULE 03 • OCCLUSION BARRIER",
+        title: "Keep the Face Clear (মুখে হাত নয়)",
+        script: "তিন নম্বরটা হলো মুখের ওপর হাত বা জিনিস না আনা। অভিনেতা যদি কথা বলার সময় থুতনিতে হাত দেয়, নাক চুলকায়, বা কাপ মুখের সামনে আনে—AI বোকা হয়ে আঙুলের ওপর নতুন মুখ পেস্ট করে দেয়, ফলে হাত আর গাল মিশে যায়। অভিনেতাকে বলবেন হাত কলারবোনের নিচে রাখতে। আর হেয়ার স্টাইলিস্টকে বলবেন কপাল বা চোখের ওপর যেন কোনো আলগা চুল না থাকে।",
+        chips: [
+          { icon: "🚫", title: "Below Collarbone", text: "সংলাপের সময় হাত কলারবোনের নিচে থাকবে" },
+          { icon: "☕", title: "Clear Props", text: "কফি কাপ বা চশমা মুখের ওপর আটকে না রাখা" },
+          { icon: "💇", title: "Hair Styling", text: "কপাল বা চোখের ওপর কোনো আলগা চুল নয়" }
+        ]
+      },
+      {
+        id: 5,
+        badge: "RULE 04 • PHOTOMETRIC INTEGRITY",
+        title: "Soft Diffused Lighting (গাড়ির ভেতরের আলো)",
+        script: "চার নম্বর হলো লাইটিং। AI স্কিনের টেক্সচার দেখে ফেস বসায়। রোদে কপাল যদি একদম সাদা হয়ে উড়ে যায়, বা রাতের গাড়ির সিনে স্ট্রিটলাইটের মাঝখানে মুখ যদি pitch black অন্ধকারে ডুবে যায়—তাহলে স্কিনের কালার ফেক হয়ে যায়। সফট ডিফিউজড লাইট ব্যবহার করবেন। বিশেষ করে রাতের গাড়ির ভেতর একটা ছোট এলইডি বা টিউব দিয়ে সফট ফিল দিয়ে রাখবেন, যেন চোখের মনির ডিটেইল দেখা যায়।",
+        chips: [
+          { icon: "💡", title: "No Blown Whites", text: "কপালে কড়া রোদে ১০০% হোয়াইট ক্লিপ নয়" },
+          { icon: "🚗", title: "Ambient Car Fill", text: "রাতের গাড়িতে চোখে ৫–১০% সফট ফিল লাইট" },
+          { icon: "✨", title: "Matte Powder", text: "তেলতেলে ভাব দূর করতে ট্রান্সলুসেন্ট পাউডার" }
+        ]
+      },
+      {
+        id: 6,
+        badge: "RULE 05 • OPTICAL COMPRESSION",
+        title: "True Portrait Lenses (৩৫মিমি বা ৫০মিমি)",
+        script: "পাঁচ নম্বর হলো লেন্স। ক্লোজ-আপ নেওয়ার সময় ওয়াইড ১৮ বা ২৪মিমি মুখের সামনে চেপে ধরবেন না। ওয়াইড লেন্সে সামনে থেকে শুট করলে নাক মোটা আর কান পেছনে চলে যায়। ওই বাঁকা মুখে যখন আমরা অন্য মানুষের মুখ বসাব, দেখতে অস্বাভাবিক লাগবে। ক্লোজ-আপের জন্য ৩৫, ৫০ বা ৮৫মিমি লেন্স ব্যবহার করলে ফেস একদম ন্যাচারাল শেপে থাকবে।",
+        chips: [
+          { icon: "🎯", title: "Hero Glass", text: "মুখের ক্লোজ-আপে ৩৫মিমি, ৫০মিমি বা ৮৫মিমি" },
+          { icon: "❌", title: "Avoid Ultra-Wide", text: "মুখের ১ ফুট সামনে ১৪মিমি বা ১৮মিমি নয়" },
+          { icon: "👤", title: "Natural Proportions", text: "স্বাভাবিক মুখের শেপ রক্ষা করা" }
+        ]
+      },
+      {
+        id: 7,
+        badge: "RULE 06 • MACHINE LEARNING CALIBRATION",
+        title: "The 60-Second Lighting Gift (রেফারেন্স স্টিল)",
+        script: "লাস্ট একটা ৬০ সেকেন্ডের হেল্প ভাই—প্রতিটা নতুন লাইটিং সেটআপে ক্যামেরা রোল করার আগে স্টিলস ফটোগ্রাফারকে দিয়ে অভিনেতার মুখের ৫টা র' (RAW) ছবি তুলে রাখবেন। সোজা তাকানো একটা, ৪৫ ডিগ্রিতে দুইটা, একটা হাসিমুখ। এই ৫টা ছবি আমাদের AI ইঞ্জিনের কাছে গাইডবুকের মতো কাজ করে—সে বুঝতে পারে আপনার সেটের আলোর এক্সাক্ট কালার ও শ্যাডোর ডেপথ কেমন।",
+        chips: [
+          { icon: "📸", title: "Quick 5 Clicks", text: "সামনে ১টা, ৪৫ ডিগ্রিতে ২টা, হাসি ও গম্ভীর" },
+          { icon: "🎨", title: "Color Temperature", text: "সেটের এক্সাক্ট আলো ও শ্যাডো শিখে নিবে AI" },
+          { icon: "⏱️", title: "Zero Delay (60s)", text: "৬০ সেকেন্ড সময় পোস্টের ৩ দিন বাঁচাবে" }
+        ]
+      },
+      {
+        id: 8,
+        badge: "SUMMARY • EXECUTIVE HANDSHAKE",
+        title: "Hollywood-Grade Output for Ryze",
+        script: "ভাই, আপনি শুধু ১/১০০s শাটার, মাথা ৪৫ ডিগ্রির ভেতর রাখা, মুখে হাত না দেওয়া, আর গাড়িতে সফট ফিল নিশ্চিত করে দেন—বাকি জাদু পোস্ট-প্রোডাকশনে আমরা করে দিব। এই বিজ্ঞাপনটা দেখে মনে হবে ৫০ লাখ টাকার ইন্টারন্যাশনাল অ্যাড!",
+        chips: [
+          { icon: "🚀", title: "1/100s Shutter", text: "ক্রিস্প এজ ও পারফেক্ট ট্র্যাকিং" },
+          { icon: "🎯", title: "45° Safe Angle", text: "জিরো গ্লিচ ও নো টিয়ারিং" },
+          { icon: "💎", title: "50 Lakh Finish", text: "আন্তর্জাতিক মানের বিজ্ঞাপন ফিনিশ" }
+        ]
+      }
+    ];
+
+    let activeSlideIndex = 0;
+
+    function renderSlideList() {
+      const container = document.getElementById('desktop-slide-list');
+      const mobileContainer = document.getElementById('mobile-slide-accordion');
+      if (!container || !mobileContainer) return;
+
+      container.innerHTML = '';
+      mobileContainer.innerHTML = '';
+
+      slidesData.forEach((s, idx) => {
+        // Desktop item
+        const item = document.createElement('div');
+        item.className = `slide-nav-item p-3 rounded-xl border border-white/10 bg-[#0E1626]/70 hover:bg-[#0E1626] cursor-pointer transition ${idx === activeSlideIndex ? 'active' : ''}`;
+        item.onclick = () => selectSlide(idx);
+        item.innerHTML = `
+          <div class="flex items-center justify-between text-[10px] font-mono mb-1">
+            <span class="text-[#F59E0B] font-bold">SLIDE ${s.id.toString().padStart(2, '0')}</span>
+            <span class="text-gray-400">2 Mins</span>
+          </div>
+          <div class="text-xs font-bold text-white truncate heading-font">${s.title}</div>
+        `;
+        container.appendChild(item);
+
+        // Mobile accordion item
+        const mItem = document.createElement('details');
+        mItem.className = 'group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden';
+        if (idx === 0) mItem.open = true;
+        mItem.innerHTML = `
+          <summary class="flex items-center justify-between p-3.5 cursor-pointer bg-white/5 group-open:bg-[#F59E0B]/10 transition">
+            <div>
+              <div class="text-[9px] font-mono text-[#F59E0B] font-bold uppercase">${s.badge}</div>
+              <div class="text-xs font-bold text-white heading-font mt-0.5">${s.title}</div>
+            </div>
+            <span class="text-xs text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-4 space-y-3">
+            <div class="bengali text-base text-gray-200 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5">
+              ${s.script}
+            </div>
+            <div class="flex justify-end">
+              <button onclick="copyText('m-script-${idx}')" class="text-[11px] px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-gray-300 font-mono transition">
+                📋 Copy Script
+              </button>
+            </div>
+            <span id="m-script-${idx}" class="hidden">${s.script}</span>
+          </div>
+        `;
+        mobileContainer.appendChild(mItem);
+      });
+    }
+
+    function selectSlide(idx) {
+      activeSlideIndex = idx;
+      const s = slidesData[idx];
+
+      // Update Desktop Active View
+      document.getElementById('active-slide-badge').textContent = s.badge;
+      document.getElementById('active-slide-title').textContent = s.title;
+      document.getElementById('active-spoken-text').textContent = s.script;
+
+      // Update Chips
+      const chipsContainer = document.getElementById('active-slide-chips');
+      if (chipsContainer) {
+        chipsContainer.innerHTML = '';
+        s.chips.forEach(c => {
+          const chip = document.createElement('div');
+          chip.className = 'glass-card p-3 rounded-xl border border-white/10 text-xs';
+          chip.innerHTML = `
+            <div class="font-bold text-white mb-0.5 flex items-center gap-1">
+              <span>${c.icon}</span> <span>${c.title}</span>
+            </div>
+            <div class="bengali text-gray-400 text-[11px] leading-tight">${c.text}</div>
+          `;
+          chipsContainer.appendChild(chip);
+        });
+      }
+
+      // Re-render list active state
+      renderSlideList();
+    }
+
+    function copyActiveScript() {
+      const script = slidesData[activeSlideIndex].script;
+      navigator.clipboard.writeText(script).then(() => {
+        showToast("Spoken script copied!");
+      });
+    }
+
+    function copyText(elemId) {
+      const el = document.getElementById(elemId);
+      if (el) {
+        navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+          showToast("Copied to clipboard!");
+        });
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 2000);
+    }
+
+    // View Mode Switcher: Desktop Dual Pane vs Mobile Single Column
+    function toggleViewMode() {
+      const desktop = document.getElementById('desktop-layout');
+      const mobile = document.getElementById('mobile-layout');
+      const label = document.getElementById('view-mode-label');
+      const icon = document.getElementById('view-mode-icon');
+
+      const isDesktopActive = !desktop.classList.contains('hidden');
+      if (isDesktopActive) {
+        desktop.classList.add('hidden');
+        desktop.classList.remove('md:grid');
+        mobile.classList.remove('md:hidden');
+        label.textContent = "Mobile View";
+        icon.textContent = "📱";
+        localStorage.setItem('ryze_copilot_view', 'mobile');
+      } else {
+        desktop.classList.remove('hidden');
+        desktop.classList.add('md:grid');
+        mobile.classList.add('md:hidden');
+        label.textContent = "Desktop View";
+        icon.textContent = "🖥️";
+        localStorage.setItem('ryze_copilot_view', 'desktop');
+      }
+    }
+
+    // Tab Switcher
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[#F59E0B]', 'text-black');
+        btn.classList.add('bg-white/10', 'text-gray-300');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+      const activeBtn = document.getElementById(`tab-btn-${tab}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white/10', 'text-gray-300');
+        activeBtn.classList.add('bg-[#F59E0B]', 'text-black');
+      }
+
+      if (tab === 'notes') {
+        const isMobileHidden = document.getElementById('mobile-layout').classList.contains('md:hidden');
+        if (!isMobileHidden) {
+          document.getElementById('mobile-layout').classList.remove('hidden');
+        }
+        document.getElementById('tab-notes-mobile').classList.remove('hidden');
+      } else {
+        const target = document.getElementById(`tab-${tab}`);
+        if (target) target.classList.remove('hidden');
+      }
+    }
+
+    // 15-Minute Pitch Timer Controller
+    let timerSeconds = 15 * 60;
+    let timerInterval = null;
+
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60).toString().padStart(2, '0');
+      const s = (secs % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateTimerDisplay() {
+      const disp = document.getElementById('timer-display');
+      disp.textContent = formatTime(timerSeconds);
+      if (timerSeconds <= 120) {
+        disp.classList.remove('text-[#F59E0B]');
+        disp.classList.add('text-red-400', 'animate-pulse');
+      } else {
+        disp.classList.remove('text-red-400', 'animate-pulse');
+        disp.classList.add('text-[#F59E0B]');
+      }
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timer-btn');
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        btn.textContent = '▶';
+      } else {
+        btn.textContent = '⏸';
+        timerInterval = setInterval(() => {
+          if (timerSeconds > 0) {
+            timerSeconds--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            btn.textContent = '▶';
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        document.getElementById('timer-btn').textContent = '▶';
+      }
+      timerSeconds = 15 * 60;
+      updateTimerDisplay();
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      selectSlide(0);
+      const savedView = localStorage.getItem('ryze_copilot_view');
+      if (savedView === 'mobile') {
+        toggleViewMode();
+      }
+    });
+  </script>
+
+</body>
+</html>

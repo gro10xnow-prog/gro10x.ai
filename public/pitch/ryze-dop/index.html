@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Ryze Commercial × Cinematography Unit — Real Cinema Lighting + AI Face Swap</title>
+
+  <!-- Google Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --bg-dark: #070B12;
+      --card-dark: #0E1626;
+      --accent-amber: #F59E0B;
+      --accent-amber-glow: rgba(245, 158, 11, 0.35);
+      --accent-cyan: #00F0FF;
+      --accent-cyan-glow: rgba(0, 240, 255, 0.35);
+      --accent-emerald: #10B981;
+      --accent-emerald-glow: rgba(16, 185, 129, 0.35);
+      --accent-purple: #8B5CF6;
+      --accent-purple-glow: rgba(139, 92, 246, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      overflow: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .heading-font { font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .bengali { font-family: 'Hind Siliguri', sans-serif; }
+
+    /* Cinematic Grid Background */
+    .bg-cinema-grid {
+      background-size: 48px 48px;
+      background-image: 
+        linear-gradient(to right, rgba(245, 158, 11, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+    }
+
+    .spotlight {
+      background: radial-gradient(circle at 50% 15%, rgba(245, 158, 11, 0.12) 0%, rgba(0, 240, 255, 0.08) 40%, rgba(7, 11, 18, 0) 75%);
+    }
+
+    /* 16:9 Slide Transition for 1080p / 4K / TV Displays */
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: rgba(14, 22, 38, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glow-amber { box-shadow: 0 0 32px var(--accent-amber-glow); }
+    .glow-cyan { box-shadow: 0 0 32px var(--accent-cyan-glow); }
+    .glow-emerald { box-shadow: 0 0 32px var(--accent-emerald-glow); }
+    .glow-purple { box-shadow: 0 0 32px var(--accent-purple-glow); }
+
+    @media (max-width: 768px) {
+      body { overflow-y: auto; }
+      .slide.active {
+        height: auto;
+        min-height: calc(100vh - 120px);
+        padding-bottom: 90px;
+      }
+    }
+  </style>
+</head>
+<body class="w-screen h-screen flex flex-col justify-between relative bg-[#070B12] bg-cinema-grid overflow-hidden">
+
+  <!-- Ambient Cinematic Spotlight -->
+  <div class="spotlight absolute inset-0 pointer-events-none z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP APP BAR / BRAND & TELEMETRY                           -->
+  <!-- ========================================================= -->
+  <header class="no-print relative z-20 flex items-center justify-between px-6 py-3 border-b border-white/10 bg-[#070B12]/85 backdrop-blur-md">
+    
+    <!-- Brand / Unit -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#F59E0B] via-[#EF4444] to-[#00F0FF] flex items-center justify-center font-black text-white text-base shadow-lg shadow-[#F59E0B]/25">
+        ⚡
+      </div>
+      <div>
+        <div class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+          <span>RYZE CINEMA × AI UNIT</span>
+          <span class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-[#F59E0B]/20 text-[#F59E0B] font-mono border border-[#F59E0B]/30">DOP BRIEFING</span>
+        </div>
+        <div class="text-[10px] text-gray-400 font-mono">PITCH-RYZE-DOP-CINEMA-V1 · Hollywood-Grade Face Swap</div>
+      </div>
+    </div>
+
+    <!-- Slide Tracker & Actions -->
+    <div class="flex items-center gap-3">
+      <!-- Tracker Pill -->
+      <div class="px-3.5 py-1 rounded-full bg-white/5 border border-white/10 font-mono text-xs text-gray-300 flex items-center gap-1.5">
+        <span class="text-[#F59E0B] font-bold" id="current-slide-num">01</span>
+        <span class="text-gray-500">/</span>
+        <span class="text-gray-400" id="total-slide-num">08</span>
+      </div>
+
+      <!-- Presenter Co-Pilot Deep Link -->
+      <a href="/pitch/ryze-dop/copilot" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-[#F59E0B]/20 hover:bg-[#F59E0B]/30 border border-[#F59E0B]/40 text-xs font-bold text-[#FCD34D] transition flex items-center gap-1.5 shadow-sm">
+        📱 Presenter Co-Pilot ↗
+      </a>
+
+      <!-- Fullscreen Toggle ('F') -->
+      <button onclick="toggleFullscreen()" class="p-2 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 hover:text-white transition" title="Toggle Fullscreen (F)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- SLIDE CONTAINER (8 CANONICAL WIDESCREEN SLIDES)            -->
+  <!-- ========================================================= -->
+  <main class="relative z-10 flex-1 w-full max-w-7xl mx-auto px-6 py-4 flex flex-col justify-center">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 01: THE PARTNERSHIP (আসল ক্যামেরা + AI সোয়াপ)         -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-1" class="slide active flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-bold uppercase tracking-wider mb-1.5">
+          🎬 RYZE COMMERCIAL × CINEMATOGRAPHY UNIT
+        </div>
+        <h1 class="heading-font text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight">
+          Real Cinema Lighting + <span class="bg-gradient-to-r from-[#F59E0B] via-amber-200 to-[#00F0FF] bg-clip-text text-transparent">AI Face Swap</span>
+        </h1>
+        <p class="bengali text-gray-300 text-sm sm:text-lg max-w-2xl mx-auto mt-1 font-medium">
+          আপনার সিনেম্যাটিক ভিশন থাকবে ১০০% অপরিবর্তিত
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Giant Visual Anchor: Cinema Camera Rig + AI Neural Mesh -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#F59E0B]/40 glow-amber flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <!-- inlined SVG: visual-camera-mesh.svg -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-1" data-asset="visual-camera-mesh.svg">
+            <defs>
+              <linearGradient id="s1BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+              <linearGradient id="amberLensGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#F59E0B"/>
+                <stop offset="50%" stop-color="#EF4444"/>
+                <stop offset="100%" stop-color="#00F0FF"/>
+              </linearGradient>
+              <filter id="s1Glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="8" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <rect width="800" height="500" fill="url(#s1BgGrad)" rx="20"/>
+
+            <!-- Anamorphic Lens Flare Line -->
+            <line x1="0" y1="250" x2="800" y2="250" stroke="#00F0FF" stroke-opacity="0.3" stroke-width="2"/>
+            <circle cx="340" cy="250" r="140" fill="#00F0FF" fill-opacity="0.04"/>
+
+            <!-- Cinema Camera Rig Body -->
+            <g transform="translate(60, 130)">
+              <!-- Matte Box -->
+              <polygon points="0,60 80,30 80,210 0,180" fill="#1E293B" stroke="#F59E0B" stroke-width="2"/>
+              <!-- Camera Body -->
+              <rect x="80" y="45" width="160" height="150" rx="12" fill="#0A101D" stroke="#475569" stroke-width="2"/>
+              <!-- Top Handle & Monitor -->
+              <path d="M 100 45 L 100 15 L 200 15 L 200 45" stroke="#F59E0B" stroke-width="4" fill="none"/>
+              <rect x="130" y="-15" width="60" height="30" rx="4" fill="#0E1626" stroke="#00F0FF" stroke-width="1.5"/>
+              <!-- Side Battery / Media -->
+              <rect x="240" y="65" width="45" height="110" rx="6" fill="#1E293B" stroke="#64748B" stroke-width="1.5"/>
+              <text x="160" y="115" text-anchor="middle" fill="#F59E0B" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="800">4K CINEMA</text>
+              <text x="160" y="135" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="10">RAW OPTICS</text>
+            </g>
+
+            <!-- Golden Connecting Photon Beam -->
+            <path d="M 345 250 L 460 250" stroke="#F59E0B" stroke-width="4" stroke-dasharray="6 4" filter="url(#s1Glow)"/>
+            <polygon points="465,250 450,243 450,257" fill="#F59E0B"/>
+
+            <!-- Actor Face Silhouette with Neural Topology Points -->
+            <g transform="translate(470, 90)">
+              <rect x="0" y="0" width="270" height="320" rx="18" fill="#0A101D" stroke="#00F0FF" stroke-width="2" filter="url(#s1Glow)"/>
+              <rect x="15" y="15" width="240" height="290" rx="12" fill="#00F0FF" fill-opacity="0.04"/>
+
+              <!-- Face Contour Mesh -->
+              <circle cx="135" cy="110" r="65" fill="#0E1626" stroke="#00F0FF" stroke-width="2"/>
+              <!-- Facial Landmark Points -->
+              <circle cx="110" cy="100" r="5" fill="#10B981"/> <!-- Left Eye -->
+              <circle cx="160" cy="100" r="5" fill="#10B981"/> <!-- Right Eye -->
+              <circle cx="135" cy="125" r="4" fill="#F59E0B"/> <!-- Nose -->
+              <path d="M 115 145 Q 135 155 155 145" stroke="#00F0FF" stroke-width="2.5" fill="none"/> <!-- Mouth -->
+
+              <!-- Mesh Wireframe Lines -->
+              <line x1="110" y1="100" x2="160" y2="100" stroke="#10B981" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <line x1="110" y1="100" x2="135" y2="125" stroke="#00F0FF" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <line x1="160" y1="100" x2="135" y2="125" stroke="#00F0FF" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <line x1="135" y1="125" x2="135" y2="145" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="2 2"/>
+
+              <rect x="25" y="220" width="220" height="70" rx="8" fill="#1E293B" stroke="#10B981" stroke-opacity="0.4"/>
+              <text x="135" y="244" text-anchor="middle" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">100% LIGHTING LOCK</text>
+              <text x="135" y="265" text-anchor="middle" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">আসল আলোর ভেতর হুবহু ফেস সোয়াপ</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Punchy Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#F59E0B] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎥</span> 01 · REAL OPTICS FIRST
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ক্যামেরা ও লাইটিং আপনার</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ক্যামেরা, লেন্স ফ্লেয়ার আর কালার টোন ১০০% আপনার সিনেম্যাটিক ভিশনে থাকবে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🧠</span> 02 · IDENTITY SWAP ONLY
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">শুধু আইডেন্টিটি ট্রান্সফার</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              AI আপনার আসল সেটের লাইটিং ও শ্যাডো বজায় রেখে নিখুঁতভাবে মুখটা প্রতিস্থাপন করবে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🤝</span> 03 · ZERO RESHOOTS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">জিরো রিটেক গ্যারান্টি</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              আজকের ৫টি ছোট ক্যামেরা সেটিং মানলে পোস্ট-প্রোডাকশনে কোনো রিটেক লাগবে না।
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 02: RULE 1 — THE "TWO-EYE" RULE (মাথা ঘোরানো)       -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-2" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          👁️ RULE 01 • HEAD ROTATION
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          The "Two-Eye" Rule <span class="text-emerald-400">(দুটো চোখের নিয়ম)</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          ক্যামেরায় যেন সবসময় দুটো চোখই ট্র্যাক করা যায়
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Giant Visual Anchor: Angle Radar Safe vs Danger -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-emerald-500/40 glow-emerald flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <!-- inlined SVG: visual-two-eye-radar.svg -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-2" data-asset="visual-two-eye-radar.svg">
+            <defs>
+              <linearGradient id="s2BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+            </defs>
+            <rect width="800" height="500" fill="url(#s2BgGrad)" rx="20"/>
+
+            <!-- Radar Arc -->
+            <path d="M 120 400 A 280 280 0 0 1 680 400" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+            
+            <!-- Safe Zone Sector (-45° to +45°) -->
+            <path d="M 400 400 L 220 220 A 280 280 0 0 1 580 220 Z" fill="#10B981" fill-opacity="0.12" stroke="#10B981" stroke-width="2"/>
+            
+            <!-- Danger Zone Sector (Beyond 45° to 90°) -->
+            <path d="M 400 400 L 120 400 A 280 280 0 0 1 220 220 Z" fill="#EF4444" fill-opacity="0.12" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <path d="M 400 400 L 580 220 A 280 280 0 0 1 680 400 Z" fill="#EF4444" fill-opacity="0.12" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+            <!-- Center Actor Node -->
+            <circle cx="400" cy="400" r="45" fill="#0E1626" stroke="#00F0FF" stroke-width="3"/>
+            <text x="400" y="405" text-anchor="middle" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">ACTOR</text>
+
+            <!-- Angle Labels -->
+            <text x="400" y="110" text-anchor="middle" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="800">0° FRONT SHOT (100% LOCK)</text>
+            <line x1="400" y1="125" x2="400" y2="350" stroke="#10B981" stroke-width="2" stroke-dasharray="4 4"/>
+
+            <text x="210" y="195" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="13" font-weight="700">-45° (3/4 Angle)</text>
+            <text x="590" y="195" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="13" font-weight="700">+45° (3/4 Angle)</text>
+
+            <text x="110" y="380" fill="#EF4444" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="800">❌ 90° PROFILE</text>
+            <text x="610" y="380" fill="#EF4444" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="800">❌ 90° PROFILE</text>
+
+            <!-- Bottom Badges -->
+            <g transform="translate(180, 20)">
+              <rect x="0" y="0" width="200" height="34" rx="8" fill="#10B981" fill-opacity="0.2" stroke="#10B981"/>
+              <text x="100" y="22" text-anchor="middle" fill="#A7F3D0" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">✓ SAFE ZONE: 2 EYES VISIBLE</text>
+            </g>
+            <g transform="translate(420, 20)">
+              <rect x="0" y="0" width="200" height="34" rx="8" fill="#EF4444" fill-opacity="0.2" stroke="#EF4444"/>
+              <text x="100" y="22" text-anchor="middle" fill="#FCA5A5" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">❌ DANGER: 1 EYE LOST</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Punchy Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#10B981] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🟢</span> 01 · SAFE ZONE (±45°)
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ফ্রন্ট ও ৩/৪ এঙ্গেল</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ফ্রন্ট শট এবং ৩/৪ এঙ্গেল (±৪৫ ডিগ্রি) পর্যন্ত AI ১০০% নিখুঁতভাবে ফেস ট্র্যাক করে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-red-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🔴</span> 02 · DANGER ZONE (90°)
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">একদম সাইড প্রোফাইল এড়ান</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ৯০ ডিগ্রি সাইড প্রোফাইলে ১টি চোখ পুরোপুরি হারিয়ে গেলে AI মুখ খুঁজে পায় না।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>✂️</span> 03 · THE PRACTICAL RULE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">সাইড প্রোফাইলের আগেই কাট</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              অভিনেতা পাশে বা জানালায় তাকালে, ফুল সাইড প্রোফাইল হওয়ার আগেই কাট নিব।
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 03: RULE 2 — THE "PAUSE-BUTTON" TEST (শাটার স্পিড)   -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-3" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-1.5">
+          ⚡ RULE 02 • SHUTTER &amp; MOTION
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          The "Pause-Button" Test <span class="text-[#00F0FF]">(শাটার স্পিড)</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          মোশন ব্লার কমালেই AI পাবে ক্রিস্প ডিটেইল
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Giant Visual Anchor: 1/50s vs 1/100s Comparison -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#00F0FF]/40 glow-cyan flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <!-- inlined SVG: visual-shutter-test.svg -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-3" data-asset="visual-shutter-test.svg">
+            <defs>
+              <linearGradient id="s3BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+              <filter id="motionBlurSmudge">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="9,1" />
+              </filter>
+            </defs>
+            <rect width="800" height="500" fill="url(#s3BgGrad)" rx="20"/>
+
+            <!-- Left Box: 1/50s (Blurred / Smudge) -->
+            <g transform="translate(45, 60)">
+              <rect x="0" y="0" width="335" height="380" rx="16" fill="#0A101D" stroke="#EF4444" stroke-width="2"/>
+              <rect x="15" y="15" width="305" height="40" rx="8" fill="#EF4444" fill-opacity="0.15"/>
+              <text x="30" y="40" fill="#F87171" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">STANDARD 1/50s (BLURRED)</text>
+
+              <!-- Blurred Face Icon -->
+              <g transform="translate(65, 80)" filter="url(#motionBlurSmudge)">
+                <circle cx="100" cy="100" r="70" fill="#1E293B" stroke="#EF4444" stroke-width="2"/>
+                <circle cx="80" cy="90" r="8" fill="#EF4444"/>
+                <circle cx="120" cy="90" r="8" fill="#EF4444"/>
+                <path d="M 85 130 Q 100 145 115 130" stroke="#EF4444" stroke-width="3" fill="none"/>
+              </g>
+
+              <rect x="25" y="275" width="285" height="75" rx="10" fill="#0E1626" stroke="#EF4444" stroke-opacity="0.3"/>
+              <text x="35" y="300" fill="#F87171" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">❌ AI Tracking Jitter</text>
+              <text x="35" y="322" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="11">দ্রুত মাথা ঘোরালে চোখ ও ঠোঁট স্মাজ হয়ে কাঁপে</text>
+            </g>
+
+            <!-- Right Box: 1/100s or 1/125s (Crisp Feature Mesh) -->
+            <g transform="translate(420, 60)">
+              <rect x="0" y="0" width="335" height="380" rx="16" fill="#0A101D" stroke="#00F0FF" stroke-width="2"/>
+              <rect x="15" y="15" width="305" height="40" rx="8" fill="#00F0FF" fill-opacity="0.15"/>
+              <text x="30" y="40" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">RECOMMENDED 1/100s–1/125s</text>
+
+              <!-- Crisp Face Icon with Neural Points -->
+              <g transform="translate(65, 80)">
+                <circle cx="100" cy="100" r="70" fill="#0E1626" stroke="#00F0FF" stroke-width="2.5"/>
+                <circle cx="78" cy="90" r="6" fill="#10B981"/>
+                <circle cx="122" cy="90" r="6" fill="#10B981"/>
+                <circle cx="100" cy="115" r="4" fill="#F59E0B"/>
+                <path d="M 82 135 Q 100 148 118 135" stroke="#00F0FF" stroke-width="3" fill="none"/>
+                <!-- Landmark Mesh Lines -->
+                <line x1="78" y1="90" x2="122" y2="90" stroke="#00F0FF" stroke-width="1.5" stroke-dasharray="2 2"/>
+                <line x1="78" y1="90" x2="100" y2="115" stroke="#00F0FF" stroke-width="1.5" stroke-dasharray="2 2"/>
+                <line x1="122" y1="90" x2="100" y2="115" stroke="#00F0FF" stroke-width="1.5" stroke-dasharray="2 2"/>
+              </g>
+
+              <rect x="25" y="275" width="285" height="75" rx="10" fill="#0E1626" stroke="#00F0FF" stroke-opacity="0.3"/>
+              <text x="35" y="300" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">✓ 100% Sub-Pixel Tracking</text>
+              <text x="35" y="322" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">প্রতিটি ফ্রেম ক্রিস্প, মোশন ব্লার ভিএফএক্সে ফিরে আসবে</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Punchy Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>⚡</span> 01 · CAMERA SETTING
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">শাটার স্পিড ১/১০০s বা ১/১২৫s</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              সাধারণ ১/৫০s এর বদলে শাটার স্পিড ১/১০০s বা ১/১২৫s এ শুট করুন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#F59E0B] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🔍</span> 02 · WHY IT MATTERS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ঘোলা ভাব ও ফ্রেম জার্ক রোধ</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              মাথা দ্রুত ঝাঁকালে যেন চোখ ও ঠোঁট ঘোলা না হয়—ফ্রেম পজ করলেই পরিষ্কার ডিটেইল।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎬</span> 03 · POST-VFX NATURALIZATION
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ন্যাচারাল ব্লার এডিটে ফিরবে</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              সোয়াপের পর আমরা আফটার ইফেক্টসে সিনেম্যাটিক ১৮০° মোশন ব্লার ন্যাচারালি ফিরিয়ে দিব।
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 04: RULE 3 — KEEP THE FACE CLEAR (মুখে হাত নয়)       -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-4" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          🚫 RULE 03 • OCCLUSION BARRIER
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Keep the Face Clear <span class="text-red-400">(ফেস ক্যানভাস ক্লিয়ার রাখা)</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          মুখের ওপর আঙুল বা প্রপস পাস করলে স্কিন গলে যায়
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Giant Visual Anchor: Face Safe Canvas Boundary -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-red-500/40 glow-cyan flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <!-- inlined SVG: visual-face-occlusion.svg -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-4" data-asset="visual-face-occlusion.svg">
+            <defs>
+              <linearGradient id="s4BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+            </defs>
+            <rect width="800" height="500" fill="url(#s4BgGrad)" rx="20"/>
+
+            <!-- Left: Dangerous Occlusion -->
+            <g transform="translate(60, 60)">
+              <rect x="0" y="0" width="310" height="380" rx="16" fill="#0A101D" stroke="#EF4444" stroke-width="2"/>
+              <text x="25" y="40" fill="#EF4444" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">❌ OCCLUDED (FINGERS ON FACE)</text>
+              
+              <!-- Face with Hand over Chin/Mouth -->
+              <circle cx="155" cy="140" r="70" fill="#1E293B" stroke="#EF4444" stroke-width="2"/>
+              <!-- Hand Crossing Mouth -->
+              <rect x="110" y="150" width="90" height="30" rx="15" fill="#EF4444" fill-opacity="0.6"/>
+              <circle cx="155" cy="165" r="8" fill="#FCA5A5"/>
+
+              <rect x="20" y="270" width="270" height="85" rx="8" fill="#1E293B" stroke="#EF4444" stroke-opacity="0.3"/>
+              <text x="30" y="295" fill="#EF4444" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">⚠️ AI Blending Failure</text>
+              <text x="30" y="318" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="11">মুখের ওপর আঙুল এলে AI আঙুল আর গাল</text>
+              <text x="30" y="336" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="11">একসাথে ব্লেন্ড করে স্কিন গলিয়ে ফেলে</text>
+            </g>
+
+            <!-- Right: Clear Canvas Collarbone Guardrail -->
+            <g transform="translate(430, 60)">
+              <rect x="0" y="0" width="310" height="380" rx="16" fill="#0A101D" stroke="#10B981" stroke-width="2"/>
+              <text x="25" y="40" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">✓ CLEAN FACE CANVAS</text>
+
+              <!-- Clear Face -->
+              <circle cx="155" cy="140" r="70" fill="#0E1626" stroke="#10B981" stroke-width="2.5"/>
+              <circle cx="130" cy="130" r="6" fill="#10B981"/>
+              <circle cx="180" cy="130" r="6" fill="#10B981"/>
+              <path d="M 135 170 Q 155 185 175 170" stroke="#10B981" stroke-width="2.5" fill="none"/>
+
+              <!-- Collarbone Green Safe Guardrail Line -->
+              <line x1="40" y1="240" x2="270" y2="240" stroke="#10B981" stroke-width="3" stroke-dasharray="6 4"/>
+              <text x="155" y="232" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="10" font-weight="700">HANDS BELOW COLLARBONE</text>
+
+              <rect x="20" y="270" width="270" height="85" rx="8" fill="#1E293B" stroke="#10B981" stroke-opacity="0.3"/>
+              <text x="30" y="295" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">✓ Perfect Face Replacement</text>
+              <text x="30" y="318" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">হাত কলারবোনের নিচে থাকলে AI জিরো গ্লিচে</text>
+              <text x="30" y="336" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">হলিউড লেভেলের ফেস রিপ্লেস করে</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Punchy Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-red-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🚫</span> 01 · NO FACE TOUCHING
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">হাত কলারবোনের নিচে রাখুন</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              সংলাপ বা হিরো শটের সময় হাত সবসময় কলারবোনের নিচে রাখতে অভিনেতাকে নির্দেশ দিন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#F59E0B] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>☕</span> 02 · CLEAN PROPS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">প্রপস মুখে আটকাবেন না</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              কফি কাপ, পানির বোতল বা চশমা মুখের ফ্রেমের ওপর আটকে রাখা যাবে না।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>💇</span> 03 · HAIR STYLING
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">কপাল ও চোখ চুলমুক্ত রাখা</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              কপাল বা চোখের ওপর কোনো আলগা চুল যেন না ঝোলে—হেয়ার স্টাইলিস্ট দিয়ে টাইট সেট রাখুন।
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 05: RULE 4 — SOFT DIFFUSED LIGHTING (স্কিন টেক্সচার)   -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-5" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-bold uppercase tracking-wider mb-1.5">
+          💡 RULE 04 • PHOTOMETRIC INTEGRITY
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Soft Diffused Lighting <span class="text-[#F59E0B]">(গাড়ির ভেতরের আলো)</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          মুখ অতিরিক্ত সাদা পুড়ে যাবে না, কুচকুচে অন্ধকারও হবে না
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Giant Visual Anchor: Photometric Car Lighting Diagram -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#F59E0B]/40 glow-amber flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <!-- inlined SVG: visual-photometric-lighting.svg -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-5" data-asset="visual-photometric-lighting.svg">
+            <defs>
+              <linearGradient id="s5BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+              <radialGradient id="diffuseGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#070B12" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="800" height="500" fill="url(#s5BgGrad)" rx="20"/>
+
+            <!-- Car Cabin Wireframe Outline -->
+            <path d="M 120 380 L 180 180 L 620 180 L 680 380 Z" stroke="#334155" stroke-width="2" fill="#0A101D" fill-opacity="0.7"/>
+            <!-- Windshield Glass -->
+            <polygon points="210,200 590,200 630,340 170,340" fill="#00F0FF" fill-opacity="0.03" stroke="#00F0FF" stroke-opacity="0.2"/>
+
+            <!-- Diffuse Ambient Light Source (LED Tube / Bounce) -->
+            <g transform="translate(180, 130)">
+              <rect x="0" y="0" width="160" height="18" rx="9" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.5"/>
+              <circle cx="80" cy="9" r="60" fill="url(#diffuseGlow)"/>
+              <text x="80" y="-8" text-anchor="middle" fill="#F59E0B" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">SOFT DIFFUSE FILL (5-10%)</text>
+            </g>
+
+            <!-- Actor in Driver Seat -->
+            <g transform="translate(350, 230)">
+              <!-- Soft ambient face glow -->
+              <circle cx="50" cy="50" r="42" fill="#1E293B" stroke="#10B981" stroke-width="2"/>
+              <circle cx="35" cy="45" r="5" fill="#10B981"/> <!-- Eye Catchlight visible -->
+              <circle cx="65" cy="45" r="5" fill="#10B981"/> <!-- Eye Catchlight visible -->
+              <path d="M 40 68 Q 50 76 60 68" stroke="#10B981" stroke-width="2" fill="none"/>
+              <text x="50" y="115" text-anchor="middle" fill="#A7F3D0" font-family="monospace" font-size="11" font-weight="700">Iris Catchlight Visible</text>
+            </g>
+
+            <!-- Warning Callouts on Bottom -->
+            <g transform="translate(80, 410)">
+              <rect x="0" y="0" width="300" height="50" rx="8" fill="#EF4444" fill-opacity="0.15" stroke="#EF4444" stroke-opacity="0.4"/>
+              <text x="150" y="24" text-anchor="middle" fill="#F87171" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">❌ NO BLOWN WHITES (100% CLIP)</text>
+              <text x="150" y="40" text-anchor="middle" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="10">রোদে কপাল অতিরিক্ত সাদা হলে টেক্সচার হারিয়ে যায়</text>
+            </g>
+
+            <g transform="translate(420, 410)">
+              <rect x="0" y="0" width="300" height="50" rx="8" fill="#10B981" fill-opacity="0.15" stroke="#10B981" stroke-opacity="0.4"/>
+              <text x="150" y="24" text-anchor="middle" fill="#34D399" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">✓ MATTE POWDER ON SKIN</text>
+              <text x="150" y="40" text-anchor="middle" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="10">অতিরিক্ত তেলতেলে গ্লসি ভাব মেকআপে দূর রাখুন</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Punchy Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#F59E0B] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>💡</span> 01 · NO BLOWN WHITES
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">হাইলাইট ক্লিপিং এড়ান</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              কপালে কড়া রোদে যেন ১০০% হোয়াইট ক্লিপ না করে—স্কিনের আসল টেক্সচার থাকা জরুরি।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🚗</span> 02 · NIGHT CAR INTERIOR
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">গাড়ির ভেতরে অ্যাম্বিয়েন্ট ফিল</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              রাতের গাড়ির শটে মুখে হালকা ৫–১০% সফট অ্যাম্বিয়েন্ট ফিল দিন, যেন চোখের মনি দেখা যায়।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>✨</span> 03 · MATTE FINISH
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ট্রান্সলুসেন্ট পাউডার ব্যবহার</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              মেকআপে ট্রান্সলুসেন্ট পাউডার দিয়ে মুখের অতিরিক্ত তেলতেলে রিফ্লেকশন দূর করতে হবে।
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 06: RULE 5 — TRUE PORTRAIT LENSES (৩৫মিমি বা ৫০মিমি)  -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-6" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-[#C4B5FD] text-xs font-bold uppercase tracking-wider mb-1.5">
+          🎯 RULE 05 • OPTICAL COMPRESSION
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          True Portrait Lenses <span class="text-[#C4B5FD]">(৩৫মিমি বা ৫০মিমি)</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          মুখের কাছে আল্ট্রা-ওয়াইড লেন্স নয়
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Giant Visual Anchor: 18mm Distortion vs 50mm Compression -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#8B5CF6]/40 glow-purple flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <!-- inlined SVG: visual-lens-distortion.svg -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-6" data-asset="visual-lens-distortion.svg">
+            <defs>
+              <linearGradient id="s6BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+            </defs>
+            <rect width="800" height="500" fill="url(#s6BgGrad)" rx="20"/>
+
+            <!-- Left: 18mm Wide Lens Distortion -->
+            <g transform="translate(60, 60)">
+              <rect x="0" y="0" width="310" height="380" rx="16" fill="#0A101D" stroke="#EF4444" stroke-width="2"/>
+              <text x="25" y="40" fill="#EF4444" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">❌ 18mm ULTRA-WIDE CLOSE-UP</text>
+
+              <!-- Distorted Bulbous Face (Huge Nose, Small Ears) -->
+              <ellipse cx="155" cy="150" rx="75" ry="60" fill="#1E293B" stroke="#EF4444" stroke-width="2"/>
+              <ellipse cx="155" cy="150" rx="35" ry="25" fill="#EF4444" fill-opacity="0.3"/> <!-- Huge Bulbous Nose -->
+              <text x="155" y="155" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="11" font-weight="bold">Distorted</text>
+
+              <rect x="20" y="270" width="270" height="85" rx="8" fill="#1E293B" stroke="#EF4444" stroke-opacity="0.3"/>
+              <text x="30" y="295" fill="#EF4444" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">⚠️ Barrel Distortion</text>
+              <text x="30" y="318" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="11">মুখের ১ ফুট সামনে ওয়াইড লেন্স ধরলে নাক বড়</text>
+              <text x="30" y="336" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="11">আর কান ছোট হয়ে মুখের স্বাভাবিক গড়ন নষ্ট হয়</text>
+            </g>
+
+            <!-- Right: 35mm / 50mm / 85mm True Portrait -->
+            <g transform="translate(430, 60)">
+              <rect x="0" y="0" width="310" height="380" rx="16" fill="#0A101D" stroke="#10B981" stroke-width="2"/>
+              <text x="25" y="40" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">✓ 35mm / 50mm / 85mm TRUE GLASS</text>
+
+              <!-- Natural Compressed Portrait -->
+              <circle cx="155" cy="150" r="65" fill="#0E1626" stroke="#10B981" stroke-width="2.5"/>
+              <circle cx="132" cy="140" r="6" fill="#10B981"/>
+              <circle cx="178" cy="140" r="6" fill="#10B981"/>
+              <circle cx="155" cy="158" r="4" fill="#F59E0B"/>
+              <path d="M 138 180 Q 155 192 172 180" stroke="#10B981" stroke-width="2.5" fill="none"/>
+
+              <rect x="20" y="270" width="270" height="85" rx="8" fill="#1E293B" stroke="#10B981" stroke-opacity="0.3"/>
+              <text x="30" y="295" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">✓ Natural Facial Proportions</text>
+              <text x="30" y="318" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">মুখের খাঁটি প্রপোর্শন বজায় থাকে, AI নিখুঁতভাবে</text>
+              <text x="30" y="336" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">হলিউড ফিনিশের ফেস ড্রপ করতে পারে</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Punchy Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#C4B5FD] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎯</span> 01 · HERO GLASS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">৩৫মিমি, ৫০মিমি বা ৮৫মিমি লেন্স</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              মুখের ক্লোজ-আপের জন্য ৩৫মিমি, ৫০মিমি অথবা ৮৫মিমি ফোকাল লেংথ ব্যবহার করুন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-red-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>❌</span> 02 · AVOID ULTRA-WIDE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">কাছে ওয়াইড লেন্স নিষিদ্ধ</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              মুখের ১ ফুট সামনে ১৪মিমি বা ১৮মিমি ওয়াইড লেন্স দিয়ে ক্লোজ-আপ শুট করবেন না।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>👤</span> 03 · NATURAL PROPORTIONS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">স্বাভাবিক মুখের শেপ রক্ষা</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              সঠিক লেন্স মুখের শেপ বিকৃত হওয়া আটকায়, ফলে নতুন মুখ দেখতে ১০০% স্বাভাবিক লাগে।
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 07: RULE 6 — THE 60-SEC LIGHTING GIFT (রেফারেন্স স্টিল) -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-7" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          📸 RULE 06 • MACHINE LEARNING CALIBRATION
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          The 60-Second Lighting Gift <span class="text-emerald-400">(রেফারেন্স স্টিল)</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          প্রতিটা লাইটিং সেটআপের আগে ৫টা কুইক র' ছবি
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Giant Visual Anchor: 5 RAW Clicks Calibration Board -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-emerald-500/40 glow-emerald flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <!-- inlined SVG: visual-raw-calibration.svg -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-7" data-asset="visual-raw-calibration.svg">
+            <defs>
+              <linearGradient id="s7BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+            </defs>
+            <rect width="800" height="500" fill="url(#s7BgGrad)" rx="20"/>
+
+            <text x="400" y="45" text-anchor="middle" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800" letter-spacing="1">5 QUICK RAW CALIBRATION CLICKS (60 SECONDS)</text>
+
+            <!-- 5 Photo Polaroids Grid -->
+            <!-- Photo 1: Neutral Front -->
+            <g transform="translate(45, 80)">
+              <rect x="0" y="0" width="125" height="170" rx="8" fill="#0A101D" stroke="#00F0FF" stroke-width="2"/>
+              <circle cx="62" cy="65" r="35" fill="#1E293B" stroke="#00F0FF" stroke-width="1.5"/>
+              <text x="62" y="130" text-anchor="middle" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">01 · FRONT 0°</text>
+              <text x="62" y="150" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">Neutral Look</text>
+            </g>
+
+            <!-- Photo 2: -45° Left -->
+            <g transform="translate(195, 80)">
+              <rect x="0" y="0" width="125" height="170" rx="8" fill="#0A101D" stroke="#10B981" stroke-width="2"/>
+              <circle cx="62" cy="65" r="35" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+              <text x="62" y="130" text-anchor="middle" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">02 · LEFT -45°</text>
+              <text x="62" y="150" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">3/4 Profile</text>
+            </g>
+
+            <!-- Photo 3: +45° Right -->
+            <g transform="translate(345, 80)">
+              <rect x="0" y="0" width="125" height="170" rx="8" fill="#0A101D" stroke="#10B981" stroke-width="2"/>
+              <circle cx="62" cy="65" r="35" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+              <text x="62" y="130" text-anchor="middle" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">03 · RIGHT +45°</text>
+              <text x="62" y="150" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">3/4 Profile</text>
+            </g>
+
+            <!-- Photo 4: Smile -->
+            <g transform="translate(495, 80)">
+              <rect x="0" y="0" width="125" height="170" rx="8" fill="#0A101D" stroke="#F59E0B" stroke-width="2"/>
+              <circle cx="62" cy="65" r="35" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+              <text x="62" y="130" text-anchor="middle" fill="#F59E0B" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">04 · SMILE</text>
+              <text x="62" y="150" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">Expression</text>
+            </g>
+
+            <!-- Photo 5: Serious -->
+            <g transform="translate(645, 80)">
+              <rect x="0" y="0" width="125" height="170" rx="8" fill="#0A101D" stroke="#8B5CF6" stroke-width="2"/>
+              <circle cx="62" cy="65" r="35" fill="#1E293B" stroke="#8B5CF6" stroke-width="1.5"/>
+              <text x="62" y="130" text-anchor="middle" fill="#C4B5FD" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">05 · SERIOUS</text>
+              <text x="62" y="150" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">Hero Look</text>
+            </g>
+
+            <!-- Connecting Pipeline to Neural Model -->
+            <g transform="translate(100, 290)">
+              <rect x="0" y="0" width="600" height="140" rx="14" fill="#0E1626" stroke="#10B981" stroke-width="2"/>
+              <circle cx="60" cy="70" r="30" fill="#10B981" fill-opacity="0.2"/>
+              <text x="60" y="76" text-anchor="middle" fill="#10B981" font-size="24">💡</text>
+              <text x="110" y="55" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="800">AUTOMATIC COLOR TEMPERATURE &amp; LUX LEARNING</text>
+              <text x="110" y="80" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="12">এই ৫টি ছবি পেলে AI আপনার সেটের আলোর এক্সাক্ট কেলভিন, স্যাচুরেশন ও শ্যাডো শিখে নেয়।</text>
+              <text x="110" y="105" fill="#10B981" font-family="monospace" font-size="11" font-weight="700">⏱️ Investment: 60 Seconds | Savings in Post-Production: 3 Days</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Punchy Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>📸</span> 01 · QUICK 5 CLICKS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">৫টি অ্যাঙ্গেলের র' ছবি</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              সামনে ১টা, দুই পাশে ৪৫ ডিগ্রিতে ২টি, ১টা হাসি আর ১টা সিরিয়াস এক্সপ্রেশন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎨</span> 02 · COLOR MATCHING
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">কালার টেম্পারেচার ক্যালিব্রেশন</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              আপনার সেটের সঠিক কালার টেম্পারেচার ও শ্যাডোর ডেপথ AI সাথে সাথে শিখে নিবে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#F59E0B] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>⏱️</span> 03 · ZERO DELAY
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">সময় লাগবে ঠিক ৬০ সেকেন্ড</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              সেটে সময় লাগবে মাত্র ১ মিনিট, কিন্তু পোস্ট-প্রোডাকশনে ৩ দিনের খাটুনি বাঁচিয়ে দিবে।
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 08: THE CLOSING COMMITMENT (৫০ লাখ টাকার কোয়ালিটি)   -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-8" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-bold uppercase tracking-wider mb-1.5">
+          💎 SUMMARY • EXECUTIVE HANDSHAKE
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Hollywood-Grade Output <span class="text-[#00F0FF]">for Ryze</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          ক্যামেরা টিম + AI টিম = আনবিটেবল আউটপুট
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Giant Visual Anchor: 50 Lakh Quality Handshake Certificate -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#F59E0B]/40 glow-amber flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <!-- inlined SVG: visual-closing-handshake.svg -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-8" data-asset="visual-closing-handshake.svg">
+            <defs>
+              <linearGradient id="s8BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+              <linearGradient id="goldSealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FCD34D"/>
+                <stop offset="50%" stop-color="#F59E0B"/>
+                <stop offset="100%" stop-color="#B45309"/>
+              </linearGradient>
+            </defs>
+            <rect width="800" height="500" fill="url(#s8BgGrad)" rx="20"/>
+
+            <!-- Certificate Border -->
+            <rect x="40" y="30" width="720" height="440" rx="16" fill="#0A101D" stroke="#F59E0B" stroke-width="2" stroke-opacity="0.5"/>
+            <rect x="55" y="45" width="690" height="410" rx="10" fill="none" stroke="#00F0FF" stroke-width="1" stroke-opacity="0.3"/>
+
+            <!-- Dual Pillars: Cinematographer + AI Engineering -->
+            <g transform="translate(100, 90)">
+              <rect x="0" y="0" width="260" height="180" rx="12" fill="#1E293B" stroke="#00F0FF" stroke-width="1.5"/>
+              <text x="130" y="45" text-anchor="middle" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">DOP &amp; CAMERA CREW</text>
+              <text x="130" y="75" text-anchor="middle" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="12">✓ ১/১০০s শাটার স্পিড</text>
+              <text x="130" y="105" text-anchor="middle" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="12">✓ ৪৫° সেফ জোন ও মুখে হাত নয়</text>
+              <text x="130" y="135" text-anchor="middle" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="12">✓ সফট অ্যাম্বিয়েন্ট ফিল লাইটিং</text>
+            </g>
+
+            <text x="400" y="190" text-anchor="middle" fill="#F59E0B" font-family="'Space Grotesk', sans-serif" font-size="28" font-weight="900">+</text>
+
+            <g transform="translate(440, 90)">
+              <rect x="0" y="0" width="260" height="180" rx="12" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+              <text x="130" y="45" text-anchor="middle" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="800">GRO10X AI NEURAL ENGINE</text>
+              <text x="130" y="75" text-anchor="middle" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="12">✓ সাব-পিক্সেল আই ট্র্যাকিং</text>
+              <text x="130" y="105" text-anchor="middle" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="12">✓ ১০০% ন্যাচারাল স্কিন টোন</text>
+              <text x="130" y="135" text-anchor="middle" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="12">✓ হলিউড গ্রেড মোশন ভেক্টর ব্লার</text>
+            </g>
+
+            <!-- Gold Quality Seal -->
+            <g transform="translate(250, 305)">
+              <rect x="0" y="0" width="300" height="110" rx="16" fill="url(#goldSealGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+              <text x="150" y="45" text-anchor="middle" fill="#070B12" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="900" letter-spacing="1">৫০ লাখ টাকার কোয়ালিটি</text>
+              <text x="150" y="72" text-anchor="middle" fill="#1E293B" font-family="'Hind Siliguri', sans-serif" font-size="13" font-weight="700">আন্তর্জাতিক মানের বিজ্ঞাপন ফিনিশ</text>
+              <text x="150" y="94" text-anchor="middle" fill="#3E2723" font-family="monospace" font-size="10" font-weight="bold">Ryze Commercial Production · 2026</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Punchy Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🚀</span> 01 · 1/100s SHUTTER SPEED
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ক্রিস্প এজ ও পারফেক্ট ট্র্যাকিং</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              শাটার স্পিড ক্রিস্প রাখলে AI ফ্রেম-বাই-ফ্রেম পিক্সেল পারফেক্ট ফেস বসাতে পারে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎯</span> 02 · 45° ANGLE &amp; CLEAN FACE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">জিরো গ্লিচ ও নো টিয়ারিং</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              দুটো চোখ সবসময় ফ্রেমে থাকলে এবং মুখে হাত না দিলে ফেস সোয়াপ হবে ১০০% নিখুঁত।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#F59E0B] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>💎</span> 03 · INTERNATIONAL GRADE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">৫০ লাখ টাকার গ্লোবাল কোয়ালিটি</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ক্যামেরা টিম আর AI টিমের পারফেক্ট পার্টনারশিপে তৈরি হবে বিশ্বমানের Ryze বিজ্ঞাপন!
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM NAVIGATION HUD & CONTROLS                          -->
+  <!-- ========================================================= -->
+  <footer class="no-print relative z-20 flex items-center justify-between px-6 py-3 border-t border-white/10 bg-[#070B12]/90 backdrop-blur-md">
+    
+    <!-- Prev / Next Controls -->
+    <div class="flex items-center gap-3">
+      <button onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-xs transition flex items-center gap-1.5 border border-white/10">
+        ← Previous
+      </button>
+      <button onclick="nextSlide()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#F59E0B] to-[#00F0FF] hover:opacity-90 active:scale-95 text-black font-extrabold text-xs transition flex items-center gap-1.5 shadow-lg shadow-[#F59E0B]/20">
+        Next →
+      </button>
+    </div>
+
+    <!-- Active Slide Progress Pips -->
+    <div class="hidden md:flex items-center gap-2">
+      <div id="pip-1" onclick="goToSlide(1)" class="w-8 h-1.5 rounded-full bg-[#F59E0B] transition cursor-pointer"></div>
+      <div id="pip-2" onclick="goToSlide(2)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-3" onclick="goToSlide(3)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-4" onclick="goToSlide(4)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-5" onclick="goToSlide(5)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-6" onclick="goToSlide(6)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-7" onclick="goToSlide(7)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-8" onclick="goToSlide(8)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+    </div>
+
+    <!-- Keyboard Shortcuts Legend -->
+    <div class="hidden sm:flex items-center gap-3 text-[11px] font-mono text-gray-400">
+      <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white">←</kbd><kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white">→</kbd> Navigate</span>
+      <span class="flex items-center gap-1"><kbd class="px-2 py-0.5 rounded bg-white/10 border border-white/20 text-white">Space</kbd> Advance</span>
+      <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white">F</kbd> Fullscreen</span>
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- CLIENT JAVASCRIPT SLIDE ENGINE                            -->
+  <!-- ========================================================= -->
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 8;
+
+    function updateSlide() {
+      // Deactivate all slides
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      
+      // Activate target slide
+      const target = document.getElementById(`slide-${currentSlide}`);
+      if (target) {
+        target.classList.add('active');
+      }
+
+      // Update Header Tracker
+      document.getElementById('current-slide-num').textContent = currentSlide.toString().padStart(2, '0');
+
+      // Update Pips
+      for (let i = 1; i <= totalSlides; i++) {
+        const pip = document.getElementById(`pip-${i}`);
+        if (pip) {
+          if (i === currentSlide) {
+            pip.className = 'w-8 h-1.5 rounded-full bg-[#F59E0B] transition cursor-pointer';
+          } else {
+            pip.className = 'w-2.5 h-1.5 rounded-full bg-white/20 hover:bg-white/40 transition cursor-pointer';
+          }
+        }
+      }
+
+      // Sync with localStorage for remote Presenter Co-Pilot broadcast
+      try {
+        localStorage.setItem('ryze_dop_current_slide', currentSlide);
+      } catch (e) {}
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+      } else {
+        currentSlide = 1; // loop
+      }
+      updateSlide();
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+      } else {
+        currentSlide = totalSlides;
+      }
+      updateSlide();
+    }
+
+    function goToSlide(n) {
+      if (n >= 1 && n <= totalSlides) {
+        currentSlide = n;
+        updateSlide();
+      }
+    }
+
+    // Keyboard Controller
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    // Touch Swipe Controller
+    let touchStartX = 0;
+    let touchEndX = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+
+    window.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, false);
+
+    function handleSwipe() {
+      if (touchEndX < touchStartX - 50) {
+        nextSlide();
+      }
+      if (touchEndX > touchStartX + 50) {
+        prevSlide();
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    }
+
+    // Initialize on load
+    updateSlide();
+  </script>
+
+</body>
+</html>
