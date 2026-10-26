@@ -846,9 +846,9 @@
       "code": "[V8-DATA10X]",
       "venture": "Data10X: Sovereign Data & Identity Graph Engine",
       "engine": "Engine 4: Platforms & Operating Systems / Conglomerate Shared Assets",
-      "port": "Workspace D:\\data10x & Local Port 3000 / 8080",
+      "port": "Workspace D:\\data10x (Local Port 8080 / 3000)",
       "sprint": "Sprint 36: Data10X Sovereign Intelligence Cockpit & PIN-Authenticated Investor Portal",
-      "status": "CHARTERED",
+      "status": "IN_PROGRESS",
       "pricingType": "Enterprise Sovereign Intelligence Platform & Investor Cockpit",
       "creditValuation": 35000,
       "bdtValuation": 70000,
@@ -863,7 +863,7 @@
       ],
       "charteredDate": "2026-10-26",
       "completedDate": null,
-      "liveUrl": "http://localhost:3000/data10x"
+      "liveUrl": "http://localhost:8080"
     }
   ],
   "totals": {
