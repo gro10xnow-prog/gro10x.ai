@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Serviq BPO AI Acceleration — Session 2 & 3: Vision AI, Custom Gems & NotebookLM Vault</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --bg-dark: #070B12;
+      --card-dark: #0E1626;
+      --accent-cyan: #00F0FF;
+      --accent-cyan-glow: rgba(0, 240, 255, 0.35);
+      --accent-purple: #8B5CF6;
+      --accent-purple-glow: rgba(139, 92, 246, 0.35);
+      --accent-emerald: #10B981;
+      --accent-emerald-glow: rgba(16, 185, 129, 0.35);
+      --accent-amber: #F59E0B;
+      --accent-amber-glow: rgba(245, 158, 11, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      overflow: hidden;
+      touch-action: pan-y;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .heading-font { font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .bengali { font-family: 'Hind Siliguri', sans-serif; }
+
+    /* Ambient Spotlight & Grid */
+    .bg-radar {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 240, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(139, 92, 246, 0.035) 1px, transparent 1px);
+    }
+
+    .spotlight {
+      background: radial-gradient(circle at 50% 12%, rgba(0, 240, 255, 0.12) 0%, rgba(139, 92, 246, 0.10) 35%, rgba(7, 11, 18, 0) 70%);
+    }
+
+    /* Active Slide Transition for TV & Boardroom Displays */
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: rgba(14, 22, 38, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glow-cyan { box-shadow: 0 0 32px var(--accent-cyan-glow); }
+    .glow-purple { box-shadow: 0 0 32px var(--accent-purple-glow); }
+    .glow-emerald { box-shadow: 0 0 32px var(--accent-emerald-glow); }
+    .glow-amber { box-shadow: 0 0 32px var(--accent-amber-glow); }
+
+    /* SVG Timer Progress Animation */
+    #timer-progress-ring {
+      transition: stroke-dashoffset 1s linear;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+      }
+      .slide.active {
+        height: auto;
+        min-height: calc(100vh - 120px);
+        padding-bottom: 90px;
+      }
+    }
+  </style>
+</head>
+<body class="w-screen h-screen flex flex-col justify-between relative bg-[#070B12] bg-radar overflow-hidden">
+
+  <!-- Ambient Cinematic Spotlight -->
+  <div class="spotlight absolute inset-0 pointer-events-none z-0"></div>
+
+  <!-- ========================================================= -->
+  <!-- TOP APP BAR / BRAND & TELEMETRY                           -->
+  <!-- ========================================================= -->
+  <header class="no-print relative z-20 flex items-center justify-between px-6 py-3 border-b border-white/10 bg-[#070B12]/85 backdrop-blur-md">
+    
+    <!-- Serviq & Program Badge -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00F0FF] via-[#8B5CF6] to-[#10B981] flex items-center justify-center font-black text-black text-base shadow-lg shadow-[#00F0FF]/25">
+        ⚡
+      </div>
+      <div>
+        <div class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+          <span>SERVIQ BPO ACCELERATION</span>
+          <span class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-[#00F0FF]/20 text-[#00F0FF] font-mono border border-[#00F0FF]/30">SESSION 2 &amp; 3</span>
+        </div>
+        <div class="text-[10px] text-gray-400 font-mono">Vision AI · Custom Gems · Grounded NotebookLM Vault</div>
+      </div>
+    </div>
+
+    <!-- Slide Tracker & Actions -->
+    <div class="flex items-center gap-3">
+      <!-- Tracker Pill -->
+      <div class="px-3.5 py-1 rounded-full bg-white/5 border border-white/10 font-mono text-xs text-gray-300 flex items-center gap-1.5">
+        <span class="text-[#00F0FF] font-bold" id="current-slide-num">01</span>
+        <span class="text-gray-500">/</span>
+        <span class="text-gray-400" id="total-slide-num">12</span>
+      </div>
+
+      <!-- Presenter Co-Pilot Deep Link -->
+      <a href="/pitch/serviq-session2-3/copilot" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-[#00F0FF]/20 hover:bg-[#00F0FF]/30 border border-[#00F0FF]/40 text-xs font-bold text-[#A5F3FC] transition flex items-center gap-1.5 shadow-sm">
+        📱 Presenter Co-Pilot ↗
+      </a>
+
+      <!-- Fullscreen Toggle ('F') -->
+      <button onclick="toggleFullscreen()" class="p-2 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 hover:text-white transition" title="Toggle Fullscreen (F)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- SLIDE CONTAINER (12 CANONICAL WIDESCREEN SLIDES)           -->
+  <!-- ========================================================= -->
+  <main class="relative z-10 flex-1 w-full max-w-7xl mx-auto px-6 py-4 flex flex-col justify-center">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 01: WELCOME BACK & THE FRICTION HARVEST             -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-01" class="slide active flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-1.5">
+          🚀 SESSION 02 • KICKOFF &amp; HARVEST
+        </div>
+        <h1 class="heading-font text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight">
+          From 4 Words to Real Workflows: <span class="bg-gradient-to-r from-[#00F0FF] via-cyan-200 to-[#8B5CF6] bg-clip-text text-transparent">হোমওয়ার্কের সমাধান</span>
+        </h1>
+        <p class="bengali text-gray-300 text-sm sm:text-lg max-w-2xl mx-auto mt-1 font-medium">
+          আপনারা যে বিরক্তির কাজগুলো নোট করেছিলেন, আজ আমরা সেগুলো অটোমেট করব
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: Intake Hopper -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#00F0FF]/40 glow-cyan flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-01" data-asset="visual-s2-harvest.svg">
+            <defs>
+              <linearGradient id="s1BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+            </defs>
+            <rect width="800" height="500" fill="url(#s1BgGrad)" rx="20"/>
+
+            <text x="400" y="45" text-anchor="middle" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="800" letter-spacing="2">REAL-WORLD FRICTION INGESTION</text>
+            <text x="400" y="75" text-anchor="middle" fill="#FFFFFF" font-family="'Hind Siliguri', sans-serif" font-size="20" font-weight="700">৪টি টেবিলের বাস্তব বিরক্তি ➔ ১টি স্বয়ংক্রিয় এআই ইঞ্জিন</text>
+
+            <!-- 4 Intake Sticky Notes -->
+            <g transform="translate(60, 110)">
+              <rect x="0" y="0" width="145" height="130" rx="10" fill="#0A101D" stroke="#00F0FF" stroke-width="1.5"/>
+              <text x="15" y="30" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">SHABUDDIN</text>
+              <text x="15" y="52" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">বেতন ও ছুটির প্রশ্ন</text>
+              <text x="15" y="72" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="10">দিনে ৫০ বার একই উত্তর</text>
+              <rect x="15" y="90" width="115" height="24" rx="4" fill="#00F0FF" fill-opacity="0.15"/>
+              <text x="72" y="106" text-anchor="middle" fill="#A5F3FC" font-family="monospace" font-size="10">Friction 01</text>
+            </g>
+
+            <g transform="translate(230, 110)">
+              <rect x="0" y="0" width="145" height="130" rx="10" fill="#0A101D" stroke="#8B5CF6" stroke-width="1.5"/>
+              <text x="15" y="30" fill="#C4B5FD" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">RAYHAN</text>
+              <text x="15" y="52" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">ছেঁড়া চালানের ছবি</text>
+              <text x="15" y="72" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="10">হোয়াটসঅ্যাপের ঝাপসা রোস্টার</text>
+              <rect x="15" y="90" width="115" height="24" rx="4" fill="#8B5CF6" fill-opacity="0.15"/>
+              <text x="72" y="106" text-anchor="middle" fill="#E9D5FF" font-family="monospace" font-size="10">Friction 02</text>
+            </g>
+
+            <g transform="translate(400, 110)">
+              <rect x="0" y="0" width="145" height="130" rx="10" fill="#0A101D" stroke="#10B981" stroke-width="1.5"/>
+              <text x="15" y="30" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">RIDHIYA</text>
+              <text x="15" y="52" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">অফিস ডাইজেস্ট</text>
+              <text x="15" y="72" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="10">৪ ডিপার্টমেন্ট চেইস করা</text>
+              <rect x="15" y="90" width="115" height="24" rx="4" fill="#10B981" fill-opacity="0.15"/>
+              <text x="72" y="106" text-anchor="middle" fill="#A7F3D0" font-family="monospace" font-size="10">Friction 03</text>
+            </g>
+
+            <g transform="translate(570, 110)">
+              <rect x="0" y="0" width="145" height="130" rx="10" fill="#0A101D" stroke="#F59E0B" stroke-width="1.5"/>
+              <text x="15" y="30" fill="#F59E0B" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">PARTHA</text>
+              <text x="15" y="52" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="11">ভাঙা এক্সেল ফর্মুলা</text>
+              <text x="15" y="72" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="10">#REF! আর জটিল সামারি</text>
+              <rect x="15" y="90" width="115" height="24" rx="4" fill="#F59E0B" fill-opacity="0.15"/>
+              <text x="72" y="106" text-anchor="middle" fill="#FDE68A" font-family="monospace" font-size="10">Friction 04</text>
+            </g>
+
+            <!-- Funnel Conduits into Gemini 1.5 Pro -->
+            <path d="M 132 240 L 400 310 M 302 240 L 400 310 M 472 240 L 400 310 M 642 240 L 400 310" stroke="#00F0FF" stroke-width="2" stroke-dasharray="4 4" stroke-opacity="0.5"/>
+
+            <!-- Automated Central Engine -->
+            <g transform="translate(180, 310)">
+              <rect x="0" y="0" width="440" height="140" rx="16" fill="#0E1626" stroke="#00F0FF" stroke-width="2"/>
+              <circle cx="50" cy="70" r="28" fill="#00F0FF" fill-opacity="0.2"/>
+              <text x="50" y="78" text-anchor="middle" fill="#00F0FF" font-size="24">⚡</text>
+
+              <text x="95" y="45" fill="#00F0FF" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="800">SERVIQ PRODUCTION AUTOMATION ENGINE</text>
+              <text x="95" y="70" fill="#FFFFFF" font-family="'Hind Siliguri', sans-serif" font-size="14" font-weight="700">গতকাল নোট করা প্রতিটি বিরক্তি আজ চিরতরে সমাধান হবে</text>
+              <text x="95" y="95" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="12">কোনো কাল্পনিক থিওরি নয় — সম্পূর্ণ লাইভ এক্সিকিউশন ও স্ক্রিন শেয়ারিং</text>
+              <rect x="95" y="108" width="140" height="20" rx="4" fill="#10B981" fill-opacity="0.2"/>
+              <text x="165" y="122" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="10" font-weight="bold">✓ ZERO HOMEWORK RE-DO</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎯</span> 01 · REAL HEADACHES ONLY
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">বাস্তব সমস্যা দিয়ে শুরু</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              কোনো ডামি উদাহরণ নয়—আপনাদের গতকালের আসল নোট দিয়েই ক্লাস শুরু হবে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#8B5CF6] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>⚡</span> 02 · THE 10X SHIFT
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">১০ গুণ গতি অর্জন</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              প্রতিটি ম্যানুয়াল কাজের সময় ১০ মিনিট থেকে কমিয়ে মাত্র ৩০ সেকেন্ডে নামিয়ে আনা।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🛡️</span> 03 · SAFETY INVARIANT
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">১০০% নিরাপদ ডাটা পলিসি</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ৬-সারি টোকেনাইজেশন মেনে কীভাবে রিয়েল ফাইলে কাজ করতে হয় তার লাইভ প্রয়োগ।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 02: BEYOND TEXT: MULTIMODAL VISION AI               -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-02" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          📷 MULTIMODAL INGRESS • VISION AI
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Beyond Typing: <span class="text-emerald-400">চোখ দিয়ে দেখে কাজ করা</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          টাইপ করার দিন শেষ — ছবি, ছেঁড়া রসিদ ও হাতে লেখা রোস্টার আপলোড করুন
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: Vision Pipeline -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-emerald-500/40 glow-emerald flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" class="w-full h-full max-h-[440px] object-contain rounded-xl" id="svg-slide-02" data-asset="visual-vision-pipeline.svg">
+            <defs>
+              <linearGradient id="s2BgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#070B12"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#070B12"/>
+              </linearGradient>
+            </defs>
+            <rect width="800" height="500" fill="url(#s2BgGrad)" rx="20"/>
+
+            <text x="400" y="45" text-anchor="middle" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="800" letter-spacing="2">MULTIMODAL UNSTRUCTURED EXTRACTION</text>
+
+            <!-- Left: Chaotic Paper Challan with Bangla handwriting -->
+            <g transform="translate(60, 80)">
+              <rect x="0" y="0" width="280" height="350" rx="14" fill="#0A101D" stroke="#EF4444" stroke-width="2"/>
+              <rect x="15" y="15" width="250" height="35" rx="6" fill="#EF4444" fill-opacity="0.15"/>
+              <text x="25" y="38" fill="#F87171" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">UNSTRUCTURED INPUT (হোয়াটসঅ্যাপ ছবি)</text>
+
+              <!-- Scribbled Lines & Stamp -->
+              <g transform="translate(25, 70)" stroke="#64748B" stroke-width="2">
+                <line x1="0" y1="10" x2="230" y2="10" stroke-dasharray="8 4"/>
+                <line x1="0" y1="35" x2="180" y2="35" stroke-dasharray="6 3"/>
+                <line x1="0" y1="60" x2="210" y2="60" stroke-dasharray="8 4"/>
+                <line x1="0" y1="85" x2="160" y2="85" stroke-dasharray="6 3"/>
+                <line x1="0" y1="110" x2="220" y2="110" stroke-dasharray="8 4"/>
+              </g>
+
+              <circle cx="190" cy="220" r="35" fill="#EF4444" fill-opacity="0.15" stroke="#EF4444" stroke-width="1.5"/>
+              <text x="190" y="225" text-anchor="middle" fill="#FCA5A5" font-family="'Hind Siliguri', sans-serif" font-size="10" font-weight="bold">সিলমোহর ও স্বাক্ষর</text>
+
+              <rect x="20" y="280" width="240" height="50" rx="8" fill="#1E293B"/>
+              <text x="30" y="302" fill="#F87171" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold">⚠️ Manual Pain Point:</text>
+              <text x="30" y="320" fill="#94A3B8" font-family="'Hind Siliguri', sans-serif" font-size="10">এক্সেলে তুলতে তুলতে রায়হানের রাত ৮টা বাজে</text>
+            </g>
+
+            <!-- Center Laser Scanning Conduit -->
+            <path d="M 355 255 L 435 255" stroke="#10B981" stroke-width="4" stroke-dasharray="6 4"/>
+            <polygon points="445,255 430,247 430,263" fill="#10B981"/>
+
+            <!-- Right: Clean Structured Table -->
+            <g transform="translate(450, 80)">
+              <rect x="0" y="0" width="290" height="350" rx="14" fill="#0A101D" stroke="#10B981" stroke-width="2"/>
+              <rect x="15" y="15" width="260" height="35" rx="6" fill="#10B981" fill-opacity="0.15"/>
+              <text x="25" y="38" fill="#34D399" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">EXTRACTED DATA (এক্সেল রেডি)</text>
+
+              <!-- Table Rows -->
+              <g transform="translate(15, 65)">
+                <rect x="0" y="0" width="260" height="28" fill="#1E293B"/>
+                <text x="10" y="18" fill="#00F0FF" font-family="monospace" font-size="10" font-weight="bold">Hub | Rider ID | COD | Status</text>
+
+                <rect x="0" y="35" width="260" height="26" fill="#0E1626" stroke="#334155" stroke-width="0.5"/>
+                <text x="10" y="52" fill="#E2E8F0" font-family="monospace" font-size="10">Bogra | #4409 | ৳12,500 | Paid</text>
+
+                <rect x="0" y="65" width="260" height="26" fill="#0E1626" stroke="#334155" stroke-width="0.5"/>
+                <text x="10" y="82" fill="#E2E8F0" font-family="monospace" font-size="10">Rangpur | #1128 | ৳8,200 | Delay</text>
+
+                <rect x="0" y="95" width="260" height="26" fill="#0E1626" stroke="#334155" stroke-width="0.5"/>
+                <text x="10" y="112" fill="#E2E8F0" font-family="monospace" font-size="10">Sylhet | #9034 | ৳19,400 | Paid</text>
+
+                <rect x="0" y="125" width="260" height="26" fill="#0E1626" stroke="#334155" stroke-width="0.5"/>
+                <text x="10" y="142" fill="#E2E8F0" font-family="monospace" font-size="10">Barisal | #7721 | ৳6,100 | Issue</text>
+              </g>
+
+              <rect x="20" y="280" width="250" height="50" rx="8" fill="#1E293B" stroke="#10B981" stroke-opacity="0.3"/>
+              <text x="30" y="302" fill="#10B981" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold">✓ 3.2 Seconds Turnaround</text>
+              <text x="30" y="320" fill="#E2E8F0" font-family="'Hind Siliguri', sans-serif" font-size="10">জিরো রি-টাইপিং — সরাসরি গুগল শিটে পেস্ট</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>📷</span> 01 · PHOTO-TO-DATA
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ছবি থেকে নিখুঁত ডেটা</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              হোয়াটসঅ্যাপে আসা অপরিচ্ছন্ন ছবি সরাসরি ব্রাউজারে ড্র্যাগ অ্যান্ড ড্রপ করুন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🇧🇩</span> 02 · BENGALI SCRIPT NATIVE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">বাংলা হাতের লেখা নিখুঁতভাবে রিড</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              বাংলা এবং ইংরেজি মেশানো দ্রুত হাতের লেখাও জেমিনি নিখুঁতভাবে পড়তে পারে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-amber-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🧹</span> 03 · AUTO-STRUCTURING
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ঝকঝকে এক্সেল টেবিল</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              এলোমেলো রসিদ থেকে স্বয়ংক্রিয়ভাবে এক্সেল-রেডি কলাম ও রো তৈরি হয়ে যাবে।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 03: LIVE SHOOTOUT: BLURRY DELIVERY CHALLAN          -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-03" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          ⚔️ FORENSIC COMPARISON • LIVE SHOOTOUT
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Live Shootout: <span class="text-amber-400">অস্পষ্ট রসিদ থেকে ঝকঝকে টেবিল</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          ১৫ মিনিটের ম্যানুয়াল টাইপিং বনাম জেমিনির ৩ সেকেন্ডের ম্যাজিক
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Comparison Pod -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-amber-500/40 glow-amber flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="w-full space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Method A -->
+              <div class="p-4 rounded-xl bg-red-950/20 border border-red-500/30">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold font-mono text-red-400">METHOD A: MANUAL TYPING</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-400">15 Mins Lost</span>
+                </div>
+                <div class="text-xs text-gray-300 space-y-2">
+                  <div class="text-red-400 font-bold">❌ যন্ত্রণাদায়ক ভুল:</div>
+                  <div>• চোখের ওপর প্রচণ্ড প্রেশার ও ক্লান্তি</div>
+                  <div>• সংখ্যায় ৮% টাইপো (৳৪,৫০০ হয়ে যায় ৳৫,৪০০)</div>
+                  <div>• কুরিয়ার পেমেন্ট রিকনসিলিয়েশনে তীব্র ঝামেলা</div>
+                </div>
+              </div>
+
+              <!-- Method B -->
+              <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/40 glow-emerald">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold font-mono text-emerald-400">METHOD B: SERVIQ MULTIMODAL</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">3.2 Secs</span>
+                </div>
+                <div class="text-xs text-gray-200 space-y-2">
+                  <div class="text-emerald-400 font-bold">✓ প্রোডাকশন এক্সিলেন্স:</div>
+                  <div>• ১ ক্লিকে ফুল রোস্টার ও চালানের ডাটা সর্ট</div>
+                  <div>• অস্পষ্ট সংখ্যা থাকলে পাশে ওয়ার্নিং ফ্ল্যাগ</div>
+                  <div>• সরাসরি এক্সেল ও গুগল শিটসে পেস্ট-রেডি</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live RCTO Code Snippet -->
+            <div class="p-4 rounded-xl bg-black/60 border border-white/10 font-mono text-xs text-slate-300 space-y-1">
+              <span class="text-amber-400 font-bold">// Serviq Vision Ingress Prompt:</span>
+              <p>"Extract all delivery challans from this image into a clean Markdown table with columns: [Hub | Rider Name | Employee ID | Delivery Status | Cash Collected BDT]. If any handwritten number is unclear, flag with [UNVERIFIED]."</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-amber-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>⏱️</span> 01 · 15 MINS ➔ 3 SECONDS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">চোখের পলকে ডেটা এন্ট্রি</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              একটি পুরো পাতার চালানের ডাটা ৩ সেকেন্ডে এক্সেল টেবিলে কনভার্ট হয়ে যাবে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🔍</span> 02 · DISCREPANCY FLAGGING
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ভুল বা অস্পষ্টতা শনাক্তকরণ</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              অস্পষ্ট বা মিসিং কোনো সংখ্যা থাকলে জেমিনি বানিয়ে লিখবে না, ওয়ার্নিং দেবে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🚀</span> 03 · DIRECT SHEET EXPORT
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">১-ক্লিকে শিটসে পেস্ট</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              কোনো রি-টাইপিং ছাড়াই সরাসরি গুগল শিটে পেস্ট করার উপযোগী ফরম্যাট।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 04: CUSTOM GEMS: ZERO-TYPING DESK AUTOMATIONS       -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-04" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-1.5">
+          💎 NO-CODE AUTOMATION • CUSTOM GEMS
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Custom Gems: <span class="text-[#00F0FF]">বারবার প্রম্পট লেখার দিন শেষ</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          আপনার ব্যক্তিগত কাজের নিয়ম জেমিনিতে একবার সেভ করুন, কাজ হবে সারাজীবন
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: Gem Architecture -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#00F0FF]/40 glow-cyan flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="w-full space-y-4 text-center">
+            <div class="inline-block p-4 rounded-3xl bg-gradient-to-tr from-[#00F0FF]/20 via-[#8B5CF6]/20 to-[#10B981]/20 border border-white/20 shadow-2xl">
+              <span class="text-5xl">💎</span>
+            </div>
+            <h3 class="text-xl font-bold text-white heading-font">Permanent Gem Memory Capsule</h3>
+            <p class="text-xs text-gray-300 max-w-lg mx-auto bengali">
+              রোল, কনটেক্সট এবং ফরম্যাটের কড়া নিয়ম ভেতরে স্থায়ীভাবে লক করা। প্রতিদিন নতুন করে বড় প্রম্পট টাইপ করতে হবে না।
+            </p>
+
+            <div class="grid grid-cols-3 gap-3 text-left pt-2">
+              <div class="p-3 bg-black/40 rounded-xl border border-white/10">
+                <div class="text-[#00F0FF] font-bold text-xs mb-1 font-mono">1. Role &amp; Context Locked</div>
+                <div class="text-[11px] text-gray-400 bengali">সার্ভিকের রুলস ও পলিসি মুখস্থ থাকবে</div>
+              </div>
+              <div class="p-3 bg-black/40 rounded-xl border border-white/10">
+                <div class="text-purple-400 font-bold text-xs mb-1 font-mono">2. Zero Prompt Typing</div>
+                <div class="text-[11px] text-gray-400 bengali">শুধু কাঁচা টেক্সট বা ফাইল ড্রপ করবেন</div>
+              </div>
+              <div class="p-3 bg-black/40 rounded-xl border border-white/10">
+                <div class="text-emerald-400 font-bold text-xs mb-1 font-mono">3. Uniform Output</div>
+                <div class="text-[11px] text-gray-400 bengali">সবসময় শতভাগ প্রফেশনাল ড্রাফট পাবেন</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>💎</span> 01 · DEDICATED MICRO-AI
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">নিজস্ব ডিজিটাল রোবট</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              আপনার টেবিলের নির্দিষ্ট কাজের জন্য আলাদা আলাদা পার্মানেন্ট কাস্টম জেম।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-purple-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>⚙️</span> 02 · PRE-CONFIGURED GUARDRAILS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">কড়া নিয়ম আগে থেকেই সেট</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              শব্দসীমা, টোন আর ফরম্যাটের নিয়ম আগে থেকেই জেমের মেমরিতে ফিক্সড থাকবে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🚀</span> 03 · 1-CLICK DELEGATION
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">জিরো প্রম্পট টাইপিং</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              প্রতিদিন শুধু ফাইল বা টেক্সট পেস্ট করবেন, পুরো প্রম্পট লেখার প্রয়োজন নেই।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 05: THE 4 CUSTOM GEMS FOR SERVIQ’S 4 DESKS          -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-05" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-[#C4B5FD] text-xs font-bold uppercase tracking-wider mb-1.5">
+          👥 PRECISION SUITE • 4 DESKS
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          4 Desks, 4 Permanent Gems: <span class="text-[#C4B5FD]">সার্ভিকের নিজস্ব এআই স্কোয়াড</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          শাবউদ্দিন, রায়হান, রিদিয়া ও পার্থর জন্য তৈরি ৪টি কাস্টম অটোমেশন
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: 4 Gems Grid -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#8B5CF6]/40 glow-purple flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="grid grid-cols-2 gap-4 w-full">
+            <div class="p-4 rounded-xl bg-[#0E1626] border border-[#00F0FF]/30 space-y-1">
+              <span class="text-2xl">🎧</span>
+              <div class="text-xs font-mono font-bold text-[#00F0FF]">SHABUDDIN'S GEM</div>
+              <h5 class="text-sm font-bold text-white bengali">25-Scenario Support Desk</h5>
+              <p class="text-[11px] text-gray-300 bengali">ছুটি, বেতন ও ট্যাক্সের প্রশ্নের ৩০ সেকেন্ডে ভেরিফায়েড অফিশিয়াল ড্রাফট।</p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#0E1626] border border-purple-400/30 space-y-1">
+              <span class="text-2xl">🚚</span>
+              <div class="text-xs font-mono font-bold text-purple-400">RAYHAN'S GEM</div>
+              <h5 class="text-sm font-bold text-white bengali">Logistics OCR Normalizer</h5>
+              <p class="text-[11px] text-gray-300 bengali">হোয়াটসঅ্যাপের ছবি ও শিফট পরিবর্তন মুহূর্তেই পরিপাটি টেবিলে রূপান্তর।</p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#0E1626] border border-emerald-400/30 space-y-1">
+              <span class="text-2xl">📑</span>
+              <div class="text-xs font-mono font-bold text-emerald-400">RIDHIYA'S GEM</div>
+              <h5 class="text-sm font-bold text-white bengali">Admin &amp; Policy Synthesizer</h5>
+              <p class="text-[11px] text-gray-300 bengali">মাল্টি-ডিপার্টমেন্ট নোট থেকে সিইও ও সিওও ব্রিফিং ডাইজেস্ট তৈরি।</p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#0E1626] border border-amber-400/30 space-y-1">
+              <span class="text-2xl">📊</span>
+              <div class="text-xs font-mono font-bold text-amber-400">PARTHA'S GEM</div>
+              <h5 class="text-sm font-bold text-white bengali">Sheets Formula Architect</h5>
+              <p class="text-[11px] text-gray-300 bengali">বাংলায় রিকোয়ারমেন্ট লিখলে নিখুঁত ARRAYFORMULA ও ত্রুটি নিরাময়।</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎧</span> 01 · SHABUDDIN'S DESK
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">কাস্টমার অপারেশনস জেম</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ছুটি, ট্যাক্স ও বেতনের প্রশ্নের ৩০ সেকেন্ডের অফিশিয়াল রিপ্লাই।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-purple-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🚚</span> 02 · RAYHAN'S DESK
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ফিল্ড লজিস্টিকস জেম</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ৬৪ জেলার শিফট রোস্টার ও অনিয়মের তাৎক্ষণিক সারাংশ।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>📊</span> 03 · RIDHIYA &amp; PARTHA
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">অ্যাডমিন ও ডেটা ইঞ্জিন জেম</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              দৈনিক কাজের এক্সিকিউটিভ ডাইজেস্ট ও নির্ভুল এক্সেল ফর্মুলা।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 06: LIVE TICKET TRIAGE & IN-FLIGHT PII REDACTION    -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-06" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          🛡️ GOVERNANCE IN ACTION • PII SHIELD
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Live Ingress: <span class="text-emerald-400">টিকিট রাউটিং ও গোপনীয়তা রক্ষা</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          কাস্টমার রিকোয়েস্ট অটো-ক্যাটাগরি হবে, কিন্তু সংবেদনশীল তথ্য থাকবে ১০০% গোপন
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: Ticket Triage -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-emerald-500/40 glow-emerald flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="w-full space-y-4">
+            <div class="p-4 rounded-xl bg-black/60 border border-white/10 space-y-2">
+              <div class="flex items-center justify-between text-xs font-mono border-b border-white/10 pb-2">
+                <span class="text-[#00F0FF]">LIVE INGESTION &amp; TOKEN REDACTION</span>
+                <span class="text-emerald-400 font-bold">100% COMPLIANT</span>
+              </div>
+              <div class="text-xs text-slate-300 space-y-1.5 font-mono">
+                <div><span class="text-red-400 font-bold">Raw Input:</span> "Employee [Rayhan Hossain, NID 8291029381, Phone 01844231433] salary 35,000 BDT not credited for Unilever account."</div>
+                <div><span class="text-emerald-400 font-bold">In-Flight Tokenized:</span> "Employee <span class="text-emerald-400">[EMP-4402]</span> at <span class="text-emerald-400">[CLIENT-ALPHA]</span> salary <span class="text-emerald-400">৳[AMOUNT-A]</span> clearing delayed via BEFTN."</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div class="p-3 bg-[#0E1626] rounded-xl border border-white/10 text-center">
+                <div class="text-[10px] font-mono text-purple-400">PRIORITY 1</div>
+                <div class="text-xs font-bold text-white">Payroll Query</div>
+              </div>
+              <div class="p-3 bg-[#0E1626] rounded-xl border border-white/10 text-center">
+                <div class="text-[10px] font-mono text-[#00F0FF]">ASSIGNED DESK</div>
+                <div class="text-xs font-bold text-white">Shabuddin (Support)</div>
+              </div>
+              <div class="p-3 bg-[#0E1626] rounded-xl border border-white/10 text-center">
+                <div class="text-[10px] font-mono text-emerald-400">TURNAROUND</div>
+                <div class="text-xs font-bold text-white">40 Seconds</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🏷️</span> 01 · AUTO-CLASSIFICATION
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">স্বয়ংক্রিয় শ্রেণিবিভাগ</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              অভিযোগ, কোয়েরি নাকি সাধারণ রিকোয়েস্ট—AI সেকেন্ডের মধ্যে সর্ট করবে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🛡️</span> 02 · TOKEN MASKING IN FLIGHT
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">তথ্য গোপন রেখে প্রসেস</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              আসল নাম, এনআইডি বা মোবাইল নম্বর ছাড়াই এক্সিকিউটিভ ড্রাফট প্রস্তুত।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-amber-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>⚡</span> 03 · FAST SLA ADHERENCE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ক্লায়েন্ট বিশ্বস্ততা বৃদ্ধি</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              রিপ্লাই ড্রাফটিং টাইম ৮ মিনিট থেকে কমে মাত্র ৪০ সেকেন্ডে নেমে আসবে।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 07: 10-MIN INTERMISSION TIMER & CHALLENGE           -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-07" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          ☕ INTERMISSION • 10-MINUTE RECHARGE
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          10-Minute Recharge: <span class="text-amber-400">চা খান ও চ্যালেঞ্জ নিন</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          স্ক্রিন থেকে চোখ সরান, চা নিন, আর চ্যাটে ড্রপ করুন আপনার ১টি জটিল ফাইল!
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Interactive 10-Minute Radial Progress Timer -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-amber-500/40 glow-amber flex flex-col items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          
+          <!-- SVG Radial Countdown Clock (280px Diameter) -->
+          <div class="relative w-[280px] h-[280px] flex items-center justify-center mb-4">
+            <svg class="w-full h-full" viewBox="0 0 280 280">
+              <!-- Background Ring -->
+              <circle cx="140" cy="140" r="120" stroke="rgba(255, 255, 255, 0.08)" stroke-width="12" fill="none"/>
+              <!-- Animated Progress Ring -->
+              <circle id="timer-progress-ring" cx="140" cy="140" r="120" stroke="#F59E0B" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="753.98" stroke-dashoffset="0"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-xs uppercase font-mono tracking-widest text-gray-400 font-bold mb-1">RECHARGE TIME</span>
+              <span id="intermission-display" class="heading-font text-5xl font-black text-white mono">10:00</span>
+              <span id="timer-status-badge" class="text-[10px] text-[#10B981] font-mono font-bold mt-1">PAUSED</span>
+            </div>
+          </div>
+
+          <!-- Timer Action Controls -->
+          <div class="flex items-center gap-3">
+            <button id="btn-intermission-toggle" onclick="toggleIntermissionTimer()" class="px-5 py-2 rounded-xl bg-[#F59E0B] hover:bg-amber-400 text-black font-extrabold text-xs transition active:scale-95 shadow-lg shadow-[#F59E0B]/25">
+              ▶ Start Countdown
+            </button>
+            <button id="btn-intermission-add" onclick="addIntermissionMinute()" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/10">
+              +1 Min
+            </button>
+            <button id="btn-intermission-reset" onclick="resetIntermissionTimer()" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 font-bold text-xs transition border border-white/10">
+              ↺ Reset (10:00)
+            </button>
+            <button onclick="skipToPart2()" class="px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 font-bold text-xs transition border border-purple-500/40">
+              Skip to Part 2 ➔
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-amber-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>☕</span> 01 · REFRESH &amp; RESET
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">বিশ্রাম নিন ও রিচার্জ হোন</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              পানি খান, চা নিন, এবং ১০ মিনিটের জন্য স্ক্রিন থেকে চোখ সরিয়ে রিল্যাক্স করুন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>📂</span> 02 · CHAT DROP CHALLENGE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">বাস্তব ফাইল ড্রপ করুন</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              আপনার ডেস্কের ১টি কঠিন পলিসি, চুক্তিপত্র বা ম্যানুয়াল মিট চ্যাটে আপলোড করুন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-purple-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🔮</span> 03 · COMING UP IN PART 2
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">NotebookLM দিয়ে নলেজ ব্যাংক</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ব্রেক শেষে আপনার দেওয়া ফাইল দিয়ে তৈরি হবে সার্ভিকের নিজস্ব এআই মস্তিষ্ক!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 08: 100% SOURCE-GROUNDED NOTEBOOKLM                 -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-08" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-1.5">
+          🔒 NOTEBOOKLM • GROUNDED REASONING
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          100% Source-Grounded: <span class="text-[#00F0FF]">মনগড়া উত্তরের চিরতরে সমাপ্তি</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          সাধারণ AI বানিয়ে কথা বলতে পারে, কিন্তু NotebookLM শুধু আপনার ডকুমেন্টের ওপর কথা বলে
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Comparison Pod -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#00F0FF]/40 glow-cyan flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="grid grid-cols-2 gap-4 w-full">
+            <div class="p-4 rounded-xl bg-red-950/20 border border-red-500/30 space-y-2">
+              <div class="text-xs font-mono font-bold text-red-400">OPEN-WEB AI (HALLUCINATION)</div>
+              <p class="text-xs text-gray-300 bengali">ইন্টারনেটের কোটি কোটি ওয়েবসাইট ঘেঁটে আন্দাজে মনগড়া তথ্য দিতে পারে, যা কোম্পানির জন্য মারাত্মক ক্ষতিকর।</p>
+              <div class="text-red-400 text-xs font-bold">❌ ভুলের ঝুঁকি: উচ্চ</div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/40 glow-cyan space-y-2">
+              <div class="text-xs font-mono font-bold text-[#00F0FF]">NOTEBOOKLM (GROUNDED VAULT)</div>
+              <p class="text-xs text-gray-200 bengali">আপনি যে কয়টি ফাইল আপলোড করবেন, তার বাইরে সে ১টি শব্দও বানিয়ে বলবে না। শতভাগ বিশ্বস্ত।</p>
+              <div class="text-emerald-400 text-xs font-bold">✓ নির্ভরযোগ্যতা: ১০০%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🔒</span> 01 · ZERO HALLUCINATION
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">জিরো মনগড়া তথ্য</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              আপলোড করা ফাইলের বাইরে সে ১টি শব্দও নিজের মতো বানিয়ে বলবে না।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-purple-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>📚</span> 02 · CLOSED KNOWLEDGE VAULT
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">সীমাবদ্ধ ডাটা গণ্ডি</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ইন্টারনেটের আবর্জনা নয়—শুধুমাত্র সার্ভিকের অনুমোদিত পলিসির ওপর ভরসা।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎯</span> 03 · TOTAL EXECUTIVE TRUST
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">শতভাগ নির্ভরযোগ্যতা</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ম্যানেজমেন্ট বা ক্লায়েন্টকে দেওয়া তথ্যে ভুলের কোনো ঝুঁকি নেই।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 09: THE SERVIQ ENTERPRISE KNOWLEDGE VAULT           -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-09" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-[#C4B5FD] text-xs font-bold uppercase tracking-wider mb-1.5">
+          🗂️ ARCHITECTURE • SERVIQ BRAIN
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Building the Serviq Vault: <span class="text-[#C4B5FD]">সকল ফাইলের একক মস্তিষ্ক</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          ৫০০ পাতার এইচআর পলিসি, ২২টি ক্লায়েন্ট এগ্রিমেন্ট ও পে-লিও ম্যানুয়াল এক ছাদের নিচে
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: Vault Diagram -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#8B5CF6]/40 glow-purple flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="w-full space-y-3">
+            <div class="text-center mb-2">
+              <span class="text-xs font-mono font-bold text-purple-400 uppercase">SYNCHRONIZED DOCUMENT REPOSITORY</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+                <span class="text-xl">📘</span>
+                <div>
+                  <div class="font-bold text-white">Serviq HR Policy 2026</div>
+                  <div class="text-[10px] text-gray-400">120 Pages · Clean PDF</div>
+                </div>
+              </div>
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+                <span class="text-xl">📜</span>
+                <div>
+                  <div class="font-bold text-white">22 MNC Client MSAs</div>
+                  <div class="text-[10px] text-gray-400">Master Service Agreements</div>
+                </div>
+              </div>
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+                <span class="text-xl">💳</span>
+                <div>
+                  <div class="font-bold text-white">Paylio Operating Manual</div>
+                  <div class="text-[10px] text-gray-400">SOP &amp; Escalation FAQs</div>
+                </div>
+              </div>
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+                <span class="text-xl">⚖️</span>
+                <div>
+                  <div class="font-bold text-white">Labor Act 2006 (Amended)</div>
+                  <div class="text-[10px] text-gray-400">Legal Compliance Guidelines</div>
+                </div>
+              </div>
+            </div>
+            <div class="p-3 bg-purple-950/30 rounded-xl border border-purple-500/30 text-center">
+              <span class="text-xs text-purple-300 font-mono font-bold">⚡ All 50+ Sources Unified into One Instant Question Box</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-purple-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🗂️</span> 01 · 50-SOURCE INGESTION
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">একসাথে ৫০টি বড় ফাইল</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              পিডিএফ, গুগল ডক বা স্লাইড—সবকিছু সেকেন্ডের মধ্যে মেমরিতে সিঙ্ক।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>⚡</span> 02 · SUB-SECOND SYNTHESIS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">মুহূর্তেই অনুসন্ধান</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ৫০০ পৃষ্ঠার নথিপত্র ঘেঁটে যেকোনো তথ্য বের করতে সময় লাগবে মাত্র ২ সেকেন্ড।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>👥</span> 03 · ENTERPRISE UNIFORMITY
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">সবার জন্য এক নিয়ম</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              অফিসের যে কেউ প্রশ্ন করলে একই নিখুঁত ও অফিশিয়াল স্ট্যান্ডার্ড উত্তর পাবে।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 10: PLAIN BANGLISH Q&A WITH EXACT PAGE CITATIONS    -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-10" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          🔍 AUDITABLE CITATIONS • ZERO GUESSWORK
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Exact Page Citations: <span class="text-emerald-400">উত্তর মিলবে পৃষ্ঠা নম্বরসহ</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          শুধু উত্তর নয়—কোন নথির কোন পৃষ্ঠায় এই নিয়ম আছে, প্রমাণসহ দেখিয়ে দেবে
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: Interactive Citation Simulation -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-emerald-500/40 glow-emerald flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="w-full space-y-3">
+            <div class="p-3 bg-black/60 rounded-xl border border-white/10">
+              <span class="text-xs font-mono text-gray-400">User Question (Banglish):</span>
+              <p class="text-sm font-bold text-white mt-1 bengali">"মহিলা কর্মীর মাতৃত্বকালীন ছুটির সময় বেতন কাঠামো ও আর্নড লিভের নিয়ম কী?"</p>
+            </div>
+
+            <div class="p-4 bg-emerald-950/30 rounded-xl border border-emerald-500/40 space-y-2">
+              <span class="text-xs font-mono text-emerald-400 font-bold">NotebookLM Grounded Response:</span>
+              <p class="text-xs sm:text-sm text-gray-200 leading-relaxed bengali">
+                সার্ভিক পলিসি অনুযায়ী মহিলা কর্মীরা পূর্ণ বেতনে ১৬ সপ্তাহের প্রসূতি ছুটি পাবেন <span class="px-1.5 py-0.5 bg-emerald-500/30 text-emerald-300 font-mono text-[10px] rounded font-bold cursor-pointer hover:bg-emerald-500/50">[Source 1, Page 42]</span>। এই ছুটির সময়ে অর্জিত বার্ষিক ছুটির কোনো কর্তন হবে না <span class="px-1.5 py-0.5 bg-purple-500/30 text-purple-300 font-mono text-[10px] rounded font-bold cursor-pointer hover:bg-purple-500/50">[Labor Act, Sec 46]</span>।
+              </p>
+            </div>
+            <div class="text-[11px] text-gray-400 font-mono text-center">
+              ✓ Clickable source badges directly jump to the exact sentence on page 42.
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🔍</span> 01 · CLICKABLE BADGES
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ক্লিকেবল রেফারেন্স ট্যাগ</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              প্রতিটি তথ্যের পাশে সুনির্দিষ্ট পৃষ্ঠার নম্বর প্রমাণ হিসেবে উল্লেখ থাকে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🇧🇩</span> 02 · BANGLISH UNDERSTANDING
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">সহজ ভাষায় প্রশ্ন ও উত্তর</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              বাংলায় সাধারণ প্রশ্ন করলেও ডকুমেন্ট থেকে প্রফেশনাল উত্তর বের করে আনে।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-purple-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🛡️</span> 03 · AUDIT &amp; LEGAL SHIELD
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">অডিট ও লিগ্যাল সুরক্ষা</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              যেকোনো বিরোধে ক্লায়েন্ট বা কর্মীর সামনে দালিলিক প্রমাণ তুলে ধরার সুবিধা।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 11: EXECUTIVE SYNTHESIS: 1-CLICK BRIEFINGS & AUDIO  -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-11" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-bold uppercase tracking-wider mb-1.5">
+          👑 EXECUTIVE VELOCITY • CXO LEVEL
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          1-Click Executive Synthesis: <span class="text-[#00F0FF]">সিইও ড্যাশবোর্ড ও অডিও সামারি</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          ৬০ পৃষ্ঠার জটিল রিপোর্ট থেকে মেরাজ ভাই ও মুন ভাইয়ের জন্য ৫ মিনিটের সারসংক্ষেপ
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: Executive Briefings -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-[#00F0FF]/40 glow-cyan flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="w-full space-y-4">
+            <div class="p-4 rounded-xl bg-black/60 border border-white/10 flex items-center justify-between">
+              <div>
+                <div class="text-xs font-mono font-bold text-[#00F0FF]">EXECUTIVE STUDY GUIDE</div>
+                <div class="text-sm font-bold text-white bengali">১-পাতার হাই-ইমপ্যাক্ট সিইও মেমো</div>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded bg-[#00F0FF]/20 text-[#00F0FF] font-mono">1 Click</span>
+            </div>
+
+            <div class="p-4 rounded-xl bg-purple-950/30 border border-purple-500/40 flex items-center justify-between">
+              <div>
+                <div class="text-xs font-mono font-bold text-purple-400">DEEP DIVE AUDIO OVERVIEW</div>
+                <div class="text-sm font-bold text-white bengali">৮ মিনিটের অডিও পডকাস্ট ব্রিফিং</div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+                <span class="text-xs font-mono text-purple-300">Waveform Ready</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-[#0E1626] rounded-xl border border-white/10 text-center text-xs text-gray-300 bengali">
+              মেরাজ ভাই ও মুন ভাই গাড়িতে বসে শুনতে পারবেন পুরো চুক্তির মূল পয়েন্ট ও সম্ভাব্য ঝুঁকি।
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>📋</span> 01 · 1-PAGE BRIEFINGS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">১ পাতার এক্সিকিউটিভ ডাইজেস্ট</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              শত পাতার কঠিন চুক্তি বা অডিট ফাইল এক পাতায় ব্রিফিং আকারে প্রস্তুত।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-purple-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎙️</span> 02 · AUDIO DEEP DIVE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">হেডফোনে অডিও পডকাস্ট</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              গাড়িতে চলার পথে শোনার জন্য দুটি এআই ভয়েসের চমৎকার আলোচনা।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>👑</span> 03 · LEADERSHIP LEVERAGE
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ম্যানেজমেন্টের সময় বাঁচানো</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              শীর্ষ নেতৃত্বের হাতে সরাসরি সিদ্ধান্ত নেওয়ার মতো নির্ভুল তথ্য তুলে দেওয়া।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 12: ROAD TO BANANI LAB (SESSION 4 PREP & HOMEWORK)  -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-12" class="slide flex-col justify-center">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+          🏁 FLIGHT PLAN • IN-PERSON HANDS-ON
+        </div>
+        <h2 class="heading-font text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Road to Banani Lab: <span class="text-amber-400">শনিবার ল্যাপটপে মুখোমুখি লড়াই</span>
+        </h2>
+        <p class="bengali text-gray-300 text-xs sm:text-sm max-w-xl mx-auto mt-0.5 font-medium">
+          অনলাইনে শেখা শেষ — শনিবার বনানী হেড অফিসে নিজেদের ল্যাপটপে আসল যুদ্ধ
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center max-w-7xl w-full mx-auto px-6 lg:px-12">
+        <!-- Visual Anchor: Roadmap -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-amber-500/40 glow-amber flex items-center justify-center min-h-[440px] lg:min-h-[480px]">
+          <div class="w-full space-y-4">
+            <div class="p-4 rounded-xl bg-[#0E1626] border border-white/10 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-mono text-[#00F0FF] font-bold">SESSION 1–3 (ONLINE COMPLETED)</span>
+                <div class="text-sm font-bold text-white bengali">RCTO, Vision AI, Gems &amp; NotebookLM</div>
+              </div>
+              <span class="text-xs text-emerald-400 font-bold">✓ 100% Ready</span>
+            </div>
+
+            <div class="p-4 rounded-xl bg-amber-950/30 border border-amber-500/40 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-mono text-amber-400 font-bold">SESSION 4 (SATURDAY MORNING @ BANANI HQ)</span>
+                <div class="text-sm font-bold text-white bengali">Hands-on Laptop Lab: রিয়েল ফাইলের অটোমেশন</div>
+              </div>
+              <span class="text-xs px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">In-Person</span>
+            </div>
+
+            <div class="p-4 rounded-xl bg-purple-950/30 border border-purple-500/40 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-mono text-purple-400 font-bold">SESSION 5 (SATURDAY AFTERNOON @ BANANI HQ)</span>
+                <div class="text-sm font-bold text-white bengali">Founders' Command Center &amp; Graduation</div>
+              </div>
+              <span class="text-xs text-purple-300 font-mono">Capstone</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Highlight Chips -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4 h-full min-h-[440px] lg:min-h-[480px]">
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-amber-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>💻</span> 01 · LAPTOP READINESS
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">ল্যাপটপ প্রস্তুত রাখা</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              শনিবার সবাই নিজ নিজ অফিস ল্যাপটপ ও আসল প্রজেক্ট ফাইল নিয়ে আসবেন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-[#00F0FF] text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>💎</span> 02 · 1 GEM + 1 NOTEBOOK
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">হোমওয়ার্ক সাবমিশন</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              ক্লাসের শেষে প্রত্যেকে ১টি কাস্টম জেম ও ১টি নোটবুক এলএম রেডি রাখবেন।
+            </p>
+          </div>
+
+          <div class="glass-card p-5 lg:p-6 rounded-xl border border-white/10 flex-1 flex flex-col justify-center">
+            <div class="text-emerald-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5">
+              <span>🎓</span> 03 · GRADUATION &amp; DASHBOARD
+            </div>
+            <h4 class="text-base lg:text-lg font-bold text-white mb-1.5">গ্র্যাজুয়েশন ও প্রেজেন্টেশন</h4>
+            <p class="bengali text-sm lg:text-base text-gray-300 leading-relaxed">
+              মেরাজ ভাই ও মুন ভাইয়ের সামনে আপনাদের তৈরি লাইভ ড্যাশবোর্ড প্রদর্শন!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM NAVIGATION HUD & CONTROLS                          -->
+  <!-- ========================================================= -->
+  <footer class="no-print relative z-20 flex items-center justify-between px-6 py-3 border-t border-white/10 bg-[#070B12]/90 backdrop-blur-md">
+    
+    <!-- Prev / Next Controls -->
+    <div class="flex items-center gap-3">
+      <button onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-xs transition flex items-center gap-1.5 border border-white/10">
+        ← Previous
+      </button>
+      <button onclick="nextSlide()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#00F0FF] to-[#8B5CF6] hover:opacity-90 active:scale-95 text-black font-extrabold text-xs transition flex items-center gap-1.5 shadow-lg shadow-[#00F0FF]/20">
+        Next →
+      </button>
+    </div>
+
+    <!-- Active Slide Progress Pips -->
+    <div class="hidden md:flex items-center gap-1.5">
+      <div id="pip-1" onclick="goToSlide(1)" class="w-8 h-1.5 rounded-full bg-[#00F0FF] transition cursor-pointer"></div>
+      <div id="pip-2" onclick="goToSlide(2)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-3" onclick="goToSlide(3)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-4" onclick="goToSlide(4)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-5" onclick="goToSlide(5)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-6" onclick="goToSlide(6)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-7" onclick="goToSlide(7)" class="w-2.5 h-1.5 rounded-full bg-amber-400 transition cursor-pointer" title="Intermission"></div>
+      <div id="pip-8" onclick="goToSlide(8)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-9" onclick="goToSlide(9)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-10" onclick="goToSlide(10)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-11" onclick="goToSlide(11)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+      <div id="pip-12" onclick="goToSlide(12)" class="w-2.5 h-1.5 rounded-full bg-white/20 transition cursor-pointer"></div>
+    </div>
+
+    <!-- Keyboard Shortcuts Legend -->
+    <div class="hidden sm:flex items-center gap-3 text-[11px] font-mono text-gray-400">
+      <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white">←</kbd><kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white">→</kbd> Navigate</span>
+      <span class="flex items-center gap-1"><kbd class="px-2 py-0.5 rounded bg-white/10 border border-white/20 text-white">Space</kbd> Advance</span>
+      <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white">F</kbd> Fullscreen</span>
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- CLIENT JAVASCRIPT SLIDE & INTERMISSION AUDIO ENGINE       -->
+  <!-- ========================================================= -->
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 12;
+
+    function getSlideId(n) {
+      return `slide-${n.toString().padStart(2, '0')}`;
+    }
+
+    function updateSlide() {
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      
+      const target = document.getElementById(getSlideId(currentSlide));
+      if (target) {
+        target.classList.add('active');
+      }
+
+      document.getElementById('current-slide-num').textContent = currentSlide.toString().padStart(2, '0');
+
+      for (let i = 1; i <= totalSlides; i++) {
+        const pip = document.getElementById(`pip-${i}`);
+        if (pip) {
+          if (i === currentSlide) {
+            pip.className = i === 7 ? 'w-8 h-1.5 rounded-full bg-amber-400 transition cursor-pointer' : 'w-8 h-1.5 rounded-full bg-[#00F0FF] transition cursor-pointer';
+          } else {
+            pip.className = i === 7 ? 'w-2.5 h-1.5 rounded-full bg-amber-400/40 hover:bg-amber-400 transition cursor-pointer' : 'w-2.5 h-1.5 rounded-full bg-white/20 hover:bg-white/40 transition cursor-pointer';
+          }
+        }
+      }
+
+      try {
+        localStorage.setItem('serviq_s2_current_slide', currentSlide);
+      } catch (e) {}
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+      } else {
+        currentSlide = 1;
+      }
+      updateSlide();
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+      } else {
+        currentSlide = totalSlides;
+      }
+      updateSlide();
+    }
+
+    function goToSlide(n) {
+      if (n >= 1 && n <= totalSlides) {
+        currentSlide = n;
+        updateSlide();
+      }
+    }
+
+    // Keyboard Controller
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    // Touch Controller
+    let touchStartX = 0;
+    let touchEndX = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+    window.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 50) nextSlide();
+      if (touchEndX > touchStartX + 50) prevSlide();
+    }, false);
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    }
+
+    // =========================================================
+    // SLIDE 07 INTERMISSION ENGINE & PROCEDURAL WEB AUDIO CHIME
+    // =========================================================
+    let intermissionSeconds = 10 * 60; // 10 minutes
+    const initialIntermissionSeconds = 10 * 60;
+    let intermissionInterval = null;
+    const ringCircumference = 2 * Math.PI * 120; // ~753.98
+
+    function formatIntermissionTime(secs) {
+      const m = Math.floor(secs / 60).toString().padStart(2, '0');
+      const s = (secs % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateIntermissionUI() {
+      const disp = document.getElementById('intermission-display');
+      if (disp) disp.textContent = formatIntermissionTime(intermissionSeconds);
+
+      const ring = document.getElementById('timer-progress-ring');
+      if (ring) {
+        const offset = ringCircumference - (intermissionSeconds / initialIntermissionSeconds) * ringCircumference;
+        ring.style.strokeDashoffset = offset;
+      }
+    }
+
+    function playProceduralChime() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          
+          const startTime = ctx.currentTime + (i * 0.15);
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 1.3);
+        });
+      } catch (e) {
+        console.log("Audio not supported or permitted", e);
+      }
+    }
+
+    function toggleIntermissionTimer() {
+      const btn = document.getElementById('btn-intermission-toggle');
+      const badge = document.getElementById('timer-status-badge');
+
+      if (intermissionInterval) {
+        clearInterval(intermissionInterval);
+        intermissionInterval = null;
+        if (btn) btn.textContent = '▶ Resume Countdown';
+        if (badge) {
+          badge.textContent = 'PAUSED';
+          badge.className = 'text-[10px] text-amber-400 font-mono font-bold mt-1';
+        }
+      } else {
+        if (btn) btn.textContent = '⏸ Pause Countdown';
+        if (badge) {
+          badge.textContent = 'COUNTING DOWN';
+          badge.className = 'text-[10px] text-[#10B981] font-mono font-bold mt-1 animate-pulse';
+        }
+        intermissionInterval = setInterval(() => {
+          if (intermissionSeconds > 0) {
+            intermissionSeconds--;
+            updateIntermissionUI();
+            if (intermissionSeconds === 0) {
+              clearInterval(intermissionInterval);
+              intermissionInterval = null;
+              playProceduralChime();
+              if (badge) {
+                badge.textContent = 'TIME COMPLETED!';
+                badge.className = 'text-[10px] text-[#00F0FF] font-mono font-bold mt-1 animate-bounce';
+              }
+              if (btn) btn.textContent = 'Part 2 Ready!';
+            }
+          }
+        }, 1000);
+      }
+    }
+
+    function addIntermissionMinute() {
+      intermissionSeconds += 60;
+      updateIntermissionUI();
+    }
+
+    function resetIntermissionTimer() {
+      if (intermissionInterval) {
+        clearInterval(intermissionInterval);
+        intermissionInterval = null;
+      }
+      intermissionSeconds = initialIntermissionSeconds;
+      updateIntermissionUI();
+      const btn = document.getElementById('btn-intermission-toggle');
+      if (btn) btn.textContent = '▶ Start Countdown';
+      const badge = document.getElementById('timer-status-badge');
+      if (badge) {
+        badge.textContent = 'RESET (10:00)';
+        badge.className = 'text-[10px] text-gray-400 font-mono font-bold mt-1';
+      }
+    }
+
+    function skipToPart2() {
+      if (intermissionInterval) {
+        clearInterval(intermissionInterval);
+        intermissionInterval = null;
+      }
+      goToSlide(8);
+    }
+
+    // Initialize on page load
+    updateSlide();
+    updateIntermissionUI();
+  </script>
+
+</body>
+</html>

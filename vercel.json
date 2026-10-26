@@ -241,6 +241,14 @@
       "dest": "/public/pitch/serviq-session1/index.html"
     },
     {
+      "src": "/pitch/serviq-session2-3/copilot(.*)",
+      "dest": "/public/pitch/serviq-session2-3/copilot.html"
+    },
+    {
+      "src": "/pitch/serviq-session2-3(/.*)?",
+      "dest": "/public/pitch/serviq-session2-3/index.html"
+    },
+    {
       "src": "/pitch/ryze-dop/copilot(.*)",
       "dest": "/public/pitch/ryze-dop/copilot.html"
     },

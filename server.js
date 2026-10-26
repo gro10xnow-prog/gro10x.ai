@@ -591,6 +591,12 @@ app.get(['/pitch/serviq-session1/copilot', '/pitch/serviq-session1/copilot.html'
 app.get(['/pitch/serviq-session1/takeaway', '/pitch/serviq-session1/takeaway/', '/pitch/serviq-session1/takeaway/index.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pitch/serviq-session1/takeaway/index.html'));
 });
+app.get(['/pitch/serviq-session2-3', '/pitch/serviq-session2-3/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/serviq-session2-3/index.html'));
+});
+app.get(['/pitch/serviq-session2-3/copilot', '/pitch/serviq-session2-3/copilot.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/serviq-session2-3/copilot.html'));
+});
 app.get(['/pitch/ryze-dop', '/pitch/ryze-dop/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pitch/ryze-dop/index.html'));
 });

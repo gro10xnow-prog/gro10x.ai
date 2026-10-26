@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Serviq Masterclass — Presenter Co-Pilot 3.0 HUD (Session 2 & 3)</title>
+
+  <!-- Typography: Plus Jakarta Sans, Hind Siliguri, Space Grotesk, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      background-color: #070B12;
+      color: #E2E8F0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .heading-font { font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .bengali { font-family: 'Hind Siliguri', sans-serif; }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glow-cyan { box-shadow: 0 0 16px rgba(0, 240, 255, 0.35); }
+    .glow-purple { box-shadow: 0 0 16px rgba(139, 92, 246, 0.35); }
+    .glow-amber { box-shadow: 0 0 16px rgba(245, 158, 11, 0.4); }
+    .glow-red { box-shadow: 0 0 16px rgba(239, 68, 68, 0.5); }
+
+    /* Custom Toast Notification */
+    #toast {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+
+    /* Active Slide Item in Left Pane */
+    .slide-item-active {
+      border-color: #00F0FF !important;
+      background-color: rgba(0, 240, 255, 0.12) !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 select-none bg-[#070B12]">
+
+  <!-- ========================================================= -->
+  <!-- TOP STICKY CONTROLLER HUD                                 -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-50 bg-[#0A101D]/95 backdrop-blur-md border-b border-white/10 px-4 py-2.5 shadow-2xl">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Identity & View Mode Toggle -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#00F0FF] via-[#8B5CF6] to-[#F59E0B] flex items-center justify-center text-black font-black text-sm shadow-md shrink-0">
+          S2
+        </div>
+        <div>
+          <div class="text-[11px] font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+            PLABON CO-PILOT 3.0
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse"></span>
+          </div>
+          <div class="text-[9px] text-gray-400 mono">Serviq BPO · Session 2 & 3 Dual HUD</div>
+        </div>
+
+        <!-- 🖥️ Desktop / 📱 Mobile View Toggle Button -->
+        <button id="view-mode-toggle-btn" onclick="toggleViewMode()" class="ml-2 hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition border border-white/15 active:scale-95">
+          🖥️ Desktop View
+        </button>
+      </div>
+
+      <!-- Center / Right: Tri-Timer Stopwatch (Part 1 45m -> Intermission 10m -> Part 2 45m) -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+          <div class="text-right">
+            <div class="text-[8px] text-gray-400 uppercase mono font-bold" id="timer-label">Part 1 (45m)</div>
+            <div id="timer-display" class="text-sm font-black mono text-[#00F0FF] leading-none">45:00</div>
+          </div>
+          <button id="timer-btn" onclick="toggleTimer()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition active:scale-90" title="Start/Pause Timer">
+            ▶
+          </button>
+          <button onclick="switchTimerPhase()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 flex items-center justify-center text-[10px] font-mono transition" title="Switch Phase: Part 1 (45m) ➔ Intermission (10m) ➔ Part 2 (45m)">
+            ⇄
+          </button>
+          <button onclick="resetTimer()" class="w-6 h-7 text-[10px] text-gray-500 hover:text-white transition" title="Reset Phase Timer">
+            ↺
+          </button>
+        </div>
+
+        <!-- Deep Link to Surface A TV Deck -->
+        <a href="/pitch/serviq-session2-3" target="_blank" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00F0FF]/15 hover:bg-[#00F0FF]/25 text-[#00F0FF] border border-[#00F0FF]/30 text-xs font-bold transition shadow-sm">
+          📺 TV Deck ↗
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Mobile Sub-Navigation Bar (Active in Mobile Mode) -->
+    <div id="mobile-tabs-bar" class="max-w-md mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 sm:hidden">
+      <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-[#00F0FF] text-black transition shrink-0">
+        🎙️ Notes (1-12)
+      </button>
+      <button onclick="switchTab('prompts')" id="tab-btn-prompts" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        ⚡ 1-Tap Prompts
+      </button>
+      <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        💬 Objections
+      </button>
+      <button onclick="toggleViewMode()" class="text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        🖥️ Desktop
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- VIEW CONTAINER 1: DESKTOP DUAL-PANE WORKSTATION           -->
+  <!-- ========================================================= -->
+  <main id="desktop-layout" class="hidden max-w-7xl mx-auto w-full px-6 pt-5 flex-1">
+    <div class="grid grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT PANE (40% width, sticky): Navigation Index + Quick Drawers -->
+      <aside class="col-span-5 space-y-4 sticky top-20 max-h-[calc(100vh-6.5rem)] overflow-y-auto no-scrollbar pr-1">
+        
+        <!-- Live Slide Index (1-12) with Phase Separation -->
+        <div class="bg-[#0E1626] border border-white/10 rounded-2xl p-4 shadow-xl">
+          <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+            <span class="text-xs font-mono font-bold text-[#00F0FF] uppercase tracking-wider">Slide Navigator (12 Slides)</span>
+            <span class="text-[10px] text-gray-400 font-mono">Click to Select</span>
+          </div>
+
+          <div id="desktop-slide-list" class="space-y-1.5">
+            <!-- Dynamically populated in JS -->
+          </div>
+        </div>
+
+        <!-- Sticky Quick Drawer 1: Live Field Prompts -->
+        <div class="bg-[#0E1626] border border-white/10 rounded-2xl p-4 shadow-xl space-y-3">
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">⚡ 1-Tap Field Prompts</span>
+            <span class="text-[10px] text-gray-400 font-mono">Click to Copy</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="copyChallanPrompt()" class="py-2 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95 border border-cyan-500/30">
+              📋 Challan OCR
+            </button>
+            <button onclick="copyGemPrompt()" class="py-2 px-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95 border border-purple-500/30">
+              💎 Custom Gem
+            </button>
+            <button onclick="copyNotebookPrompt()" class="py-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95 border border-emerald-500/30">
+              📚 NotebookLM
+            </button>
+            <button onclick="copyIntermissionDropPrompt()" class="py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95 border border-amber-500/30">
+              ☕ File Drop
+            </button>
+          </div>
+        </div>
+
+        <!-- Sticky Quick Drawer 2: 1-Tap Objection Drawer -->
+        <div class="bg-[#0E1626] border border-white/10 rounded-2xl p-4 shadow-xl space-y-2.5 text-xs">
+          <div class="text-[11px] font-mono font-bold text-amber-400 uppercase border-b border-white/10 pb-1.5 flex items-center justify-between">
+            <span>💬 1-Tap Objection Drawer</span>
+            <span class="text-[9px] text-gray-400">Instant Ground Reality</span>
+          </div>
+          
+          <div class="space-y-2">
+            <!-- Objection 1 -->
+            <div class="bg-black/30 p-2.5 rounded-xl border border-white/5 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-[11px]">1. অস্পষ্ট বা ছেঁড়া চালান?</span>
+                <button onclick="copyText('চমৎকার প্রশ্ন। জেমিনির বিশেষত্ব হলো—সে কোনো ডিজিট বা নাম নিয়ে নিশ্চিত না হলে বানিয়ে লেখে না; পাশে [FLAG: Unclear Digit] লিখে হাইলাইট করে দেয়, যাতে আপনি এক সেকেন্ডে চেক করে নিতে পারেন।')" class="text-[10px] text-amber-400 hover:underline">Copy Response</button>
+              </div>
+              <p class="text-[10px] text-gray-400 bengali">AI ভুল তথ্য বানিয়ে লেখে না; অস্পষ্ট অংশে `[FLAG: Unclear]` মার্ক করে দ্রুত ভেরিফাই করতে দেয়।</p>
+            </div>
+
+            <!-- Objection 2 -->
+            <div class="bg-black/30 p-2.5 rounded-xl border border-white/5 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-[11px]">2. Custom Gem কি অন্য কেউ দেখবে?</span>
+                <button onclick="copyText('না। প্রতিটি জেম আপনার নিজস্ব গুগল অ্যাকাউন্টে ব্যক্তিগতভাবে সংরক্ষিত থাকে। আপনি শেয়ার অপশন অন না করলে অফিসের অন্য কারো এটি দেখার সুযোগ নেই।')" class="text-[10px] text-amber-400 hover:underline">Copy Response</button>
+              </div>
+              <p class="text-[10px] text-gray-400 bengali">জেম সম্পূর্ণ ব্যক্তিগত গুগল অ্যাকাউন্টে লকড। পারমিশন ছাড়া অফিসের কেউ এক্সেস পাবে না।</p>
+            </div>
+
+            <!-- Objection 3 -->
+            <div class="bg-black/30 p-2.5 rounded-xl border border-white/5 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-[11px]">3. NotebookLM কি বাংলা বোঝে?</span>
+                <button onclick="copyText('হ্যাঁ! ইউনিকোড ও অফিশিয়াল বাংলা পিডিএফ নিখুঁতভাবে পড়তে পারে। বাংলায় প্রশ্ন করলে বাংলায় পৃষ্ঠা নম্বরসহ উত্তর দেবে।')" class="text-[10px] text-amber-400 hover:underline">Copy Response</button>
+              </div>
+              <p class="text-[10px] text-gray-400 bengali">ইউনিকোড ও বাংলা টেক্সট নিখুঁত পড়ে এবং বাংলায় পেজ-সাইটেশন রেফারেন্স দেয়।</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Quick Drawer 3: Governance & Security Laws -->
+        <div class="bg-[#0E1626] border border-white/10 rounded-2xl p-4 shadow-xl space-y-2 text-xs">
+          <div class="text-[11px] font-mono font-bold text-[#C4B5FD] uppercase border-b border-white/10 pb-1.5 flex items-center justify-between">
+            <span>🛡️ Enterprise Data Perimeter</span>
+            <span class="text-[9px] text-emerald-400">Meraz × Moon Safe</span>
+          </div>
+          <div class="text-[11px] text-gray-300 space-y-1 bengali leading-relaxed">
+            <div>• <strong>জিরো পাবলিক ট্রেইনিং:</strong> গুগল ওয়ার্কস্পেস ও নোটবুকএলএম অভ্যন্তরীণ ফাইল দিয়ে কোনো পাবলিক মডেল ট্রেইন করে না।</div>
+            <div>• <strong>টোকেনাইজেশন ফার্স্ট:</strong> টিকিট ও চালানে এনআইডি বা অ্যাকাউন্ট নম্বর থাকলে `[CLIENT-01]` দিয়ে মাস্ক করুন।</div>
+            <div>• <strong>মানুষের চূড়ান্ত সিদ্ধান্ত:</strong> এআই তৈরি করবে খসড়া, কিন্তু সেন্ড করার আগে অফিসার নিজেই ফাইনাল রিভিউ করবেন।</div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT PANE (60% width): Large Active Slide Rehearsal Workstation -->
+      <section class="col-span-7 bg-[#0E1626] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5">
+        
+        <!-- Active Slide Header & Controls -->
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <div class="flex items-center gap-3">
+            <span id="active-slide-badge" class="px-3 py-1 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] font-black text-sm font-mono border border-[#00F0FF]/30">
+              SLIDE 01
+            </span>
+            <div>
+              <h2 id="active-slide-title" class="heading-font text-xl font-black text-white">
+                Welcome Back & The Friction Harvest
+              </h2>
+              <div id="active-slide-subtitle" class="text-xs text-gray-400 bengali">
+                হোমওয়ার্কের সমাধান · বিরক্তির কাজগুলো অটোমেট করার মিশন
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide Step Navigator -->
+          <div class="flex items-center gap-1.5">
+            <button onclick="navSlideStep(-1)" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-white flex items-center justify-center text-xs transition" title="Previous Slide">
+              ◀
+            </button>
+            <span id="active-slide-counter" class="text-xs font-mono font-bold text-gray-300 px-2">01 / 12</span>
+            <button onclick="navSlideStep(1)" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-white flex items-center justify-center text-xs transition" title="Next Slide">
+              ▶
+            </button>
+          </div>
+        </div>
+
+        <!-- 🎙️ Spoken Banglish Dialogue (With In-Browser Note Editing & LocalStorage Persistence) -->
+        <div class="bg-black/40 border border-white/10 rounded-2xl p-5 space-y-3 relative group">
+          <div class="flex items-center justify-between">
+            <div class="text-xs font-mono font-bold text-[#00F0FF] uppercase flex items-center gap-2">
+              <span>🎙️ Spoken Words (Banglish Script)</span>
+              <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse"></span>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button onclick="toggleEditNotesDesktop()" id="btn-edit-notes-desktop" class="text-xs font-mono text-gray-400 hover:text-white px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                ✏️ Edit Notes
+              </button>
+              <button onclick="copyActiveNotesDesktop()" class="text-xs font-mono text-[#00F0FF] hover:text-cyan-300 px-2.5 py-1 rounded-lg bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 border border-[#00F0FF]/30 transition active:scale-95">
+                📋 Copy
+              </button>
+            </div>
+          </div>
+
+          <!-- Read-Only View of Notes -->
+          <div id="notes-view-desktop" class="text-sm text-gray-200 bengali leading-relaxed space-y-2 max-h-56 overflow-y-auto pr-2">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Editable Textarea (Hidden by default) -->
+          <div id="notes-edit-container-desktop" class="hidden space-y-2">
+            <textarea id="notes-textarea-desktop" rows="6" class="w-full bg-[#070B12] border border-[#00F0FF]/40 rounded-xl p-3 text-sm text-white bengali focus:outline-none focus:border-[#00F0FF] leading-relaxed resize-y"></textarea>
+            <div class="flex justify-end gap-2">
+              <button onclick="cancelEditNotesDesktop()" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs transition font-mono">Cancel</button>
+              <button onclick="saveEditNotesDesktop()" class="px-4 py-1.5 rounded-lg bg-[#00F0FF] text-black font-bold text-xs transition active:scale-95 font-mono shadow-md glow-cyan">Save Changes</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⏸️ Pause & Breathe Guidance -->
+        <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
+          <div class="text-xl shrink-0 mt-0.5">⏸️</div>
+          <div>
+            <div class="text-xs font-mono font-bold text-amber-300 uppercase mb-0.5">Pause & Pacing Guidance</div>
+            <div id="active-slide-pause" class="text-xs text-amber-100 bengali leading-relaxed">
+              ৩ সেকেন্ড বিরতি নিন। চ্যাটে সবার রেসপন্স দেখতে দেখতে এক ঢোক পানি খান।
+            </div>
+          </div>
+        </div>
+
+        <!-- 🎯 Target Audience & Ground-Reality Callout -->
+        <div class="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/25 flex items-start gap-3">
+          <div class="text-xl shrink-0 mt-0.5">🎯</div>
+          <div>
+            <div class="text-xs font-mono font-bold text-[#C4B5FD] uppercase mb-0.5">Audience Callout & Reality Trigger</div>
+            <div id="active-slide-callout" class="text-xs text-purple-100 bengali leading-relaxed">
+              শাবউদ্দিন ভাই, রায়হান ভাই, রিদিয়া ও পার্থকে সরাসরি নাম ধরে স্বাগত জানান।
+            </div>
+          </div>
+        </div>
+
+        <!-- 🎙️ Dry-Run Voice Recording Studio (With Safe Quota Eviction Fallback) -->
+        <div class="bg-black/50 border border-white/10 rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="rec-dot-desktop" class="w-2 h-2 rounded-full bg-gray-500"></span>
+              <span class="text-xs font-mono font-bold text-gray-300 uppercase">Slide Audio Rehearsal Studio</span>
+            </div>
+            <span id="rec-timer-desktop" class="text-xs font-mono text-gray-400">No recording for this slide</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button id="btn-record-audio-desktop" onclick="toggleAudioRecordingActive()" class="px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-[#C4B5FD] hover:text-white border border-purple-500/40 text-xs font-bold transition flex items-center gap-2 active:scale-95 shadow-md">
+              <span id="record-icon-desktop">🎙️</span>
+              <span id="record-btn-text-desktop">Record Dry-Run</span>
+            </button>
+
+            <!-- Playback Player Container -->
+            <div id="audio-playback-container-desktop" class="hidden flex-1 flex items-center gap-2 bg-white/5 p-1.5 rounded-xl border border-white/10">
+              <audio id="audio-player-desktop" controls class="h-8 flex-1 max-w-[280px]"></audio>
+              <button onclick="deleteAudioActive()" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/20 transition font-mono" title="Delete Recording">
+                ✕
+              </button>
+            </div>
+          </div>
+          <div class="text-[10px] text-gray-500 font-mono">
+            * Safe local audio sandbox: Keeps up to 3 dry-runs with memory fallback if disk quota is exceeded.
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- VIEW CONTAINER 2: MOBILE SMARTPHONE HUD                   -->
+  <!-- ========================================================= -->
+  <main id="mobile-layout" class="max-w-md mx-auto w-full px-4 pt-3 flex-1 sm:hidden">
+    
+    <!-- TAB 1: NOTES ACCORDION (1-12) -->
+    <div id="tab-notes" class="tab-content space-y-3">
+      <div class="text-[11px] font-mono text-[#00F0FF] uppercase flex items-center justify-between pb-1">
+        <span>Slide-by-Slide Notes (1-12)</span>
+        <span class="text-gray-400 text-[9px]">Tap to Expand</span>
+      </div>
+
+      <div id="mobile-accordion-container" class="space-y-2">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- TAB 2: PROMPTS -->
+    <div id="tab-prompts" class="tab-content hidden space-y-3">
+      <div class="text-[11px] font-mono text-cyan-400 uppercase pb-1">⚡ 1-Tap Copyable Field Prompts</div>
+      
+      <div class="bg-[#0E1626] border border-white/10 rounded-2xl p-4 space-y-3 text-xs">
+        <div>
+          <div class="font-bold text-white mb-1">📷 Challan OCR Extraction Prompt:</div>
+          <p class="text-gray-400 bengali text-[11px] mb-2">হাতে লেখা ছেঁড়া চালানের ছবি থেকে টেবিল এক্সট্রাক্ট করার মাস্টার প্রম্পট।</p>
+          <button onclick="copyChallanPrompt()" class="w-full py-2 bg-[#00F0FF]/15 text-[#00F0FF] rounded-xl font-bold border border-[#00F0FF]/30 active:scale-95 transition">
+            📋 Copy Challan OCR Prompt
+          </button>
+        </div>
+
+        <div class="border-t border-white/10 pt-3">
+          <div class="font-bold text-white mb-1">💎 Custom Gem System Instructions:</div>
+          <p class="text-gray-400 bengali text-[11px] mb-2">৪ ডেস্কে পার্মানেন্ট জেম তৈরি করার সিস্টেম রুলস।</p>
+          <button onclick="copyGemPrompt()" class="w-full py-2 bg-purple-500/15 text-purple-300 rounded-xl font-bold border border-purple-500/30 active:scale-95 transition">
+            📋 Copy Custom Gem Instructions
+          </button>
+        </div>
+
+        <div class="border-t border-white/10 pt-3">
+          <div class="font-bold text-white mb-1">📚 NotebookLM Query Prompt:</div>
+          <p class="text-gray-400 bengali text-[11px] mb-2">এইচআর পলিসি ও ম্যানুয়াল থেকে পেজ সাইটেশনসহ উত্তরের প্রম্পট।</p>
+          <button onclick="copyNotebookPrompt()" class="w-full py-2 bg-emerald-500/15 text-emerald-300 rounded-xl font-bold border border-emerald-500/30 active:scale-95 transition">
+            📋 Copy NotebookLM Prompt
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: OBJECTIONS -->
+    <div id="tab-objections" class="tab-content hidden space-y-3">
+      <div class="text-[11px] font-mono text-amber-400 uppercase pb-1">💬 1-Tap Trainee Objections</div>
+      
+      <div class="space-y-2 text-xs">
+        <div class="bg-[#0E1626] border border-white/10 rounded-2xl p-4 space-y-2">
+          <div class="font-bold text-white">১. অস্পষ্ট বা ছেঁড়া চালান হলে?</div>
+          <p class="text-gray-300 bengali text-[11px]">জেমিনির বিশেষত্ব হলো সে বানিয়ে লেখে না; সন্দেহজনক ডিজিট থাকলে [FLAG: Unclear Digit] দিয়ে দেয়।</p>
+          <button onclick="copyText('জেমিনির বিশেষত্ব হলো সে কোনো ডিজিট নিয়ে নিশ্চিত না হলে বানিয়ে লেখে না; পাশে [FLAG: Unclear Digit] লিখে দেয়।')" class="text-amber-400 text-xs font-mono underline">Copy Answer</button>
+        </div>
+
+        <div class="bg-[#0E1626] border border-white/10 rounded-2xl p-4 space-y-2">
+          <div class="font-bold text-white">২. Custom Gem কি অন্য কেউ দেখবে?</div>
+          <p class="text-gray-300 bengali text-[11px]">না, প্রতিটি জেম ব্যক্তিগত গুগল অ্যাকাউন্টে লকড থাকে। পারমিশন ছাড়া অন্য কারো এক্সেস নেই।</p>
+          <button onclick="copyText('না, প্রতিটি জেম আপনার নিজস্ব গুগল অ্যাকাউন্টে ব্যক্তিগতভাবে সংরক্ষিত থাকে।')" class="text-amber-400 text-xs font-mono underline">Copy Answer</button>
+        </div>
+
+        <div class="bg-[#0E1626] border border-white/10 rounded-2xl p-4 space-y-2">
+          <div class="font-bold text-white">৩. NotebookLM কি বাংলা বোঝে?</div>
+          <p class="text-gray-300 bengali text-[11px]">হ্যাঁ, বাংলা ইউনিকোড টেক্সট নিখুঁত পড়ে এবং বাংলায় পৃষ্ঠা নম্বরসহ রেফারেন্স দিতে পারে।</p>
+          <button onclick="copyText('হ্যাঁ, বাংলা ইউনিকোড টেক্সট নিখুঁত পড়ে এবং বাংলায় পৃষ্ঠা নম্বরসহ রেফারেন্স দিতে পারে।')" class="text-amber-400 text-xs font-mono underline">Copy Answer</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- FLOATING TOAST NOTIFICATION                               -->
+  <!-- ========================================================= -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 bg-[#00F0FF] text-black px-4 py-2.5 rounded-2xl font-bold text-xs shadow-2xl flex items-center gap-2 transform translate-y-24 opacity-0 pointer-events-none">
+    <span id="toast-icon">✓</span>
+    <span id="toast-msg">Action Successful</span>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT LOGIC & SLIDES DATA                            -->
+  <!-- ========================================================= -->
+  <script>
+    // ─────────────────────────────────────────────────────────────
+    // CANONICAL SLIDES DATA (12 SLIDES)
+    // ─────────────────────────────────────────────────────────────
+    const SLIDES_DATA = [
+      {
+        id: 1,
+        title: "Welcome Back & Friction Harvest",
+        subtitle: "হোমওয়ার্কের সমাধান · বিরক্তির কাজগুলো অটোমেট করার মিশন",
+        phase: "part1",
+        defaultNotes: "আসসালামু আলাইকুম সবাইকে। কেমন আছেন শাবউদ্দিন ভাই, রায়হান ভাই, রিদিয়া ও পার্থ? গতকাল কিন্তু আমি আপনাদের বলেছিলাম কোনো প্রম্পট মুখস্থ না করতে—শুধু ১টা বিরক্তিকর কাজ নোট করতে। আজকে আমরা কোনো থিওরি পড়ব না। সরাসরি আপনাদের সেই জটলা কাজগুলো দিয়ে শুরু করব।",
+        pauseText: "৩ সেকেন্ড পজ নিন। সবার চোখ স্ক্রিনে এনে নিশ্চিত করুন সবাই কানেক্টেড।",
+        calloutText: "শাবউদ্দিন ভাই, রায়হান ভাই, রিদিয়া ও পার্থকে সরাসরি নাম ধরে সম্বোধন করে তাদের হোমওয়ার্ক রিকল করান।"
+      },
+      {
+        id: 2,
+        title: "Beyond Typing: Multimodal Vision AI",
+        subtitle: "টাইপ করার দিন শেষ — ছবি, ছেঁড়া রসিদ ও হাতে লেখা রোস্টার আপলোড",
+        phase: "part1",
+        defaultNotes: "রায়হান ভাই, আপনার প্রতিদিনের সবচেয়ে বড় যন্ত্রণা কী? ৬৪ জেলা থেকে সুপারভাইজাররা হোয়াটসঅ্যাপে ছেঁড়া চালানের ছবি পাঠায়, আর আপনাকে এক্সেলে দেখে দেখে তুলতে হয়। জেমিনিকে আমরা এখন শুধু চোখ দেব। ছবিটা ড্রপ করবেন, সে নিজে পড়ে এক্সেল টেবিল বানিয়ে দেবে।",
+        pauseText: "ফোন বা ক্যামেরার জেসচার দেখান। রায়হান ভাইয়ের রিঅ্যাকশন দেখুন।",
+        calloutText: "রায়হান ভাই (লজিস্টিকস লিড): ৬৪ জেলার অস্পষ্ট রসিদ স্ক্যানিংয়ের বাস্তব বেদনা তুলে ধরুন।"
+      },
+      {
+        id: 3,
+        title: "Live Shootout: The Blurry Delivery Challan",
+        subtitle: "১৫ মিনিটের ম্যানুয়াল টাইপিং বনাম জেমিনির ৩ সেকেন্ডের ম্যাজিক",
+        phase: "part1",
+        defaultNotes: "দেখুন, এই চালানটা কিন্তু বেশ ঝাপসা এবং বাংলায় হাতে লেখা। কোনো সফটওয়্যার এটা রিড করতে পারত না। জেমিনিকে দেওয়ার পর ঠিক ৩ সেকেন্ডে দেখুন—হ্যান্ডরাইটিং থেকে নিখুঁত চালানের নম্বর ও টাকার পরিমাণ আলাদা করে দিয়েছে। আপনার ১৫ মিনিটের খাটুনি শেষ ৩ সেকেন্ডে।",
+        pauseText: "টেবিলের সংখ্যাগুলোর দিকে আঙুল নির্দেশ করুন। ২ সেকেন্ড চুপ থাকুন।",
+        calloutText: "পার্থ ও রায়হান: ম্যানুয়াল টাইপোতে যে পেমেন্ট মিসম্যাচ হয় তা কীভাবে শূন্যে নামে তা হাইলাইট করুন।"
+      },
+      {
+        id: 4,
+        title: "Custom Gems: Zero-Typing Desk Automations",
+        subtitle: "আপনার ব্যক্তিগত কাজের নিয়ম জেমিনিতে একবার সেভ করুন, কাজ হবে সারাজীবন",
+        phase: "part1",
+        defaultNotes: "আপনাদের মনে হতে পারে—'প্লাবন ভাই, এত বড় বড় RCTO প্রম্পট কি প্রতিদিন টাইপ করব?' একদমই না! আজকে আমরা বানাবো 'Custom Gems'। এটা আপনার ব্যক্তিগত রোবট। সে আপনার কাজের নিয়ম একবার মুখস্থ করে রাখবে। এরপর প্রতিদিন শুধু ফাইল ছাড়বেন, কাজ শেষ।",
+        pauseText: "'১ বার সেটআপ, সারাজীবন মুক্তি' কথাটিতে জোর দিন।",
+        calloutText: "সমগ্র টিম: প্রম্পট টাইপ করার ভীতি দূর করে ১-ক্লিক ড্র্যাগ-অ্যান্ড-ড্রপ সুবিধা বোঝান।"
+      },
+      {
+        id: 5,
+        title: "4 Desks, 4 Permanent Gems for Serviq",
+        subtitle: "শাবউদ্দিন, রায়হান, রিদিয়া ও পার্থর জন্য তৈরি ৪টি কাস্টম অটোমেশন",
+        phase: "part1",
+        defaultNotes: "আমরা ৪ জনের জন্য ৪টা পার্মানেন্ট জেম বানিয়ে ফেলব। শাবউদ্দিন ভাইয়ের জন্য 'কাস্টমার ম্যাট্রিক্স জেম', রায়হান ভাইয়ের জন্য 'লজিস্টিক রোস্টার জেম', রিদিয়ার জন্য 'মাস্টার ডাইজেস্ট জেম', আর পার্থর জন্য 'শিটস ফর্মুলা জেম'। এগুলো আপনার ব্রাউজারে পিন করা থাকবে।",
+        pauseText: "প্রতিটি জেমের নামের সাথে ব্যক্তির কাজের মিল নিশ্চিত করতে বিরতি নিন।",
+        calloutText: "শাবউদ্দিন (সাপোর্ট), রায়হান (লজিস্টিকস), রিদিয়া (এইচআর/অ্যাডমিন), পার্থ (ডাটা/শিটস) — প্রত্যেকের নিজস্ব টুল।"
+      },
+      {
+        id: 6,
+        title: "Live Ticket Triage & In-Flight PII Redaction",
+        subtitle: "কাস্টমার রিকোয়েস্ট অটো-ক্যাটাগরি হবে, কিন্তু সংবেদনশীল তথ্য থাকবে ১০০% গোপন",
+        phase: "part1",
+        defaultNotes: "তবে মনে রাখবেন—কাস্টমার যত জটিল ঘটনাই ঘটাক, আমাদের কিন্তু কোম্পানির ডাটা সিকিউরিটি বজায় রাখতে হবে। এই জেম নিজেই আপনার কাস্টমারের এনআইডি বা ফোন নম্বর আড়াল করে ড্রাফট বানাবে। কোনো তথ্য ইন্টারনেটে লিক হবে না।",
+        pauseText: "মেরাজ ভাই ও মুন ভাইয়ের সিকিউরিটি ফ্রেমওয়ার্কের প্রতি শ্রদ্ধা জানিয়ে পজ দিন।",
+        calloutText: "মেরাজ ভাই ও মুন ভাই: এন্টারপ্রাইজ কমপ্লায়েন্স ও ক্লায়েন্ট এনআইডি সুরক্ষার নিশ্চয়তা।"
+      },
+      {
+        id: 7,
+        title: "10-Minute Recharge & Intermission Challenge",
+        subtitle: "চা খান ও রিল্যাক্স করুন — চ্যাটে ড্রপ করুন আপনার ১টি জটিল ফাইল!",
+        phase: "intermission",
+        defaultNotes: "আমরা পার্ট ১ শেষ করলাম। সবাই স্ক্রিন থেকে চোখ সরান, এক কাপ চা বা কফি নিয়ে আসুন। তবে বিরতিতে যাওয়ার আগে একটা ছোট্ট কাজ—আপনার কম্পিউটারের সবচেয়ে কঠিন কোনো পলিসি বা বড় চুক্তিপত্র মিটিংয়ের চ্যাটে আপলোড করে যান। বিরতির পর এসে আমরা সেটা নিয়েই পার্ট ২ শুরু করব!",
+        pauseText: "স্লাইডের কাউন্টডাউন টাইমারটি স্টার্ট করুন। চ্যাট মনিটর করুন।",
+        calloutText: "সবাইকে চ্যাটে ১টি রিয়েল ফাইল ড্রপ করার জন্য উদ্বুদ্ধ করুন—পার্ট ২ হবে তাদের রিয়েল ফাইলে।"
+      },
+      {
+        id: 8,
+        title: "100% Source-Grounded Truth vs Hallucination",
+        subtitle: "সাধারণ AI বানিয়ে কথা বলতে পারে, কিন্তু NotebookLM শুধু ডকুমেন্টের ওপর কথা বলে",
+        phase: "part2",
+        defaultNotes: "পার্ট ২-তে আপনাদের স্বাগতম। মেরাজ ভাই বা মুন ভাইয়ের সবসময় একটা ভয় থাকে—'AI যদি বানিয়ে বানিয়ে ভুল কোনো পলিসি ক্লায়েন্টকে বলে দেয়?' NotebookLM-এর ম্যাজিক হলো সে কখনো মনগড়া কথা বলে না। আপনি যে কয়টা ফাইল আপলোড করবেন, সে শুধু সেই কয়টা ফাইলের ভেতরের তথ্যই বলবে।",
+        pauseText: "'জিরো হ্যালুসিনেশন' শব্দের পর এক সেকেন্ড স্থির থাকুন।",
+        calloutText: "ম্যানেজমেন্ট ও লিডারশিপ: মনগড়া তথ্যের শূন্য ঝুঁকি এবং বিশ্বস্ত সোর্স-বাউন্ডেড আর্কিটেকচার।"
+      },
+      {
+        id: 9,
+        title: "Building the Serviq Enterprise Knowledge Vault",
+        subtitle: "৫০০ পাতার এইচআর পলিসি, ২২টি ক্লায়েন্ট এগ্রিমেন্ট ও পে-লিও ম্যানুয়াল এক ছাদের নিচে",
+        phase: "part2",
+        defaultNotes: "রিদিয়া, আপনার ড্রাইভের ৫০০ পৃষ্ঠার এইচআর পলিসি, পে-লিও ম্যানুয়াল আর ২২টা ক্লায়েন্ট এগ্রিমেন্ট আজ আমরা একটা নোটবুকে ঢুকিয়ে দেব। এরপর পুরো সার্ভিক কোম্পানির সমস্ত নলেজ আপনার হাতের মুঠোয় চলে আসবে।",
+        pauseText: "রিদিয়া আপুর ফোল্ডার ঘাঁটার কষ্টের সাথে সহমর্মিতা প্রকাশ করে থামুন।",
+        calloutText: "রিদিয়া আপু (এইচআর/অ্যাডমিন): ৫০টি ড্রাইভ ফোল্ডারে খোঁজাখুঁজির স্থায়ী অবসান।"
+      },
+      {
+        id: 10,
+        title: "Plain Banglish Q&A with Exact Page Citations",
+        subtitle: "শুধু উত্তর নয়—কোন নথির কোন পৃষ্ঠায় এই নিয়ম আছে, প্রমাণসহ দেখিয়ে দেবে",
+        phase: "part2",
+        defaultNotes: "দেখুন, আমি বাংলায় লিখলাম—'আমাদের ফিল্ড রিক্রুটিং কর্মীদের মাতৃত্বকালীন ছুটির নিয়ম কী?' সে সাথে সাথে উত্তর দিল এবং পাশে লিখে দিল [Source 1, Page 34]। ক্লিক করলেই মূল পাতার সেই অনুচ্ছেদ খুলে যাচ্ছে। ক্লায়েন্ট বা কর্মী কেউ আর এটা নিয়ে তর্ক করতে পারবে না।",
+        pauseText: "পেজ সাইটেশন ব্যাজে ক্লিক করার সিমুলেশন দেখান।",
+        calloutText: "শাবউদ্দিন ও রিদিয়া: ক্লায়েন্ট বা অডিট বিরোধে তাৎক্ষণিক দালিলিক প্রমাণ পাওয়ার শক্তি।"
+      },
+      {
+        id: 11,
+        title: "1-Click Executive Synthesis & Audio Overviews",
+        subtitle: "৬০ পৃষ্ঠার জটিল রিপোর্ট থেকে মেরাজ ভাই ও মুন ভাইয়ের জন্য ৫ মিনিটের সারসংক্ষেপ",
+        phase: "part2",
+        defaultNotes: "এবার সবচেয়ে বড় শো-স্টপার দেখুন। ৬০ পৃষ্ঠার ক্লায়েন্ট কন্ট্রাক্ট পড়ার সময় মেরাজ ভাইয়ের নেই। ১ ক্লিকে সেটার ১ পাতার সামারি তৈরি হলো। আর এই অডিও বাটন চাপলে দুজন এক্সিকিউটিভ এটা নিয়ে ৮ মিনিটের পডকাস্ট আলোচনা করে দেবে—যা উনি গাড়িতে বসে শুনতে পারবেন।",
+        pauseText: "অডিও ওভারভিউ পডকাস্টের মানসিক প্রভাব অনুভব করান।",
+        calloutText: "মেরাজ ভাই ও মুন ভাই: শীর্ষ নেতৃত্বের হাতে সরাসরি সিদ্ধান্ত নেওয়ার মতো এক্সিকিউটিভ ডাইজেস্ট।"
+      },
+      {
+        id: 12,
+        title: "Road to Banani Lab (Session 4 Hands-On Prep)",
+        subtitle: "অনলাইনে শেখা শেষ — শনিবার বনানী হেড অফিসে নিজেদের ল্যাপটপে আসল যুদ্ধ",
+        phase: "part2",
+        defaultNotes: "অনলাইনে আমাদের ফাউন্ডেশন শেষ। আগামী শনিবার বনানী হেড অফিসে কিন্তু কোনো লেকচার হবে না—সবাই ল্যাপটপ খুলে বসবেন। আমরা সামনাসামনি বসে আপনাদের নিজস্ব কাজের সম্পূর্ণ অটোমেশন ড্যাশবোর্ড তৈরি করে দেব। দেখা হচ্ছে শনিবার বনানীতে!",
+        pauseText: "উচ্ছ্বসিত হাসিমুখে গ্র্যাজুয়েশনের আহ্বান জানান।",
+        calloutText: "সমগ্র ৪,৭০০+ কর্মী পরিবার ও পরিচালনা পর্ষদ: শনিবার বনানী সামনাসামনি ল্যাবের জন্য পূর্ণ প্রস্তুতি।"
+      }
+    ];
+
+    // ─────────────────────────────────────────────────────────────
+    // GLOBAL STATE & VARIABLES
+    // ─────────────────────────────────────────────────────────────
+    let activeSlideIndex = 1;
+    let isDesktopView = true;
+
+    // Tri-Timer State (Part 1: 45m, Intermission: 10m, Part 2: 45m)
+    const TIMER_PHASES = [
+      { name: "Part 1: Vision & Gems", totalSeconds: 45 * 60, label: "Part 1 (45m)" },
+      { name: "Intermission Recharge", totalSeconds: 10 * 60, label: "Intermission (10m)" },
+      { name: "Part 2: NotebookLM", totalSeconds: 45 * 60, label: "Part 2 (45m)" }
+    ];
+    let currentPhaseIndex = 0;
+    let timerRemainingSeconds = TIMER_PHASES[0].totalSeconds;
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    // Audio Rehearsal State
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecordingAudio = false;
+    let recordingTimerInterval = null;
+    let recordingElapsedSeconds = 0;
+    const sessionAudioMap = {}; // In-memory fallback if quota exceeds
+
+    // ─────────────────────────────────────────────────────────────
+    // INITIALIZATION
+    // ─────────────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      // Determine viewport layout
+      if (window.innerWidth < 768) {
+        setMobileView();
+      } else {
+        setDesktopView();
+      }
+
+      // Populate navigation lists
+      renderDesktopSlideList();
+      renderMobileAccordion();
+      loadSlideContent(1);
+
+      // Keyboard navigation for desktop: Left/Right arrows
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          navSlideStep(1);
+        } else if (e.key === 'ArrowLeft') {
+          navSlideStep(-1);
+        }
+      });
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // LAYOUT SWITCHER (DESKTOP DUAL-PANE VS MOBILE)
+    // ─────────────────────────────────────────────────────────────
+    function toggleViewMode() {
+      if (isDesktopView) {
+        setMobileView();
+      } else {
+        setDesktopView();
+      }
+    }
+
+    function setDesktopView() {
+      isDesktopView = true;
+      document.getElementById('desktop-layout').classList.remove('hidden');
+      document.getElementById('mobile-layout').classList.add('hidden');
+      document.getElementById('mobile-tabs-bar').classList.add('hidden');
+      
+      const btn = document.getElementById('view-mode-toggle-btn');
+      if (btn) btn.innerHTML = '📱 Mobile View';
+      showToast('Switched to Desktop Dual-Pane (40/60)');
+    }
+
+    function setMobileView() {
+      isDesktopView = false;
+      document.getElementById('desktop-layout').classList.add('hidden');
+      document.getElementById('mobile-layout').classList.remove('hidden');
+      document.getElementById('mobile-tabs-bar').classList.remove('hidden');
+      
+      const btn = document.getElementById('view-mode-toggle-btn');
+      if (btn) btn.innerHTML = '🖥️ Desktop View';
+      showToast('Switched to Mobile Smartphone HUD');
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // DESKTOP SLIDE LIST & SELECTION
+    // ─────────────────────────────────────────────────────────────
+    function renderDesktopSlideList() {
+      const container = document.getElementById('desktop-slide-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let currentPhaseGroup = '';
+
+      SLIDES_DATA.forEach(slide => {
+        // Optional phase group headers
+        if (slide.phase !== currentPhaseGroup) {
+          currentPhaseGroup = slide.phase;
+          const phaseHeader = document.createElement('div');
+          phaseHeader.className = 'text-[9px] font-mono uppercase font-black tracking-wider text-gray-500 pt-2 pb-0.5 px-1';
+          if (slide.phase === 'part1') phaseHeader.textContent = '── Part 1: Vision AI & Custom Gems ──';
+          else if (slide.phase === 'intermission') phaseHeader.textContent = '── Intermission Break ──';
+          else if (slide.phase === 'part2') phaseHeader.textContent = '── Part 2: NotebookLM Knowledge Vault ──';
+          container.appendChild(phaseHeader);
+        }
+
+        const btn = document.createElement('button');
+        btn.onclick = () => selectSlide(slide.id);
+        btn.id = `desktop-slide-item-${slide.id}`;
+        
+        const hasAudio = !!(localStorage.getItem(`serviq_s23_audio_slide_${slide.id}`) || sessionAudioMap[slide.id]);
+        const isActive = slide.id === activeSlideIndex;
+        
+        btn.className = `w-full text-left p-2.5 rounded-xl border transition flex items-center justify-between text-xs active:scale-[0.98] ${
+          isActive 
+            ? 'border-[#00F0FF] bg-[#00F0FF]/15 shadow-md slide-item-active' 
+            : 'border-white/5 bg-black/20 hover:bg-white/5 text-gray-300'
+        }`;
+
+        btn.innerHTML = `
+          <div class="flex items-center gap-2.5 truncate">
+            <span class="w-6 h-6 rounded-lg ${
+              slide.id === 7 ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-[#00F0FF]'
+            } flex items-center justify-center font-black font-mono text-[10px] shrink-0">
+              ${String(slide.id).padStart(2, '0')}
+            </span>
+            <div class="truncate text-left">
+              <span class="font-bold text-white block text-[11px] truncate">${slide.title}</span>
+              <span class="text-[9px] text-gray-400 bengali truncate block">${slide.subtitle}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0 ml-2">
+            ${hasAudio ? '<span class="text-[10px] text-purple-400" title="Voice Dry-run Saved">🎙️</span>' : ''}
+            <span class="text-[9px] font-mono text-gray-500">${slide.phase === 'intermission' ? '☕' : '•'}</span>
+          </div>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectSlide(slideId) {
+      activeSlideIndex = slideId;
+      loadSlideContent(slideId);
+      renderDesktopSlideList();
+    }
+
+    function navSlideStep(step) {
+      let nextIndex = activeSlideIndex + step;
+      if (nextIndex < 1) nextIndex = 12;
+      if (nextIndex > 12) nextIndex = 1;
+      selectSlide(nextIndex);
+    }
+
+    function loadSlideContent(slideId) {
+      const slide = SLIDES_DATA.find(s => s.id === slideId);
+      if (!slide) return;
+
+      // Update Header & Badge
+      document.getElementById('active-slide-badge').textContent = `SLIDE ${String(slide.id).padStart(2, '0')}`;
+      if (slide.id === 7) {
+        document.getElementById('active-slide-badge').className = 'px-3 py-1 rounded-xl bg-amber-500/20 text-amber-400 font-black text-sm font-mono border border-amber-500/30';
+      } else {
+        document.getElementById('active-slide-badge').className = 'px-3 py-1 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF] font-black text-sm font-mono border border-[#00F0FF]/30';
+      }
+
+      document.getElementById('active-slide-title').textContent = slide.title;
+      document.getElementById('active-slide-subtitle').textContent = slide.subtitle;
+      document.getElementById('active-slide-counter').textContent = `${String(slide.id).padStart(2, '0')} / 12`;
+
+      // Load Saved / Default Notes
+      const savedNotes = localStorage.getItem(`serviq_s23_notes_slide_${slide.id}`);
+      const notesToDisplay = savedNotes || slide.defaultNotes;
+      
+      const notesContainer = document.getElementById('notes-view-desktop');
+      notesContainer.innerHTML = `<p class="bengali leading-relaxed text-[13px] text-gray-100">${notesToDisplay}</p>`;
+      document.getElementById('notes-textarea-desktop').value = notesToDisplay;
+
+      // Ensure read-only mode by default
+      cancelEditNotesDesktop();
+
+      // Pause & Callout Guidance
+      document.getElementById('active-slide-pause').textContent = slide.pauseText;
+      document.getElementById('active-slide-callout').textContent = slide.calloutText;
+
+      // Load Audio Rehearsal if available
+      loadAudioForSlide(slide.id);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // NOTE EDITING & LOCALSTORAGE PERSISTENCE (DESKTOP)
+    // ─────────────────────────────────────────────────────────────
+    function toggleEditNotesDesktop() {
+      const viewEl = document.getElementById('notes-view-desktop');
+      const editEl = document.getElementById('notes-edit-container-desktop');
+      const btn = document.getElementById('btn-edit-notes-desktop');
+
+      if (editEl.classList.contains('hidden')) {
+        editEl.classList.remove('hidden');
+        viewEl.classList.add('hidden');
+        btn.textContent = '✕ Close';
+      } else {
+        cancelEditNotesDesktop();
+      }
+    }
+
+    function cancelEditNotesDesktop() {
+      document.getElementById('notes-edit-container-desktop').classList.add('hidden');
+      document.getElementById('notes-view-desktop').classList.remove('hidden');
+      document.getElementById('btn-edit-notes-desktop').textContent = '✏️ Edit Notes';
+    }
+
+    function saveEditNotesDesktop() {
+      const textarea = document.getElementById('notes-textarea-desktop');
+      const updatedNotes = textarea.value.trim();
+      
+      if (updatedNotes) {
+        localStorage.setItem(`serviq_s23_notes_slide_${activeSlideIndex}`, updatedNotes);
+        document.getElementById('notes-view-desktop').innerHTML = `<p class="bengali leading-relaxed text-[13px] text-gray-100">${updatedNotes}</p>`;
+        cancelEditNotesDesktop();
+        renderMobileAccordion(); // Sync mobile view
+        showToast(`Notes saved for Slide ${activeSlideIndex}`);
+      }
+    }
+
+    function copyActiveNotesDesktop() {
+      const savedNotes = localStorage.getItem(`serviq_s23_notes_slide_${activeSlideIndex}`);
+      const slide = SLIDES_DATA.find(s => s.id === activeSlideIndex);
+      const textToCopy = savedNotes || slide.defaultNotes;
+      copyText(textToCopy);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // AUDIO REHEARSAL WITH SAFE LOCALSTORAGE EVICION (P0 GUARD)
+    // ─────────────────────────────────────────────────────────────
+    function manageAudioQuotaEviction(newSlideId) {
+      let keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('serviq_s23_audio_slide_')) {
+          keys.push(k);
+        }
+      }
+      // If we already have 3 or more recordings saved, evict the oldest
+      if (keys.length >= 3) {
+        const toEvict = keys.find(k => k !== `serviq_s23_audio_slide_${newSlideId}`) || keys[0];
+        if (toEvict) {
+          localStorage.removeItem(toEvict);
+        }
+      }
+    }
+
+    async function toggleAudioRecordingActive() {
+      if (isRecordingAudio) {
+        stopAudioRecordingActive();
+      } else {
+        await startAudioRecordingActive();
+      }
+    }
+
+    async function startAudioRecordingActive() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        recordingElapsedSeconds = 0;
+
+        let options = {};
+        if (MediaRecorder.isTypeSupported('audio/webm')) {
+          options = { mimeType: 'audio/webm' };
+        }
+
+        mediaRecorder = new MediaRecorder(stream, options);
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+          const fallbackUrl = URL.createObjectURL(audioBlob);
+          sessionAudioMap[activeSlideIndex] = fallbackUrl;
+
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64Data = reader.result;
+            try {
+              manageAudioQuotaEviction(activeSlideIndex);
+              localStorage.setItem(`serviq_s23_audio_slide_${activeSlideIndex}`, base64Data);
+              loadAudioForSlide(activeSlideIndex);
+              renderDesktopSlideList();
+              showToast(`✓ Dry-run saved for Slide ${activeSlideIndex}`);
+            } catch (err) {
+              console.warn('LocalStorage Quota Full: Using in-memory Object URL fallback', err);
+              loadAudioForSlide(activeSlideIndex);
+              renderDesktopSlideList();
+              showToast('✓ Audio saved (Session fallback active)');
+            }
+          };
+          reader.readAsDataURL(audioBlob);
+
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start();
+        isRecordingAudio = true;
+
+        // UI Updates
+        document.getElementById('record-icon-desktop').textContent = '⏹️';
+        document.getElementById('record-btn-text-desktop').textContent = 'Save Recording';
+        document.getElementById('btn-record-audio-desktop').className = 'px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition flex items-center gap-2 active:scale-95 shadow-lg glow-red';
+        document.getElementById('rec-dot-desktop').className = 'w-2 h-2 rounded-full bg-red-500 animate-ping';
+        
+        recordingTimerInterval = setInterval(() => {
+          recordingElapsedSeconds++;
+          const m = Math.floor(recordingElapsedSeconds / 60);
+          const s = recordingElapsedSeconds % 60;
+          document.getElementById('rec-timer-desktop').textContent = `Recording (${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')})...`;
+        }, 1000);
+
+      } catch (err) {
+        console.error('Microphone access denied or unsupported', err);
+        alert('Microphone access is required to record rehearsals: ' + err.message);
+      }
+    }
+
+    function stopAudioRecordingActive() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      isRecordingAudio = false;
+      clearInterval(recordingTimerInterval);
+
+      document.getElementById('record-icon-desktop').textContent = '🎙️';
+      document.getElementById('record-btn-text-desktop').textContent = 'Re-record Dry-Run';
+      document.getElementById('btn-record-audio-desktop').className = 'px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-[#C4B5FD] hover:text-white border border-purple-500/40 text-xs font-bold transition flex items-center gap-2 active:scale-95 shadow-md';
+      document.getElementById('rec-dot-desktop').className = 'w-2 h-2 rounded-full bg-emerald-500';
+      document.getElementById('rec-timer-desktop').textContent = 'Recording saved!';
+    }
+
+    function loadAudioForSlide(slideId) {
+      const savedAudio = localStorage.getItem(`serviq_s23_audio_slide_${slideId}`) || sessionAudioMap[slideId];
+      const playbackContainer = document.getElementById('audio-playback-container-desktop');
+      const audioPlayer = document.getElementById('audio-player-desktop');
+      const recTimer = document.getElementById('rec-timer-desktop');
+      const recDot = document.getElementById('rec-dot-desktop');
+
+      if (savedAudio) {
+        audioPlayer.src = savedAudio;
+        playbackContainer.classList.remove('hidden');
+        recTimer.textContent = 'Voice Note Available';
+        recDot.className = 'w-2 h-2 rounded-full bg-purple-400';
+        document.getElementById('record-btn-text-desktop').textContent = 'Re-record Dry-Run';
+      } else {
+        audioPlayer.src = '';
+        playbackContainer.classList.add('hidden');
+        recTimer.textContent = 'No dry-run audio recorded';
+        recDot.className = 'w-2 h-2 rounded-full bg-gray-500';
+        document.getElementById('record-btn-text-desktop').textContent = 'Record Dry-Run';
+      }
+    }
+
+    function deleteAudioActive() {
+      localStorage.removeItem(`serviq_s23_audio_slide_${activeSlideIndex}`);
+      delete sessionAudioMap[activeSlideIndex];
+      loadAudioForSlide(activeSlideIndex);
+      renderDesktopSlideList();
+      showToast(`Audio deleted for Slide ${activeSlideIndex}`);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // MOBILE ACCORDION VIEW RENDERING
+    // ─────────────────────────────────────────────────────────────
+    function renderMobileAccordion() {
+      const container = document.getElementById('mobile-accordion-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      SLIDES_DATA.forEach(slide => {
+        const details = document.createElement('details');
+        details.className = 'group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden';
+        if (slide.id === 1) details.open = true;
+
+        const savedNotes = localStorage.getItem(`serviq_s23_notes_slide_${slide.id}`);
+        const currentNotes = savedNotes || slide.defaultNotes;
+        const hasAudio = !!(localStorage.getItem(`serviq_s23_audio_slide_${slide.id}`) || sessionAudioMap[slide.id]);
+
+        details.innerHTML = `
+          <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10 bg-[#0E1626] hover:bg-white/5 transition">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg ${
+                slide.id === 7 ? 'bg-amber-500/20 text-amber-400' : 'bg-[#00F0FF]/20 text-[#00F0FF]'
+              } flex items-center justify-center font-black text-xs font-mono">
+                ${String(slide.id).padStart(2, '0')}
+              </span>
+              <div class="text-left">
+                <span class="text-xs font-bold text-white block">${slide.title}</span>
+                <span class="text-[10px] text-gray-400 bengali">${slide.subtitle}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              ${hasAudio ? '<span class="text-[10px] text-purple-400">🎙️</span>' : ''}
+              <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+            </div>
+          </summary>
+          <div class="p-4 text-xs space-y-3 text-gray-300 leading-relaxed bg-black/30">
+            
+            <!-- Spoken Words Box -->
+            <div class="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[10px] font-mono font-bold text-[#00F0FF] uppercase">🎙️ Spoken Words (Banglish)</span>
+                <button onclick="editMobileNotes(${slide.id})" class="text-[10px] text-[#A5F3FC] underline font-mono">Edit</button>
+              </div>
+              <p id="mobile-notes-text-${slide.id}" class="bengali text-gray-100 text-[13px] leading-relaxed">
+                ${currentNotes}
+              </p>
+            </div>
+
+            <!-- Pause -->
+            <div class="flex items-center gap-2 text-[11px] text-amber-300 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+              <span>⏸️</span>
+              <span><strong>Pause:</strong> ${slide.pauseText}</span>
+            </div>
+
+            <!-- Audience Callout -->
+            <div class="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20 text-gray-200">
+              <div class="text-[10px] font-mono font-bold text-[#C4B5FD] uppercase mb-1">🎯 Audience Callout</div>
+              <p class="bengali text-xs">${slide.calloutText}</p>
+            </div>
+
+          </div>
+        `;
+        container.appendChild(details);
+      });
+    }
+
+    function editMobileNotes(slideId) {
+      const slide = SLIDES_DATA.find(s => s.id === slideId);
+      const current = localStorage.getItem(`serviq_s23_notes_slide_${slideId}`) || slide.defaultNotes;
+      const updated = prompt(`Edit Spoken Notes for Slide ${slideId}:`, current);
+      if (updated !== null && updated.trim() !== '') {
+        localStorage.setItem(`serviq_s23_notes_slide_${slideId}`, updated.trim());
+        const el = document.getElementById(`mobile-notes-text-${slideId}`);
+        if (el) el.innerText = updated.trim();
+        loadSlideContent(activeSlideIndex);
+        showToast(`Notes saved for Slide ${slideId}`);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // GLOBAL TRI-TIMER HUD MECHANICS
+    // ─────────────────────────────────────────────────────────────
+    function switchTimerPhase() {
+      currentPhaseIndex = (currentPhaseIndex + 1) % TIMER_PHASES.length;
+      resetTimer();
+      showToast(`Switched to ${TIMER_PHASES[currentPhaseIndex].name}`);
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      const phase = TIMER_PHASES[currentPhaseIndex];
+      timerRemainingSeconds = phase.totalSeconds;
+      
+      document.getElementById('timer-btn').textContent = '▶';
+      document.getElementById('timer-label').textContent = phase.label;
+      updateTimerDisplay();
+    }
+
+    function toggleTimer() {
+      if (isTimerRunning) {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        document.getElementById('timer-btn').textContent = '▶';
+      } else {
+        isTimerRunning = true;
+        document.getElementById('timer-btn').textContent = '⏸';
+        
+        timerInterval = setInterval(() => {
+          if (timerRemainingSeconds > 0) {
+            timerRemainingSeconds--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            document.getElementById('timer-btn').textContent = '▶';
+            showToast(`⏰ Time Up: ${TIMER_PHASES[currentPhaseIndex].name}!`);
+          }
+        }, 1000);
+      }
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(timerRemainingSeconds / 60);
+      const s = timerRemainingSeconds % 60;
+      const displayStr = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      
+      const el = document.getElementById('timer-display');
+      el.textContent = displayStr;
+
+      // Color coding based on remaining time
+      if (timerRemainingSeconds <= 60) {
+        el.className = 'text-sm font-black mono text-red-500 animate-pulse leading-none';
+      } else if (timerRemainingSeconds <= 300) {
+        el.className = 'text-sm font-black mono text-amber-400 leading-none';
+      } else {
+        el.className = 'text-sm font-black mono text-[#00F0FF] leading-none';
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // MOBILE TAB SWITCHING
+    // ─────────────────────────────────────────────────────────────
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[#00F0FF]', 'text-black');
+        btn.classList.add('bg-white/10', 'text-gray-300');
+      });
+
+      const targetTab = document.getElementById(`tab-${tabId}`);
+      const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (targetTab) targetTab.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.remove('bg-white/10', 'text-gray-300');
+        targetBtn.classList.add('bg-[#00F0FF]', 'text-black');
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // QUICK COPY PROMPTS & UTILITIES
+    // ─────────────────────────────────────────────────────────────
+    function copyChallanPrompt() {
+      const p = `Act as an expert Bengali and English OCR Data Extraction Specialist.
+Analyze this photo of a courier delivery challan/roster carefully.
+Extract the data into a clean, markdown table formatted for direct paste into Google Sheets:
+Columns required:
+| Hub Name | Rider / Delivery Man | Challan No | COD Amount (BDT) | Delivery Status | Discrepancy Note |
+
+Rules:
+1. Preserve exact Bengali names and numeric digits.
+2. If any handwritten digit is unclear, do NOT fabricate. Flag it explicitly as [FLAG: Unclear Digit].
+3. Calculate and display the Total COD Amount at the bottom row.`;
+      copyText(p, 'Challan OCR Prompt copied to clipboard!');
+    }
+
+    function copyGemPrompt() {
+      const p = `Role: Serviq Operational Desk Automation Assistant.
+Context: 4,700+ enterprise employees operating across 64 districts in Bangladesh.
+Instructions:
+1. Always ingest incoming shift requests, delivery anomalies, or employee payroll tickets.
+2. Mask all citizen NID, phone numbers, and bank account numbers using tokens: [CLIENT-ID], [PHONE-REDACTED], [BDT-AMOUNT].
+3. Output a structured 3-part response:
+   - Part A: Executive Summary (3 bullets, Bangla & English).
+   - Part B: Action Item Table (Assignee, Hub, Priority, Deadline).
+   - Part C: Official Professional Reply Draft.`;
+      copyText(p, 'Custom Gem System Prompt copied!');
+    }
+
+    function copyNotebookPrompt() {
+      const p = `Based strictly on the uploaded Serviq HR Policy Manual (2026-27) and MNC Master Service Agreements:
+Question: What are the exact compliance rules for field recruitment staff maternity leave, payment schedules, and weekend allowance?
+
+Mandatory Requirement:
+- Cite the exact Source Name and Page Number for every statement made.
+- Format: [Source 1, Page 34] or [Agreement Section 4.2].
+- If a rule is not mentioned in the uploaded documents, state clearly: "This rule is not documented in the uploaded files." Do not fabricate.`;
+      copyText(p, 'NotebookLM Precision Prompt copied!');
+    }
+
+    function copyIntermissionDropPrompt() {
+      const p = `☕ চা খান, রিল্যাক্স করুন! বিরতিতে যাওয়ার আগে আপনাদের কম্পিউটারের সবচেয়ে কঠিন কোনো পলিসি, চুক্তিপত্র বা ম্যানুয়াল চ্যাটে ড্রপ করুন। বিরতির পর এসে আমরা সরাসরি এই ফাইল দিয়ে পার্ট ২ তে লাইভ সমাধান করব!`;
+      copyText(p, 'Intermission Challenge copy ready!');
+    }
+
+    function copyText(text, msg = 'Copied to clipboard!') {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(msg);
+      }).catch(err => {
+        // Fallback for older contexts
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast(msg);
+      });
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const msgEl = document.getElementById('toast-msg');
+      if (!toast || !msgEl) return;
+
+      msgEl.textContent = message;
+      toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
