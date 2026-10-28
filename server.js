@@ -668,6 +668,11 @@ app.get(['/nhf', '/nhf/'], (req, res) => {
   res.redirect(302, '/prototypes/nhf-portal/');
 });
 
+// Agent 10X Autonomous Digital Teammates & Recruiter Platform (Engine 1)
+app.get(['/agent10x', '/agent10x/', '/agent10x.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/agent10x/index.html'));
+});
+
 
 app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, filePath) => {
