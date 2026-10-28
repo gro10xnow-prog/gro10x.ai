@@ -244,7 +244,7 @@
             <span class="font-mono text-[11px] text-[#00DF89] bg-[#00DF89]/10 border border-[#00DF89]/30 px-2 py-0.5 rounded-md">CV Audit</span>
           </div>
           <p class="text-xs text-gray-400 leading-relaxed">
-            140+ tech candidate CVs parsed, ranked, and scored against specific job criteria in <strong>3.8 minutes</strong> with zero hallucinations.
+            Single CV audit (Shariful Islam), scored across 100+ rubric checkpoints before human review.
           </p>
           <div class="mt-3 pt-3 border-t border-white/5 flex items-center gap-2 font-mono text-[10px] text-gray-400">
             <span class="text-[#00DF89]">●</span> HR & Talent Workflow
@@ -258,7 +258,7 @@
             <span class="font-mono text-[11px] text-[#00F0FF] bg-[#00F0FF]/10 border border-[#00F0FF]/30 px-2 py-0.5 rounded-md">Deck to Doc</span>
           </div>
           <p class="text-xs text-gray-400 leading-relaxed">
-            42-slide corporate pitch deck transformed into an executive 2-page Word summary and financial model in <strong>90 seconds</strong>.
+            27-slide AML/CFT regulatory pitch deck converted into an editable, structured document without retyping.
           </p>
           <div class="mt-3 pt-3 border-t border-white/5 flex items-center gap-2 font-mono text-[10px] text-gray-400">
             <span class="text-[#00F0FF]">●</span> Document OCR & Structuring
@@ -269,13 +269,13 @@
         <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
           <div class="flex items-center justify-between mb-3">
             <span class="font-display font-bold text-sm text-white">BAGH AI</span>
-            <span class="font-mono text-[11px] text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-md">First Win</span>
+            <span class="font-mono text-[11px] text-[#00DF89] bg-[#00DF89]/10 border border-[#00DF89]/30 px-2 py-0.5 rounded-md">Pilot Triage</span>
           </div>
           <p class="text-xs text-gray-400 leading-relaxed">
-            Real-time inbound lead qualification and customer inquiry triage with sub-second response times directly via WhatsApp ingress.
+            Inbound customer inquiry triage and message classification queued for real-world pilot verification on WhatsApp.
           </p>
           <div class="mt-3 pt-3 border-t border-white/5 flex items-center gap-2 font-mono text-[10px] text-gray-400">
-            <span class="text-amber-400">●</span> 24/7 Response Desk
+            <span class="text-[#00DF89]">●</span> 24/7 Response Desk
           </div>
         </div>
 
@@ -286,7 +286,7 @@
             <span class="font-mono text-[11px] text-[#00DF89] bg-[#00DF89]/10 border border-[#00DF89]/30 px-2 py-0.5 rounded-md">Tech Recruiter</span>
           </div>
           <p class="text-xs text-gray-400 leading-relaxed">
-            Autonomous IT talent sourcing agent evaluating candidate GitHub repos, technical rubrics, and issuing automated screening scorecards.
+            Serviq executive talent sourcing via LinkedIn and specialized discovery: 7 Tier 2 candidate profiles mapped across technical roles.
           </p>
           <div class="mt-3 pt-3 border-t border-white/5 flex items-center gap-2 font-mono text-[10px] text-gray-400">
             <span class="text-[#00DF89]">●</span> Full-Funnel Recruiting
@@ -911,9 +911,11 @@
         <div class="text-left">
           <div class="font-display font-bold text-xs text-white">Chat on WhatsApp</div>
           <div class="text-[11px] text-gray-400">Scan or tap to message concierge:</div>
-          <a href="https://wa.me/8801708459008" target="_blank" class="font-mono text-[11px] text-[#00DF89] hover:underline">
-            +880 1708-459008
+          <a href="https://wa.me/8801798558479" target="_blank" class="font-mono text-[11px] text-[#00DF89] hover:underline">
+            +880 1798-558479
           </a>
+          <div class="text-[10px] text-gray-400 mt-0.5">Rafsan Ameen, Head of BD</div>
+          <div class="text-[9.5px] text-gray-500 italic mt-0.5">(Dedicated Agent 10X SIM line to be allocated prior to public ad spend)</div>
         </div>
       </div>
 
@@ -946,11 +948,11 @@
       currentStep: 1,
       totalSteps: 8,
       data: {
-        type: 'Personal',
+        type: 'Personal Digital Teammate',
         name: '',
         whatsapp: '',
         language: 'English',
-        reply_mode: 'Text',
+        reply_mode: 'Both',
         purpose: '',
         first_thing: '',
         business_role: '',
@@ -962,8 +964,14 @@
       }
     };
 
+    function isRecruiter() {
+      return state.data.type === 'Enterprise Recruiter (Maya)' || state.data.type === 'Business';
+    }
+
     function startOnboarding(type) {
-      state.data.type = type;
+      state.data.type = (type === 'Enterprise Recruiter (Maya)' || type === 'Business') 
+        ? 'Enterprise Recruiter (Maya)' 
+        : 'Personal Digital Teammate';
       state.currentStep = 1;
       updateTotalSteps();
       renderCurrentStep();
@@ -973,8 +981,8 @@
     }
 
     function updateTotalSteps() {
-      // If Business is selected, Step 8 (company/role/deadline) is active, otherwise step 7 leads to step 8 as notes
-      state.totalSteps = (state.data.type === 'Business') ? 9 : 8;
+      // If Enterprise Recruiter is selected, Step 8 (company/role/deadline) is active, otherwise step 7 leads to step 8 as notes
+      state.totalSteps = isRecruiter() ? 9 : 8;
     }
 
     function toggleFaq(el) {
@@ -1038,12 +1046,12 @@
                 Choose the operational mode that best matches your workflow.
               </p>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <button type="button" onclick="selectTeammateType('Personal')" class="p-4 rounded-xl border text-left transition-all ${state.data.type === 'Personal' ? 'bg-[#00DF89]/15 border-[#00DF89] text-white shadow-md shadow-[#00DF89]/10' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
+                <button type="button" onclick="selectTeammateType('Personal Digital Teammate')" class="p-4 rounded-xl border text-left transition-all ${state.data.type === 'Personal Digital Teammate' ? 'bg-[#00DF89]/15 border-[#00DF89] text-white shadow-md shadow-[#00DF89]/10' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
                   <div class="text-2xl mb-2">👤</div>
                   <div class="font-display font-bold text-sm">Personal Digital Teammate</div>
                   <div class="text-xs text-gray-400 mt-1">B2C Prepaid · WhatsApp companion · Reminders, briefs, OCR</div>
                 </button>
-                <button type="button" onclick="selectTeammateType('Business')" class="p-4 rounded-xl border text-left transition-all ${state.data.type === 'Business' ? 'bg-[#00F0FF]/15 border-[#00F0FF] text-white shadow-md shadow-[#00F0FF]/10' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
+                <button type="button" onclick="selectTeammateType('Enterprise Recruiter (Maya)')" class="p-4 rounded-xl border text-left transition-all ${state.data.type === 'Enterprise Recruiter (Maya)' ? 'bg-[#00F0FF]/15 border-[#00F0FF] text-white shadow-md shadow-[#00F0FF]/10' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
                   <div class="text-2xl mb-2">🏢</div>
                   <div class="font-display font-bold text-sm">Enterprise Recruiter (Maya)</div>
                   <div class="text-xs text-gray-400 mt-1">B2B Postpaid · Candidate scorecards · Tech sourcing</div>
@@ -1081,11 +1089,18 @@
               <h3 class="font-display font-bold text-lg sm:text-xl text-white mb-2">
                 What is your WhatsApp number?
               </h3>
-              <p class="text-xs sm:text-sm text-gray-400 mb-5">
+              <p class="text-xs sm:text-sm text-gray-400 mb-4">
                 Your teammate will be linked and tested directly on this WhatsApp contact.
               </p>
               <input type="tel" id="input-phone" class="a10x-input w-full p-3.5 rounded-xl font-mono text-sm sm:text-base placeholder:text-gray-600" placeholder="+880 17XX-XXXXXX" value="${state.data.whatsapp || ''}" autofocus>
-              <div id="error-phone" class="text-xs text-rose-400 mt-2 hidden">Please enter a valid WhatsApp number.</div>
+              <div id="error-phone" class="text-xs text-rose-400 mt-1.5 hidden">Please enter a valid WhatsApp number (at least 8 digits).</div>
+
+              <label class="flex items-center gap-2 mt-3 cursor-pointer select-none">
+                <input type="checkbox" id="input-consent" class="accent-[#00DF89] w-4 h-4 rounded" ${state.data.consent_whatsapp ? 'checked' : ''}>
+                <span class="text-xs text-gray-300">I consent to receiving WhatsApp updates regarding my teammate onboarding.</span>
+              </label>
+              <div id="error-consent" class="text-xs text-rose-400 mt-1.5 hidden">Please provide consent to proceed with WhatsApp onboarding.</div>
+
               <div class="mt-4 p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center gap-2.5 text-xs text-gray-400 font-mono">
                 <span class="text-[#00DF89]">🔒</span>
                 <span>We only contact you regarding your teammate onboarding. Zero promotional spam.</span>
@@ -1135,14 +1150,20 @@
                 Choose your desired communication modality on WhatsApp.
               </p>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button type="button" onclick="selectReplyMode('Text')" class="p-3.5 rounded-xl border text-center transition-all ${state.data.reply_mode === 'Text' ? 'bg-[#00DF89]/15 border-[#00DF89] text-white font-bold' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
-                  📝 Text Only
+                <button type="button" onclick="selectReplyMode('Text Only')" class="p-4 rounded-xl border text-center transition-all ${state.data.reply_mode === 'Text Only' ? 'bg-[#00DF89]/20 border-[#00DF89] text-white font-bold shadow-lg shadow-[#00DF89]/20' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
+                  <div class="text-2xl mb-1.5">📝</div>
+                  <div class="font-display text-sm font-bold">Text Only</div>
+                  <div class="text-[11px] text-gray-400 mt-1">Concise chat replies</div>
                 </button>
-                <button type="button" onclick="selectReplyMode('Voice')" class="p-3.5 rounded-xl border text-center transition-all ${state.data.reply_mode === 'Voice' ? 'bg-[#00DF89]/15 border-[#00DF89] text-white font-bold' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
-                  🎙️ Voice Notes
+                <button type="button" onclick="selectReplyMode('Voice Notes')" class="p-4 rounded-xl border text-center transition-all ${state.data.reply_mode === 'Voice Notes' ? 'bg-[#00DF89]/20 border-[#00DF89] text-white font-bold shadow-lg shadow-[#00DF89]/20' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
+                  <div class="text-2xl mb-1.5">🎙️</div>
+                  <div class="font-display text-sm font-bold">Voice Notes</div>
+                  <div class="text-[11px] text-gray-400 mt-1">Audio voice briefs</div>
                 </button>
-                <button type="button" onclick="selectReplyMode('Both')" class="p-3.5 rounded-xl border text-center transition-all ${state.data.reply_mode === 'Both' ? 'bg-[#00DF89]/15 border-[#00DF89] text-white font-bold' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
-                  ⚡ Both (Text & Voice)
+                <button type="button" onclick="selectReplyMode('Both')" class="p-4 rounded-xl border text-center transition-all ${state.data.reply_mode === 'Both' ? 'bg-[#00DF89]/20 border-[#00DF89] text-white font-bold shadow-lg shadow-[#00DF89]/20' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
+                  <div class="text-2xl mb-1.5">⚡</div>
+                  <div class="font-display text-sm font-bold">Both</div>
+                  <div class="text-[11px] text-gray-400 mt-1">Text & voice notes</div>
                 </button>
               </div>
             </div>
@@ -1186,7 +1207,7 @@
           break;
 
         case 8:
-          if (state.data.type === 'Business') {
+          if (isRecruiter()) {
             container.innerHTML = `
               <div class="step-card">
                 <h3 class="font-display font-bold text-lg sm:text-xl text-white mb-2">
@@ -1218,7 +1239,7 @@
           break;
 
         case 9:
-          // Business Step 9 is optional notes
+          // Recruiter Step 9 is optional notes
           renderNotesStep(container);
           break;
       }
@@ -1259,7 +1280,7 @@
           <div class="space-y-3 bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-5 text-left text-xs sm:text-sm">
             <div class="flex justify-between items-center pb-2.5 border-b border-white/5">
               <span class="text-gray-400 font-mono">Teammate Type:</span>
-              <span class="font-bold text-[#00DF89]">${d.type} Teammate</span>
+              <span class="font-bold text-[#00DF89]">${d.type}</span>
             </div>
 
             <div class="flex justify-between items-center pb-2.5 border-b border-white/5">
@@ -1287,10 +1308,14 @@
               <span class="text-gray-200 text-right max-w-[220px] truncate">${d.first_thing || 'Immediate Setup'}</span>
             </div>
 
-            ${d.type === 'Business' && d.company ? `
+            ${isRecruiter() ? `
             <div class="flex justify-between items-center pb-2.5 border-b border-white/5">
               <span class="text-gray-400 font-mono">Company / Role:</span>
-              <span class="text-gray-200">${d.business_role ? d.business_role + ' @ ' : ''}${d.company}</span>
+              <span class="text-gray-200">${d.business_role ? d.business_role + ' @ ' : ''}${d.company || 'Not provided'}</span>
+            </div>
+            <div class="flex justify-between items-center pb-2.5 border-b border-white/5">
+              <span class="text-gray-400 font-mono">Hiring Deadline:</span>
+              <span class="text-gray-200 font-semibold text-[#00DF89]">${d.deadline || 'ASAP'}</span>
             </div>
             ` : ''}
 
@@ -1323,7 +1348,9 @@
     }
 
     function selectTeammateType(type) {
-      state.data.type = type;
+      state.data.type = (type === 'Enterprise Recruiter (Maya)' || type === 'Business') 
+        ? 'Enterprise Recruiter (Maya)' 
+        : 'Personal Digital Teammate';
       handleNext();
     }
 
@@ -1343,6 +1370,9 @@
 
       const phoneInput = document.getElementById('input-phone');
       if (phoneInput) state.data.whatsapp = phoneInput.value.trim();
+
+      const consentInput = document.getElementById('input-consent');
+      if (consentInput) state.data.consent_whatsapp = consentInput.checked;
 
       const purposeInput = document.getElementById('input-purpose');
       if (purposeInput) state.data.purpose = purposeInput.value.trim();
@@ -1375,12 +1405,20 @@
         }
       }
 
-      // Validation for Step 3 (Phone)
+      // Validation for Step 3 (Phone & Consent)
       if (state.currentStep === 3) {
         const clean = state.data.whatsapp.replace(/\D/g, '');
+        const errPhone = document.getElementById('error-phone');
+        const errConsent = document.getElementById('error-consent');
+        if (errPhone) errPhone.classList.add('hidden');
+        if (errConsent) errConsent.classList.add('hidden');
+
         if (!clean || clean.length < 8) {
-          const err = document.getElementById('error-phone');
-          if (err) err.classList.remove('hidden');
+          if (errPhone) errPhone.classList.remove('hidden');
+          return;
+        }
+        if (!state.data.consent_whatsapp) {
+          if (errConsent) errConsent.classList.remove('hidden');
           return;
         }
       }
@@ -1420,18 +1458,18 @@
       const payload = {
         source: 'agent10x_landing_page',
         submitted_at: new Date().toISOString(),
-        type: state.data.type || 'Personal',
+        type: state.data.type || 'Personal Digital Teammate',
         name: state.data.name || 'Anonymous',
         whatsapp: state.data.whatsapp || '',
         language: state.data.language || 'English',
-        reply_mode: state.data.reply_mode || 'Text',
+        reply_mode: state.data.reply_mode || 'Both',
         purpose: state.data.purpose || '',
         first_thing: state.data.first_thing || '',
         business_role: state.data.business_role || '',
         company: state.data.company || '',
         deadline: state.data.deadline || '',
         notes: state.data.notes || '',
-        consent_whatsapp: true,
+        consent_whatsapp: state.data.consent_whatsapp !== false,
         language_page: 'en'
       };
 
@@ -1480,7 +1518,7 @@
       btnSkip.classList.add('hidden');
 
       const cleanPhone = payload.whatsapp.replace(/\D/g, '');
-      const founderWaLink = `https://wa.me/8801708459008?text=${encodeURIComponent(`Hi GRO10X Team, I just submitted an Agent 10X onboarding request for ${payload.name} (${payload.type} Teammate, Ref: ${leadId}). Looking forward to the setup plan!`)}`;
+      const conciergeWaLink = `https://wa.me/8801798558479?text=${encodeURIComponent(`Hi Rafsan & GRO10X Team, I just submitted an Agent 10X onboarding request for ${payload.name} (${payload.type}, Ref: ${leadId}). Looking forward to the setup plan!`)}`;
 
       container.innerHTML = `
         <div class="step-card text-center py-4">
@@ -1509,7 +1547,7 @@
           </div>
 
           <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a href="${founderWaLink}" target="_blank" class="w-full sm:w-auto px-6 py-3 rounded-xl font-display font-bold text-xs sm:text-sm bg-[#00DF89] text-[#070B12] hover:bg-[#00F0FF] transition-all flex items-center justify-center gap-2">
+            <a href="${conciergeWaLink}" target="_blank" class="w-full sm:w-auto px-6 py-3 rounded-xl font-display font-bold text-xs sm:text-sm bg-[#00DF89] text-[#070B12] hover:bg-[#00F0FF] transition-all flex items-center justify-center gap-2">
               <span>💬 Message Us Directly on WhatsApp</span>
             </a>
             <button onclick="startOnboarding('Personal')" class="w-full sm:w-auto px-5 py-3 rounded-xl font-display font-bold text-xs sm:text-sm bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all">

@@ -46,11 +46,24 @@ describe('Agent 10X Landing Page V1 Architecture & Integrity', () => {
     // Status Pill
     expect(html).toContain('V1 PILOT ENROLLMENT ACTIVE');
 
-    // Hero Proof Anchors
+    // Hero Proof Anchors (Verified Claims & Zero-Hallucination)
     expect(html).toContain('Hazard');
+    expect(html).toContain('Shariful Islam');
+    expect(html).toContain('100+ rubric checkpoints');
+    expect(html).not.toContain('140+ CVs in 3.8 minutes');
+
     expect(html).toContain('Sivan');
+    expect(html).toContain('27-slide AML/CFT regulatory pitch deck');
+    expect(html).not.toContain('42-slide deck');
+
     expect(html).toContain('BAGH AI');
+    expect(html).toContain('Pilot Triage');
+    expect(html).toContain('Inbound customer inquiry triage and message classification queued for real-world pilot verification on WhatsApp');
+    expect(html).not.toContain('3,400+ conversations');
+
     expect(html).toContain('Maya');
+    expect(html).toContain('7 Tier 2 candidate profiles');
+    expect(html).not.toContain('autonomous GitHub sourcing');
 
     // 6 Functional Cards
     expect(html).toContain('Executive WhatsApp Reminders');
@@ -60,9 +73,9 @@ describe('Agent 10X Landing Page V1 Architecture & Integrity', () => {
     expect(html).toContain('Content Drafting & Multi-Ratio Snippets');
     expect(html).toContain('Recurring Admin & Voice Note Offloading');
 
-    // Two Teammate Types
+    // Two Teammate Types & Recruiter Naming Invariant
     expect(html).toContain('Personal Digital Teammate');
-    expect(html).toContain('Enterprise Recruiter');
+    expect(html).toContain('Enterprise Recruiter (Maya)');
     expect(html).toContain('B2C PREPAID');
     expect(html).toContain('B2B POSTPAID');
 
@@ -78,6 +91,14 @@ describe('Agent 10X Landing Page V1 Architecture & Integrity', () => {
     expect(html).toContain('handleNext');
     expect(html).toContain('jumpToReview');
     expect(html).toContain('agent10x_pending_leads');
+    expect(html).toContain('input-consent');
+    expect(html).toContain('I consent to receiving WhatsApp updates regarding my teammate onboarding.');
+
+    // Concierge Line & BD Verification
+    expect(html).toContain('+880 1798-558479');
+    expect(html).toContain('Rafsan Ameen, Head of BD');
+    expect(html).toContain('Dedicated Agent 10X SIM line to be allocated prior to public ad spend');
+    expect(html).not.toContain('+880 1708-459008');
 
     // 6 FAQ Questions
     expect(html).toContain('How is my personal data and document content secured?');
