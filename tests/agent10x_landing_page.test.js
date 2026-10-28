@@ -46,24 +46,28 @@ describe('Agent 10X Landing Page V1 Architecture & Integrity', () => {
     // Status Pill
     expect(html).toContain('V1 PILOT ENROLLMENT ACTIVE');
 
-    // Hero Proof Anchors (Verified Claims & Zero-Hallucination)
+    // Hero Proof Anchors (Verified Claims & Zero-Hallucination - Fix Pass 2)
     expect(html).toContain('Hazard');
     expect(html).toContain('Shariful Islam');
-    expect(html).toContain('100+ rubric checkpoints');
+    expect(html).toContain('scored across structure, grammar, and alignment checkpoints before human review');
     expect(html).not.toContain('140+ CVs in 3.8 minutes');
 
     expect(html).toContain('Sivan');
-    expect(html).toContain('27-slide AML/CFT regulatory pitch deck');
+    expect(html).toContain('27-slide picture-only AML/CFT regulatory deck summarized and reviewed into a structured, editable document without retyping');
     expect(html).not.toContain('42-slide deck');
+    expect(html).not.toContain('lossless OCR');
+    expect(html).not.toContain('financial model sync');
 
     expect(html).toContain('BAGH AI');
     expect(html).toContain('Pilot Triage');
     expect(html).toContain('Inbound customer inquiry triage and message classification queued for real-world pilot verification on WhatsApp');
+    expect(html).not.toContain('First Win Guaranteed');
     expect(html).not.toContain('3,400+ conversations');
 
     expect(html).toContain('Maya');
-    expect(html).toContain('7 Tier 2 candidate profiles');
-    expect(html).not.toContain('autonomous GitHub sourcing');
+    expect(html).toContain('Serviq talent sourcing via LinkedIn and Apify: 7 Tier 2 candidate profiles mapped across specialized roles');
+    expect(html).not.toContain('10x faster');
+    expect(html).not.toContain('GitHub sourcing');
 
     // 6 Functional Cards
     expect(html).toContain('Executive WhatsApp Reminders');
