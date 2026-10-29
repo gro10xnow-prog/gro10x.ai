@@ -305,6 +305,10 @@
       "dest": "/public/prototypes/serviq-pilot/index.html"
     },
     {
+      "src": "/prototypes/campus-cup(/.*)?",
+      "dest": "/public/prototypes/campus-cup/index.html"
+    },
+    {
       "src": "/prototypes/madman-3d(/.*)?",
       "dest": "/public/prototypes/madman-3d/index.html"
     },

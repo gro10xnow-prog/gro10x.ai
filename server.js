@@ -615,6 +615,11 @@ app.get(['/prototypes/sahanabag-city', '/prototypes/sahanabag-city/'], (req, res
   res.sendFile(path.join(__dirname, 'public/prototypes/sahanabag-city/index.html'));
 });
 
+// Campus Cup Inter-University Football OS & Mini-Cup Penalty Shootout
+app.get(['/prototypes/campus-cup', '/prototypes/campus-cup/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/campus-cup/index.html'));
+});
+
 // Madman 3D WebGL Interactive Proof-of-Concept Prototype
 app.get(['/prototypes/madman-3d', '/prototypes/madman-3d/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/madman-3d/index.html'));
