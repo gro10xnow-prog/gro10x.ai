@@ -263,7 +263,7 @@
         <!-- Player Card -->
         <div class="player-lot-card">
           <div class="player-card-top">
-            <div class="player-avatar-circle">⚽</div>
+            <div class="player-avatar-circle" id="player-avatar-circle">⚽</div>
             <div class="player-ovr-box">
               <span class="player-ovr-num" id="player-ovr-display">96</span>
               <span class="player-ovr-label">PRIME OVR</span>
@@ -279,6 +279,15 @@
               <span class="player-attr-chip" id="player-base-price-tag" style="color:var(--grad-cyan);">Base: 160 pts</span>
             </div>
           </div>
+        </div>
+
+        <!-- Upcoming Lots Preview Strip -->
+        <div class="upcoming-lots-wrap" style="margin-top:10px;margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">ON DECK (NEXT LOTS)</span>
+            <span id="queue-remaining-badge" style="font-size:10px;color:var(--grad-cyan);font-family:var(--font-mono);">179 IN QUEUE</span>
+          </div>
+          <div class="next-lots-strip" id="next-lots-strip"></div>
         </div>
 
         <!-- Current Bid Status Panel -->

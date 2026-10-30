@@ -61,6 +61,94 @@
     return club.icon || '⚽';
   }
 
+  // --- 1B. 56 QA PLAYER RENDERS MANIFEST ---
+  const PLAYER_RENDERS = {
+    "Gianluigi Buffon": "gianluigi-buffon.png",
+    "Lev Yashin": "lev-yashin.png",
+    "Manuel Neuer": "manuel-neuer.png",
+    "Iker Casillas": "iker-casillas.png",
+    "Oliver Kahn": "oliver-kahn.png",
+    "Peter Schmeichel": "peter-schmeichel.png",
+    "Thibaut Courtois": "thibaut-courtois.png",
+    "Alisson Becker": "alisson-becker.png",
+    "Edwin van der Sar": "edwin-van-der-sar.png",
+    "Gianluigi Donnarumma": "gianluigi-donnarumma.png",
+    "Petr Cech": "petr-cech.png",
+    "Jan Oblak": "jan-oblak.png",
+    "Marc-Andre ter Stegen": "marcandre-ter-stegen.png",
+    "Ederson": "ederson.png",
+    "Emiliano Martinez": "emiliano-martinez.png",
+    "Mike Maignan": "mike-maignan.png",
+    "Hugo Lloris": "hugo-lloris.png",
+    "Wojciech Szczesny": "wojciech-szczesny.png",
+    "Jordan Pickford": "jordan-pickford.png",
+    "Paolo Maldini": "paolo-maldini.png",
+    "Franco Baresi": "franco-baresi.png",
+    "Franz Beckenbauer": "franz-beckenbauer.png",
+    "Bobby Moore": "bobby-moore.png",
+    "Roberto Carlos": "roberto-carlos.png",
+    "Cafu": "cafu.png",
+    "Sergio Ramos": "sergio-ramos.png",
+    "Carles Puyol": "carles-puyol.png",
+    "Carlos Alberto": "carlos-alberto.png",
+    "Virgil van Dijk": "virgil-van-dijk.png",
+    "Dani Alves": "dani-alves.png",
+    "Djalma Santos": "djalma-santos.png",
+    "Philipp Lahm": "philipp-lahm.png",
+    "Rio Ferdinand": "rio-ferdinand.png",
+    "Gerard Pique": "gerard-pique.png",
+    "Marcel Desailly": "marcel-desailly.png",
+    "Marcelo": "marcelo.png",
+    "Zinedine Zidane": "zinedine-zidane.png",
+    "Ronaldinho": "ronaldinho.png",
+    "Kevin De Bruyne": "kevin-de-bruyne.png",
+    "Pele": "pele.png",
+    "Lionel Messi": "lionel-messi.png",
+    "Cristiano Ronaldo": "cristiano-ronaldo.png",
+    "Romario": "romario.png",
+    "Kylian Mbappe": "kylian-mbappe.png",
+    "Erling Haaland": "erling-haaland.png",
+    "Gabriel Batistuta": "gabriel-batistuta.png",
+    "Lamine Yamal": "lamine-yamal.png",
+    "Mohamed Salah": "mohamed-salah.png",
+    "Samuel Eto'o": "samuel-etoo.png",
+    "Robert Lewandowski": "robert-lewandowski.png",
+    "Raphinha": "raphinha.png",
+    "Antoine Griezmann": "antoine-griezmann.png",
+    "Viktor Gyokeres": "viktor-gyokeres.png",
+    "Anthony Gordon": "anthony-gordon.png",
+    "Estevao": "estevao.png",
+    "Marcus Rashford": "marcus-rashford.png"
+  };
+
+  const playerRenderImages = {};
+  if (typeof Image !== 'undefined') {
+    Object.entries(PLAYER_RENDERS).forEach(([name, file]) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = `/superleague/images/player-renders/${file}`;
+      playerRenderImages[name] = img;
+    });
+  }
+
+  function renderPlayerAvatar(player, size = 56) {
+    if (!player) return `<div class="player-avatar-fallback" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;">⚽</div>`;
+    const filename = PLAYER_RENDERS[player.name];
+    if (filename) {
+      return `
+        <div class="player-avatar-container" style="width:${size}px;height:${size}px;display:inline-flex;position:relative;overflow:hidden;border-radius:${Math.max(6, Math.round(size * 0.25))}px;flex-shrink:0;">
+          <img src="/superleague/images/player-renders/${filename}" alt="${player.name}" class="player-render-img" style="object-fit:cover; object-position:top center;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="player-avatar-fallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;">⚽</div>
+        </div>
+      `;
+    }
+    return `
+      <div class="player-avatar-fallback" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;border-radius:${Math.max(6, Math.round(size * 0.25))}px;border:1px solid var(--border-subtle);flex-shrink:0;">
+        ⚽
+      </div>
+    `;
+  }
+
   // --- 2. GAME STATE ---
   const state = {
     screen: 'splash',
@@ -583,7 +671,40 @@
     $('player-prime-tag').textContent = p.prime;
     $('player-base-price-tag').textContent = `Base: ${p.basePrice} pts`;
 
+    const avatarEl = $('player-avatar-circle') || $('player-avatar-display');
+    if (avatarEl) {
+      avatarEl.innerHTML = renderPlayerAvatar(p, 56);
+    }
+
+    renderNextLotsStrip();
     updateCurrentBidDisplay();
+  }
+
+  function renderNextLotsStrip() {
+    const strip = $('next-lots-strip');
+    if (!strip) return;
+
+    const nextLots = state.auctionQueue.slice(state.currentLotIdx + 1, state.currentLotIdx + 5);
+    const badge = $('queue-remaining-badge');
+    if (badge) {
+      const remaining = Math.max(0, state.auctionQueue.length - (state.currentLotIdx + 1));
+      badge.textContent = `${remaining} IN QUEUE`;
+    }
+
+    if (nextLots.length === 0) {
+      strip.innerHTML = '<div style="font-size:11px;color:var(--text-dim);padding:4px 0;">Final lot in progress</div>';
+      return;
+    }
+
+    strip.innerHTML = nextLots.map(lot => `
+      <div class="next-lot-chip">
+        ${renderPlayerAvatar(lot, 26)}
+        <div style="display:flex;flex-direction:column;">
+          <span class="chip-name">${lot.name}</span>
+          <span class="chip-meta">${lot.pos} · ${lot.ovr} OVR · Base ${lot.basePrice}</span>
+        </div>
+      </div>
+    `).join('');
   }
 
   function updateCurrentBidDisplay() {
@@ -778,9 +899,7 @@
         });
 
         const buyer = eligible[0];
-        const slotsLeftTotal = 15 - buyer.squad.length;
-        const maxBid = buyer.purse - (slotsLeftTotal - 1) * 65;
-        const price = Math.min(maxBid, lot.basePrice);
+        const price = lot.basePrice;
 
         buyer.purse -= price;
         buyer.squad.push({
@@ -789,6 +908,19 @@
         });
       }
     }
+
+    // Safety Top-Off: Guarantee strictly 11 players for all 10 clubs
+    state.clubs.forEach(c => {
+      while (c.squad.length < 11 && state.currentLotIdx < state.auctionQueue.length) {
+        const lot = state.auctionQueue[state.currentLotIdx++];
+        const price = lot.basePrice;
+        c.purse -= price;
+        c.squad.push({
+          ...lot,
+          boughtPrice: price
+        });
+      }
+    });
 
     state.benchPhaseActive = true;
     state.timer = 20;
@@ -1189,7 +1321,8 @@
     if (!p) return '';
     return `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-surface-elevated);border-radius:8px;margin-bottom:4px;font-size:12px;">
-        <div style="display:flex;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          ${renderPlayerAvatar(p, 28)}
           <span class="lot-pos-pill pos-${p.pos}" style="font-size:10px;">${p.pos}</span>
           <span style="font-weight:600;color:var(--text-white);">${p.name} ${isBench ? '<span style="color:var(--text-dim);font-size:10px;">(SUB)</span>' : ''}</span>
           <span style="font-size:11px;color:var(--text-dim);">${p.country || ''}</span>
@@ -1722,10 +1855,8 @@
     ctx.fillText('💎 Best Value Signing:', 170, y + 150);
     ctx.fillStyle = '#10B981';
     ctx.font = 'bold 18px "JetBrains Mono", monospace';
-    const bestValName = bestVal ? bestVal.name : 'Paolo Maldini';
-    const bestValPrice = (bestVal && (bestVal.boughtPrice || bestVal.basePrice)) || 65;
-    const bestValOvr = (bestVal && bestVal.ovr) || 95;
-    ctx.fillText(`${bestValName} (${bestValPrice} pts · ${bestValOvr} OVR)`, 410, y + 150);
+    const priceDisplay = bestVal?.boughtPrice || bestVal?.basePrice || 65;
+    ctx.fillText(`${bestVal ? bestVal.name : 'Paolo Maldini'} (${priceDisplay} pts · ${bestVal ? bestVal.ovr : 95} OVR)`, 410, y + 150);
 
     // Wooden Spoon
     ctx.font = '500 17px "Inter", sans-serif';
@@ -1736,18 +1867,23 @@
     ctx.fillText(`${spoon.name} (${spoon.pts} pts · GD ${spoon.gd})`, 410, y + 208);
   }
 
+  const drawChampionsCard = renderChampionsCardSurface;
+
   // P2: Final Table Card with Full 8 Columns (P, W, D, L, GF, GA, GD, PTS)
   function renderTableCardSurface(ctx) {
     ctx.font = 'bold 50px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
     ctx.fillText('THE SUPER LEAGUE', 540, 240);
 
     ctx.font = '800 46px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#00DCFF';
+    ctx.textAlign = 'center';
     ctx.fillText('FINAL LEAGUE TABLE', 540, 310);
 
-    ctx.font = '600 16px "Inter", sans-serif';
+    ctx.font = '600 15px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
+    ctx.textAlign = 'center';
     ctx.fillText('9 ROUNDS COMPLETED · SINGLE ROUND-ROBIN RECONCILED', 540, 355);
 
     // Table Header Bar with 8 statistical columns
@@ -1856,9 +1992,22 @@
       ctx.fillStyle = p.pos === 'GK' ? '#3B82F6' : (p.pos === 'DEF' ? '#10B981' : (p.pos === 'MID' ? '#F59E0B' : '#EF4444'));
       ctx.fillText(`${p.pos}`, 140, y + 4);
 
+      const pImg = playerRenderImages[p.name];
+      if (pImg && pImg.complete && pImg.naturalWidth > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(205, y + 2, 16, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(pImg, 189, y - 14, 32, 32);
+        ctx.restore();
+      } else {
+        ctx.font = '16px sans-serif';
+        ctx.fillText('⚽', 198, y + 7);
+      }
+
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '600 19px "Inter", sans-serif';
-      ctx.fillText(`${p.name}`, 220, y + 4);
+      ctx.fillText(`${p.name}`, 235, y + 4);
 
       ctx.font = 'bold 20px "JetBrains Mono", monospace';
       ctx.fillStyle = '#00DCFF';
@@ -1883,9 +2032,22 @@
       ctx.fillStyle = p.pos === 'GK' ? '#3B82F6' : (p.pos === 'DEF' ? '#10B981' : (p.pos === 'MID' ? '#F59E0B' : '#EF4444'));
       ctx.fillText(`${p.pos}`, 140, y + 4);
 
+      const pImg = playerRenderImages[p.name];
+      if (pImg && pImg.complete && pImg.naturalWidth > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(205, y + 2, 16, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(pImg, 189, y - 14, 32, 32);
+        ctx.restore();
+      } else {
+        ctx.font = '16px sans-serif';
+        ctx.fillText('⚽', 198, y + 7);
+      }
+
       ctx.fillStyle = '#8E8E9F';
       ctx.font = '600 19px "Inter", sans-serif';
-      ctx.fillText(`${p.name} (SUB)`, 220, y + 4);
+      ctx.fillText(`${p.name} (SUB)`, 235, y + 4);
 
       ctx.font = 'bold 20px "JetBrains Mono", monospace';
       ctx.fillStyle = '#FF00C8';
@@ -2030,7 +2192,10 @@
         item.style.marginBottom = '6px';
         item.style.fontSize = '12px';
         item.innerHTML = `
-          <span><b>[${p.pos}]</b> ${p.name}</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${renderPlayerAvatar(p, 28)}
+            <span><b>[${p.pos}]</b> ${p.name}</span>
+          </div>
           <span class="tabular-nums" style="color:var(--grad-cyan);font-weight:700;">${p.ovr} OVR (${p.boughtPrice || p.basePrice} pts)</span>
         `;
         list.appendChild(item);

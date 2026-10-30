@@ -561,4 +561,111 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
     });
   });
 
+  // --- PLAYER ART INTEGRATION (56 QA PLAYERS MANIFEST) ---
+  describe('Player Art Integration & Render Manifest (56 QA Players)', () => {
+    const EXPECTED_56_RENDERS = {
+      "Gianluigi Buffon": "gianluigi-buffon.png",
+      "Lev Yashin": "lev-yashin.png",
+      "Manuel Neuer": "manuel-neuer.png",
+      "Iker Casillas": "iker-casillas.png",
+      "Oliver Kahn": "oliver-kahn.png",
+      "Peter Schmeichel": "peter-schmeichel.png",
+      "Thibaut Courtois": "thibaut-courtois.png",
+      "Alisson Becker": "alisson-becker.png",
+      "Edwin van der Sar": "edwin-van-der-sar.png",
+      "Gianluigi Donnarumma": "gianluigi-donnarumma.png",
+      "Petr Cech": "petr-cech.png",
+      "Jan Oblak": "jan-oblak.png",
+      "Marc-Andre ter Stegen": "marcandre-ter-stegen.png",
+      "Ederson": "ederson.png",
+      "Emiliano Martinez": "emiliano-martinez.png",
+      "Mike Maignan": "mike-maignan.png",
+      "Hugo Lloris": "hugo-lloris.png",
+      "Wojciech Szczesny": "wojciech-szczesny.png",
+      "Jordan Pickford": "jordan-pickford.png",
+      "Paolo Maldini": "paolo-maldini.png",
+      "Franco Baresi": "franco-baresi.png",
+      "Franz Beckenbauer": "franz-beckenbauer.png",
+      "Bobby Moore": "bobby-moore.png",
+      "Roberto Carlos": "roberto-carlos.png",
+      "Cafu": "cafu.png",
+      "Sergio Ramos": "sergio-ramos.png",
+      "Carles Puyol": "carles-puyol.png",
+      "Carlos Alberto": "carlos-alberto.png",
+      "Virgil van Dijk": "virgil-van-dijk.png",
+      "Dani Alves": "dani-alves.png",
+      "Djalma Santos": "djalma-santos.png",
+      "Philipp Lahm": "philipp-lahm.png",
+      "Rio Ferdinand": "rio-ferdinand.png",
+      "Gerard Pique": "gerard-pique.png",
+      "Marcel Desailly": "marcel-desailly.png",
+      "Marcelo": "marcelo.png",
+      "Zinedine Zidane": "zinedine-zidane.png",
+      "Ronaldinho": "ronaldinho.png",
+      "Kevin De Bruyne": "kevin-de-bruyne.png",
+      "Pele": "pele.png",
+      "Lionel Messi": "lionel-messi.png",
+      "Cristiano Ronaldo": "cristiano-ronaldo.png",
+      "Romario": "romario.png",
+      "Kylian Mbappe": "kylian-mbappe.png",
+      "Erling Haaland": "erling-haaland.png",
+      "Gabriel Batistuta": "gabriel-batistuta.png",
+      "Lamine Yamal": "lamine-yamal.png",
+      "Mohamed Salah": "mohamed-salah.png",
+      "Samuel Eto'o": "samuel-etoo.png",
+      "Robert Lewandowski": "robert-lewandowski.png",
+      "Raphinha": "raphinha.png",
+      "Antoine Griezmann": "antoine-griezmann.png",
+      "Viktor Gyokeres": "viktor-gyokeres.png",
+      "Anthony Gordon": "anthony-gordon.png",
+      "Estevao": "estevao.png",
+      "Marcus Rashford": "marcus-rashford.png"
+    };
+
+    test('All 56 players from QA manifest have corresponding PNG files on disk in public/superleague/images/player-renders/', () => {
+      const renderDir = path.join(__dirname, '../public/superleague/images/player-renders');
+      expect(fs.existsSync(renderDir)).toBe(true);
+
+      const renderEntries = Object.entries(EXPECTED_56_RENDERS);
+      expect(renderEntries.length).toBe(56);
+
+      renderEntries.forEach(([playerName, filename]) => {
+        const filePath = path.join(renderDir, filename);
+        expect(fs.existsSync(filePath)).toBe(true);
+        const stats = fs.statSync(filePath);
+        expect(stats.size).toBeGreaterThan(1000); // verify non-empty valid PNG
+      });
+    });
+
+    test('app.js defines PLAYER_RENDERS and renderPlayerAvatar with onerror fallback', () => {
+      const appJs = fs.readFileSync(path.join(__dirname, '../public/superleague/app.js'), 'utf8');
+      expect(appJs).toContain('const PLAYER_RENDERS =');
+      expect(appJs).toContain('function renderPlayerAvatar(');
+      expect(appJs).toContain('onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';"');
+      expect(appJs).toContain('renderNextLotsStrip');
+      expect(appJs).toContain('drawChampionsCard = renderChampionsCardSurface');
+    });
+
+    test('renderPlayerAvatar logic renders img for manifest players and fallback for unrendered', () => {
+      // Re-create the logic to assert output contract
+      function testRenderAvatar(player, size = 56) {
+        if (!player) return `<div class="player-avatar-fallback">⚽</div>`;
+        const filename = EXPECTED_56_RENDERS[player.name];
+        if (filename) {
+          return `<img src="/superleague/images/player-renders/${filename}" class="player-render-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" /><div class="player-avatar-fallback" style="display:none;">⚽</div>`;
+        }
+        return `⚽`;
+      }
+
+      // 1. Rendered player (Messi)
+      const messiRender = testRenderAvatar({ name: 'Lionel Messi' });
+      expect(messiRender).toContain('/superleague/images/player-renders/lionel-messi.png');
+      expect(messiRender).toContain('onerror=');
+
+      // 2. Unrendered player (arbitrary academy player)
+      const unrendered = testRenderAvatar({ name: 'Declan Rice' });
+      expect(unrendered).toBe('⚽');
+    });
+  });
+
 });

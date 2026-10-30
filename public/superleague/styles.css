@@ -903,6 +903,71 @@ h1, h2, h3, h4, .font-display {
   align-items: center;
   justify-content: center;
   font-size: 26px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* 56 QA Player Render Avatars */
+.player-avatar-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.player-render-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.player-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface-elevated);
+  border-radius: inherit;
+}
+
+/* Upcoming Lots Preview Strip */
+.next-lots-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 8px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.next-lot-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 6px 10px;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.next-lot-chip .chip-name {
+  color: var(--text-white);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.next-lot-chip .chip-meta {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
 }
 
 .player-ovr-box {
