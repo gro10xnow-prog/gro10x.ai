@@ -377,7 +377,7 @@
     currentLot: null,
     currentBid: 0,
     currentBidderId: null,
-    timer: 40,
+    timer: 12,
     timerInterval: null,
     botBidTimeout: null,
     auctionHistory: [],
@@ -2014,7 +2014,7 @@
     const assignScorers = (club, count) => {
       const candidates = club.squad.filter(p => p.pos === 'FWD' || p.pos === 'MID');
       for (let i = 0; i < count; i++) {
-        const scorer = candidates[Math.floor(Math.random() * candidates.length)] || club.squad[0];
+        const scorer = (candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : null) || club.squad[0] || { name: 'Player' };
         const min = Math.floor(Math.random() * 88) + 2;
         match.scorers.push({
           player: scorer.name,
