@@ -61,18 +61,18 @@
     return club.icon || '⚽';
   }
 
-  // --- 1B. 56 QA PLAYER RENDERS MANIFEST ---
+  // --- 1B. 130 CANONICAL PLAYER RENDERS MANIFEST (OFFLOAD 2) ---
   const PLAYER_RENDERS = {
     "Gianluigi Buffon": "gianluigi-buffon.png",
-    "Lev Yashin": "lev-yashin.png",
     "Manuel Neuer": "manuel-neuer.png",
+    "Lev Yashin": "lev-yashin.png",
     "Iker Casillas": "iker-casillas.png",
     "Oliver Kahn": "oliver-kahn.png",
     "Peter Schmeichel": "peter-schmeichel.png",
     "Thibaut Courtois": "thibaut-courtois.png",
     "Alisson Becker": "alisson-becker.png",
-    "Edwin van der Sar": "edwin-van-der-sar.png",
     "Gianluigi Donnarumma": "gianluigi-donnarumma.png",
+    "Edwin van der Sar": "edwin-van-der-sar.png",
     "Petr Cech": "petr-cech.png",
     "Jan Oblak": "jan-oblak.png",
     "Marc-Andre ter Stegen": "marcandre-ter-stegen.png",
@@ -80,45 +80,119 @@
     "Emiliano Martinez": "emiliano-martinez.png",
     "Mike Maignan": "mike-maignan.png",
     "Hugo Lloris": "hugo-lloris.png",
+    "David Raya": "david-raya.png",
     "Wojciech Szczesny": "wojciech-szczesny.png",
     "Jordan Pickford": "jordan-pickford.png",
     "Paolo Maldini": "paolo-maldini.png",
     "Franco Baresi": "franco-baresi.png",
     "Franz Beckenbauer": "franz-beckenbauer.png",
     "Bobby Moore": "bobby-moore.png",
+    "Alessandro Nesta": "alessandro-nesta.png",
     "Roberto Carlos": "roberto-carlos.png",
     "Cafu": "cafu.png",
+    "Fabio Cannavaro": "fabio-cannavaro.png",
     "Sergio Ramos": "sergio-ramos.png",
     "Carles Puyol": "carles-puyol.png",
     "Carlos Alberto": "carlos-alberto.png",
+    "Giacinto Facchetti": "giacinto-facchetti.png",
     "Virgil van Dijk": "virgil-van-dijk.png",
-    "Dani Alves": "dani-alves.png",
-    "Djalma Santos": "djalma-santos.png",
     "Philipp Lahm": "philipp-lahm.png",
+    "Dani Alves": "dani-alves.png",
+    "Paul Breitner": "paul-breitner.png",
+    "Djalma Santos": "djalma-santos.png",
     "Rio Ferdinand": "rio-ferdinand.png",
-    "Gerard Pique": "gerard-pique.png",
+    "Nemanja Vidic": "nemanja-vidic.png",
     "Marcel Desailly": "marcel-desailly.png",
+    "Gerard Pique": "gerard-pique.png",
+    "John Terry": "john-terry.png",
     "Marcelo": "marcelo.png",
+    "Tony Adams": "tony-adams.png",
+    "William Saliba": "william-saliba.png",
+    "Ruben Dias": "ruben-dias.png",
+    "Trent Alexander-Arnold": "trent-alexanderarnold.png",
+    "Alessandro Bastoni": "alessandro-bastoni.png",
+    "Gabriel Magalhaes": "gabriel-magalhaes.png",
+    "Josko Gvardiol": "josko-gvardiol.png",
+    "Theo Hernandez": "theo-hernandez.png",
+    "Marquinhos": "marquinhos.png",
+    "Alphonso Davies": "alphonso-davies.png",
+    "Eder Militao": "eder-militao.png",
+    "Jules Kounde": "jules-kounde.png",
+    "Ronald Araujo": "ronald-araujo.png",
+    "Antonio Rudiger": "antonio-rudiger.png",
+    "Nuno Mendes": "nuno-mendes.png",
+    "Andy Robertson": "andy-robertson.png",
+    "Dayot Upamecano": "dayot-upamecano.png",
+    "Joao Cancelo": "joao-cancelo.png",
+    "Jeremie Frimpong": "jeremie-frimpong.png",
+    "Reece James": "reece-james.png",
+    "Jurrien Timber": "jurrien-timber.png",
+    "Pau Cubarsi": "pau-cubarsi.png",
+    "Dean Huijsen": "dean-huijsen.png",
+    "Malo Gusto": "malo-gusto.png",
+    "Tino Livramento": "tino-livramento.png",
+    "Diego Maradona": "diego-maradona.png",
     "Zinedine Zidane": "zinedine-zidane.png",
     "Ronaldinho": "ronaldinho.png",
+    "Xavi Hernandez": "xavi-hernandez.png",
+    "Michel Platini": "michel-platini.png",
+    "Andrea Pirlo": "andrea-pirlo.png",
+    "Zico": "zico.png",
+    "Luka Modric": "luka-modric.png",
+    "Kaka": "kaka.png",
+    "Ruud Gullit": "ruud-gullit.png",
+    "Rodri": "rodri.png",
+    "Steven Gerrard": "steven-gerrard.png",
+    "Frank Rijkaard": "frank-rijkaard.png",
+    "Johan Neeskens": "johan-neeskens.png",
+    "Paul Scholes": "paul-scholes.png",
+    "Jude Bellingham": "jude-bellingham.png",
+    "Xabi Alonso": "xabi-alonso.png",
+    "Clarence Seedorf": "clarence-seedorf.png",
     "Kevin De Bruyne": "kevin-de-bruyne.png",
+    "Florian Wirtz": "florian-wirtz.png",
+    "Federico Valverde": "federico-valverde.png",
+    "Bastian Schweinsteiger": "bastian-schweinsteiger.png",
+    "Pedri": "pedri.png",
+    "Vitinha": "vitinha.png",
+    "Phil Foden": "phil-foden.png",
+    "Bruno Fernandes": "bruno-fernandes.png",
+    "Ryan Gravenberch": "ryan-gravenberch.png",
+    "Eduardo Camavinga": "eduardo-camavinga.png",
+    "Tijjani Reijnders": "tijjani-reijnders.png",
+    "Desire Doue": "desire-doue.png",
+    "Nico Paz": "nico-paz.png",
+    "Elliot Anderson": "elliot-anderson.png",
     "Pele": "pele.png",
     "Lionel Messi": "lionel-messi.png",
     "Cristiano Ronaldo": "cristiano-ronaldo.png",
+    "Gerd Muller": "gerd-muller.png",
+    "Marco van Basten": "marco-van-basten.png",
+    "Eusebio": "eusebio.png",
+    "Thierry Henry": "thierry-henry.png",
     "Romario": "romario.png",
+    "Zlatan Ibrahimovic": "zlatan-ibrahimovic.png",
     "Kylian Mbappe": "kylian-mbappe.png",
-    "Erling Haaland": "erling-haaland.png",
     "Gabriel Batistuta": "gabriel-batistuta.png",
-    "Lamine Yamal": "lamine-yamal.png",
-    "Mohamed Salah": "mohamed-salah.png",
+    "Kenny Dalglish": "kenny-dalglish.png",
+    "Erling Haaland": "erling-haaland.png",
     "Samuel Eto'o": "samuel-etoo.png",
+    "Lamine Yamal": "lamine-yamal.png",
+    "Harry Kane": "harry-kane.png",
+    "Mohamed Salah": "mohamed-salah.png",
     "Robert Lewandowski": "robert-lewandowski.png",
+    "Bukayo Saka": "bukayo-saka.png",
     "Raphinha": "raphinha.png",
+    "Lautaro Martinez": "lautaro-martinez.png",
     "Antoine Griezmann": "antoine-griezmann.png",
+    "Alexander Isak": "alexander-isak.png",
     "Viktor Gyokeres": "viktor-gyokeres.png",
+    "Bryan Mbeumo": "bryan-mbeumo.png",
     "Anthony Gordon": "anthony-gordon.png",
-    "Estevao": "estevao.png",
-    "Marcus Rashford": "marcus-rashford.png"
+    "Hugo Ekitike": "hugo-ekitike.png",
+    "Marcus Rashford": "marcus-rashford.png",
+    "Nick Woltemade": "nick-woltemade.png",
+    "Estevao": "estevao.png"
   };
 
   const playerRenderImages = {};
@@ -132,18 +206,18 @@
   }
 
   function renderPlayerAvatar(player, size = 56) {
-    if (!player) return `<div class="player-avatar-fallback" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;">⚽</div>`;
+    if (!player) return `<div class="player-avatar-fallback" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;border-radius:8px;background:var(--bg-surface-elevated);border:1px solid var(--border-subtle);flex-shrink:0;">⚽</div>`;
     const filename = PLAYER_RENDERS[player.name];
     if (filename) {
       return `
-        <div class="player-avatar-container" style="width:${size}px;height:${size}px;display:inline-flex;position:relative;overflow:hidden;border-radius:${Math.max(6, Math.round(size * 0.25))}px;flex-shrink:0;">
-          <img src="/superleague/images/player-renders/${filename}" alt="${player.name}" class="player-render-img" style="object-fit:cover; object-position:top center;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-          <div class="player-avatar-fallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;">⚽</div>
+        <div class="player-avatar-container" style="width:${size}px;height:${size}px;display:inline-flex;position:relative;overflow:hidden;border-radius:8px;flex-shrink:0;background:var(--bg-surface-elevated);border:1px solid var(--border-subtle);">
+          <img src="/superleague/images/player-renders/${filename}" alt="${player.name}" class="player-render-img" style="object-fit:cover;object-position:top center;border-radius:8px;width:100%;height:100%;display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="player-avatar-fallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;border-radius:8px;background:var(--bg-surface-elevated);">⚽</div>
         </div>
       `;
     }
     return `
-      <div class="player-avatar-fallback" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;border-radius:${Math.max(6, Math.round(size * 0.25))}px;border:1px solid var(--border-subtle);flex-shrink:0;">
+      <div class="player-avatar-fallback" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;border-radius:8px;background:var(--bg-surface-elevated);border:1px solid var(--border-subtle);flex-shrink:0;">
         ⚽
       </div>
     `;
