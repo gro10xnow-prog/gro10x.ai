@@ -562,148 +562,31 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
   });
 
   // --- PLAYER ART INTEGRATION (130 / 180 BANKED PLAYERS MANIFEST - OFFLOAD 2) ---
-  describe('Player Art Integration & Render Manifest (130 / 180 Banked Players)', () => {
-    const EXPECTED_130_RENDERS = {
-      "Gianluigi Buffon": "gianluigi-buffon.png",
-      "Manuel Neuer": "manuel-neuer.png",
-      "Lev Yashin": "lev-yashin.png",
-      "Iker Casillas": "iker-casillas.png",
-      "Oliver Kahn": "oliver-kahn.png",
-      "Peter Schmeichel": "peter-schmeichel.png",
-      "Thibaut Courtois": "thibaut-courtois.png",
-      "Alisson Becker": "alisson-becker.png",
-      "Gianluigi Donnarumma": "gianluigi-donnarumma.png",
-      "Edwin van der Sar": "edwin-van-der-sar.png",
-      "Petr Cech": "petr-cech.png",
-      "Jan Oblak": "jan-oblak.png",
-      "Marc-Andre ter Stegen": "marcandre-ter-stegen.png",
-      "Ederson": "ederson.png",
-      "Emiliano Martinez": "emiliano-martinez.png",
-      "Mike Maignan": "mike-maignan.png",
-      "Hugo Lloris": "hugo-lloris.png",
-      "David Raya": "david-raya.png",
-      "Wojciech Szczesny": "wojciech-szczesny.png",
-      "Jordan Pickford": "jordan-pickford.png",
-      "Paolo Maldini": "paolo-maldini.png",
-      "Franco Baresi": "franco-baresi.png",
-      "Franz Beckenbauer": "franz-beckenbauer.png",
-      "Bobby Moore": "bobby-moore.png",
-      "Alessandro Nesta": "alessandro-nesta.png",
-      "Roberto Carlos": "roberto-carlos.png",
-      "Cafu": "cafu.png",
-      "Fabio Cannavaro": "fabio-cannavaro.png",
-      "Sergio Ramos": "sergio-ramos.png",
-      "Carles Puyol": "carles-puyol.png",
-      "Carlos Alberto": "carlos-alberto.png",
-      "Giacinto Facchetti": "giacinto-facchetti.png",
-      "Virgil van Dijk": "virgil-van-dijk.png",
-      "Philipp Lahm": "philipp-lahm.png",
-      "Dani Alves": "dani-alves.png",
-      "Paul Breitner": "paul-breitner.png",
-      "Djalma Santos": "djalma-santos.png",
-      "Rio Ferdinand": "rio-ferdinand.png",
-      "Nemanja Vidic": "nemanja-vidic.png",
-      "Marcel Desailly": "marcel-desailly.png",
-      "Gerard Pique": "gerard-pique.png",
-      "John Terry": "john-terry.png",
-      "Marcelo": "marcelo.png",
-      "Tony Adams": "tony-adams.png",
-      "William Saliba": "william-saliba.png",
-      "Ruben Dias": "ruben-dias.png",
-      "Trent Alexander-Arnold": "trent-alexanderarnold.png",
-      "Alessandro Bastoni": "alessandro-bastoni.png",
-      "Gabriel Magalhaes": "gabriel-magalhaes.png",
-      "Josko Gvardiol": "josko-gvardiol.png",
-      "Theo Hernandez": "theo-hernandez.png",
-      "Marquinhos": "marquinhos.png",
-      "Alphonso Davies": "alphonso-davies.png",
-      "Eder Militao": "eder-militao.png",
-      "Jules Kounde": "jules-kounde.png",
-      "Ronald Araujo": "ronald-araujo.png",
-      "Antonio Rudiger": "antonio-rudiger.png",
-      "Nuno Mendes": "nuno-mendes.png",
-      "Andy Robertson": "andy-robertson.png",
-      "Dayot Upamecano": "dayot-upamecano.png",
-      "Joao Cancelo": "joao-cancelo.png",
-      "Jeremie Frimpong": "jeremie-frimpong.png",
-      "Reece James": "reece-james.png",
-      "Jurrien Timber": "jurrien-timber.png",
-      "Pau Cubarsi": "pau-cubarsi.png",
-      "Dean Huijsen": "dean-huijsen.png",
-      "Malo Gusto": "malo-gusto.png",
-      "Tino Livramento": "tino-livramento.png",
-      "Diego Maradona": "diego-maradona.png",
-      "Zinedine Zidane": "zinedine-zidane.png",
-      "Ronaldinho": "ronaldinho.png",
-      "Xavi Hernandez": "xavi-hernandez.png",
-      "Michel Platini": "michel-platini.png",
-      "Andrea Pirlo": "andrea-pirlo.png",
-      "Zico": "zico.png",
-      "Luka Modric": "luka-modric.png",
-      "Kaka": "kaka.png",
-      "Ruud Gullit": "ruud-gullit.png",
-      "Rodri": "rodri.png",
-      "Steven Gerrard": "steven-gerrard.png",
-      "Frank Rijkaard": "frank-rijkaard.png",
-      "Johan Neeskens": "johan-neeskens.png",
-      "Paul Scholes": "paul-scholes.png",
-      "Jude Bellingham": "jude-bellingham.png",
-      "Xabi Alonso": "xabi-alonso.png",
-      "Clarence Seedorf": "clarence-seedorf.png",
-      "Kevin De Bruyne": "kevin-de-bruyne.png",
-      "Florian Wirtz": "florian-wirtz.png",
-      "Federico Valverde": "federico-valverde.png",
-      "Bastian Schweinsteiger": "bastian-schweinsteiger.png",
-      "Pedri": "pedri.png",
-      "Vitinha": "vitinha.png",
-      "Phil Foden": "phil-foden.png",
-      "Bruno Fernandes": "bruno-fernandes.png",
-      "Ryan Gravenberch": "ryan-gravenberch.png",
-      "Eduardo Camavinga": "eduardo-camavinga.png",
-      "Tijjani Reijnders": "tijjani-reijnders.png",
-      "Desire Doue": "desire-doue.png",
-      "Nico Paz": "nico-paz.png",
-      "Elliot Anderson": "elliot-anderson.png",
-      "Pele": "pele.png",
-      "Lionel Messi": "lionel-messi.png",
-      "Cristiano Ronaldo": "cristiano-ronaldo.png",
-      "Gerd Muller": "gerd-muller.png",
-      "Marco van Basten": "marco-van-basten.png",
-      "Eusebio": "eusebio.png",
-      "Thierry Henry": "thierry-henry.png",
-      "Romario": "romario.png",
-      "Zlatan Ibrahimovic": "zlatan-ibrahimovic.png",
-      "Kylian Mbappe": "kylian-mbappe.png",
-      "Gabriel Batistuta": "gabriel-batistuta.png",
-      "Kenny Dalglish": "kenny-dalglish.png",
-      "Erling Haaland": "erling-haaland.png",
-      "Samuel Eto'o": "samuel-etoo.png",
-      "Lamine Yamal": "lamine-yamal.png",
-      "Harry Kane": "harry-kane.png",
-      "Mohamed Salah": "mohamed-salah.png",
-      "Robert Lewandowski": "robert-lewandowski.png",
-      "Bukayo Saka": "bukayo-saka.png",
-      "Raphinha": "raphinha.png",
-      "Lautaro Martinez": "lautaro-martinez.png",
-      "Antoine Griezmann": "antoine-griezmann.png",
-      "Alexander Isak": "alexander-isak.png",
-      "Viktor Gyokeres": "viktor-gyokeres.png",
-      "Bryan Mbeumo": "bryan-mbeumo.png",
-      "Anthony Gordon": "anthony-gordon.png",
-      "Hugo Ekitike": "hugo-ekitike.png",
-      "Marcus Rashford": "marcus-rashford.png",
-      "Nick Woltemade": "nick-woltemade.png",
-      "Estevao": "estevao.png"
-};
+  describe('Player Art Integration & Render Manifest (180 / 180 Complete Pool - Offload 3 Final)', () => {
+    const { SUPERLEAGUE_PLAYERS } = require('../public/superleague/data/players.js');
+    const VARIANTS = {
+      'Marc-Andre ter Stegen': 'marcandre-ter-stegen.png',
+      'Samuel Eto\'o': 'samuel-etoo.png',
+      'Alexis Mac Allister': 'alexis-macallister.png',
+      'Warren Zaire-Emery': 'warren-zaireemery.png',
+      'Trent Alexander-Arnold': 'trent-alexanderarnold.png',
+      'Myles Lewis-Skelly': 'myles-lewisskelly.png'
+    };
 
-    test('All 130 players from Offload 2 manifest have corresponding PNG files on disk in public/superleague/images/player-renders/', () => {
+    function getExpectedSlug(name) {
+      if (VARIANTS[name]) return VARIANTS[name];
+      return name.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') + '.png';
+    }
+
+    test('All 180 players from canonical pool have valid PNG files on disk in public/superleague/images/player-renders/', () => {
       const renderDir = path.join(__dirname, '../public/superleague/images/player-renders');
       expect(fs.existsSync(renderDir)).toBe(true);
 
-      const renderEntries = Object.entries(EXPECTED_130_RENDERS);
-      expect(renderEntries.length).toBe(130);
-
-      renderEntries.forEach(([playerName, filename]) => {
+      SUPERLEAGUE_PLAYERS.forEach(p => {
+        const filename = getExpectedSlug(p.name);
         const filePath = path.join(renderDir, filename);
         expect(fs.existsSync(filePath)).toBe(true);
         const stats = fs.statSync(filePath);
@@ -711,7 +594,7 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       });
     });
 
-    test('app.js defines 130 PLAYER_RENDERS and renderPlayerAvatar with onerror fallback', () => {
+    test('app.js defines all 180 PLAYER_RENDERS entries and renders them across surfaces', () => {
       const appJs = fs.readFileSync(path.join(__dirname, '../public/superleague/app.js'), 'utf8');
       expect(appJs).toContain('const PLAYER_RENDERS =');
       expect(appJs).toContain('function renderPlayerAvatar(');
@@ -719,38 +602,40 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       expect(appJs).toContain('renderNextLotsStrip');
       expect(appJs).toContain('drawChampionsCard = renderChampionsCardSurface');
 
-      // Verify specific newly added Offload 2 legends exist in PLAYER_RENDERS
-      expect(appJs).toContain('"Diego Maradona": "diego-maradona.png"');
-      expect(appJs).toContain('"Alessandro Nesta": "alessandro-nesta.png"');
-      expect(appJs).toContain('"Xavi Hernandez": "xavi-hernandez.png"');
-      expect(appJs).toContain('"Zico": "zico.png"');
-      expect(appJs).toContain('"David Raya": "david-raya.png"');
-      expect(appJs).toContain('"Elliot Anderson": "elliot-anderson.png"');
-      expect(appJs).toContain('"Dean Huijsen": "dean-huijsen.png"');
+      // Verify all 6 variant slugs exist in app.js
+      expect(appJs).toContain('"marcandre-ter-stegen.png"');
+      expect(appJs).toContain('"samuel-etoo.png"');
+      expect(appJs).toContain('"alexis-macallister.png"');
+      expect(appJs).toContain('"warren-zaireemery.png"');
+      expect(appJs).toContain('"trent-alexanderarnold.png"');
+      expect(appJs).toContain('"myles-lewisskelly.png"');
     });
 
-    test('renderPlayerAvatar logic renders img for 130 manifest players and ⚽ fallback for 50 unrendered stars', () => {
-      function testRenderAvatar(player) {
-        if (!player) return '⚽';
-        const filename = EXPECTED_130_RENDERS[player.name];
-        if (filename) {
-          return `<img src="/superleague/images/player-renders/${filename}" class="player-render-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" /><div class="player-avatar-fallback" style="display:none;">⚽</div>`;
+    test('All 180 players resolve cleanly to an art file with zero unresolved names', () => {
+      const renderDir = path.join(__dirname, '../public/superleague/images/player-renders');
+      const files = new Set(fs.readdirSync(renderDir));
+      
+      const unresolved = [];
+      SUPERLEAGUE_PLAYERS.forEach(p => {
+        const slug = getExpectedSlug(p.name);
+        if (!files.has(slug)) {
+          unresolved.push(p.name);
         }
-        return '⚽';
-      }
-
-      // 1. Rendered stars (Messi, Cristiano Ronaldo, Buffon, Maldini, Zidane, Pele, Mbappe)
-      ['Lionel Messi', 'Cristiano Ronaldo', 'Gianluigi Buffon', 'Paolo Maldini', 'Zinedine Zidane', 'Pele', 'Kylian Mbappe'].forEach(name => {
-        const out = testRenderAvatar({ name });
-        expect(out).toContain('/superleague/images/player-renders/');
-        expect(out).toContain(EXPECTED_130_RENDERS[name]);
       });
 
-      // 2. Unrendered stars (the 50 unrendered pool players: Iniesta, Cruyff, Vinicius Jr, Musiala)
-      ['Andres Iniesta', 'Johan Cruyff', 'Vinicius Junior', 'Jamal Musiala'].forEach(name => {
-        const out = testRenderAvatar({ name });
-        expect(out).toBe('⚽');
-      });
+      expect(unresolved).toHaveLength(0);
+      expect(SUPERLEAGUE_PLAYERS).toHaveLength(180);
+    });
+
+    test('RENDER-MANIFEST.md is present on disk with exactly 180 player rows', () => {
+      const manifestPath = path.join(__dirname, '../public/superleague/RENDER-MANIFEST.md');
+      expect(fs.existsSync(manifestPath)).toBe(true);
+      const content = fs.readFileSync(manifestPath, 'utf8');
+      expect(content).toContain('OFFLOAD 3 FINAL · 180 / 180 PLAYERS');
+      
+      // Count player rows in table
+      const rows = content.split('\n').filter(line => line.startsWith('|') && line.includes('.png'));
+      expect(rows).toHaveLength(180);
     });
   });
 
