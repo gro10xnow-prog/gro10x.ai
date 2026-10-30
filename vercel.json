@@ -305,6 +305,10 @@
       "dest": "/public/prototypes/serviq-pilot/index.html"
     },
     {
+      "src": "/prototypes/mexsa-futsal(/.*)?",
+      "dest": "/public/prototypes/mexsa-futsal/index.html"
+    },
+    {
       "src": "/prototypes/campus-cup(/.*)?",
       "dest": "/public/prototypes/campus-cup/index.html"
     },

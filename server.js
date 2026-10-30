@@ -615,6 +615,11 @@ app.get(['/prototypes/sahanabag-city', '/prototypes/sahanabag-city/'], (req, res
   res.sendFile(path.join(__dirname, 'public/prototypes/sahanabag-city/index.html'));
 });
 
+// MExSA Futsal Premier League Auction & Tournament OS Prototype
+app.get(['/prototypes/mexsa-futsal', '/prototypes/mexsa-futsal/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/mexsa-futsal/index.html'));
+});
+
 // Campus Cup Inter-University Football OS & Mini-Cup Penalty Shootout
 app.get(['/prototypes/campus-cup', '/prototypes/campus-cup/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/campus-cup/index.html'));

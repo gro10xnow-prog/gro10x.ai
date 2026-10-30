@@ -990,14 +990,41 @@
       "charteredDate": "2026-10-29",
       "completedDate": "2026-10-29",
       "liveUrl": "https://gro10x-ai.vercel.app/prototypes/campus-cup/"
+    },
+    {
+      "id": "PRJ-FOUNDRY-MEXSA-FUTSAL-V1",
+      "code": "[M-FOUNDRY]",
+      "venture": "MExSA Futsal Premier League // Auction & Tournament OS",
+      "engine": "Engine 2: Tools & Products / Mother OS Foundry Lab",
+      "port": "Port 3000 / Production Edge",
+      "sprint": "MExSA Futsal Premier League: Auction Room, Mathematical Purse Guard Engine, 9:16 Social Pack Studio & Matchday Center",
+      "status": "COMPLETED",
+      "pricingType": "Pre-Sales Prototype / Sports Franchise Suite",
+      "creditValuation": 15000,
+      "bdtValuation": 30000,
+      "usdValuation": 247.5,
+      "testsCertified": 10,
+      "artifacts": [
+        "8 Permanent Franchises with high-contrast club themes and autonomous AI bidding personalities",
+        "Purse Guard Engine enforcing 1,000 pts purse, base 20, min 2 GKs, max 2 foreign cap, dynamic max bid locks",
+        "Live Bidding Console with 40s lot timer, +10s anti-snipe extension, banded bid increments, Web Audio API chimes",
+        "7 Autonomous AI Franchise Bots with 3 speed presets (Normal, Fast 3x, Demo) and instant Quick-Simulate draft",
+        "Unsold Reserve Pool Drawer with dynamic recall to auction",
+        "Surface B: 9:16 UHD Social Pack Generator (1080x1920) for SOLD! cards, Squad Reveal posters, and Match Results",
+        "Surface C: Single-Day Tournament Center (2 Groups of 4, organiser score modal, auto-seeded Semifinals and Grand Final)",
+        "Automated Jest Test Suite (tests/mexsa_futsal_prototype.test.js, 10/10 Green)"
+      ],
+      "charteredDate": "2026-10-30",
+      "completedDate": "2026-10-30",
+      "liveUrl": "https://gro10x-ai.vercel.app/prototypes/mexsa-futsal/"
     }
   ],
   "totals": {
-    "totalSprintsChartered": 40,
-    "totalSprintsCompleted": 38,
-    "totalCreditsGenerated": 1110000,
-    "totalBdtValuation": 2220000,
-    "totalUsdValuation": 18315.0,
-    "totalTestsPassingAcrossHoldings": 1485
+    "totalSprintsChartered": 41,
+    "totalSprintsCompleted": 39,
+    "totalCreditsGenerated": 1125000,
+    "totalBdtValuation": 2250000,
+    "totalUsdValuation": 18562.5,
+    "totalTestsPassingAcrossHoldings": 1495
   }
 }
