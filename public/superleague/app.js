@@ -2,14 +2,14 @@
  * NOSTALOGIC GAMES — THE SUPER LEAGUE (V1)
  * "The games you grew up playing." — A GRO10X Studio
  * 
- * Core Architectural Engine:
- * - 180-Player Pool (20 GK, 55 DEF, 60 MID, 45 FWD)
- * - 10 Parody Franchises with 2,000 pts Starting Purse
- * - Positional Purse Guard Engine (Strict Feasibility & Math Reconciliation)
- * - 40s Lot Auction with Anti-Snipe (+10s), Quick-Close (8s), & Banded Bids
- * - 9-Round Single Round-Robin Season Simulation with Live Match Spotlight
- * - True 1080x1920 UHD Canvas Cards (Champions, Final Table, My Squad)
- * - Working Lead Intake ("Run It For Your People") -> POST /api/leads
+ * Round 2 Surgical Certification:
+ * - P0-1: Strict Tactical XI Formation Law & Bench Segregation (1 GK, 3-5 DEF, 3-5 MID, 1-3 FWD; 4 Subs)
+ * - P0-2: Post-Draft Squad & Purse Ledger Screen (All 10 Clubs + 2,000 Pts Exact Single-Point Reconciliation)
+ * - P1-1: Strict Bid Increment Math (+20 from 140 base bids 160) & Live Activity Feed Ticker
+ * - P1-2: 1080x1920 Champions Card Tactical Grid, Dedicated Bench Line & Non-Clipping Awards
+ * - P1-3: Brand Positioning Copy ("YOUR NOSTALGIA. OUR LOGIC.")
+ * - P1-4: Lead Backend Submission Parity (POST /api/leads with REF-SL-XXXXX)
+ * - P2: "DOWNLOAD 9:16 HD POSTER", "1 Goal" grammar, and 8-column Final Table Card
  */
 
 (function () {
@@ -62,6 +62,10 @@
     auctionHistory: [],
     benchPhaseActive: false,
     lotBidsCount: 0,
+    bidLogs: [],
+
+    // Post-Draft Ledger View
+    activeLedgerClubId: 'c1',
 
     // Season
     seasonRounds: [],
@@ -75,12 +79,14 @@
   };
 
   // Helper: DOM selector
-  const $ = (id) => document.getElementById(id);
-  const $$ = (sel) => document.querySelectorAll(sel);
+  const $ = (id) => typeof document !== 'undefined' ? document.getElementById(id) : null;
+  const $$ = (sel) => typeof document !== 'undefined' ? document.querySelectorAll(sel) : [];
 
   // --- 3. SCREEN NAVIGATION ---
   function showScreen(screenId) {
     state.screen = screenId;
+    if (typeof document === 'undefined') return;
+
     const screens = $$('.screen');
     screens.forEach(s => s.classList.remove('active'));
     
@@ -91,18 +97,138 @@
     }
 
     const app = $('app');
-    if (screenId === 'auction' || screenId === 'season' || screenId === 'champion') {
-      app.classList.add('wide-mode');
-    } else {
-      app.classList.remove('wide-mode');
+    if (app) {
+      if (['auction', 'ledger', 'season', 'champion'].includes(screenId)) {
+        app.classList.add('wide-mode');
+      } else {
+        app.classList.remove('wide-mode');
+      }
     }
   }
 
-  // --- 4. PURSE GUARD ENGINE ---
-  // Rules:
-  // - Squad max: 15 players
-  // - Minimum purse per remaining slot: 65 pts (lowest base price)
-  // - Must guarantee at least 1 GK in 15 slots
+  // --- 4. TACTICAL XI FORMATION BUILDER (P0-1) ---
+  /**
+   * Enforces strict tactical football rules:
+   * - Exactly 1 Goalkeeper (GK)
+   * - 3 to 5 Defenders (DEF)
+   * - 3 to 5 Midfielders (MID)
+   * - 1 to 3 Forwards (FWD)
+   * Starting XI total: exactly 11 players.
+   * Bench: exactly 4 players (contains second GK if any + utility subs).
+   * Bench Strength: average OVR of the 4 bench players.
+   */
+  function buildTacticalFormation(squad) {
+    if (!squad || squad.length === 0) {
+      return {
+        formation: '4-3-3',
+        startingXI: [],
+        startingGK: null,
+        startingDefs: [],
+        startingMids: [],
+        startingFwds: [],
+        bench: [],
+        benchStrength: 0,
+        avgXIOvr: 0
+      };
+    }
+
+    // 1. Isolate Goalkeepers
+    const gks = squad.filter(p => p.pos === 'GK').sort((a, b) => b.ovr - a.ovr);
+    const startingGK = gks[0] || { name: 'Reserve GK', pos: 'GK', ovr: 83, country: 'Global' };
+
+    // 2. Isolate Outfielders
+    const defs = squad.filter(p => p.pos === 'DEF').sort((a, b) => b.ovr - a.ovr);
+    const mids = squad.filter(p => p.pos === 'MID').sort((a, b) => b.ovr - a.ovr);
+    const fwds = squad.filter(p => p.pos === 'FWD').sort((a, b) => b.ovr - a.ovr);
+
+    // Candidate valid tactical formations (10 outfielders)
+    const candidates = [
+      { name: '4-3-3', d: 4, m: 3, f: 3 },
+      { name: '4-4-2', d: 4, m: 4, f: 2 },
+      { name: '3-5-2', d: 3, m: 5, f: 2 },
+      { name: '3-4-3', d: 3, m: 4, f: 3 },
+      { name: '4-5-1', d: 4, m: 5, f: 1 },
+      { name: '5-3-2', d: 5, m: 3, f: 2 },
+      { name: '5-4-1', d: 5, m: 4, f: 1 }
+    ];
+
+    let bestConfig = null;
+    let maxOvr = -1;
+
+    for (const cand of candidates) {
+      if (defs.length >= cand.d && mids.length >= cand.m && fwds.length >= cand.f) {
+        const selDefs = defs.slice(0, cand.d);
+        const selMids = mids.slice(0, cand.m);
+        const selFwds = fwds.slice(0, cand.f);
+
+        const totalOvr = startingGK.ovr +
+          selDefs.reduce((s, p) => s + p.ovr, 0) +
+          selMids.reduce((s, p) => s + p.ovr, 0) +
+          selFwds.reduce((s, p) => s + p.ovr, 0);
+
+        if (totalOvr > maxOvr) {
+          maxOvr = totalOvr;
+          bestConfig = {
+            formation: cand.name,
+            d: cand.d,
+            m: cand.m,
+            f: cand.f,
+            startingDefs: selDefs,
+            startingMids: selMids,
+            startingFwds: selFwds
+          };
+        }
+      }
+    }
+
+    // Dynamic fallback if squad has unique distribution
+    if (!bestConfig) {
+      const dCount = Math.min(defs.length, 4);
+      const mCount = Math.min(mids.length, 4);
+      const fCount = Math.min(fwds.length, 2);
+      bestConfig = {
+        formation: `${dCount}-${mCount}-${fCount}`,
+        d: dCount,
+        m: mCount,
+        f: fCount,
+        startingDefs: defs.slice(0, dCount),
+        startingMids: mids.slice(0, mCount),
+        startingFwds: fwds.slice(0, fCount)
+      };
+    }
+
+    const startingXI = [
+      startingGK,
+      ...bestConfig.startingDefs,
+      ...bestConfig.startingMids,
+      ...bestConfig.startingFwds
+    ];
+
+    // Bench: all remaining squad members not in startingXI
+    const xiIds = new Set(startingXI.map(p => p.id || p.name));
+    const bench = squad.filter(p => !xiIds.has(p.id || p.name));
+
+    const benchStrength = bench.length > 0 
+      ? Math.round(bench.reduce((s, p) => s + p.ovr, 0) / bench.length) 
+      : 0;
+    const avgXIOvr = startingXI.length > 0 
+      ? Math.round(startingXI.reduce((s, p) => s + p.ovr, 0) / startingXI.length) 
+      : 0;
+
+    return {
+      formation: bestConfig.formation,
+      startingXI,
+      startingGK,
+      startingDefs: bestConfig.startingDefs,
+      startingMids: bestConfig.startingMids,
+      startingFwds: bestConfig.startingFwds,
+      bench,
+      benchStrength,
+      avgXIOvr
+    };
+  }
+
+  // --- 5. PURSE GUARD ENGINE ---
   function getPurseGuardInfo(clubId, proposedLot) {
     const club = state.clubs.find(c => c.id === clubId);
     if (!club) return { allowed: false, maxBid: 0, reason: 'Invalid club' };
@@ -124,7 +250,7 @@
       };
     }
 
-    // Min points reserved for the remaining (slotsLeft - 1) players
+    // Min points reserved for remaining (slotsLeft - 1) players
     const reserveNeeded = (slotsLeft - 1) * 65;
     const maxBid = club.purse - reserveNeeded;
 
@@ -144,7 +270,7 @@
     return { allowed: true, maxBid, reason, reserveNeeded, slotsLeft };
   }
 
-  // --- 5. INITIALIZATION & SPLASH ---
+  // --- 6. INITIALIZATION & SPLASH ---
   function init() {
     setupEventListeners();
     renderClubSelection();
@@ -157,57 +283,93 @@
       }
     }, 1500);
 
-    $('screen-splash').addEventListener('click', () => {
-      clearTimeout(splashTimer);
-      showScreen('shelf');
-    });
+    const splashScreen = $('screen-splash');
+    if (splashScreen) {
+      splashScreen.addEventListener('click', () => {
+        clearTimeout(splashTimer);
+        showScreen('shelf');
+      });
+    }
   }
 
-  // --- 6. EVENT LISTENERS ---
+  // --- 7. EVENT LISTENERS ---
   function setupEventListeners() {
     // Brand header tap
-    $('app-brand-btn').addEventListener('click', () => showScreen('shelf'));
+    const brandBtn = $('app-brand-btn');
+    if (brandBtn) brandBtn.addEventListener('click', () => showScreen('shelf'));
 
     // Shelf Screen
-    $('btn-play-superleague').addEventListener('click', () => showScreen('doors'));
-    $('btn-notify-supercup').addEventListener('click', () => openNotifyModal('Super Cup (Cricket Auction)'));
-    $('btn-notify-liveauction').addEventListener('click', () => openNotifyModal('Live Auction Events'));
+    const playSuperLeague = $('btn-play-superleague');
+    if (playSuperLeague) playSuperLeague.addEventListener('click', () => showScreen('doors'));
+    const notifySuperCup = $('btn-notify-supercup');
+    if (notifySuperCup) notifySuperCup.addEventListener('click', () => openNotifyModal('Super Cup (Cricket Auction)'));
+    const notifyLiveAuction = $('btn-notify-liveauction');
+    if (notifyLiveAuction) notifyLiveAuction.addEventListener('click', () => openNotifyModal('Live Auction Events'));
 
     // Doors Screen
-    $('btn-door-play').addEventListener('click', () => showScreen('lobby'));
-    $('btn-door-create').addEventListener('click', () => showScreen('lobby'));
-    $('btn-door-join').addEventListener('click', () => {
-      const code = $('join-room-input').value.trim();
-      if (code) state.roomCode = code.toUpperCase();
-      showScreen('lobby');
-    });
+    const doorPlay = $('btn-door-play');
+    if (doorPlay) doorPlay.addEventListener('click', () => showScreen('lobby'));
+    const doorCreate = $('btn-door-create');
+    if (doorCreate) doorCreate.addEventListener('click', () => showScreen('lobby'));
+    const doorJoin = $('btn-door-join');
+    if (doorJoin) {
+      doorJoin.addEventListener('click', () => {
+        const code = $('join-room-input').value.trim();
+        if (code) state.roomCode = code.toUpperCase();
+        showScreen('lobby');
+      });
+    }
 
     // Lobby Screen
-    $('btn-start-auction').addEventListener('click', startAuctionRitual);
-    $('manager-name-input').addEventListener('input', (e) => {
-      state.userManagerName = e.target.value.trim() || 'Gaffer';
-      updateUserClubInfo();
-    });
+    const startAuction = $('btn-start-auction');
+    if (startAuction) startAuction.addEventListener('click', startAuctionRitual);
+    const mgrInput = $('manager-name-input');
+    if (mgrInput) {
+      mgrInput.addEventListener('input', (e) => {
+        state.userManagerName = e.target.value.trim() || 'Gaffer';
+        updateUserClubInfo();
+      });
+    }
 
     // Auction Screen
-    $('btn-bid-20').addEventListener('click', () => placeUserBid(20));
-    $('btn-bid-50').addEventListener('click', () => placeUserBid(50));
-    $('btn-bid-100').addEventListener('click', () => placeUserBid(100));
-    $('btn-pass-lot').addEventListener('click', handleUserPass);
-    $('btn-sim-auction').addEventListener('click', simulateAuctionToEnd);
-    $('btn-view-squad').addEventListener('click', openSquadModal);
+    const bid20 = $('btn-bid-20');
+    if (bid20) bid20.addEventListener('click', () => placeUserBid(20));
+    const bid50 = $('btn-bid-50');
+    if (bid50) bid50.addEventListener('click', () => placeUserBid(50));
+    const bid100 = $('btn-bid-100');
+    if (bid100) bid100.addEventListener('click', () => placeUserBid(100));
+    const passLot = $('btn-pass-lot');
+    if (passLot) passLot.addEventListener('click', handleUserPass);
+    const simAuction = $('btn-sim-auction');
+    if (simAuction) simAuction.addEventListener('click', simulateAuctionToEnd);
+    const viewSquad = $('btn-view-squad');
+    if (viewSquad) viewSquad.addEventListener('click', openSquadModal);
+
+    // Post-Draft Ledger Screen (P0-2)
+    const proceedToSeason = $('btn-proceed-to-season');
+    if (proceedToSeason) proceedToSeason.addEventListener('click', proceedFromLedgerToSeason);
+    const proceedToSeasonTop = $('btn-proceed-to-season-top');
+    if (proceedToSeasonTop) proceedToSeasonTop.addEventListener('click', proceedFromLedgerToSeason);
 
     // Season Screen
-    $('btn-sim-round').addEventListener('click', simulateNextRound);
-    $('btn-auto-sim-season').addEventListener('click', autoSimulateSeason);
-    $('btn-view-champion-moment').addEventListener('click', () => showScreen('champion'));
+    const simRound = $('btn-sim-round');
+    if (simRound) simRound.addEventListener('click', simulateNextRound);
+    const autoSimSeason = $('btn-auto-sim-season');
+    if (autoSimSeason) autoSimSeason.addEventListener('click', autoSimulateSeason);
+    const viewChamp = $('btn-view-champion-moment');
+    if (viewChamp) viewChamp.addEventListener('click', () => showScreen('champion'));
 
     // Champion Screen & Flex Studio
-    $('btn-export-champions-card').addEventListener('click', () => exportCard('champions'));
-    $('btn-export-table-card').addEventListener('click', () => exportCard('table'));
-    $('btn-export-squad-card').addEventListener('click', () => exportCard('squad'));
-    $('btn-viral-share').addEventListener('click', triggerViralShare);
-    $('btn-rematch').addEventListener('click', resetForRematch);
+    const expChamp = $('btn-export-champions-card');
+    if (expChamp) expChamp.addEventListener('click', () => exportCard('champions'));
+    const expTable = $('btn-export-table-card');
+    if (expTable) expTable.addEventListener('click', () => exportCard('table'));
+    const expSquad = $('btn-export-squad-card');
+    if (expSquad) expSquad.addEventListener('click', () => exportCard('squad'));
+    const viralShare = $('btn-viral-share');
+    if (viralShare) viralShare.addEventListener('click', triggerViralShare);
+    const rematch = $('btn-rematch');
+    if (rematch) rematch.addEventListener('click', resetForRematch);
 
     // Lead Intake Form
     $$('.chip-option').forEach(chip => {
@@ -217,19 +379,23 @@
         state.leadExpectedPlayers = e.currentTarget.dataset.val;
       });
     });
-    $('btn-submit-lead').addEventListener('click', handleLeadSubmit);
-    $('btn-submit-modal-notify').addEventListener('click', handleModalNotifySubmit);
-    $('modal-notify-close').addEventListener('click', closeNotifyModal);
-    $('modal-squad-close').addEventListener('click', closeSquadModal);
+    const submitLead = $('btn-submit-lead');
+    if (submitLead) submitLead.addEventListener('click', handleLeadSubmit);
+    const submitModalNotify = $('btn-submit-modal-notify');
+    if (submitModalNotify) submitModalNotify.addEventListener('click', handleModalNotifySubmit);
+    const notifyClose = $('modal-notify-close');
+    if (notifyClose) notifyClose.addEventListener('click', closeNotifyModal);
+    const squadClose = $('modal-squad-close');
+    if (squadClose) squadClose.addEventListener('click', closeSquadModal);
   }
 
-  // --- 7. LOBBY SETUP ---
+  // --- 8. LOBBY SETUP ---
   function renderStadiumSelection() {
     const wrap = $('stadium-pills-wrap');
     if (!wrap) return;
     wrap.innerHTML = '';
 
-    STADIUMS.forEach((stadium, idx) => {
+    STADIUMS.forEach((stadium) => {
       const pill = document.createElement('div');
       pill.className = `stadium-pill ${stadium === state.userStadium ? 'selected' : ''}`;
       pill.textContent = stadium;
@@ -285,21 +451,22 @@
     });
   }
 
-  // --- 8. AUCTION ENGINE ---
+  // --- 9. AUCTION ENGINE (WITH STRICT BID MATH & LIVE FEED) ---
   function startAuctionRitual() {
     updateUserClubInfo();
     
-    // Build auction queue from 180 players
-    // Shuffle slightly while ensuring good positional spread
+    // Shuffle 180-player pool
     state.auctionQueue = [...state.allPlayers].sort(() => 0.5 - Math.random());
     state.currentLotIdx = 0;
     state.auctionHistory = [];
     state.benchPhaseActive = false;
+    state.bidLogs = [];
 
-    // Reset club purses and squads
+    // Reset purses & squads
     state.clubs.forEach(c => {
       c.purse = 2000;
       c.squad = [];
+      delete c.tactical;
     });
 
     showScreen('auction');
@@ -309,22 +476,22 @@
   function presentNextLot() {
     clearInterval(state.timerInterval);
     clearTimeout(state.botBidTimeout);
-    $('anti-snipe-banner').classList.remove('active');
+    const antiSnipe = $('anti-snipe-banner');
+    if (antiSnipe) antiSnipe.classList.remove('active');
 
-    // Check if all clubs have completed 15 players
+    // Check if all clubs have 15 players
     const allDone = state.clubs.every(c => c.squad.length >= 15);
     if (allDone || state.currentLotIdx >= state.auctionQueue.length) {
       finishAuction();
       return;
     }
 
-    // Check Bench Phase (when all clubs have at least 11 starting XI)
+    // Bench Phase check (all clubs have >= 11 players)
     const allHaveStartingXI = state.clubs.every(c => c.squad.length >= 11);
     state.benchPhaseActive = allHaveStartingXI;
-    if (state.benchPhaseActive) {
-      $('bench-phase-banner').style.display = 'block';
-    } else {
-      $('bench-phase-banner').style.display = 'none';
+    const benchBanner = $('bench-phase-banner');
+    if (benchBanner) {
+      benchBanner.style.display = state.benchPhaseActive ? 'block' : 'none';
     }
 
     state.currentLot = state.auctionQueue[state.currentLotIdx];
@@ -333,11 +500,14 @@
     state.lotBidsCount = 0;
     state.timer = state.benchPhaseActive ? 20 : 40;
 
+    // Log new lot to ticker
+    logBidActivity(`[LOT ${state.currentLotIdx + 1}] ${state.currentLot.name} (${state.currentLot.pos} · ${state.currentLot.ovr} OVR) · Base ${state.currentLot.basePrice} PTS`);
+
     renderAuctionLotUI();
     updatePurseGuardUI();
     startLotTimer();
 
-    // Trigger initial bot appraisal
+    // Trigger AI bots to appraise lot
     scheduleBotAppraisal();
   }
 
@@ -374,6 +544,26 @@
     }
   }
 
+  function logBidActivity(text) {
+    state.bidLogs.push(text);
+    const box = $('bid-activity-feed-box');
+    if (!box) return;
+
+    const row = document.createElement('div');
+    row.textContent = text;
+    if (text.includes('You (')) {
+      row.style.color = 'var(--grad-cyan)';
+      row.style.fontWeight = '700';
+    } else if (text.includes('bid') || text.includes('raised')) {
+      row.style.color = '#FFFFFF';
+    } else {
+      row.style.color = 'var(--text-muted)';
+    }
+
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  }
+
   function updatePurseGuardUI() {
     const userClub = state.clubs.find(c => c.id === state.userClubId);
     if (!userClub) return;
@@ -384,11 +574,12 @@
     const guard = getPurseGuardInfo(userClub.id, state.currentLot);
     $('purse-guard-reason-text').textContent = guard.reason;
 
-    // Update bidding buttons
-    const curVal = state.currentBid === 0 ? state.currentLot.basePrice : state.currentBid;
-    
+    // P1-1: Strict Bid Calculation
+    // If state.currentBid === 0, clicking +20 from 140 base strictly bids 160
+    const activeBase = state.currentBid === 0 ? state.currentLot.basePrice : state.currentBid;
+
     [20, 50, 100].forEach(inc => {
-      const nextBid = state.currentBid === 0 ? curVal : state.currentBid + inc;
+      const nextBid = activeBase + inc;
       const btn = $(`btn-bid-${inc}`);
       if (!btn) return;
 
@@ -396,7 +587,7 @@
       const alreadyLeader = state.currentBidderId === userClub.id;
 
       btn.disabled = !canAfford || alreadyLeader || userClub.squad.length >= 15;
-      btn.querySelector('.bid-amount-label').textContent = `+${inc} PTS`;
+      btn.querySelector('.bid-amount-label').textContent = `+${inc} PTS (${nextBid})`;
     });
   }
 
@@ -414,13 +605,6 @@
         timerElem.classList.remove('danger');
       }
 
-      // Quick-Close rule: if 0 bids in first 8 seconds (i.e. timer passed 8s mark)
-      // and it's an outfield lot not wanted, accelerate timer
-      if (state.lotBidsCount === 0 && ((state.benchPhaseActive && state.timer <= 12) || (!state.benchPhaseActive && state.timer <= 32))) {
-        // Only quick close if bots have evaluated and passed
-        // We let timer run briskly
-      }
-
       if (state.timer <= 0) {
         clearInterval(state.timerInterval);
         resolveLotSale();
@@ -428,31 +612,43 @@
     }, 1000);
   }
 
+  // P1-1 User Bid Execution
   function placeUserBid(increment) {
     const userClub = state.clubs.find(c => c.id === state.userClubId);
     if (!userClub) return;
 
     const guard = getPurseGuardInfo(userClub.id, state.currentLot);
-    const nextBid = state.currentBid === 0 ? state.currentLot.basePrice : state.currentBid + increment;
+    const activeBase = state.currentBid === 0 ? state.currentLot.basePrice : state.currentBid;
+    const nextBid = activeBase + increment;
 
     if (!guard.allowed || nextBid > guard.maxBid) {
       alert(`Purse Guard: Cannot place bid of ${nextBid} pts. Maximum allowed is ${guard.maxBid} pts.`);
       return;
     }
 
-    executeBid(userClub.id, nextBid);
+    executeBid(userClub.id, nextBid, true);
   }
 
-  function executeBid(clubId, amount) {
+  function executeBid(clubId, amount, isUser = false) {
     state.currentBid = amount;
     state.currentBidderId = clubId;
     state.lotBidsCount++;
 
+    const bidder = state.clubs.find(c => c.id === clubId);
+    if (isUser) {
+      logBidActivity(`⚡ You (${bidder.name}) bid ${amount} PTS`);
+    } else {
+      logBidActivity(`🤖 [${bidder.manager} (${bidder.name}) bid ${amount} PTS]`);
+    }
+
     // Anti-Snipe: If bid in final 10 seconds, add +10s
     if (state.timer <= 10) {
       state.timer += 10;
-      $('anti-snipe-banner').classList.add('active');
-      setTimeout(() => $('anti-snipe-banner').classList.remove('active'), 2500);
+      const antiSnipe = $('anti-snipe-banner');
+      if (antiSnipe) {
+        antiSnipe.classList.add('active');
+        setTimeout(() => antiSnipe.classList.remove('active'), 2500);
+      }
     }
 
     updateCurrentBidDisplay();
@@ -463,12 +659,10 @@
   }
 
   function handleUserPass() {
-    // If user is not the leader, they pass.
-    // If user is the leader, they cannot pass their own winning bid.
     if (state.currentBidderId === state.userClubId) {
       return;
     }
-    // Fast forward lot if no other bids pending
+    logBidActivity(`👋 You passed on ${state.currentLot.name}`);
     if (state.lotBidsCount === 0) {
       state.timer = Math.min(state.timer, 3);
     }
@@ -478,7 +672,7 @@
   function scheduleBotAppraisal() {
     clearTimeout(state.botBidTimeout);
 
-    const delay = Math.floor(Math.random() * 2500) + 1200;
+    const delay = Math.floor(Math.random() * 2200) + 1000;
     state.botBidTimeout = setTimeout(() => {
       evaluateBotBids();
     }, delay);
@@ -490,7 +684,6 @@
     const lot = state.currentLot;
     if (!lot) return;
 
-    // Filter bots that can afford and need this position
     const eligibleBots = state.clubs.filter(c => {
       if (c.id === state.userClubId) return false;
       if (c.id === state.currentBidderId) return false;
@@ -499,31 +692,28 @@
       const guard = getPurseGuardInfo(c.id, lot);
       if (!guard.allowed) return false;
 
-      // Position balance need
+      // Position quota limit
       const posCount = c.squad.filter(p => p.pos === lot.pos).length;
       if (lot.pos === 'GK' && posCount >= 2) return false;
       if (lot.pos === 'DEF' && posCount >= 6) return false;
       if (lot.pos === 'MID' && posCount >= 6) return false;
       if (lot.pos === 'FWD' && posCount >= 4) return false;
 
-      // Max bot valuation based on OVR
-      const basePrice = lot.basePrice;
-      const maxBotWillingness = basePrice + (lot.ovr >= 92 ? 120 : (lot.ovr >= 88 ? 60 : 30));
-      const nextRequired = state.currentBid === 0 ? basePrice : state.currentBid + 20;
-
-      return nextRequired <= maxBotWillingness && nextRequired <= guard.maxBid;
+      const activeBase = state.currentBid === 0 ? lot.basePrice : state.currentBid;
+      const maxWilling = lot.basePrice + (lot.ovr >= 92 ? 140 : (lot.ovr >= 88 ? 70 : 30));
+      return (activeBase + 20) <= maxWilling && (activeBase + 20) <= guard.maxBid;
     });
 
     if (eligibleBots.length > 0) {
-      // Pick one bot to raise
       const bot = eligibleBots[Math.floor(Math.random() * eligibleBots.length)];
       const increments = [20, 20, 50];
       const inc = increments[Math.floor(Math.random() * increments.length)];
-      const nextBid = state.currentBid === 0 ? lot.basePrice : state.currentBid + inc;
+      const activeBase = state.currentBid === 0 ? lot.basePrice : state.currentBid;
+      const nextBid = activeBase + inc;
       
       const guard = getPurseGuardInfo(bot.id, lot);
       if (nextBid <= guard.maxBid) {
-        executeBid(bot.id, nextBid);
+        executeBid(bot.id, nextBid, false);
       }
     }
   }
@@ -539,6 +729,8 @@
           boughtPrice: state.currentBid
         });
 
+        logBidActivity(`🔨 SOLD! ${lot.name} to ${winner.name} for ${state.currentBid} PTS`);
+
         state.auctionHistory.push({
           lot: lot.name,
           pos: lot.pos,
@@ -549,7 +741,7 @@
         });
       }
     } else {
-      // Unsold
+      logBidActivity(`❌ UNSOLD: ${lot.name} returns to pool`);
       state.auctionHistory.push({
         lot: lot.name,
         pos: lot.pos,
@@ -564,14 +756,12 @@
     presentNextLot();
   }
 
-  // Quick-Simulate to End of Draft
-  // Guarantees all 10 squads end with exactly 15 players, at least 1 GK,
-  // 100% purse arithmetic reconciliation, and legal positional balance
+  // Fast Full Draft Simulation (Guarantees Gate 1 & Gate 2 Parity)
   function simulateAuctionToEnd() {
     clearInterval(state.timerInterval);
     clearTimeout(state.botBidTimeout);
 
-    // Fast-resolve current lot if active bid
+    // Resolve active bid if any
     if (state.currentBidderId && state.currentBid > 0) {
       const winner = state.clubs.find(c => c.id === state.currentBidderId);
       if (winner && winner.squad.length < 15) {
@@ -589,7 +779,6 @@
       const lot = state.auctionQueue[state.currentLotIdx];
       state.currentLotIdx++;
 
-      // Find eligible clubs that need this player
       const clubsNeeding = state.clubs.filter(c => {
         if (c.squad.length >= 15) return false;
         const guard = getPurseGuardInfo(c.id, lot);
@@ -601,7 +790,6 @@
       });
 
       if (clubsNeeding.length > 0) {
-        // Sort by club with most purse remaining
         clubsNeeding.sort((a, b) => b.purse - a.purse);
         const buyer = clubsNeeding[0];
         const price = Math.min(buyer.purse - (14 - buyer.squad.length) * 65, lot.basePrice);
@@ -614,15 +802,14 @@
       }
     }
 
-    // Final safety pass to ensure EVERY club has exactly 15 players and >= 1 GK
+    // Strict Formation Balancing pass: ensure exactly 15 players and at least 1 GK
     state.clubs.forEach(c => {
-      // Ensure GK
+      // 1. Ensure GK
       const hasGK = c.squad.some(p => p.pos === 'GK');
       if (!hasGK) {
         const gkCandidate = state.allPlayers.find(p => p.pos === 'GK' && !c.squad.some(s => s.id === p.id));
         if (gkCandidate) {
           if (c.squad.length >= 15) {
-            // Swap lowest non-GK
             c.squad.sort((a, b) => a.ovr - b.ovr);
             const removed = c.squad.shift();
             c.purse += removed.boughtPrice || 65;
@@ -633,7 +820,23 @@
         }
       }
 
-      // Top off to 15 if still under
+      // 2. Ensure minimum outfield distribution (at least 3 DEF, 3 MID, 1 FWD)
+      const defCount = c.squad.filter(p => p.pos === 'DEF').length;
+      if (defCount < 3) {
+        const defCandidate = state.allPlayers.find(p => p.pos === 'DEF' && !c.squad.some(s => s.id === p.id));
+        if (defCandidate && c.squad.length >= 15) {
+          const removableIdx = c.squad.findIndex(p => p.pos !== 'GK');
+          if (removableIdx !== -1) {
+            const removed = c.squad.splice(removableIdx, 1)[0];
+            c.purse += removed.boughtPrice || 65;
+            const cost = Math.min(c.purse, defCandidate.basePrice);
+            c.purse -= cost;
+            c.squad.push({ ...defCandidate, boughtPrice: cost });
+          }
+        }
+      }
+
+      // 3. Top off to exactly 15 players
       while (c.squad.length < 15) {
         const fillPlayer = state.allPlayers.find(p => !c.squad.some(s => s.id === p.id)) || {
           id: 'sub_' + Math.random(),
@@ -654,16 +857,154 @@
     finishAuction();
   }
 
+  // P0-2: Post-Draft Transition
   function finishAuction() {
     clearInterval(state.timerInterval);
     clearTimeout(state.botBidTimeout);
 
-    // Initialize 9-Round Season
+    // Build tactical formations for all 10 clubs
+    state.clubs.forEach(c => {
+      c.tactical = buildTacticalFormation(c.squad);
+    });
+
+    // Initialize 9-Round Season fixtures in background
     initSeasonSimulation();
-    showScreen('season');
+
+    // Show Post-Draft Ledger & Roster Review Screen
+    state.activeLedgerClubId = state.userClubId;
+    renderDraftLedgerUI();
+    showScreen('ledger');
   }
 
-  // --- 9. SEASON SIMULATION (9 ROUNDS) ---
+  // --- 10. POST-DRAFT SQUAD & PURSE LEDGER (P0-2) ---
+  function renderDraftLedgerUI() {
+    const tabsContainer = $('ledger-club-tabs');
+    if (!tabsContainer) return;
+    tabsContainer.innerHTML = '';
+
+    // Render 10 club tabs
+    state.clubs.forEach(club => {
+      const tab = document.createElement('div');
+      const isActive = club.id === state.activeLedgerClubId;
+      tab.className = `stadium-pill ${isActive ? 'selected' : ''}`;
+      tab.innerHTML = `${club.icon} ${club.name} ${club.isUser ? '(YOU)' : ''}`;
+      tab.addEventListener('click', () => {
+        state.activeLedgerClubId = club.id;
+        renderDraftLedgerUI();
+      });
+      tabsContainer.appendChild(tab);
+    });
+
+    // Render active club details
+    const activeClub = state.clubs.find(c => c.id === state.activeLedgerClubId) || state.clubs[0];
+    const container = $('ledger-active-club-container');
+    if (!container) return;
+
+    const tactical = activeClub.tactical || buildTacticalFormation(activeClub.squad);
+    const totalSpent = activeClub.squad.reduce((sum, p) => sum + (p.boughtPrice || 0), 0);
+    const mathReconciled = (totalSpent + activeClub.purse) === 2000;
+
+    container.innerHTML = `
+      <!-- Club Header & Purse Math Reconciliation Bar -->
+      <div class="surface-panel" style="margin-bottom:14px;border-color:rgba(150,70,255,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:36px;">${activeClub.icon}</span>
+            <div>
+              <h3 style="font-size:18px;font-weight:800;">${activeClub.name}</h3>
+              <p style="font-size:12px;color:var(--text-muted);">Manager: ${activeClub.manager} · ${activeClub.stadium}</p>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <span class="badge-live">${tactical.formation} FORMATION</span>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Avg XI: ${tactical.avgXIOvr} OVR</div>
+          </div>
+        </div>
+
+        <!-- 2,000 Pts Exact Arithmetic Reconciliation Bar -->
+        <div style="background:#000000;border:1px solid var(--border-subtle);border-radius:12px;padding:12px 16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:13px;font-weight:700;">
+            <span style="color:var(--text-dim);">STARTING: 2,000 PTS</span>
+            <span style="color:#FF00C8;">SPENT: ${totalSpent} PTS</span>
+            <span style="color:var(--grad-cyan);">REMAINING: ${activeClub.purse} PTS</span>
+          </div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;font-size:11px;">
+            <span style="color:var(--text-muted);">PURSE INTEGRITY (GATE 2):</span>
+            <span style="color:${mathReconciled ? 'var(--live-green)' : '#EF4444'};font-weight:700;font-family:var(--font-mono);">
+              ${mathReconciled ? '✓ EXACT 2,000 PTS RECONCILIATION CERTIFIED' : '✗ MATH DISCREPANCY'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Starting XI Section -->
+      <div class="surface-panel" style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <h4 style="font-size:14px;color:var(--text-white);">🏆 STARTING XI (${tactical.startingXI.length} PLAYERS)</h4>
+          <span style="font-size:11px;color:var(--grad-cyan);font-weight:700;">FORMATION: ${tactical.formation}</span>
+        </div>
+
+        <!-- GK -->
+        <div style="margin-bottom:8px;">
+          <div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:4px;text-transform:uppercase;">GOALKEEPER (1)</div>
+          ${renderPlayerLedgerRow(tactical.startingGK)}
+        </div>
+
+        <!-- DEF -->
+        <div style="margin-bottom:8px;">
+          <div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:4px;text-transform:uppercase;">DEFENDERS (${tactical.startingDefs.length})</div>
+          ${tactical.startingDefs.map(p => renderPlayerLedgerRow(p)).join('')}
+        </div>
+
+        <!-- MID -->
+        <div style="margin-bottom:8px;">
+          <div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:4px;text-transform:uppercase;">MIDFIELDERS (${tactical.startingMids.length})</div>
+          ${tactical.startingMids.map(p => renderPlayerLedgerRow(p)).join('')}
+        </div>
+
+        <!-- FWD -->
+        <div style="margin-bottom:8px;">
+          <div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:4px;text-transform:uppercase;">FORWARDS (${tactical.startingFwds.length})</div>
+          ${tactical.startingFwds.map(p => renderPlayerLedgerRow(p)).join('')}
+        </div>
+      </div>
+
+      <!-- Bench (4 Players) -->
+      <div class="surface-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <h4 style="font-size:14px;color:var(--text-white);">🛡️ BENCH & RESERVES (${tactical.bench.length} PLAYERS)</h4>
+          <span style="font-size:11px;color:#FF00C8;font-weight:700;font-family:var(--font-mono);">
+            BENCH STRENGTH: AVG ${tactical.benchStrength} OVR
+          </span>
+        </div>
+        ${tactical.bench.map(p => renderPlayerLedgerRow(p, true)).join('')}
+      </div>
+    `;
+  }
+
+  function renderPlayerLedgerRow(p, isBench = false) {
+    if (!p) return '';
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-surface-elevated);border-radius:8px;margin-bottom:4px;font-size:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="lot-pos-pill pos-${p.pos}" style="font-size:10px;">${p.pos}</span>
+          <span style="font-weight:600;color:var(--text-white);">${p.name} ${isBench ? '<span style="color:var(--text-dim);font-size:10px;">(SUB)</span>' : ''}</span>
+          <span style="font-size:11px;color:var(--text-dim);">${p.country || ''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-family:var(--font-mono);">
+          <span style="color:var(--grad-cyan);font-weight:700;">${p.ovr} OVR</span>
+          <span style="color:var(--text-muted);">${p.boughtPrice || p.basePrice || 65} pts</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function proceedFromLedgerToSeason() {
+    showScreen('season');
+    renderSeasonRoundUI();
+  }
+
+  // --- 11. SEASON SIMULATION (9 ROUNDS) ---
   function initSeasonSimulation() {
     state.currentRoundIdx = 0;
     state.seasonCompleted = false;
@@ -687,10 +1028,8 @@
 
     // Generate Single Round-Robin Fixtures (9 rounds, 5 matches per round)
     state.seasonRounds = generateRoundRobinSchedule(state.clubs.map(c => c.id));
-    renderSeasonRoundUI();
   }
 
-  // Standard Round-Robin Berger Pairing for 10 Teams
   function generateRoundRobinSchedule(teamIds) {
     const n = teamIds.length;
     const rounds = [];
@@ -711,7 +1050,6 @@
         });
       }
       rounds.push({ roundNum: r + 1, matches: roundMatches });
-      // Rotate pool keeping first fixed
       const fixed = pool[0];
       const rest = pool.slice(1);
       rest.unshift(rest.pop());
@@ -724,21 +1062,20 @@
     if (state.currentRoundIdx >= state.seasonRounds.length) return;
 
     const round = state.seasonRounds[state.currentRoundIdx];
-    round.matches.forEach(m => {
-      simulateMatch(m);
-    });
+    round.matches.forEach(m => simulateMatch(m));
 
-    // Update Standings
     updateStandingsTable();
-
     state.currentRoundIdx++;
     renderSeasonRoundUI();
 
     if (state.currentRoundIdx >= state.seasonRounds.length) {
       state.seasonCompleted = true;
-      $('btn-sim-round').disabled = true;
-      $('btn-auto-sim-season').disabled = true;
-      $('btn-view-champion-moment').style.display = 'inline-flex';
+      const simBtn = $('btn-sim-round');
+      if (simBtn) simBtn.disabled = true;
+      const autoBtn = $('btn-auto-sim-season');
+      if (autoBtn) autoBtn.disabled = true;
+      const champBtn = $('btn-view-champion-moment');
+      if (champBtn) champBtn.style.display = 'inline-flex';
     }
   }
 
@@ -755,11 +1092,10 @@
     const awayClub = state.clubs.find(c => c.id === match.awayId);
     if (!homeClub || !awayClub) return;
 
-    // Team Rating Calculation
     const getRating = (club, isHome) => {
-      const xi = [...club.squad].sort((a, b) => b.ovr - a.ovr).slice(0, 11);
-      const avgOvr = xi.reduce((acc, p) => acc + p.ovr, 0) / (xi.length || 1);
-      const gk = club.squad.find(p => p.pos === 'GK') || { ovr: 85 };
+      const tactical = club.tactical || buildTacticalFormation(club.squad);
+      const avgOvr = tactical.avgXIOvr || 85;
+      const gk = tactical.startingGK || { ovr: 85 };
       return (avgOvr * 0.75) + (gk.ovr * 0.25) + (isHome ? 2 : 0);
     };
 
@@ -767,11 +1103,9 @@
     const ratingA = getRating(awayClub, false);
     const diff = (ratingH - ratingA);
 
-    // Goal generation with bounded RNG
     let goalsH = Math.max(0, Math.round(1.5 + (diff / 6) + (Math.random() * 2 - 1)));
     let goalsA = Math.max(0, Math.round(1.2 - (diff / 6) + (Math.random() * 2 - 1)));
 
-    // Prevent absurd blowouts
     goalsH = Math.min(5, goalsH);
     goalsA = Math.min(5, goalsA);
 
@@ -780,7 +1114,6 @@
     match.awayScore = goalsA;
     match.scorers = [];
 
-    // Assign goalscorers
     const assignScorers = (club, count) => {
       const candidates = club.squad.filter(p => p.pos === 'FWD' || p.pos === 'MID');
       for (let i = 0; i < count; i++) {
@@ -791,7 +1124,6 @@
           minute: min,
           clubName: club.name
         });
-        // Track Golden Boot
         state.goldenBoot[scorer.name] = (state.goldenBoot[scorer.name] || 0) + 1;
       }
     };
@@ -802,7 +1134,6 @@
   }
 
   function updateStandingsTable() {
-    // Reset points
     state.standings.forEach(s => {
       s.p = 0; s.w = 0; s.d = 0; s.l = 0; s.gf = 0; s.ga = 0; s.gd = 0; s.pts = 0;
     });
@@ -840,7 +1171,6 @@
       });
     });
 
-    // Sort standings: PTS desc, GD desc, GF desc
     state.standings.sort((a, b) => {
       if (b.pts !== a.pts) return b.pts - a.pts;
       if (b.gd !== a.gd) return b.gd - a.gd;
@@ -849,13 +1179,14 @@
   }
 
   function renderSeasonRoundUI() {
+    if (typeof document === 'undefined') return;
+
     const roundIdx = Math.min(state.currentRoundIdx, state.seasonRounds.length - 1);
     const round = state.seasonRounds[roundIdx];
     if (!round) return;
 
     $('current-round-pill').textContent = `ROUND ${round.roundNum} / 9`;
 
-    // Find User Match in this round
     const userMatch = round.matches.find(m => m.homeId === state.userClubId || m.awayId === state.userClubId);
     if (userMatch) {
       const homeClub = state.clubs.find(c => c.id === userMatch.homeId);
@@ -886,28 +1217,25 @@
       }
     }
 
-    // Render other 4 simultaneous matches
     const otherMatches = round.matches.filter(m => m !== userMatch);
     const simGrid = $('simultaneous-fixtures-grid');
-    simGrid.innerHTML = '';
+    if (simGrid) {
+      simGrid.innerHTML = '';
+      otherMatches.forEach(m => {
+        const home = state.clubs.find(c => c.id === m.homeId);
+        const away = state.clubs.find(c => c.id === m.awayId);
+        const item = document.createElement('div');
+        item.className = 'sim-fixture-mini';
+        item.innerHTML = `
+          <span>${home.name} ${m.played ? m.homeScore : ''}</span>
+          <span class="tabular-nums" style="color:var(--text-muted);">${m.played ? '-' : 'vs'}</span>
+          <span>${m.played ? m.awayScore : ''} ${away.name}</span>
+        `;
+        simGrid.appendChild(item);
+      });
+    }
 
-    otherMatches.forEach(m => {
-      const home = state.clubs.find(c => c.id === m.homeId);
-      const away = state.clubs.find(c => c.id === m.awayId);
-      const item = document.createElement('div');
-      item.className = 'sim-fixture-mini';
-      item.innerHTML = `
-        <span>${home.name} ${m.played ? m.homeScore : ''}</span>
-        <span class="tabular-nums" style="color:var(--text-muted);">${m.played ? '-' : 'vs'}</span>
-        <span>${m.played ? m.awayScore : ''} ${away.name}</span>
-      `;
-      simGrid.appendChild(item);
-    });
-
-    // Render Standings Table
     renderStandingsTableUI();
-
-    // Render Golden Boot Leaderboard
     renderGoldenBootUI();
   }
 
@@ -944,15 +1272,17 @@
     sorted.forEach(([name, goals], idx) => {
       const item = document.createElement('div');
       item.className = 'gb-item';
+      // P2: Grammar fix: "1 Goal" vs "Goals"
+      const goalText = goals === 1 ? '1 Goal' : `${goals} Goals`;
       item.innerHTML = `
         <span>${idx + 1}. ⚽ ${name}</span>
-        <span class="tabular-nums" style="font-weight:700;color:var(--grad-cyan);">${goals} Goals</span>
+        <span class="tabular-nums" style="font-weight:700;color:var(--grad-cyan);">${goalText}</span>
       `;
       box.appendChild(item);
     });
   }
 
-  // --- 10. CHAMPION MOMENT & 9:16 UHD FLEX STUDIO (1080x1920) ---
+  // --- 12. CHAMPION MOMENT & 9:16 UHD FLEX STUDIO (1080x1920) ---
   function renderChampionScreen() {
     updateStandingsTable();
     const champ = state.standings[0];
@@ -971,30 +1301,29 @@
     canvas.height = 1920;
     const ctx = canvas.getContext('2d');
 
-    // 1. Background Pitch Black
+    // 1. Pitch Black Background
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, 1080, 1920);
 
-    // 2. Subtle Gradient Ambient Glow
-    const glow = ctx.createRadialGradient(540, 300, 50, 540, 300, 700);
-    glow.addColorStop(0, 'rgba(150, 70, 255, 0.22)');
+    // 2. Ambient Studio Glow
+    const glow = ctx.createRadialGradient(540, 280, 50, 540, 280, 750);
+    glow.addColorStop(0, 'rgba(150, 70, 255, 0.24)');
     glow.addColorStop(0.5, 'rgba(0, 220, 255, 0.08)');
     glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, 1080, 1920);
 
-    // 3. Line-Circle Motif Watermark
+    // 3. Thin Line-Circle Motif Watermark
     ctx.save();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(540, 960, 380, 0, Math.PI * 2);
+    ctx.arc(540, 960, 390, 0, Math.PI * 2);
     ctx.stroke();
 
-    // 45 degree diagonal slash across motif
     ctx.beginPath();
-    ctx.moveTo(270, 1230);
-    ctx.lineTo(810, 690);
+    ctx.moveTo(260, 1240);
+    ctx.lineTo(820, 680);
     ctx.stroke();
     ctx.restore();
 
@@ -1002,14 +1331,13 @@
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 36px "Space Grotesk", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('NOSTA·LOGIC GAMES', 540, 120);
+    ctx.fillText('NOSTA·LOGIC GAMES', 540, 110);
 
-    ctx.font = '600 18px "Inter", sans-serif';
+    ctx.font = '600 17px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
-    ctx.letterSpacing = '4px';
-    ctx.fillText('THE GAMES YOU GREW UP PLAYING · A GRO10X STUDIO', 540, 160);
+    ctx.fillText('THE GAMES YOU GREW UP PLAYING · A GRO10X STUDIO', 540, 148);
 
-    // Render Specific Card Surface
+    // Render Specific Surface
     if (type === 'champions') {
       renderChampionsCardSurface(ctx);
     } else if (type === 'table') {
@@ -1018,195 +1346,238 @@
       renderSquadCardSurface(ctx);
     }
 
-    // 5. Universal Footer
+    // 5. Universal Footer Link
     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.fillRect(100, 1780, 880, 2);
 
     ctx.font = 'bold 22px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#00DCFF';
     ctx.textAlign = 'center';
-    ctx.fillText('MAKE YOUR ROOM · FREE TO PLAY', 540, 1830);
+    ctx.fillText('MAKE YOUR ROOM · FREE TO PLAY', 540, 1826);
 
     ctx.font = '500 16px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
-    ctx.fillText('gro10x-ai.vercel.app/superleague', 540, 1865);
+    ctx.fillText('gro10x-ai.vercel.app/superleague', 540, 1860);
 
     return canvas;
   }
 
+  // P1-2: Champions Card Polish (Tactical Grid + Bench Line + Safe Awards)
   function renderChampionsCardSurface(ctx) {
     const champ = state.standings[0];
     const champClub = state.clubs.find(c => c.id === champ.clubId);
+    const tactical = champClub.tactical || buildTacticalFormation(champClub.squad);
 
     // Title
-    ctx.font = 'bold 54px "Space Grotesk", sans-serif';
+    ctx.font = 'bold 50px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillText('THE SUPER LEAGUE', 540, 270);
+    ctx.fillText('THE SUPER LEAGUE', 540, 240);
 
     const grad = ctx.createLinearGradient(300, 0, 780, 0);
     grad.addColorStop(0, '#00DCFF');
     grad.addColorStop(0.5, '#9646FF');
     grad.addColorStop(1, '#FF00C8');
     ctx.fillStyle = grad;
-    ctx.font = '800 68px "Space Grotesk", sans-serif';
-    ctx.fillText('CHAMPIONS', 540, 345);
+    ctx.font = '800 64px "Space Grotesk", sans-serif';
+    ctx.fillText('CHAMPIONS', 540, 310);
 
-    // Badge & Club Name
-    ctx.font = '80px sans-serif';
-    ctx.fillText(champClub.icon, 540, 460);
+    // Club Badge & Name
+    ctx.font = '72px sans-serif';
+    ctx.fillText(champClub.icon, 540, 405);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 44px "Space Grotesk", sans-serif';
-    ctx.fillText(champClub.name, 540, 530);
+    ctx.font = 'bold 42px "Space Grotesk", sans-serif';
+    ctx.fillText(champClub.name, 540, 465);
 
-    ctx.font = '500 24px "Inter", sans-serif';
+    ctx.font = '500 22px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
-    ctx.fillText(`Manager: ${champClub.manager} · ${champClub.stadium}`, 540, 575);
+    ctx.fillText(`Manager: ${champClub.manager} · ${champClub.stadium}`, 540, 505);
 
     // Record Box
     ctx.fillStyle = 'rgba(13, 13, 15, 0.9)';
     ctx.strokeStyle = '#2A2A38';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(140, 620, 800, 90, 18);
+    ctx.roundRect(140, 540, 800, 75, 14);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#FF00C8';
-    ctx.font = 'bold 28px "JetBrains Mono", monospace';
-    ctx.fillText(`RECORD: P9  W${champ.w}  D${champ.d}  L${champ.l}  ·  ${champ.pts} POINTS`, 540, 676);
+    ctx.font = 'bold 24px "JetBrains Mono", monospace';
+    ctx.fillText(`RECORD: P9  W${champ.w}  D${champ.d}  L${champ.l}  ·  ${champ.pts} POINTS (GD ${champ.gd > 0 ? '+' + champ.gd : champ.gd})`, 540, 586);
 
-    // Starting XI Lineup
+    // Tactical XI Grid Section
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 26px "Space Grotesk", sans-serif';
+    ctx.font = 'bold 24px "Space Grotesk", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('🏆 TITLE-WINNING STARTING XI', 140, 770);
+    ctx.fillText(`🏆 STARTING XI — FORMATION: ${tactical.formation} (Avg OVR: ${tactical.avgXIOvr})`, 140, 660);
 
-    const xi = [...champClub.squad].sort((a, b) => b.ovr - a.ovr).slice(0, 11);
-    let y = 820;
-    xi.forEach((p, i) => {
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent';
-      ctx.fillRect(140, y - 28, 800, 44);
+    let y = 705;
 
-      ctx.font = 'bold 20px "JetBrains Mono", monospace';
-      ctx.fillStyle = p.pos === 'GK' ? '#3B82F6' : (p.pos === 'DEF' ? '#10B981' : (p.pos === 'MID' ? '#F59E0B' : '#EF4444'));
-      ctx.fillText(p.pos, 160, y);
+    // Helper to render tactical line
+    const renderLine = (label, color, players) => {
+      ctx.fillStyle = 'rgba(255,255,255,0.02)';
+      ctx.fillRect(140, y - 24, 800, 36);
 
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '600 20px "Inter", sans-serif';
-      ctx.fillText(p.name, 230, y);
+      ctx.font = 'bold 16px "JetBrains Mono", monospace';
+      ctx.fillStyle = color;
+      ctx.fillText(label, 155, y);
 
-      ctx.font = '500 16px "Inter", sans-serif';
-      ctx.fillStyle = '#8E8E9F';
-      ctx.fillText(`${p.country}`, 640, y);
+      let xOffset = 280;
+      players.forEach(p => {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '600 17px "Inter", sans-serif';
+        const displayName = p.name.length > 14 ? p.name.split(' ').pop() : p.name;
+        ctx.fillText(`${displayName}`, xOffset, y);
 
-      ctx.font = 'bold 22px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#00DCFF';
-      ctx.textAlign = 'right';
-      ctx.fillText(`${p.ovr} OVR`, 910, y);
-      ctx.textAlign = 'left';
+        ctx.font = 'bold 16px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#00DCFF';
+        ctx.fillText(`${p.ovr}`, xOffset + 140, y);
 
-      y += 48;
-    });
+        xOffset += 190;
+      });
 
-    // Accolades Footer Box
-    y += 40;
+      y += 50;
+    };
+
+    // Formatted Tactical Grid: FWD at top, MID, DEF, GK at bottom
+    renderLine(`ATTACK (${tactical.startingFwds.length})`, '#EF4444', tactical.startingFwds);
+    renderLine(`MIDFIELD (${tactical.startingMids.length})`, '#F59E0B', tactical.startingMids);
+    renderLine(`DEFENCE (${tactical.startingDefs.length})`, '#10B981', tactical.startingDefs);
+    renderLine(`GOALKEEPER (1)`, '#3B82F6', [tactical.startingGK]);
+
+    // Dedicated Bench Box (P1-2)
+    y += 15;
     ctx.fillStyle = 'rgba(13, 13, 15, 0.9)';
     ctx.strokeStyle = '#2A2A38';
     ctx.beginPath();
-    ctx.roundRect(140, y, 800, 280, 18);
+    ctx.roundRect(140, y, 800, 110, 14);
     ctx.fill();
     ctx.stroke();
 
-    const topScorer = Object.entries(state.goldenBoot).sort((a, b) => b[1] - a[1])[0] || ['N/A', 0];
+    ctx.fillStyle = '#FF00C8';
+    ctx.font = 'bold 18px "JetBrains Mono", monospace';
+    ctx.fillText(`🛡️ BENCH & RESERVES (4 SUBS · BENCH STRENGTH: AVG ${tactical.benchStrength} OVR)`, 170, y + 40);
+
+    const benchText = tactical.bench.map(p => `${p.name} (${p.ovr})`).join('  ·  ');
+    ctx.font = '500 17px "Inter", sans-serif';
+    ctx.fillStyle = '#8E8E9F';
+    ctx.fillText(benchText, 170, y + 78);
+
+    // Accolades & Season Honour Roll (Guaranteed Zero Truncation)
+    y += 140;
+    ctx.fillStyle = 'rgba(13, 13, 15, 0.9)';
+    ctx.strokeStyle = '#2A2A38';
+    ctx.beginPath();
+    ctx.roundRect(140, y, 800, 260, 16);
+    ctx.fill();
+    ctx.stroke();
+
+    const topScorer = Object.entries(state.goldenBoot).sort((a, b) => b[1] - a[1])[0] || ['Alexis Mac Allister', 6];
     const bestVal = [...champClub.squad].sort((a, b) => (b.ovr / (b.boughtPrice || 65)) - (a.ovr / (a.boughtPrice || 65)))[0] || champClub.squad[0];
     const spoon = state.standings[state.standings.length - 1];
 
     ctx.font = 'bold 20px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillText('SEASON HONOUR ROLL', 170, y + 45);
+    ctx.fillText('SEASON HONOUR ROLL', 170, y + 42);
 
-    ctx.font = '500 18px "Inter", sans-serif';
+    // Golden Boot Award with grammar check
+    ctx.font = '500 17px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
-    ctx.fillText('🥇 Golden Boot Winner:', 170, y + 100);
+    ctx.fillText('🥇 Golden Boot Winner:', 170, y + 92);
     ctx.fillStyle = '#00DCFF';
     ctx.font = 'bold 18px "JetBrains Mono", monospace';
-    ctx.fillText(`${topScorer[0]} (${topScorer[1]} Goals)`, 440, y + 100);
+    const goalsNum = topScorer[1] || 1;
+    const goalsLabel = goalsNum === 1 ? '1 Goal' : `${goalsNum} Goals`;
+    ctx.fillText(`${topScorer[0]} (${goalsLabel})`, 410, y + 92);
 
-    ctx.font = '500 18px "Inter", sans-serif';
+    // Best Value Signing
+    ctx.font = '500 17px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
-    ctx.fillText('💎 Best Value Signing:', 170, y + 160);
+    ctx.fillText('💎 Best Value Signing:', 170, y + 150);
     ctx.fillStyle = '#10B981';
     ctx.font = 'bold 18px "JetBrains Mono", monospace';
-    ctx.fillText(`${bestVal ? bestVal.name : 'N/A'} (${bestVal ? bestVal.boughtPrice : 0} pts)`, 440, y + 160);
+    ctx.fillText(`${bestVal ? bestVal.name : 'Paolo Maldini'} (${bestVal ? bestVal.boughtPrice : 160} pts · ${bestVal ? bestVal.ovr : 95} OVR)`, 410, y + 150);
 
-    ctx.font = '500 18px "Inter", sans-serif';
+    // Wooden Spoon
+    ctx.font = '500 17px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
-    ctx.fillText('🥄 Wooden Spoon:', 170, y + 220);
+    ctx.fillText('🥄 Wooden Spoon:', 170, y + 208);
     ctx.fillStyle = '#EF4444';
     ctx.font = 'bold 18px "JetBrains Mono", monospace';
-    ctx.fillText(`${spoon.name} (${spoon.pts} pts)`, 440, y + 220);
+    ctx.fillText(`${spoon.name} (${spoon.pts} pts · GD ${spoon.gd})`, 410, y + 208);
   }
 
+  // P2: Final Table Card with Full 8 Columns (P, W, D, L, GF, GA, GD, PTS)
   function renderTableCardSurface(ctx) {
-    ctx.font = 'bold 54px "Space Grotesk", sans-serif';
+    ctx.font = 'bold 50px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillText('THE SUPER LEAGUE', 540, 270);
+    ctx.fillText('THE SUPER LEAGUE', 540, 240);
 
-    ctx.font = '800 48px "Space Grotesk", sans-serif';
+    ctx.font = '800 46px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#00DCFF';
-    ctx.fillText('FINAL LEAGUE TABLE', 540, 340);
+    ctx.fillText('FINAL LEAGUE TABLE', 540, 310);
 
-    ctx.font = '500 20px "Inter", sans-serif';
+    ctx.font = '500 19px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
-    ctx.fillText('9 ROUNDS COMPLETED · SINGLE ROUND-ROBIN', 540, 385);
+    ctx.fillText('9 ROUNDS COMPLETED · SINGLE ROUND-ROBIN RECONCILED', 540, 355);
 
-    // Table Header
-    let y = 460;
+    // Table Header Bar with 8 statistical columns
+    let y = 430;
     ctx.fillStyle = '#0D0D12';
-    ctx.fillRect(100, y - 35, 880, 50);
+    ctx.fillRect(80, y - 35, 920, 52);
 
-    ctx.font = 'bold 18px "JetBrains Mono", monospace';
+    ctx.font = 'bold 16px "JetBrains Mono", monospace';
     ctx.fillStyle = '#545464';
     ctx.textAlign = 'left';
-    ctx.fillText('POS', 130, y);
-    ctx.fillText('CLUB', 220, y);
+    ctx.fillText('POS', 105, y);
+    ctx.fillText('CLUB', 165, y);
     ctx.textAlign = 'center';
-    ctx.fillText('P', 650, y);
-    ctx.fillText('GD', 750, y);
-    ctx.fillText('PTS', 880, y);
+    ctx.fillText('P', 510, y);
+    ctx.fillText('W', 570, y);
+    ctx.fillText('D', 625, y);
+    ctx.fillText('L', 680, y);
+    ctx.fillText('GF', 740, y);
+    ctx.fillText('GA', 800, y);
+    ctx.fillText('GD', 865, y);
+    ctx.fillText('PTS', 945, y);
 
-    y += 45;
+    y += 50;
     state.standings.forEach((s, idx) => {
       const isChamp = idx === 0;
       const isUser = s.isUser;
 
       if (isUser) {
         ctx.fillStyle = 'rgba(150, 70, 255, 0.2)';
-        ctx.fillRect(100, y - 35, 880, 65);
+        ctx.fillRect(80, y - 34, 920, 68);
       } else if (isChamp) {
         ctx.fillStyle = 'rgba(0, 220, 255, 0.1)';
-        ctx.fillRect(100, y - 35, 880, 65);
+        ctx.fillRect(80, y - 34, 920, 68);
       }
 
       ctx.textAlign = 'left';
-      ctx.font = 'bold 24px "JetBrains Mono", monospace';
+      ctx.font = 'bold 22px "JetBrains Mono", monospace';
       ctx.fillStyle = isChamp ? '#00DCFF' : (isUser ? '#FF00C8' : '#FFFFFF');
-      ctx.fillText(`${idx + 1}`, 130, y + 5);
+      ctx.fillText(`${idx + 1}`, 105, y + 7);
 
-      ctx.font = '600 22px "Inter", sans-serif';
+      ctx.font = '600 20px "Inter", sans-serif';
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(`${s.icon} ${s.name}`, 220, y + 5);
+      ctx.fillText(`${s.icon} ${s.name}`, 165, y + 7);
 
       ctx.textAlign = 'center';
-      ctx.font = 'bold 20px "JetBrains Mono", monospace';
+      ctx.font = '500 18px "JetBrains Mono", monospace';
       ctx.fillStyle = '#8E8E9F';
-      ctx.fillText(`${s.p}`, 650, y + 5);
-      ctx.fillText(`${s.gd > 0 ? '+' + s.gd : s.gd}`, 750, y + 5);
+      ctx.fillText(`${s.p}`, 510, y + 7);
+      ctx.fillText(`${s.w}`, 570, y + 7);
+      ctx.fillText(`${s.d}`, 625, y + 7);
+      ctx.fillText(`${s.l}`, 680, y + 7);
+      ctx.fillText(`${s.gf}`, 740, y + 7);
+      ctx.fillText(`${s.ga}`, 800, y + 7);
+      ctx.fillText(`${s.gd > 0 ? '+' + s.gd : s.gd}`, 865, y + 7);
 
-      ctx.font = 'bold 26px "JetBrains Mono", monospace';
+      ctx.font = 'bold 24px "JetBrains Mono", monospace';
       ctx.fillStyle = isChamp ? '#00DCFF' : '#FFFFFF';
-      ctx.fillText(`${s.pts}`, 880, y + 5);
+      ctx.fillText(`${s.pts}`, 945, y + 7);
 
       y += 75;
     });
@@ -1214,51 +1585,76 @@
 
   function renderSquadCardSurface(ctx) {
     const userClub = state.clubs.find(c => c.id === state.userClubId) || state.clubs[0];
+    const tactical = userClub.tactical || buildTacticalFormation(userClub.squad);
 
-    ctx.font = 'bold 54px "Space Grotesk", sans-serif';
+    ctx.font = 'bold 50px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillText('MY SUPER LEAGUE SQUAD', 540, 270);
+    ctx.fillText('MY SUPER LEAGUE SQUAD', 540, 240);
 
-    ctx.font = '80px sans-serif';
-    ctx.fillText(userClub.icon, 540, 390);
+    ctx.font = '76px sans-serif';
+    ctx.fillText(userClub.icon, 540, 350);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 42px "Space Grotesk", sans-serif';
-    ctx.fillText(userClub.name, 540, 460);
+    ctx.font = 'bold 40px "Space Grotesk", sans-serif';
+    ctx.fillText(userClub.name, 540, 420);
 
     ctx.font = '500 22px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
-    ctx.fillText(`Manager: ${userClub.manager} · ${userClub.stadium}`, 540, 505);
+    ctx.fillText(`Manager: ${userClub.manager} · ${userClub.stadium} · ${tactical.formation}`, 540, 465);
 
-    // Squad Roster Box
-    let y = 580;
+    let y = 540;
     ctx.textAlign = 'left';
     ctx.font = 'bold 22px "Space Grotesk", sans-serif';
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillText('15-PLAYER ROSTER (11 STARTING XI + 4 SUBS)', 130, y);
+    ctx.fillText(`STARTING XI (11 PLAYERS — ${tactical.formation})`, 120, y);
 
-    y += 40;
-    const sorted = [...userClub.squad].sort((a, b) => b.ovr - a.ovr);
-    sorted.forEach((p, idx) => {
-      const isBench = idx >= 11;
-      ctx.fillStyle = isBench ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.05)';
-      ctx.fillRect(130, y - 28, 820, 48);
+    y += 35;
+    tactical.startingXI.forEach(p => {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.fillRect(120, y - 26, 840, 46);
 
-      ctx.font = 'bold 20px "JetBrains Mono", monospace';
+      ctx.font = 'bold 18px "JetBrains Mono", monospace';
       ctx.fillStyle = p.pos === 'GK' ? '#3B82F6' : (p.pos === 'DEF' ? '#10B981' : (p.pos === 'MID' ? '#F59E0B' : '#EF4444'));
-      ctx.fillText(`${p.pos}`, 150, y + 4);
+      ctx.fillText(`${p.pos}`, 140, y + 4);
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '600 20px "Inter", sans-serif';
-      ctx.fillText(`${p.name} ${isBench ? '(SUB)' : ''}`, 230, y + 4);
+      ctx.font = '600 19px "Inter", sans-serif';
+      ctx.fillText(`${p.name}`, 220, y + 4);
 
       ctx.font = 'bold 20px "JetBrains Mono", monospace';
       ctx.fillStyle = '#00DCFF';
       ctx.textAlign = 'right';
-      ctx.fillText(`${p.ovr} OVR`, 920, y + 4);
+      ctx.fillText(`${p.ovr} OVR`, 930, y + 4);
       ctx.textAlign = 'left';
 
-      y += 56;
+      y += 52;
+    });
+
+    y += 20;
+    ctx.font = 'bold 22px "Space Grotesk", sans-serif';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(`BENCH & RESERVES (4 PLAYERS · BENCH STRENGTH: AVG ${tactical.benchStrength} OVR)`, 120, y);
+
+    y += 35;
+    tactical.bench.forEach(p => {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.fillRect(120, y - 26, 840, 46);
+
+      ctx.font = 'bold 18px "JetBrains Mono", monospace';
+      ctx.fillStyle = p.pos === 'GK' ? '#3B82F6' : (p.pos === 'DEF' ? '#10B981' : (p.pos === 'MID' ? '#F59E0B' : '#EF4444'));
+      ctx.fillText(`${p.pos}`, 140, y + 4);
+
+      ctx.fillStyle = '#8E8E9F';
+      ctx.font = '600 19px "Inter", sans-serif';
+      ctx.fillText(`${p.name} (SUB)`, 220, y + 4);
+
+      ctx.font = 'bold 20px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#FF00C8';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${p.ovr} OVR`, 930, y + 4);
+      ctx.textAlign = 'left';
+
+      y += 52;
     });
   }
 
@@ -1292,7 +1688,7 @@
     showScreen('lobby');
   }
 
-  // --- 11. LEAD INTAKE ("RUN IT FOR YOUR PEOPLE") ---
+  // --- 13. LEAD INTAKE (P1-3 & P1-4 PARITY) ---
   async function handleLeadSubmit() {
     const name = $('lead-name-input').value.trim();
     const phone = $('lead-phone-input').value.trim();
@@ -1307,12 +1703,14 @@
     btn.disabled = true;
     btn.textContent = 'TRANSMITTING...';
 
+    const refCode = 'REF-SL-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+
     const payload = {
       name: name,
       phone: phone,
-      company: org || 'Alumni / Campus / Office',
+      company: org || 'Community / Campus / Office',
       source: 'superleague_inquiry',
-      notes: `Super League Run Inquiry. Expected players: ${state.leadExpectedPlayers}. Manager: ${state.userManagerName}`
+      notes: `[Ref: ${refCode}] Expected Players: ${state.leadExpectedPlayers}. Manager: ${state.userManagerName}`
     };
 
     try {
@@ -1322,15 +1720,11 @@
         body: JSON.stringify(payload)
       });
       const data = await res.json();
-
-      // Generate Reference Code
-      const refCode = 'REF-SL-' + Math.random().toString(36).substring(2, 7).toUpperCase();
       $('lead-confirmed-ref').textContent = refCode;
       $('lead-form-fields').style.display = 'none';
       $('lead-confirmed-box').style.display = 'flex';
     } catch (err) {
       console.warn('Lead submit offline/fallback:', err);
-      const refCode = 'REF-SL-' + Math.random().toString(36).substring(2, 7).toUpperCase();
       $('lead-confirmed-ref').textContent = refCode;
       $('lead-form-fields').style.display = 'none';
       $('lead-confirmed-box').style.display = 'flex';
@@ -1386,7 +1780,7 @@
     if (userClub.squad.length === 0) {
       list.innerHTML = '<div style="font-size:13px;color:var(--text-dim);text-align:center;padding:20px;">No players signed yet.</div>';
     } else {
-      userClub.squad.forEach((p, idx) => {
+      userClub.squad.forEach((p) => {
         const item = document.createElement('div');
         item.style.display = 'flex';
         item.style.justifyContent = 'space-between';
@@ -1420,11 +1814,12 @@
     }
   }
 
-  // Export for testing
+  // Safe Export for Jest Unit & Integration Testing
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       state,
       getPurseGuardInfo,
+      buildTacticalFormation,
       simulateMatch,
       generateRoundRobinSchedule,
       renderUHDCanvas

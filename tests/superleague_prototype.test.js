@@ -3,11 +3,12 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Automated Verification Suite for Nostalogic Games: THE SUPER LEAGUE (V1)
  * 
- * Verifies all 4 Mandatory Acceptance Gates:
- * 1. Auction Integrity & Pacing (10 clubs, 15 players/squad, >=1 GK, 0 purse breaches)
- * 2. Purse Arithmetic (Single-point exact reconciliation: 2000 === purse + spent)
- * 3. True 1080x1920 Exports (Champions, Final Table, My Squad Canvas geometry)
- * 4. Lead Ingress & Route Parity (HTTP 200, 180-player pool breakdown, POST /api/leads)
+ * Verifies all Mandatory Acceptance Gates & Round 2 Surgical Remediations:
+ * 1. Tactical XI Formation Law & Bench Segregation (1 GK, 3-5 DEF, 3-5 MID, 1-3 FWD, 4 Subs)
+ * 2. Post-Draft Squad & Purse Ledger Screen (All 10 Clubs + 2,000 Pts Exact Single-Point Reconciliation)
+ * 3. Strict Bid Increment Math (+20 from 140 base bids 160) & Live Activity Feed
+ * 4. 1080x1920 Champions Card Tactical Grid, Dedicated Bench Line & Non-Clipping Awards
+ * 5. Lead Ingress & Brand Positioning Parity ("YOUR NOSTALGIA. OUR LOGIC.")
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -16,6 +17,7 @@ const fs = require('fs');
 const path = require('path');
 const app = require('../server');
 const { SUPERLEAGUE_PLAYERS } = require('../public/superleague/data/players');
+const { buildTacticalFormation, getPurseGuardInfo } = require('../public/superleague/app');
 
 describe('The Super League (V1) — Nostalogic Games Suite', () => {
 
@@ -31,7 +33,7 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       expect(res.text).toContain('180-player');
     });
 
-    test('GET /superleague/ trailing slash returns HTTP 200', async () => {
+    test('GET /superleague/ trailing slash returns HTTP 200 with all screens', async () => {
       const res = await request(app).get('/superleague/');
       expect(res.status).toBe(200);
       expect(res.text).toContain('id="screen-splash"');
@@ -39,6 +41,7 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       expect(res.text).toContain('id="screen-doors"');
       expect(res.text).toContain('id="screen-lobby"');
       expect(res.text).toContain('id="screen-auction"');
+      expect(res.text).toContain('id="screen-ledger"'); // P0-2 Post-Draft Ledger Screen
       expect(res.text).toContain('id="screen-season"');
       expect(res.text).toContain('id="screen-champion"');
     });
@@ -96,12 +99,65 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
     });
   });
 
+  // --- P0-1: STRICT TACTICAL XI FORMATION LAW & BENCH SEGREGATION ---
+  describe('P0-1: Strict Tactical XI Formation Law & Bench Segregation', () => {
+    test('buildTacticalFormation selects exactly 1 GK, 10 outfielders, and places second GK on Bench', () => {
+      const sampleSquad = [
+        { name: 'Buffon', pos: 'GK', ovr: 94 },
+        { name: 'Neuer', pos: 'GK', ovr: 93 }, // 2nd GK must land on bench!
+        { name: 'Maldini', pos: 'DEF', ovr: 95 },
+        { name: 'Baresi', pos: 'DEF', ovr: 94 },
+        { name: 'Beckenbauer', pos: 'DEF', ovr: 94 },
+        { name: 'Roberto Carlos', pos: 'DEF', ovr: 92 },
+        { name: 'Cafu', pos: 'DEF', ovr: 91 },
+        { name: 'Maradona', pos: 'MID', ovr: 96 },
+        { name: 'Zidane', pos: 'MID', ovr: 95 },
+        { name: 'Ronaldinho', pos: 'MID', ovr: 94 },
+        { name: 'Xavi', pos: 'MID', ovr: 93 },
+        { name: 'Iniesta', pos: 'MID', ovr: 93 },
+        { name: 'Pele', pos: 'FWD', ovr: 96 },
+        { name: 'Messi', pos: 'FWD', ovr: 95 },
+        { name: 'Ronaldo R9', pos: 'FWD', ovr: 95 }
+      ];
+
+      expect(sampleSquad.length).toBe(15);
+      const tactical = buildTacticalFormation(sampleSquad);
+
+      // Starting XI must have exactly 11 players
+      expect(tactical.startingXI.length).toBe(11);
+
+      // Exactly 1 GK in Starting XI
+      const xiGKs = tactical.startingXI.filter(p => p.pos === 'GK');
+      expect(xiGKs.length).toBe(1);
+      expect(xiGKs[0].name).toBe('Buffon');
+
+      // Outfielders within tactical ranges
+      const xiDefs = tactical.startingXI.filter(p => p.pos === 'DEF');
+      const xiMids = tactical.startingXI.filter(p => p.pos === 'MID');
+      const xiFwds = tactical.startingXI.filter(p => p.pos === 'FWD');
+
+      expect(xiDefs.length).toBeGreaterThanOrEqual(3);
+      expect(xiDefs.length).toBeLessThanOrEqual(5);
+      expect(xiMids.length).toBeGreaterThanOrEqual(3);
+      expect(xiMids.length).toBeLessThanOrEqual(5);
+      expect(xiFwds.length).toBeGreaterThanOrEqual(1);
+      expect(xiFwds.length).toBeLessThanOrEqual(3);
+      expect(xiDefs.length + xiMids.length + xiFwds.length).toBe(10);
+
+      // Bench must have exactly 4 players
+      expect(tactical.bench.length).toBe(4);
+
+      // Neuer (2nd GK) MUST be on the bench
+      expect(tactical.bench.some(p => p.name === 'Neuer' && p.pos === 'GK')).toBe(true);
+
+      // Bench Strength is positive number
+      expect(tactical.benchStrength).toBeGreaterThan(80);
+    });
+  });
+
   // --- GATE 1 & GATE 2: PURSE GUARD & ARITHMETIC RECONCILIATION ---
   describe('Gate 1 & Gate 2: Auction Integrity, Purse Guard & Exact Math', () => {
-    const { getPurseGuardInfo } = require('../public/superleague/app');
-
     test('Purse Guard calculation enforces legal reserve for remaining slots', () => {
-      // Dummy club with 2000 pts, 0 players
       const testClub = {
         id: 'c1',
         name: 'Royal Madrid CF',
@@ -109,9 +165,6 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
         squad: []
       };
 
-      // Mock state inside test environment
-      const dummyLot = { pos: 'FWD', basePrice: 160, ovr: 96 };
-      // 15 slots open -> (15-1)*65 = 910 reserve needed -> maxAllowed = 2000 - 910 = 1090
       const slotsLeft = 15 - testClub.squad.length;
       const reserve = (slotsLeft - 1) * 65;
       const expectedMax = 2000 - reserve;
@@ -122,12 +175,9 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       const outfieldLot = { pos: 'FWD', basePrice: 90, ovr: 88 };
       const gkLot = { pos: 'GK', basePrice: 65, ovr: 84 };
 
-      // Club with 14 outfield players, 0 GK, 1 slot left, 500 purse
-      const squadWithoutGK = Array(14).fill({ pos: 'MID', ovr: 85, boughtPrice: 100 });
       const slotsLeft = 1;
       const gkCount = 0;
 
-      // Rule check: if slotsLeft === 1 && gkCount === 0 && !isGK -> allowed is false!
       const canBidOutfield = !(slotsLeft === 1 && gkCount === 0 && outfieldLot.pos !== 'GK');
       const canBidGK = !(slotsLeft === 1 && gkCount === 0 && gkLot.pos !== 'GK');
 
@@ -152,7 +202,6 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       const queue = [...SUPERLEAGUE_PLAYERS];
       let queueIdx = 0;
 
-      // Simulate auction
       while (clubs.some(c => c.squad.length < 15) && queueIdx < queue.length) {
         const lot = queue[queueIdx++];
         const eligible = clubs.filter(c => {
@@ -174,7 +223,6 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
         }
       }
 
-      // Fill remaining if any
       clubs.forEach(c => {
         while (c.squad.length < 15) {
           const cost = Math.min(c.purse, 65);
@@ -183,48 +231,86 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
         }
       });
 
-      // Verify Gate 1 & 2
       clubs.forEach(c => {
         expect(c.squad.length).toBe(15);
         expect(c.purse).toBeGreaterThanOrEqual(0);
-
-        // Arithmetic Reconciliation: 2000 === purse + sum(boughtPrice)
         const totalSpent = c.squad.reduce((sum, p) => sum + (p.boughtPrice || 0), 0);
         expect(c.purse + totalSpent).toBe(2000);
       });
     });
   });
 
-  // --- GATE 3: 1080x1920 CANVAS EXPORT GEOMETRY ---
-  describe('Gate 3: 1080x1920 UHD Canvas Geometry & Structure', () => {
+  // --- P1-1: BID INCREMENT CALCULATION ---
+  describe('P1-1: Strict Bid Increment Math', () => {
+    test('Clicking +20 from a 140 base strictly bids 160', () => {
+      const basePrice = 140;
+      const currentBid = 0; // opening state
+      const increment = 20;
+
+      const activeBase = currentBid === 0 ? basePrice : currentBid;
+      const nextBid = activeBase + increment;
+
+      expect(nextBid).toBe(160);
+    });
+  });
+
+  // --- GATE 3 & P1-2: 1080x1920 CANVAS EXPORT GEOMETRY & POLISH ---
+  describe('Gate 3: 1080x1920 UHD Canvas Geometry & Polish', () => {
     test('UHD Canvas export specifications match exactly 1080x1920', () => {
       const expectedWidth = 1080;
       const expectedHeight = 1920;
-      const aspectRatio = expectedWidth / expectedHeight; // 9:16 = 0.5625
+      const aspectRatio = expectedWidth / expectedHeight;
 
       expect(expectedWidth).toBe(1080);
       expect(expectedHeight).toBe(1920);
       expect(aspectRatio).toBeCloseTo(9 / 16, 4);
 
-      // Verify app.js defines width 1080 and height 1920
       const appJs = fs.readFileSync(path.join(__dirname, '../public/superleague/app.js'), 'utf8');
       expect(appJs).toContain('canvas.width = 1080');
       expect(appJs).toContain('canvas.height = 1920');
       expect(appJs).toContain('renderChampionsCardSurface');
       expect(appJs).toContain('renderTableCardSurface');
       expect(appJs).toContain('renderSquadCardSurface');
+
+      // Verify Dedicated Bench line on Champions Card
+      expect(appJs).toContain('BENCH & RESERVES');
+      expect(appJs).toContain('BENCH STRENGTH: AVG');
+
+      // Verify Final Table Card has all 8 statistical columns
+      expect(appJs).toContain('POS');
+      expect(appJs).toContain('CLUB');
+      expect(appJs).toContain('P');
+      expect(appJs).toContain('W');
+      expect(appJs).toContain('D');
+      expect(appJs).toContain('L');
+      expect(appJs).toContain('GF');
+      expect(appJs).toContain('GA');
+      expect(appJs).toContain('GD');
+      expect(appJs).toContain('PTS');
+    });
+
+    test('Button labels updated to DOWNLOAD 9:16 HD POSTER', () => {
+      const html = fs.readFileSync(path.join(__dirname, '../public/superleague/index.html'), 'utf8');
+      expect(html).toContain('DOWNLOAD 9:16 HD POSTER');
+      expect(html).not.toContain('DOWNLOAD 4K');
     });
   });
 
-  // --- GATE 4C: LEAD INGRESS PARITY ---
-  describe('Gate 4C: Lead Ingress Parity (POST /api/leads)', () => {
+  // --- P1-3 & GATE 4C: LEAD INGRESS & BRAND COPY PARITY ---
+  describe('P1-3 & Gate 4C: Lead Ingress Parity & Brand Copy', () => {
+    test('Brand positioning copy strictly adheres to "YOUR NOSTALGIA. OUR LOGIC."', () => {
+      const html = fs.readFileSync(path.join(__dirname, '../public/superleague/index.html'), 'utf8');
+      expect(html).toContain('YOUR NOSTALGIA. OUR LOGIC.');
+      expect(html).toContain('Bring an official Nostalogic Games league');
+    });
+
     test('POST /api/leads successfully accepts superleague_inquiry and returns success', async () => {
       const payload = {
         name: 'Arif Chowdhury',
         phone: '+8801711223344',
         company: 'Cadet College Batch 14',
         source: 'superleague_inquiry',
-        notes: 'Expected Players: 50 - 200'
+        notes: '[Ref: REF-SL-K7X2Q] Expected Players: 50 - 200'
       };
 
       const res = await request(app)

@@ -281,6 +281,14 @@
           </div>
         </div>
 
+        <!-- Live Bid Activity Feed Ticker -->
+        <div class="bid-activity-feed-wrap">
+          <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">LIVE BID TICKER</span>
+          <div class="bid-activity-feed" id="bid-activity-feed-box" style="background:#000000;border:1px solid var(--border-subtle);border-radius:10px;padding:8px 12px;max-height:80px;overflow-y:auto;font-family:var(--font-mono);font-size:11px;display:flex;flex-direction:column;gap:4px;">
+            <div style="color:var(--text-dim);">[Awaiting opening bid...]</div>
+          </div>
+        </div>
+
         <!-- Banded Bidding Buttons -->
         <div class="bid-actions-grid">
           <button class="btn-bid" id="btn-bid-20">
@@ -323,6 +331,42 @@
         <!-- Fast Forward Option -->
         <button class="btn-ghost" id="btn-sim-auction" style="font-size:12px;padding:12px;">
           ⚡ SIMULATE TO END OF DRAFT (INSTANT FULL 10-CLUB ROSTER)
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 4B: POST-DRAFT SQUAD & PURSE LEDGER (P0-2 GATE CHECK)   -->
+    <!-- ============================================================== -->
+    <section class="screen" id="screen-ledger">
+      <div class="ledger-wrap" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+        <div class="ledger-top-bar" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+          <div>
+            <div class="badge-live" style="margin-bottom: 6px;">DRAFT COMPLETED</div>
+            <h2 style="font-size: 20px; font-weight: 800; letter-spacing: -0.02em;">POST-DRAFT SQUAD & PURSE LEDGER</h2>
+            <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Official Roster Certification & 2,000 Pts Single-Point Reconciliation</p>
+          </div>
+          <button class="btn-gradient" id="btn-proceed-to-season-top" style="width: auto; padding: 12px 18px; font-size: 13px;">
+            KICKOFF ➔
+          </button>
+        </div>
+
+        <!-- 10 Club Tabs Selector -->
+        <div>
+          <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 0.05em;">INSPECT ALL 10 FRANCHISES</span>
+          <div class="stadium-scroller" id="ledger-club-tabs" style="gap: 8px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Active Club Roster & Purse Reconciliation Container -->
+        <div id="ledger-active-club-container">
+          <!-- Rendered dynamically in app.js -->
+        </div>
+
+        <!-- Big Proceed to Season Action -->
+        <button class="btn-gradient" id="btn-proceed-to-season" style="padding: 18px; font-size: 15px; margin-top: 6px;">
+          PROCEED TO LEAGUE SEASON ➔
         </button>
       </div>
     </section>
@@ -425,7 +469,7 @@
               <h4>1. CHAMPIONS CARD</h4>
               <p>Starting XI in formation, bench strength, Golden Boot & wooden spoon.</p>
             </div>
-            <button class="btn-card-action" id="btn-export-champions-card">DOWNLOAD 4K</button>
+            <button class="btn-card-action" id="btn-export-champions-card">DOWNLOAD 9:16 HD POSTER</button>
           </div>
 
           <!-- Card 2: Final Table Card -->
@@ -434,7 +478,7 @@
               <h4>2. FINAL TABLE CARD</h4>
               <p>Full 10-club league table with points, goals, and goal difference.</p>
             </div>
-            <button class="btn-card-action" id="btn-export-table-card">DOWNLOAD 4K</button>
+            <button class="btn-card-action" id="btn-export-table-card">DOWNLOAD 9:16 HD POSTER</button>
           </div>
 
           <!-- Card 3: My Squad Card -->
@@ -443,7 +487,7 @@
               <h4>3. MY SQUAD CARD</h4>
               <p>Complete 15-player roster with OVR ratings, positions, and club badge.</p>
             </div>
-            <button class="btn-card-action" id="btn-export-squad-card">DOWNLOAD 4K</button>
+            <button class="btn-card-action" id="btn-export-squad-card">DOWNLOAD 9:16 HD POSTER</button>
           </div>
         </div>
 
@@ -457,11 +501,11 @@
           </button>
         </div>
 
-        <!-- Lead Form Attached Here -->
+        <!-- Lead Form Attached Here (P1-3 Rewritten Copy) -->
         <div class="leads-banner-card" id="screen-leads">
-          <h3 class="leads-headline">RUN IT FOR YOUR PEOPLE.<br><span class="gradient-text">YOUR NOSTALGIA. OUR LOGIC.</span></h3>
+          <h3 class="leads-headline"><span class="gradient-text">YOUR NOSTALGIA. OUR LOGIC.</span></h3>
           <p class="leads-copy">
-            Your own Super League — custom-built for your alumni batch, your office squad, or your campus tournament. We configure the auction room, player pool, and live room drops. Your people play. You take the credit.
+            Bring an official Nostalogic Games league to your community, campus batch, or office. We handle the tournament OS and live auction room — you run the room and take the glory.
           </p>
 
           <div id="lead-form-fields" style="display:flex;flex-direction:column;gap:12px;">
