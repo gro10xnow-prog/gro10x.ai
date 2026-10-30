@@ -1,4 +1,4 @@
-// NOSTALOGIC GAMES — The Super League 180-Player Pool Dataset
+// NOSTALOGIC GAMES — The Super League 180-Player Pool Dataset (V2 Corrected Canonical)
 const SUPERLEAGUE_PLAYERS = [
   {
     "id": "p1",
@@ -206,7 +206,7 @@ const SUPERLEAGUE_PLAYERS = [
     "basePrice": 65,
     "country": "Poland",
     "foot": "R",
-    "prime": "Juventus",
+    "prime": "Barcelona",
     "avatar": "⚽"
   },
   {
@@ -437,7 +437,7 @@ const SUPERLEAGUE_PLAYERS = [
     "basePrice": 90,
     "country": "France",
     "foot": "R",
-    "prime": "AC Milan",
+    "prime": "Chelsea",
     "avatar": "⚽"
   },
   {
@@ -651,83 +651,17 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p60",
-    "name": "Dani Carvajal",
+    "name": "Ben White",
     "pos": "DEF",
-    "ovr": 85,
+    "ovr": 84,
     "basePrice": 65,
-    "country": "Spain",
+    "country": "England",
     "foot": "R",
-    "prime": "Real Madrid",
+    "prime": "Arsenal",
     "avatar": "⚽"
   },
   {
     "id": "p61",
-    "name": "Kyle Walker",
-    "pos": "DEF",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "England",
-    "foot": "R",
-    "prime": "Manchester City",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p62",
-    "name": "John Stones",
-    "pos": "DEF",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "England",
-    "foot": "R",
-    "prime": "Manchester City",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p63",
-    "name": "Bremer",
-    "pos": "DEF",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "Brazil",
-    "foot": "R",
-    "prime": "Juventus",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p64",
-    "name": "Cristian Romero",
-    "pos": "DEF",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "Argentina",
-    "foot": "R",
-    "prime": "Tottenham",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p65",
-    "name": "Manuel Akanji",
-    "pos": "DEF",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "Switzerland",
-    "foot": "R",
-    "prime": "Manchester City",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p66",
-    "name": "Ibrahima Konate",
-    "pos": "DEF",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "France",
-    "foot": "R",
-    "prime": "Liverpool",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p67",
     "name": "Andy Robertson",
     "pos": "DEF",
     "ovr": 84,
@@ -738,18 +672,40 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p68",
-    "name": "Federico Dimarco",
+    "id": "p62",
+    "name": "Dayot Upamecano",
     "pos": "DEF",
     "ovr": 84,
     "basePrice": 65,
-    "country": "Italy",
-    "foot": "L",
-    "prime": "Inter Milan",
+    "country": "France",
+    "foot": "R",
+    "prime": "Bayern Munich",
     "avatar": "⚽"
   },
   {
-    "id": "p69",
+    "id": "p63",
+    "name": "Ibrahima Konate",
+    "pos": "DEF",
+    "ovr": 84,
+    "basePrice": 65,
+    "country": "France",
+    "foot": "R",
+    "prime": "Liverpool",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p64",
+    "name": "Joao Cancelo",
+    "pos": "DEF",
+    "ovr": 84,
+    "basePrice": 65,
+    "country": "Portugal",
+    "foot": "R",
+    "prime": "Manchester City",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p65",
     "name": "Jeremie Frimpong",
     "pos": "DEF",
     "ovr": 84,
@@ -760,40 +716,29 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p70",
-    "name": "Lisandro Martinez",
-    "pos": "DEF",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "Argentina",
-    "foot": "L",
-    "prime": "Manchester United",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p71",
-    "name": "Kim Min-jae",
+    "id": "p66",
+    "name": "Kyle Walker",
     "pos": "DEF",
     "ovr": 83,
     "basePrice": 65,
-    "country": "South Korea",
+    "country": "England",
     "foot": "R",
-    "prime": "Bayern Munich",
+    "prime": "Manchester City",
     "avatar": "⚽"
   },
   {
-    "id": "p72",
-    "name": "Benjamin Pavard",
+    "id": "p67",
+    "name": "Reece James",
     "pos": "DEF",
-    "ovr": 84,
+    "ovr": 83,
     "basePrice": 65,
-    "country": "France",
+    "country": "England",
     "foot": "R",
-    "prime": "Inter Milan",
+    "prime": "Chelsea",
     "avatar": "⚽"
   },
   {
-    "id": "p73",
+    "id": "p68",
     "name": "Jurrien Timber",
     "pos": "DEF",
     "ovr": 83,
@@ -804,25 +749,80 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p74",
-    "name": "Destiny Udogie",
-    "pos": "DEF",
-    "ovr": 83,
-    "basePrice": 65,
-    "country": "Italy",
-    "foot": "L",
-    "prime": "Tottenham",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p75",
-    "name": "Pedro Porro",
+    "id": "p69",
+    "name": "Marc Cucurella",
     "pos": "DEF",
     "ovr": 83,
     "basePrice": 65,
     "country": "Spain",
+    "foot": "L",
+    "prime": "Chelsea",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p70",
+    "name": "Pau Cubarsi",
+    "pos": "DEF",
+    "ovr": 82,
+    "basePrice": 45,
+    "country": "Spain",
     "foot": "R",
-    "prime": "Tottenham",
+    "prime": "Barcelona",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p71",
+    "name": "Dean Huijsen",
+    "pos": "DEF",
+    "ovr": 82,
+    "basePrice": 45,
+    "country": "Spain",
+    "foot": "R",
+    "prime": "Bournemouth",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p72",
+    "name": "Leny Yoro",
+    "pos": "DEF",
+    "ovr": 81,
+    "basePrice": 45,
+    "country": "France",
+    "foot": "R",
+    "prime": "Manchester United",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p73",
+    "name": "Malo Gusto",
+    "pos": "DEF",
+    "ovr": 81,
+    "basePrice": 45,
+    "country": "France",
+    "foot": "R",
+    "prime": "Chelsea",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p74",
+    "name": "Tino Livramento",
+    "pos": "DEF",
+    "ovr": 81,
+    "basePrice": 45,
+    "country": "England",
+    "foot": "R",
+    "prime": "Newcastle",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p75",
+    "name": "Myles Lewis-Skelly",
+    "pos": "DEF",
+    "ovr": 80,
+    "basePrice": 45,
+    "country": "England",
+    "foot": "L",
+    "prime": "Arsenal",
     "avatar": "⚽"
   },
   {
@@ -964,7 +964,7 @@ const SUPERLEAGUE_PLAYERS = [
     "ovr": 91,
     "basePrice": 115,
     "country": "Netherlands",
-    "foot": "R",
+    "foot": "Both",
     "prime": "AC Milan",
     "avatar": "⚽"
   },
@@ -1256,138 +1256,72 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p115",
-    "name": "Ilkay Gundogan",
-    "pos": "MID",
-    "ovr": 86,
-    "basePrice": 90,
-    "country": "Germany",
-    "foot": "R",
-    "prime": "Manchester City",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p116",
-    "name": "Roy Keane",
-    "pos": "MID",
-    "ovr": 86,
-    "basePrice": 90,
-    "country": "Ireland",
-    "foot": "R",
-    "prime": "Manchester United",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p117",
-    "name": "Eduardo Camavinga",
-    "pos": "MID",
-    "ovr": 86,
-    "basePrice": 90,
-    "country": "France",
-    "foot": "L",
-    "prime": "Real Madrid",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p118",
-    "name": "Aurelien Tchouameni",
-    "pos": "MID",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "France",
-    "foot": "R",
-    "prime": "Real Madrid",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p119",
-    "name": "Bruno Fernandes",
-    "pos": "MID",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "Portugal",
-    "foot": "R",
-    "prime": "Manchester United",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p120",
     "name": "Alexis Mac Allister",
     "pos": "MID",
-    "ovr": 85,
-    "basePrice": 65,
+    "ovr": 86,
+    "basePrice": 90,
     "country": "Argentina",
     "foot": "R",
     "prime": "Liverpool",
     "avatar": "⚽"
   },
   {
-    "id": "p121",
-    "name": "Hakan Calhanoglu",
+    "id": "p116",
+    "name": "Bruno Fernandes",
     "pos": "MID",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "Turkey",
+    "ovr": 86,
+    "basePrice": 90,
+    "country": "Portugal",
     "foot": "R",
-    "prime": "Inter Milan",
+    "prime": "Manchester United",
     "avatar": "⚽"
   },
   {
-    "id": "p122",
-    "name": "Frenkie de Jong",
+    "id": "p117",
+    "name": "Dominik Szoboszlai",
     "pos": "MID",
     "ovr": 85,
     "basePrice": 65,
-    "country": "Netherlands",
+    "country": "Hungary",
     "foot": "R",
-    "prime": "Barcelona",
+    "prime": "Liverpool",
     "avatar": "⚽"
   },
   {
-    "id": "p123",
-    "name": "Joshua Kimmich",
+    "id": "p118",
+    "name": "Enzo Fernandez",
     "pos": "MID",
     "ovr": 85,
     "basePrice": 65,
-    "country": "Germany",
-    "foot": "R",
-    "prime": "Bayern Munich",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p124",
-    "name": "N'Golo Kante",
-    "pos": "MID",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "France",
+    "country": "Argentina",
     "foot": "R",
     "prime": "Chelsea",
     "avatar": "⚽"
   },
   {
-    "id": "p125",
-    "name": "Casemiro",
+    "id": "p119",
+    "name": "Ryan Gravenberch",
     "pos": "MID",
     "ovr": 85,
     "basePrice": 65,
-    "country": "Brazil",
+    "country": "Netherlands",
     "foot": "R",
-    "prime": "Real Madrid",
+    "prime": "Liverpool",
     "avatar": "⚽"
   },
   {
-    "id": "p126",
-    "name": "Sergio Busquets",
+    "id": "p120",
+    "name": "Sandro Tonali",
     "pos": "MID",
     "ovr": 85,
     "basePrice": 65,
-    "country": "Spain",
+    "country": "Italy",
     "foot": "R",
-    "prime": "Barcelona",
+    "prime": "Newcastle",
     "avatar": "⚽"
   },
   {
-    "id": "p127",
+    "id": "p121",
     "name": "Gavi",
     "pos": "MID",
     "ovr": 84,
@@ -1398,91 +1332,157 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p128",
-    "name": "James Maddison",
+    "id": "p122",
+    "name": "Eduardo Camavinga",
     "pos": "MID",
     "ovr": 84,
     "basePrice": 65,
-    "country": "England",
+    "country": "France",
+    "foot": "L",
+    "prime": "Real Madrid",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p123",
+    "name": "Aurelien Tchouameni",
+    "pos": "MID",
+    "ovr": 84,
+    "basePrice": 65,
+    "country": "France",
     "foot": "R",
-    "prime": "Tottenham",
+    "prime": "Real Madrid",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p124",
+    "name": "Martin Zubimendi",
+    "pos": "MID",
+    "ovr": 84,
+    "basePrice": 65,
+    "country": "Spain",
+    "foot": "R",
+    "prime": "Real Sociedad",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p125",
+    "name": "Tijjani Reijnders",
+    "pos": "MID",
+    "ovr": 84,
+    "basePrice": 65,
+    "country": "Netherlands",
+    "foot": "R",
+    "prime": "AC Milan",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p126",
+    "name": "Xavi Simons",
+    "pos": "MID",
+    "ovr": 84,
+    "basePrice": 65,
+    "country": "Netherlands",
+    "foot": "R",
+    "prime": "RB Leipzig",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p127",
+    "name": "Joao Neves",
+    "pos": "MID",
+    "ovr": 84,
+    "basePrice": 65,
+    "country": "Portugal",
+    "foot": "R",
+    "prime": "PSG",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p128",
+    "name": "Desire Doue",
+    "pos": "MID",
+    "ovr": 84,
+    "basePrice": 65,
+    "country": "France",
+    "foot": "R",
+    "prime": "PSG",
     "avatar": "⚽"
   },
   {
     "id": "p129",
-    "name": "Dominik Szoboszlai",
+    "name": "Arda Guler",
     "pos": "MID",
-    "ovr": 84,
+    "ovr": 83,
     "basePrice": 65,
-    "country": "Hungary",
-    "foot": "R",
-    "prime": "Liverpool",
+    "country": "Turkey",
+    "foot": "L",
+    "prime": "Real Madrid",
     "avatar": "⚽"
   },
   {
     "id": "p130",
-    "name": "Sandro Tonali",
-    "pos": "MID",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "Italy",
-    "foot": "R",
-    "prime": "Newcastle",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p131",
-    "name": "Bruno Guimaraes",
-    "pos": "MID",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "Brazil",
-    "foot": "R",
-    "prime": "Newcastle",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p132",
-    "name": "Douglas Luiz",
-    "pos": "MID",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "Brazil",
-    "foot": "R",
-    "prime": "Aston Villa",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p133",
-    "name": "Lucas Paqueta",
-    "pos": "MID",
-    "ovr": 83,
-    "basePrice": 65,
-    "country": "Brazil",
-    "foot": "L",
-    "prime": "West Ham",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p134",
-    "name": "Enzo Fernandez",
-    "pos": "MID",
-    "ovr": 83,
-    "basePrice": 65,
-    "country": "Argentina",
-    "foot": "R",
-    "prime": "Chelsea",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p135",
-    "name": "Adrien Rabiot",
+    "name": "Warren Zaire-Emery",
     "pos": "MID",
     "ovr": 83,
     "basePrice": 65,
     "country": "France",
+    "foot": "R",
+    "prime": "PSG",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p131",
+    "name": "Nico Paz",
+    "pos": "MID",
+    "ovr": 82,
+    "basePrice": 45,
+    "country": "Argentina",
     "foot": "L",
-    "prime": "Juventus",
+    "prime": "Como",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p132",
+    "name": "Kobbie Mainoo",
+    "pos": "MID",
+    "ovr": 82,
+    "basePrice": 45,
+    "country": "England",
+    "foot": "R",
+    "prime": "Manchester United",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p133",
+    "name": "Adam Wharton",
+    "pos": "MID",
+    "ovr": 81,
+    "basePrice": 45,
+    "country": "England",
+    "foot": "L",
+    "prime": "Crystal Palace",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p134",
+    "name": "Elliot Anderson",
+    "pos": "MID",
+    "ovr": 81,
+    "basePrice": 45,
+    "country": "England",
+    "foot": "R",
+    "prime": "Nottingham Forest",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p135",
+    "name": "Franco Mastantuono",
+    "pos": "MID",
+    "ovr": 81,
+    "basePrice": 45,
+    "country": "Argentina",
+    "foot": "L",
+    "prime": "River Plate",
     "avatar": "⚽"
   },
   {
@@ -1509,18 +1509,18 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p138",
-    "name": "Ronaldo Nazario (R9)",
+    "name": "Ronaldo Nazario",
     "pos": "FWD",
     "ovr": 95,
     "basePrice": 160,
     "country": "Brazil",
     "foot": "Both",
-    "prime": "Inter Milan",
+    "prime": "Real Madrid",
     "avatar": "⚽"
   },
   {
     "id": "p139",
-    "name": "Cristiano Ronaldo (CR7)",
+    "name": "Cristiano Ronaldo",
     "pos": "FWD",
     "ovr": 94,
     "basePrice": 140,
@@ -1548,7 +1548,7 @@ const SUPERLEAGUE_PLAYERS = [
     "basePrice": 140,
     "country": "Netherlands",
     "foot": "Both",
-    "prime": "Barcelona",
+    "prime": "Ajax",
     "avatar": "⚽"
   },
   {
@@ -1558,7 +1558,7 @@ const SUPERLEAGUE_PLAYERS = [
     "ovr": 93,
     "basePrice": 140,
     "country": "Netherlands",
-    "foot": "Both",
+    "foot": "R",
     "prime": "AC Milan",
     "avatar": "⚽"
   },
@@ -1636,7 +1636,7 @@ const SUPERLEAGUE_PLAYERS = [
     "basePrice": 115,
     "country": "France",
     "foot": "R",
-    "prime": "PSG",
+    "prime": "Real Madrid",
     "avatar": "⚽"
   },
   {
@@ -1668,7 +1668,7 @@ const SUPERLEAGUE_PLAYERS = [
     "ovr": 90,
     "basePrice": 115,
     "country": "Scotland",
-    "foot": "R",
+    "foot": "Both",
     "prime": "Liverpool",
     "avatar": "⚽"
   },
@@ -1707,7 +1707,7 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p156",
-    "name": "Raul Gonzalez",
+    "name": "Raul",
     "pos": "FWD",
     "ovr": 89,
     "basePrice": 115,
@@ -1729,7 +1729,7 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p158",
-    "name": "Vinicius Jr",
+    "name": "Vinicius Junior",
     "pos": "FWD",
     "ovr": 89,
     "basePrice": 115,
@@ -1861,50 +1861,6 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p170",
-    "name": "Son Heung-min",
-    "pos": "FWD",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "South Korea",
-    "foot": "Both",
-    "prime": "Tottenham",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p171",
-    "name": "Victor Osimhen",
-    "pos": "FWD",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "Nigeria",
-    "foot": "R",
-    "prime": "Galatasaray",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p172",
-    "name": "Khvicha Kvaratskhelia",
-    "pos": "FWD",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "Georgia",
-    "foot": "Both",
-    "prime": "Napoli",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p173",
-    "name": "Rodrygo Goes",
-    "pos": "FWD",
-    "ovr": 85,
-    "basePrice": 65,
-    "country": "Brazil",
-    "foot": "R",
-    "prime": "Real Madrid",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p174",
     "name": "Viktor Gyokeres",
     "pos": "FWD",
     "ovr": 85,
@@ -1915,7 +1871,7 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p175",
+    "id": "p171",
     "name": "Cody Gakpo",
     "pos": "FWD",
     "ovr": 84,
@@ -1926,7 +1882,7 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p176",
+    "id": "p172",
     "name": "Bryan Mbeumo",
     "pos": "FWD",
     "ovr": 84,
@@ -1937,18 +1893,7 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p177",
-    "name": "Ollie Watkins",
-    "pos": "FWD",
-    "ovr": 84,
-    "basePrice": 65,
-    "country": "England",
-    "foot": "R",
-    "prime": "Aston Villa",
-    "avatar": "⚽"
-  },
-  {
-    "id": "p178",
+    "id": "p173",
     "name": "Anthony Gordon",
     "pos": "FWD",
     "ovr": 83,
@@ -1959,7 +1904,7 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p179",
+    "id": "p174",
     "name": "Antoine Semenyo",
     "pos": "FWD",
     "ovr": 83,
@@ -1970,14 +1915,69 @@ const SUPERLEAGUE_PLAYERS = [
     "avatar": "⚽"
   },
   {
-    "id": "p180",
-    "name": "Jarrod Bowen",
+    "id": "p175",
+    "name": "Hugo Ekitike",
     "pos": "FWD",
     "ovr": 83,
     "basePrice": 65,
+    "country": "France",
+    "foot": "R",
+    "prime": "Eintracht Frankfurt",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p176",
+    "name": "Marcus Rashford",
+    "pos": "FWD",
+    "ovr": 82,
+    "basePrice": 45,
     "country": "England",
+    "foot": "R",
+    "prime": "Manchester United",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p177",
+    "name": "Benjamin Sesko",
+    "pos": "FWD",
+    "ovr": 82,
+    "basePrice": 45,
+    "country": "Slovenia",
+    "foot": "R",
+    "prime": "RB Leipzig",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p178",
+    "name": "Nick Woltemade",
+    "pos": "FWD",
+    "ovr": 82,
+    "basePrice": 45,
+    "country": "Germany",
+    "foot": "R",
+    "prime": "VfB Stuttgart",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p179",
+    "name": "Estevao",
+    "pos": "FWD",
+    "ovr": 82,
+    "basePrice": 45,
+    "country": "Brazil",
     "foot": "L",
-    "prime": "West Ham",
+    "prime": "Palmeiras",
+    "avatar": "⚽"
+  },
+  {
+    "id": "p180",
+    "name": "Endrick",
+    "pos": "FWD",
+    "ovr": 79,
+    "basePrice": 25,
+    "country": "Brazil",
+    "foot": "L",
+    "prime": "Real Madrid",
     "avatar": "⚽"
   }
 ];

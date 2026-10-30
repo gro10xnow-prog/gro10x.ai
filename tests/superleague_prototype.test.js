@@ -110,7 +110,9 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
         else if (p.ovr >= 92) expect(p.basePrice).toBe(140);
         else if (p.ovr >= 89) expect(p.basePrice).toBe(115);
         else if (p.ovr >= 86) expect(p.basePrice).toBe(90);
-        else expect(p.basePrice).toBe(65);
+        else if (p.ovr >= 83) expect(p.basePrice).toBe(65);
+        else if (p.ovr >= 80) expect(p.basePrice).toBe(45);
+        else expect(p.basePrice).toBe(25);
       });
     });
 
@@ -123,13 +125,19 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       expect(names).toContain('Gianluigi Buffon');
       expect(names).toContain('Zinedine Zidane');
 
-      // Canonical stars present
-      expect(names).toContain('Dani Carvajal');
+      // Canonical stars present from v2-corrected PDF
+      expect(names).toContain('Ben White');
       expect(names).toContain('Kyle Walker');
-      expect(names).toContain('John Stones');
       expect(names).toContain('Eduardo Camavinga');
+      expect(names).toContain('Endrick');
+      expect(names).toContain('Estevao');
       const camavinga = SUPERLEAGUE_PLAYERS.find(p => p.name === 'Eduardo Camavinga');
-      expect(camavinga.ovr).toBe(86);
+      expect(camavinga.ovr).toBe(84);
+      expect(camavinga.basePrice).toBe(65);
+
+      const endrick = SUPERLEAGUE_PLAYERS.find(p => p.name === 'Endrick');
+      expect(endrick.ovr).toBe(79);
+      expect(endrick.basePrice).toBe(25);
 
       // Eliminated non-pool players
       expect(names).not.toContain('Matthijs de Ligt');
