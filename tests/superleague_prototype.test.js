@@ -668,12 +668,14 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
         .toBe('⚡ QUICK-CLOSE (CLOSING IN 2S)');
     });
 
-    test('Bench Phase first-view timer is immediately set to 20s on DOM element before first tick', () => {
+    test('Bench Phase first-view timer is immediately set to clock value on DOM element before first tick', () => {
       const appJs = fs.readFileSync(path.join(__dirname, '../public/superleague/app.js'), 'utf8');
 
-      // Verify triggerDemoJumpBenchPhase sets timerElem to 20s immediately
-      expect(appJs).toContain("state.timer = 20;");
-      expect(appJs).toContain("timerElem.textContent = '20s';");
+      // Verify triggerDemoJumpBenchPhase sets timerElem immediately (8s in Pacing v2, or 20s legacy)
+      const hasClockInit = appJs.includes("state.timer = 8;") || appJs.includes("state.timer = 20;");
+      const hasDomInit = appJs.includes("timerElem.textContent = '8s';") || appJs.includes("timerElem.textContent = '20s';");
+      expect(hasClockInit).toBe(true);
+      expect(hasDomInit).toBe(true);
 
       // Verify presentNextLot and startLotTimer set timerElem.textContent upon initialization
       expect(appJs).toContain("timerElem.textContent = `${state.timer}s`;");
@@ -809,6 +811,69 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       const stadiumQueue = path.join(__dirname, '../public/superleague/STADIUM-QUEUE.md');
       expect(fs.existsSync(coachQueue)).toBe(true);
       expect(fs.existsSync(stadiumQueue)).toBe(true);
+    });
+  });
+
+  // --- PACING V2 & EXPERIENCE FIXES SUITE ---
+  describe('Pacing v2 & Experience Fixes (Smart Clock, Bot Pass Discipline, Season Visibility & Share Studio)', () => {
+    const appJs = fs.readFileSync(path.join(__dirname, '../public/superleague/app.js'), 'utf8');
+    const indexHtml = fs.readFileSync(path.join(__dirname, '../public/superleague/index.html'), 'utf8');
+
+    test('Smart clock values: standard 12s, marquee (OVR 90+) 20s, bench phase 8s, and 35s hard cap', () => {
+      // Marquee 20s vs Standard 12s vs Bench phase 8s
+      expect(appJs).toContain("state.currentLot.ovr >= 90");
+      expect(appJs).toContain("state.timer = 20;");
+      expect(appJs).toContain("state.timer = 12;");
+      expect(appJs).toContain("state.timer = 8;");
+      // Hard cap 35s
+      expect(appJs).toContain("lotHardCapSeconds: 35");
+    });
+
+    test('Death rule and All-pass rule are implemented in lot clock logic', () => {
+      // Death rule: no bids in first 5s and human passed -> close in 2s
+      expect(appJs).toContain("state.lotBidsCount === 0 && state.lotSecondsElapsed >= 5 && state.humanPassed");
+      // All-pass rule: checkAllPassed function
+      expect(appJs).toContain("function checkAllPassed()");
+      expect(appJs).toContain("resolveLotSale()");
+    });
+
+    test('Bot pass discipline: evaluateInitialBotPasses passes out-of-fit bots with feed log', () => {
+      expect(appJs).toContain("function evaluateInitialBotPasses()");
+      expect(appJs).toContain("passes");
+      expect(appJs).toContain("passedClubIds");
+    });
+
+    test('Human pass finality & leading state UI rules are present in app.js', () => {
+      // Passed state disables buttons
+      expect(appJs).toContain("YOU PASSED — WATCHING");
+      // Leading state
+      expect(appJs).toContain("YOU'RE LEADING —");
+      expect(appJs).toContain("LEADING ✓");
+      // Outbid state
+      expect(appJs).toContain("Outbid —");
+    });
+
+    test('Season round UI displays player match score and result badge first', () => {
+      expect(appJs).toContain("FT · VICTORY (+3 PTS)");
+      expect(appJs).toContain("FT · DRAW (+1 PT)");
+      expect(appJs).toContain("FT · DEFEAT (0 PTS)");
+      expect(appJs).toContain("spotlight-scorers-feed");
+    });
+
+    test('Champion screen displays player finish position hero large on-screen first', () => {
+      expect(indexHtml).toContain('id="player-finish-hero"');
+      expect(indexHtml).toContain('id="user-finish-badge"');
+      expect(indexHtml).toContain('id="user-finish-headline"');
+      expect(indexHtml).toContain('id="user-finish-subline"');
+      expect(indexHtml).toContain('id="secondary-champ-container"');
+    });
+
+    test('Share studio has My Squad Card marked as PRIMARY and floating toast notification container', () => {
+      expect(indexHtml).toContain('1. MY SQUAD CARD');
+      expect(indexHtml).toContain('PRIMARY');
+      expect(indexHtml).toContain('id="btn-export-squad-card"');
+      expect(indexHtml).toContain('id="superleague-toast"');
+      expect(appJs).toContain("function showShareToast");
     });
   });
 

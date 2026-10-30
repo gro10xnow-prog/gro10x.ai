@@ -468,29 +468,29 @@
     <!-- ============================================================== -->
     <section class="screen" id="screen-champion">
       <div class="champion-wrap">
-        <div class="trophy-hero">🏆</div>
-        
-        <div>
-          <div style="font-size:40px;margin-bottom:8px;" id="champ-icon-display">👑</div>
-          <h2 class="champion-headline" id="champ-title-display">ROYAL MADRID C.F. ARE CHAMPIONS!</h2>
-          <p style="font-size:13px;color:var(--text-muted);margin-top:4px;" id="champ-manager-display">Manager: Gaffer Firoz · The Fortress</p>
+        <!-- PLAYER'S STORY HERO (PRIMARY) -->
+        <div id="player-finish-hero" class="player-finish-hero" style="width:100%;text-align:center;padding:24px 20px;border-radius:20px;background:linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(20,20,30,0.95) 100%);border:1px solid var(--border-focus);margin-bottom:16px;">
+          <div style="font-size:42px;margin-bottom:8px;" id="user-finish-badge">🏆</div>
+          <div style="font-size:12px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--grad-cyan);margin-bottom:6px;" id="user-finish-tag">YOUR SEASON VERDICT</div>
+          <h2 class="champion-headline" id="user-finish-headline" style="font-size:28px;font-weight:900;letter-spacing:-0.02em;margin-bottom:8px;line-height:1.2;">YOU FINISHED 1ST — SUPER LEAGUE CHAMPIONS!</h2>
+          <p style="font-size:14px;color:var(--text-muted);margin-top:2px;" id="user-finish-subline">Manager: Gaffer Firoz · P9 W7 D1 L1 · 22 PTS (GD +14)</p>
+          <div id="secondary-champ-container" style="display:none;margin-top:14px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border-subtle);font-size:12px;color:var(--text-dim);"></div>
         </div>
 
-        <div class="champion-record-pill" id="champ-record-display">
-          P9 W7 D1 L1 · 22 PTS (GD +14)
-        </div>
-
-        <!-- 9:16 HD Share Export Studio -->
+        <!-- 9:16 HD Share Export Studio (MY SQUAD CARD IS PRIMARY) -->
         <div class="cards-flex-shelf">
           <h4 style="font-size:14px;color:var(--text-muted);text-align:left;">9:16 HD SHARE STUDIO (1080×1920)</h4>
 
-          <!-- Card 1: Champions Card -->
-          <div class="card-export-tile">
+          <!-- Card 1: My Squad Card (PRIMARY) -->
+          <div class="card-export-tile" style="border-color:var(--grad-magenta);background:rgba(255, 0, 200, 0.06);">
             <div class="card-tile-info">
-              <h4>1. CHAMPIONS CARD</h4>
-              <p>Starting XI in formation, bench strength, Golden Boot & wooden spoon.</p>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                <span style="background:var(--grad-magenta);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:0.05em;">PRIMARY</span>
+                <h4 style="margin:0;">1. MY SQUAD CARD</h4>
+              </div>
+              <p>Your complete 15-player tactical roster with OVR ratings, positions & badge.</p>
             </div>
-            <button class="btn-card-action" id="btn-export-champions-card">DOWNLOAD 9:16 HD POSTER</button>
+            <button class="btn-card-action" id="btn-export-squad-card" style="background:var(--grad-magenta);color:#fff;border-color:var(--grad-magenta);">DOWNLOAD 9:16 HD POSTER</button>
           </div>
 
           <!-- Card 2: Final Table Card -->
@@ -502,13 +502,13 @@
             <button class="btn-card-action" id="btn-export-table-card">DOWNLOAD 9:16 HD POSTER</button>
           </div>
 
-          <!-- Card 3: My Squad Card -->
+          <!-- Card 3: Champions Card -->
           <div class="card-export-tile">
             <div class="card-tile-info">
-              <h4>3. MY SQUAD CARD</h4>
-              <p>Complete 15-player roster with OVR ratings, positions, and club badge.</p>
+              <h4>3. CHAMPIONS MOMENT CARD</h4>
+              <p>Starting XI in formation, bench strength, Golden Boot & wooden spoon.</p>
             </div>
-            <button class="btn-card-action" id="btn-export-squad-card">DOWNLOAD 9:16 HD POSTER</button>
+            <button class="btn-card-action" id="btn-export-champions-card">DOWNLOAD 9:16 HD POSTER</button>
           </div>
         </div>
 
@@ -595,6 +595,11 @@
       <h3 id="modal-squad-title" style="font-size:16px;">YOUR SQUAD</h3>
       <div id="modal-squad-list" style="max-height:360px;overflow-y:auto;padding-right:4px;"></div>
     </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="superleague-toast" class="superleague-toast" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#101018;color:#00FFCC;border:1px solid #00FFCC;padding:12px 24px;border-radius:30px;font-weight:700;font-size:13px;box-shadow:0 10px 30px rgba(0,255,204,0.3);z-index:99999;transition:all 0.3s ease;text-align:center;max-width:90%;">
+    ✓ Link copied to clipboard — send it to your friends!
   </div>
 
   <!-- Data & Logic Scripts -->

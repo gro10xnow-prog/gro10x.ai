@@ -384,7 +384,14 @@
     benchPhaseActive: false,
     lotBidsCount: 0,
     lotSecondsElapsed: 0,
+    lotClockResets: 0,
+    lotHardCapSeconds: 35,
+    humanPassed: false,
+    passedClubIds: new Set(),
+    lastBotBidTime: 0,
+    goingOnceActive: false,
     quickCloseActive: false,
+    toastTimer: null,
     bidLogs: [],
 
     // Post-Draft Ledger View
@@ -629,6 +636,14 @@
         startLotTimer,
         presentNextLot,
         renderCoachAvatar,
+        handleUserPass,
+        checkAllPassed,
+        evaluateInitialBotPasses,
+        simulateNextRound,
+        autoSimulateSeason,
+        renderChampionScreen,
+        showShareToast,
+        triggerViralShare,
         COACH_RENDERS,
         STADIUM_RENDERS,
         STADIUMS,
@@ -877,7 +892,7 @@
     state.benchPhaseActive = allHaveStartingXI;
     const benchBanner = $('bench-phase-banner');
     if (benchBanner) {
-      benchBanner.textContent = '⚡ BENCH PHASE: 20S LOTS';
+      benchBanner.textContent = '⚡ BENCH PHASE: 8S LOTS';
       benchBanner.style.display = state.benchPhaseActive ? 'block' : 'none';
     }
 
@@ -885,12 +900,27 @@
     state.currentBid = 0;
     state.currentBidderId = null;
     state.lotBidsCount = 0;
-    state.timer = state.benchPhaseActive ? 20 : 40;
+    state.lotClockResets = 0;
+    state.lotSecondsElapsed = 0;
+    state.humanPassed = false;
+    state.passedClubIds = new Set();
+    state.lastBotBidTime = 0;
+    state.goingOnceActive = false;
+
+    // Smart Clock Opening:
+    // Standard opens at 12s, Marquee (90+) opens at 20s, Bench Phase opens at 8s
+    if (state.benchPhaseActive) {
+      state.timer = 8;
+    } else if (state.currentLot.ovr >= 90) {
+      state.timer = 20;
+    } else {
+      state.timer = 12;
+    }
 
     const timerElem = $('timer-display-num');
     if (timerElem) {
       timerElem.textContent = `${state.timer}s`;
-      if (state.timer <= 10) {
+      if (state.timer <= 5) {
         timerElem.classList.add('danger');
       } else {
         timerElem.classList.remove('danger');
@@ -904,7 +934,8 @@
     updatePurseGuardUI();
     startLotTimer();
 
-    // Trigger AI bots to appraise lot
+    // Trigger AI bots fit evaluation & cadence
+    evaluateInitialBotPasses();
     scheduleBotAppraisal();
   }
 
@@ -1024,30 +1055,153 @@
     const guard = getPurseGuardInfo(userClub.id, state.currentLot);
     $('purse-guard-reason-text').textContent = guard.reason;
 
-    // P1-1: Strict Bid Calculation
-    // If state.currentBid === 0, clicking +20 from 140 base strictly bids 160
+    // P1-1: Strict Bid Calculation & Pass/Lead Legibility
+    const passBtn = $('btn-pass-lot');
+    const isLeading = state.currentBidderId === userClub.id;
+    const isHumanPassed = state.humanPassed;
+
+    // Pass button state
+    if (passBtn) {
+      if (isHumanPassed) {
+        passBtn.textContent = 'YOU PASSED — WATCHING';
+        passBtn.disabled = true;
+        passBtn.style.opacity = '0.5';
+        passBtn.style.cursor = 'not-allowed';
+      } else if (isLeading) {
+        passBtn.textContent = 'CANNOT PASS (LEADING ✓)';
+        passBtn.disabled = true;
+        passBtn.style.opacity = '0.5';
+        passBtn.style.cursor = 'not-allowed';
+      } else {
+        passBtn.textContent = 'PASS THIS LOT';
+        passBtn.disabled = false;
+        passBtn.style.opacity = '1';
+        passBtn.style.cursor = 'pointer';
+      }
+    }
+
     const activeBase = state.currentBid === 0 ? state.currentLot.basePrice : state.currentBid;
 
+    // Update bidding buttons
     [20, 50, 100].forEach(inc => {
       const nextBid = activeBase + inc;
       const btn = $(`btn-bid-${inc}`);
       if (!btn) return;
 
       const canAfford = guard.allowed && nextBid <= guard.maxBid;
-      const alreadyLeader = state.currentBidderId === userClub.id;
+      const spanLabel = btn.querySelector('span:first-child');
+      const amountLabel = btn.querySelector('.bid-amount-label');
 
-      btn.disabled = !canAfford || alreadyLeader || userClub.squad.length >= 15;
-      btn.querySelector('.bid-amount-label').textContent = `+${inc} PTS (${nextBid})`;
+      if (isHumanPassed) {
+        // Human passed is final for this lot: buttons disable and grey
+        btn.disabled = true;
+        btn.style.opacity = '0.35';
+        btn.style.cursor = 'not-allowed';
+        if (spanLabel) spanLabel.textContent = 'PASSED';
+        if (amountLabel) amountLabel.textContent = 'WATCHING';
+      } else if (isLeading) {
+        // Human is leading: buttons flip to disabled "Leading ✓" until outbid
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.style.cursor = 'default';
+        if (spanLabel) spanLabel.textContent = 'LEADING ✓';
+        if (amountLabel) amountLabel.textContent = `${state.currentBid} PTS`;
+      } else {
+        // Normal raise options live
+        btn.disabled = !canAfford || userClub.squad.length >= 15;
+        btn.style.opacity = btn.disabled ? '0.45' : '1';
+        btn.style.cursor = btn.disabled ? 'not-allowed' : 'pointer';
+        if (spanLabel) spanLabel.textContent = 'RAISE';
+        if (amountLabel) amountLabel.textContent = `+${inc} PTS (${nextBid})`;
+      }
     });
+
+    // Update Bid Leader Display & Outbid state
+    const leaderTag = $('bid-leader-display');
+    if (leaderTag) {
+      if (state.currentBidderId === null) {
+        leaderTag.innerHTML = `Base Price · Awaiting Opening Bid`;
+      } else if (isLeading) {
+        leaderTag.innerHTML = `<span style="color:var(--grad-cyan);font-weight:700;">YOU'RE LEADING — ${state.currentBid} PTS</span>`;
+      } else {
+        const bidder = state.clubs.find(c => c.id === state.currentBidderId);
+        const bidderName = bidder ? (bidder.manager || bidder.name) : 'Bot';
+        leaderTag.innerHTML = `<span style="color:#FF4466;font-weight:700;">Outbid — ${state.currentBid} PTS by ${bidderName}</span>`;
+      }
+    }
   }
 
   function updateQuickCloseBanner() {
     const quickBanner = $('quick-close-banner');
     if (!quickBanner) return;
+    if (state.goingOnceActive) {
+      quickBanner.textContent = '⚡ GOING ONCE... (CLOSING IN 3S)';
+      return;
+    }
     const hasBids = state.lotBidsCount > 0 || state.currentBid > 0 || state.currentBidderId !== null;
     quickBanner.textContent = hasBids
       ? '⚡ QUICK-CLOSE (CLOSING IN 2S)'
       : '⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)';
+  }
+
+  function checkAllPassed() {
+    const lot = state.currentLot;
+    if (!lot) return false;
+
+    const activeClubs = state.clubs.filter(c => c.squad.length < 15);
+    const allBotsPassed = activeClubs
+      .filter(c => c.id !== state.userClubId)
+      .every(c => state.passedClubIds.has(c.id));
+
+    if (state.humanPassed && allBotsPassed) {
+      logBidActivity(`⚡ All clubs passed — lot closing immediately`);
+      clearInterval(state.timerInterval);
+      state.timer = 0;
+      resolveLotSale();
+      return true;
+    }
+    return false;
+  }
+
+  function evaluateInitialBotPasses() {
+    const lot = state.currentLot;
+    if (!lot) return;
+
+    state.clubs.forEach(c => {
+      if (c.id === state.userClubId) return;
+      if (c.squad.length >= 15) {
+        state.passedClubIds.add(c.id);
+        return;
+      }
+
+      const guard = getPurseGuardInfo(c.id, lot);
+      const posCount = c.squad.filter(p => p.pos === lot.pos).length;
+      let outOfFit = !guard.allowed || guard.maxBid < lot.basePrice;
+
+      if (lot.pos === 'GK' && posCount >= 2) outOfFit = true;
+      if (lot.pos === 'DEF' && posCount >= 6) outOfFit = true;
+      if (lot.pos === 'MID' && posCount >= 6) outOfFit = true;
+      if (lot.pos === 'FWD' && posCount >= 4) outOfFit = true;
+
+      if (state.benchPhaseActive) {
+        if (posCount >= 4 && lot.ovr < 88) outOfFit = true;
+        if (c.purse < 150 && lot.basePrice > 65) outOfFit = true;
+      }
+
+      const maxWilling = lot.basePrice + (lot.ovr >= 92 ? 140 : (lot.ovr >= 88 ? 70 : 30));
+      if (maxWilling < lot.basePrice) outOfFit = true;
+
+      if (outOfFit) {
+        state.passedClubIds.add(c.id);
+        const passDelay = Math.floor(Math.random() * 700) + 200;
+        setTimeout(() => {
+          if (state.currentLot === lot && state.timer > 0) {
+            logBidActivity(`🤖 ${c.manager} passes`, c);
+            checkAllPassed();
+          }
+        }, passDelay);
+      }
+    });
   }
 
   function startLotTimer() {
@@ -1060,7 +1214,7 @@
     const timerElem = $('timer-display-num');
     if (timerElem) {
       timerElem.textContent = `${state.timer}s`;
-      if (state.timer <= 10) {
+      if (state.timer <= 5) {
         timerElem.classList.add('danger');
       } else {
         timerElem.classList.remove('danger');
@@ -1071,26 +1225,45 @@
       state.lotSecondsElapsed++;
       state.timer--;
 
-      // Quick-Close Rule: on any lot with 0 bids for 8 seconds, visibly trigger fast-forward closing in 2s
+      // 1. Hard cap ≈35s per lot
+      if (state.lotSecondsElapsed >= 35) {
+        state.timer = 0;
+      }
+
+      // 2. Death rule: no bid within first 5s AND human passed -> close in 2s
+      if (state.lotBidsCount === 0 && state.lotSecondsElapsed >= 5 && state.humanPassed && !state.quickCloseActive) {
+        state.quickCloseActive = true;
+        state.timer = Math.min(state.timer, 2);
+        updateQuickCloseBanner();
+        if (quickBanner) quickBanner.style.display = 'block';
+        logBidActivity(`⚡ DEATH RULE: No bids in 5s & human passed — closing in 2s`);
+      }
+
+      // 3. Fallback Quick-Close Rule: on any lot with 0 bids for 8 seconds, visibly trigger closing in 2s
       if (state.lotBidsCount === 0 && state.lotSecondsElapsed >= 8 && !state.quickCloseActive) {
         state.quickCloseActive = true;
-        state.timer = 2;
+        state.timer = Math.min(state.timer, 2);
         updateQuickCloseBanner();
         if (quickBanner) quickBanner.style.display = 'block';
         logBidActivity(`⚡ QUICK-CLOSE TRIGGERED: NO BIDS IN 8S · CLOSING IN 2S`);
       }
 
-      if (state.quickCloseActive) {
+      if (state.quickCloseActive || state.goingOnceActive) {
         updateQuickCloseBanner();
       }
 
       if (timerElem) {
-        timerElem.textContent = `${state.timer}s`;
-        if (state.timer <= 10 || state.quickCloseActive) {
+        timerElem.textContent = `${Math.max(0, state.timer)}s`;
+        if (state.timer <= 5 || state.quickCloseActive || state.goingOnceActive) {
           timerElem.classList.add('danger');
         } else {
           timerElem.classList.remove('danger');
         }
+      }
+
+      // 4. All-pass rule check
+      if (checkAllPassed()) {
+        return;
       }
 
       if (state.timer <= 0) {
@@ -1214,21 +1387,21 @@
     });
 
     state.benchPhaseActive = true;
-    state.timer = 20;
+    state.timer = 8;
 
     const timerElem = $('timer-display-num');
     if (timerElem) {
-      timerElem.textContent = '20s';
+      timerElem.textContent = '8s';
       timerElem.classList.remove('danger');
     }
 
     const benchBanner = $('bench-phase-banner');
     if (benchBanner) {
-      benchBanner.textContent = '⚡ BENCH PHASE: 20S LOTS';
+      benchBanner.textContent = '⚡ BENCH PHASE: 8S LOTS';
       benchBanner.style.display = 'block';
     }
 
-    logBidActivity(`🧪 DEMO TELEMETRY: ⚡ JUMP TO BENCH PHASE (ALL CLUBS HAVE 11 PLAYERS · 20S CLOCK)`);
+    logBidActivity(`🧪 DEMO TELEMETRY: ⚡ JUMP TO BENCH PHASE (ALL CLUBS HAVE 11 PLAYERS · 8S CLOCK)`);
     presentNextLot();
   }
 
@@ -1254,8 +1427,28 @@
     state.currentBidderId = clubId;
     state.lotBidsCount++;
 
-    if (state.quickCloseActive) {
-      updateQuickCloseBanner();
+    // Smart Clock: Bid resets clock to 8s (maximum 3 resets), then 3s "going once" close
+    if (state.lotClockResets < 3) {
+      state.lotClockResets++;
+      state.timer = 8;
+      state.quickCloseActive = false;
+      const quickBanner = $('quick-close-banner');
+      if (quickBanner) quickBanner.style.display = 'none';
+    } else {
+      state.goingOnceActive = true;
+      state.timer = Math.min(state.timer, 3);
+      const quickBanner = $('quick-close-banner');
+      if (quickBanner) {
+        quickBanner.textContent = '⚡ GOING ONCE... (CLOSING IN 3S)';
+        quickBanner.style.display = 'block';
+      }
+    }
+
+    const timerElem = $('timer-display-num');
+    if (timerElem) {
+      timerElem.textContent = `${state.timer}s`;
+      if (state.timer <= 5) timerElem.classList.add('danger');
+      else timerElem.classList.remove('danger');
     }
 
     const bidder = state.clubs.find(c => c.id === clubId);
@@ -1263,16 +1456,6 @@
       logBidActivity(`⚡ You (${bidder.name}) bid ${amount} PTS`);
     } else {
       logBidActivity(`🤖 [${bidder.manager} (${bidder.name}) bid ${amount} PTS]`, bidder);
-    }
-
-    // Anti-Snipe: If bid in final 10 seconds, add +10s
-    if (state.timer <= 10) {
-      state.timer += 10;
-      const antiSnipe = $('anti-snipe-banner');
-      if (antiSnipe) {
-        antiSnipe.classList.add('active');
-        setTimeout(() => antiSnipe.classList.remove('active'), 2500);
-      }
     }
 
     updateCurrentBidDisplay();
@@ -1284,19 +1467,35 @@
 
   function handleUserPass() {
     if (state.currentBidderId === state.userClubId) {
-      return;
+      return; // Leader cannot pass
     }
+    state.humanPassed = true;
     logBidActivity(`👋 You passed on ${state.currentLot.name}`);
-    if (state.lotBidsCount === 0) {
-      state.timer = Math.min(state.timer, 3);
+    updatePurseGuardUI();
+
+    // Death Rule: no bid within first 5s AND human passed -> close in 2s
+    if (state.lotBidsCount === 0 && state.lotSecondsElapsed >= 5 && !state.quickCloseActive) {
+      state.quickCloseActive = true;
+      state.timer = Math.min(state.timer, 2);
+      updateQuickCloseBanner();
+      const quickBanner = $('quick-close-banner');
+      if (quickBanner) quickBanner.style.display = 'block';
+      logBidActivity(`⚡ DEATH RULE: No bids in 5s & human passed — closing in 2s`);
+    } else if (state.lotBidsCount === 0) {
+      state.timer = Math.min(state.timer, 5);
     }
+
+    // All-pass check
+    checkAllPassed();
   }
 
-  // Realistic Bot AI
+  // Realistic Bot AI with Human Cadence
   function scheduleBotAppraisal() {
     clearTimeout(state.botBidTimeout);
+    if (state.timer <= 0) return;
 
-    const delay = Math.floor(Math.random() * 2200) + 1000;
+    // Human timescale: randomised 0.8–2.5s delays
+    const delay = Math.floor(Math.random() * 1700) + 800;
     state.botBidTimeout = setTimeout(() => {
       evaluateBotBids();
     }, delay);
@@ -1304,19 +1503,25 @@
 
   function evaluateBotBids() {
     if (state.timer <= 0) return;
-
     const lot = state.currentLot;
     if (!lot) return;
+
+    // At most one bot bid per ~1.2s on a lot
+    const now = Date.now();
+    if (now - state.lastBotBidTime < 1200) {
+      scheduleBotAppraisal();
+      return;
+    }
 
     const eligibleBots = state.clubs.filter(c => {
       if (c.id === state.userClubId) return false;
       if (c.id === state.currentBidderId) return false;
+      if (state.passedClubIds.has(c.id)) return false; // Passed bot never re-enters!
       if (c.squad.length >= 15) return false;
 
       const guard = getPurseGuardInfo(c.id, lot);
       if (!guard.allowed) return false;
 
-      // Position quota limit
       const posCount = c.squad.filter(p => p.pos === lot.pos).length;
       if (lot.pos === 'GK' && posCount >= 2) return false;
       if (lot.pos === 'DEF' && posCount >= 6) return false;
@@ -1324,21 +1529,38 @@
       if (lot.pos === 'FWD' && posCount >= 4) return false;
 
       const activeBase = state.currentBid === 0 ? lot.basePrice : state.currentBid;
+      const nextMinBid = activeBase + 20;
+      if (nextMinBid > guard.maxBid) return false;
+
       const maxWilling = lot.basePrice + (lot.ovr >= 92 ? 140 : (lot.ovr >= 88 ? 70 : 30));
-      return (activeBase + 20) <= maxWilling && (activeBase + 20) <= guard.maxBid;
+      return nextMinBid <= maxWilling;
     });
 
-    if (eligibleBots.length > 0) {
-      const bot = eligibleBots[Math.floor(Math.random() * eligibleBots.length)];
-      const increments = [20, 20, 50];
-      const inc = increments[Math.floor(Math.random() * increments.length)];
-      const activeBase = state.currentBid === 0 ? lot.basePrice : state.currentBid;
-      const nextBid = activeBase + inc;
-      
-      const guard = getPurseGuardInfo(bot.id, lot);
-      if (nextBid <= guard.maxBid) {
-        executeBid(bot.id, nextBid, false);
-      }
+    if (eligibleBots.length === 0) {
+      // Mark all non-passed bots as passed now that prices exceeded willingness
+      state.clubs.forEach(c => {
+        if (c.id !== state.userClubId && !state.passedClubIds.has(c.id)) {
+          state.passedClubIds.add(c.id);
+          logBidActivity(`🤖 ${c.manager} passes`, c);
+        }
+      });
+      checkAllPassed();
+      return;
+    }
+
+    const bot = eligibleBots[Math.floor(Math.random() * eligibleBots.length)];
+    const activeBase = state.currentBid === 0 ? lot.basePrice : state.currentBid;
+    
+    // Prices climb through the bands (+20/+50/+100)
+    const increments = [20, 20, 20, 50, 50, 100];
+    const guard = getPurseGuardInfo(bot.id, lot);
+    const validIncs = increments.filter(inc => (activeBase + inc) <= guard.maxBid);
+    const inc = validIncs.length > 0 ? validIncs[Math.floor(Math.random() * validIncs.length)] : 20;
+    const nextBid = activeBase + inc;
+
+    if (nextBid <= guard.maxBid) {
+      state.lastBotBidTime = Date.now();
+      executeBid(bot.id, nextBid, false);
     }
   }
 
@@ -1694,30 +1916,70 @@
   }
 
   function simulateNextRound() {
-    if (state.currentRoundIdx >= state.seasonRounds.length) return;
+    if (state.currentRoundIdx >= state.seasonRounds.length) {
+      showScreen('champion');
+      renderChampionScreen();
+      return;
+    }
 
     const round = state.seasonRounds[state.currentRoundIdx];
-    round.matches.forEach(m => simulateMatch(m));
+    if (!round) return;
 
-    updateStandingsTable();
-    state.currentRoundIdx++;
-    renderSeasonRoundUI();
+    const simBtn = $('btn-sim-round');
 
-    if (state.currentRoundIdx >= state.seasonRounds.length) {
-      state.seasonCompleted = true;
-      const simBtn = $('btn-sim-round');
-      if (simBtn) simBtn.disabled = true;
-      const autoBtn = $('btn-auto-sim-season');
-      if (autoBtn) autoBtn.disabled = true;
-      const champBtn = $('btn-view-champion-moment');
-      if (champBtn) champBtn.style.display = 'inline-flex';
+    // Step 1: If current round is not yet played, simulate it and show results first!
+    if (!round.played) {
+      round.matches.forEach(m => simulateMatch(m));
+      round.played = true;
+      updateStandingsTable();
+      renderSeasonRoundUI();
+
+      if (state.currentRoundIdx < state.seasonRounds.length - 1) {
+        if (simBtn) {
+          simBtn.textContent = `NEXT FIXTURE (ROUND ${state.currentRoundIdx + 2}) ➔`;
+          simBtn.classList.remove('btn-gradient');
+          simBtn.classList.add('btn-primary');
+        }
+      } else {
+        // Round 9 finished - season complete!
+        state.seasonCompleted = true;
+        if (simBtn) {
+          simBtn.textContent = '🏆 VIEW FINAL VERDICT & PODIUM';
+          simBtn.classList.remove('btn-primary');
+          simBtn.classList.add('btn-gradient');
+        }
+        const champBtn = $('btn-view-champion-moment');
+        if (champBtn) champBtn.style.display = 'inline-flex';
+      }
+      return;
+    }
+
+    // Step 2: If current round was already played and user clicked next, advance to next round!
+    if (state.currentRoundIdx < state.seasonRounds.length - 1) {
+      state.currentRoundIdx++;
+      renderSeasonRoundUI();
+      if (simBtn) {
+        simBtn.textContent = `SIMULATE ROUND ${state.currentRoundIdx + 1} ⚡`;
+        simBtn.classList.remove('btn-primary');
+        simBtn.classList.add('btn-gradient');
+      }
+    } else {
+      // End of season reached
+      showScreen('champion');
+      renderChampionScreen();
     }
   }
 
   function autoSimulateSeason() {
-    while (state.currentRoundIdx < state.seasonRounds.length) {
-      simulateNextRound();
-    }
+    state.seasonRounds.forEach(r => {
+      r.matches.forEach(m => {
+        if (!m.played) simulateMatch(m);
+      });
+      r.played = true;
+    });
+    state.currentRoundIdx = state.seasonRounds.length - 1;
+    state.seasonCompleted = true;
+    updateStandingsTable();
     showScreen('champion');
     renderChampionScreen();
   }
@@ -1846,14 +2108,26 @@
 
       if (userMatch.played) {
         $('spotlight-score-display').textContent = `${userMatch.homeScore} - ${userMatch.awayScore}`;
-        $('spotlight-minute-display').textContent = 'FULL TIME (FT)';
+        
+        const isUserHome = userMatch.homeId === state.userClubId;
+        const userScore = isUserHome ? userMatch.homeScore : userMatch.awayScore;
+        const oppScore = isUserHome ? userMatch.awayScore : userMatch.homeScore;
+        let badgeHtml = '';
+        if (userScore > oppScore) {
+          badgeHtml = '<span style="color:#10B981;font-weight:800;letter-spacing:0.04em;">FT · VICTORY (+3 PTS)</span>';
+        } else if (userScore === oppScore) {
+          badgeHtml = '<span style="color:#F59E0B;font-weight:800;letter-spacing:0.04em;">FT · DRAW (+1 PT)</span>';
+        } else {
+          badgeHtml = '<span style="color:#EF4444;font-weight:800;letter-spacing:0.04em;">FT · DEFEAT (0 PTS)</span>';
+        }
+        $('spotlight-minute-display').innerHTML = badgeHtml;
         
         const feed = $('spotlight-scorers-feed');
         if (userMatch.scorers.length > 0) {
           feed.innerHTML = userMatch.scorers.map(s => `<div>⚽ ${s.minute}' ${s.player} (${s.clubName})</div>`).join('');
           feed.style.display = 'block';
         } else {
-          feed.innerHTML = '<div>No goals scored in this fixture.</div>';
+          feed.innerHTML = '<div style="color:var(--text-dim);font-size:11px;">No goals scored in this fixture.</div>';
           feed.style.display = 'block';
         }
       } else {
@@ -1934,10 +2208,71 @@
     const champ = state.standings[0];
     const champClub = state.clubs.find(c => c.id === champ.clubId);
 
-    $('champ-icon-display').innerHTML = renderClubCrest(champClub, 64);
-    $('champ-title-display').textContent = `${champClub.name} ARE CHAMPIONS!`;
-    $('champ-manager-display').textContent = `Manager: ${champClub.manager} · ${champClub.stadium}`;
-    $('champ-record-display').textContent = `P9 W${champ.w} D${champ.d} L${champ.l} · ${champ.pts} PTS (GD ${champ.gd > 0 ? '+' + champ.gd : champ.gd})`;
+    // 1. Player's Own Story First (Large On-Screen Hero)
+    const userClub = state.clubs.find(c => c.id === state.userClubId) || state.clubs[0];
+    const userIdx = state.standings.findIndex(s => s.clubId === userClub.id);
+    const userPos = userIdx + 1;
+    const userRow = state.standings[userIdx] || champ;
+
+    const badgeElem = $('user-finish-badge');
+    const headlineElem = $('user-finish-headline');
+    const sublineElem = $('user-finish-subline');
+    const secChamp = $('secondary-champ-container');
+
+    if (badgeElem && headlineElem && sublineElem) {
+      if (userPos === 1) {
+        badgeElem.textContent = '🏆';
+        headlineElem.textContent = 'YOU FINISHED 1ST — SUPER LEAGUE CHAMPIONS!';
+        headlineElem.style.color = '#00DCFF';
+      } else if (userPos === 2) {
+        badgeElem.textContent = '🥈';
+        headlineElem.textContent = 'YOU FINISHED 2ND — RUNNERS UP!';
+        headlineElem.style.color = '#E2E8F0';
+      } else if (userPos === 3) {
+        badgeElem.textContent = '🥉';
+        headlineElem.textContent = 'YOU FINISHED 3RD — PODIUM FINISH!';
+        headlineElem.style.color = '#F59E0B';
+      } else if (userPos === 10) {
+        badgeElem.textContent = '🥄';
+        headlineElem.textContent = 'YOU FINISHED 10TH — WOODEN SPOON';
+        headlineElem.style.color = '#EF4444';
+      } else {
+        badgeElem.textContent = '🎖️';
+        headlineElem.textContent = `YOU FINISHED ${userPos}TH IN THE SUPER LEAGUE`;
+        headlineElem.style.color = '#FFFFFF';
+      }
+
+      const gdFormatted = userRow.gd > 0 ? `+${userRow.gd}` : `${userRow.gd}`;
+      sublineElem.textContent = `Manager: ${userClub.manager} (${userClub.name}) · P9 W${userRow.w} D${userRow.d} L${userRow.l} · ${userRow.pts} PTS (GD ${gdFormatted})`;
+    }
+
+    // 2. Secondary Champion Card (Shown when user is not 1st)
+    if (secChamp) {
+      if (userPos === 1) {
+        secChamp.style.display = 'none';
+      } else {
+        secChamp.style.display = 'block';
+        const cImg = crestImages[champClub.id];
+        const crestHtml = (cImg && cImg.complete && cImg.naturalWidth > 0)
+          ? `<img src="${champClub.crest}" style="width:36px;height:36px;object-fit:contain;" />`
+          : `<span style="font-size:32px;">${champClub.icon}</span>`;
+        secChamp.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              ${crestHtml}
+              <div>
+                <span style="font-size:10px;color:var(--grad-cyan);font-weight:700;text-transform:uppercase;">LEAGUE CHAMPION</span>
+                <div style="font-size:15px;font-weight:800;color:#FFF;">${champClub.name}</div>
+                <div style="font-size:12px;color:var(--text-muted);">Manager: ${champClub.manager} · ${champClub.stadium}</div>
+              </div>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--grad-cyan);font-weight:700;background:rgba(0,0,0,0.4);padding:6px 12px;border-radius:8px;">
+              P9 W${champ.w} D${champ.d} L${champ.l} · ${champ.pts} PTS (GD ${champ.gd > 0 ? '+' + champ.gd : champ.gd})
+            </div>
+          </div>
+        `;
+      }
+    }
   }
 
   // Pure Canvas 1080x1920 UHD Generator
@@ -2379,18 +2714,35 @@
     link.click();
   }
 
+  function showShareToast(message = '✓ Link copied to clipboard — send it to your friends!') {
+    const toast = $('superleague-toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.style.display = 'block';
+    toast.style.opacity = '1';
+    clearTimeout(state.toastTimer);
+    state.toastTimer = setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => { toast.style.display = 'none'; }, 300);
+    }, 3200);
+  }
+
   function triggerViralShare() {
     const shareText = "Think you can beat my squad? Play The Super League for free on Nostalogic Games: https://gro10x-ai.vercel.app/superleague";
-    if (navigator.share) {
+    const shareUrl = 'https://gro10x-ai.vercel.app/superleague';
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(`${shareText}`).catch(() => {});
+    }
+
+    showShareToast('✓ Link copied to clipboard — send it to your friends!');
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
         title: 'The Super League — Nostalogic Games',
         text: shareText,
-        url: 'https://gro10x-ai.vercel.app/superleague'
+        url: shareUrl
       }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(shareText).then(() => {
-        alert('Copied invite link to clipboard! Share it with your friends.');
-      });
     }
   }
 
@@ -2541,7 +2893,15 @@
       STADIUMS,
       COACH_RENDERS,
       STADIUM_RENDERS,
-      renderCoachAvatar
+      renderCoachAvatar,
+      evaluateInitialBotPasses,
+      checkAllPassed,
+      simulateNextRound,
+      autoSimulateSeason,
+      updateStandingsTable,
+      showShareToast,
+      triggerViralShare,
+      renderChampionScreen
     };
   }
 })();
