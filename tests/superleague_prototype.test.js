@@ -681,4 +681,135 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
     });
   });
 
+  // --- MANAGERS & STADIUMS ART INTEGRATION ---
+  describe('Managers & Stadiums Art Integration (10 Coaches + 10 Stadiums + 4 Interiors)', () => {
+    const {
+      INITIAL_CLUBS,
+      STADIUMS,
+      COACH_RENDERS,
+      STADIUM_RENDERS,
+      renderCoachAvatar
+    } = require('../public/superleague/app.js');
+
+    const EXPECTED_COACHES = [
+      { club: 'ROYAL MADRID C.F.', manager: 'Bot Carlo', file: 'coach-ancelotti.png' },
+      { club: 'FC BARCA', manager: 'Bot Flick', file: 'coach-flick.png' },
+      { club: 'MANSISTER UNITED', manager: 'Bot Fergie', file: 'coach-ferguson.png' },
+      { club: 'MANSISTER CITY', manager: 'Bot Pep', file: 'coach-guardiola.png' },
+      { club: 'LABOURPOOL FC', manager: 'Bot Klopp', file: 'coach-klopp.png' },
+      { club: 'ARSENUL', manager: 'Bot Arteta', file: 'coach-arteta.png' },
+      { club: 'CHILLSEA', manager: 'Bot Maresca', file: 'coach-maresca.png' },
+      { club: 'BAYERN MUNIKH', manager: 'Bot Kompany', file: 'coach-kompany.png' },
+      { club: 'PARIS SAINT GERMAN', manager: 'Bot Enrique', file: 'coach-enrique.png' },
+      { club: 'UVENTUS', manager: 'Bot Motta', file: 'coach-motta.png' }
+    ];
+
+    const EXPECTED_STADIUMS = [
+      { name: 'Dorm Arena', file: 'stadium-dorm-arena.png', hasInterior: true },
+      { name: 'Hostel Nou Camp', file: 'stadium-hostel-nou-camp.png', hasInterior: true },
+      { name: 'The Adda Dome', file: 'stadium-the-adda-dome.png', hasInterior: true },
+      { name: 'Cadet Field Arena', file: 'stadium-cadet-field-arena.png', hasInterior: true },
+      { name: 'The Fortress', file: 'stadium-the-fortress.png', hasInterior: false },
+      { name: 'Bunker Colosseum', file: 'stadium-bunker-colosseum.png', hasInterior: false },
+      { name: 'Parade Ground Stadium', file: 'stadium-parade-ground-stadium.png', hasInterior: false },
+      { name: 'Curfew Park', file: 'stadium-curfew-park.png', hasInterior: false },
+      { name: 'The Catwalk Arena', file: 'stadium-the-catwalk-arena.png', hasInterior: false },
+      { name: "The Old Lady's House", file: 'stadium-the-old-ladys-house.png', hasInterior: false }
+    ];
+
+    test('All 10 coach files exist on disk in public/superleague/images/coaches/ as valid PNGs', () => {
+      const coachDir = path.join(__dirname, '../public/superleague/images/coaches');
+      expect(fs.existsSync(coachDir)).toBe(true);
+
+      EXPECTED_COACHES.forEach(c => {
+        const filePath = path.join(coachDir, c.file);
+        expect(fs.existsSync(filePath)).toBe(true);
+        const stats = fs.statSync(filePath);
+        expect(stats.size).toBeGreaterThan(1000);
+      });
+    });
+
+    test('All 10 managers in INITIAL_CLUBS resolve to art with zero unresolved names', () => {
+      expect(INITIAL_CLUBS).toHaveLength(10);
+      
+      const unresolved = [];
+      EXPECTED_COACHES.forEach(ec => {
+        const club = INITIAL_CLUBS.find(c => c.name === ec.club);
+        if (!club) {
+          unresolved.push(`Missing club: ${ec.club}`);
+          return;
+        }
+        expect(club.manager).toBe(ec.manager);
+        const html = renderCoachAvatar(club, 20);
+        if (!html.includes(ec.file)) {
+          unresolved.push(`${ec.club} -> expected ${ec.file}`);
+        }
+      });
+
+      expect(unresolved).toHaveLength(0);
+    });
+
+    test('STADIUMS array has expanded from 8 to 10 entries with unique one-home-per-club assignment', () => {
+      expect(STADIUMS).toHaveLength(10);
+      expect(STADIUMS).toContain('The Catwalk Arena');
+      expect(STADIUMS).toContain("The Old Lady's House");
+
+      // Verify INITIAL_CLUBS stadium reassignment
+      const psg = INITIAL_CLUBS.find(c => c.id === 'c9');
+      const uventus = INITIAL_CLUBS.find(c => c.id === 'c10');
+      const royalMadrid = INITIAL_CLUBS.find(c => c.id === 'c1');
+      const mansisterUtd = INITIAL_CLUBS.find(c => c.id === 'c3');
+
+      expect(psg.stadium).toBe('The Catwalk Arena');
+      expect(uventus.stadium).toBe("The Old Lady's House");
+      expect(royalMadrid.stadium).toBe('The Fortress');
+      expect(mansisterUtd.stadium).toBe('The Adda Dome');
+
+      // Verify all 10 clubs have unique stadiums
+      const assignedStadiums = INITIAL_CLUBS.map(c => c.stadium);
+      const uniqueStadiums = new Set(assignedStadiums);
+      expect(uniqueStadiums.size).toBe(10);
+    });
+
+    test('All 10 stadiums resolve to exterior art with zero unresolved names, and exactly 4 have interiors', () => {
+      const stadiumDir = path.join(__dirname, '../public/superleague/images/stadiums');
+      expect(fs.existsSync(stadiumDir)).toBe(true);
+
+      const unresolved = [];
+      EXPECTED_STADIUMS.forEach(s => {
+        const extPath = path.join(stadiumDir, s.file);
+        if (!fs.existsSync(extPath)) {
+          unresolved.push(`Missing exterior: ${s.file}`);
+        } else {
+          expect(fs.statSync(extPath).size).toBeGreaterThan(1000);
+        }
+
+        const stadiumData = STADIUM_RENDERS[s.name];
+        expect(stadiumData).toBeDefined();
+        expect(stadiumData.exterior).toContain(s.file);
+
+        if (s.hasInterior) {
+          const interiorSlug = s.file.replace('.png', '-interior.png');
+          const intPath = path.join(stadiumDir, interiorSlug);
+          if (!fs.existsSync(intPath)) {
+            unresolved.push(`Missing interior: ${interiorSlug}`);
+          }
+          expect(stadiumData.interior).toContain(interiorSlug);
+        } else {
+          // Falls back to exterior on that surface
+          expect(stadiumData.interior).toContain(s.file);
+        }
+      });
+
+      expect(unresolved).toHaveLength(0);
+    });
+
+    test('COACH-QUEUE.md and STADIUM-QUEUE.md documentation manifests exist on disk', () => {
+      const coachQueue = path.join(__dirname, '../public/superleague/COACH-QUEUE.md');
+      const stadiumQueue = path.join(__dirname, '../public/superleague/STADIUM-QUEUE.md');
+      expect(fs.existsSync(coachQueue)).toBe(true);
+      expect(fs.existsSync(stadiumQueue)).toBe(true);
+    });
+  });
+
 });

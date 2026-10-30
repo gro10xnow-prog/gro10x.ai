@@ -24,21 +24,109 @@
     'The Fortress',
     'Bunker Colosseum',
     'Parade Ground Stadium',
-    'Curfew Park'
+    'Curfew Park',
+    'The Catwalk Arena',
+    "The Old Lady's House"
   ];
 
   const INITIAL_CLUBS = [
-    { id: 'c1', name: 'ROYAL MADRID C.F.', crest: './images/club-crests/royal-madrid-cf.png', icon: '👑', color: '#FFFFFF', accent: '#D4AF37', purse: 2000, squad: [], manager: 'Bot Carlo', stadium: 'The Fortress', isUser: false },
-    { id: 'c2', name: 'FC BARCA', crest: './images/club-crests/fc-barca.png', icon: '🔵🔴', color: '#004D98', accent: '#A50044', purse: 2000, squad: [], manager: 'Bot Flick', stadium: 'Hostel Nou Camp', isUser: false },
-    { id: 'c3', name: 'MANSISTER UNITED', crest: './images/club-crests/mansister-united.png', icon: '🔴⚫', color: '#DA291C', accent: '#000000', purse: 2000, squad: [], manager: 'Bot Fergie', stadium: 'The Adda Dome', isUser: false },
-    { id: 'c4', name: 'MANSISTER CITY', crest: './images/club-crests/mansister-city.png', icon: '🩵⚪', color: '#6CABDD', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Pep', stadium: 'Bunker Colosseum', isUser: false },
-    { id: 'c5', name: 'LABOURPOOL FC', crest: './images/club-crests/labourpool-fc.png', icon: '🔴⚪', color: '#C8102E', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Klopp', stadium: 'Cadet Field Arena', isUser: false },
-    { id: 'c6', name: 'ARSENUL', crest: './images/club-crests/arsenul.png', icon: '🔴⚪', color: '#EF0107', accent: '#023474', purse: 2000, squad: [], manager: 'Bot Arteta', stadium: 'Parade Ground Stadium', isUser: false },
-    { id: 'c7', name: 'CHILLSEA', crest: './images/club-crests/chillsea.png', icon: '🔵⚪', color: '#034694', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Maresca', stadium: 'Curfew Park', isUser: false },
-    { id: 'c8', name: 'BAYERN MUNIKH', crest: './images/club-crests/bayern-munikh.png', icon: '🔴⚪', color: '#DC052D', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Kompany', stadium: 'Dorm Arena', isUser: false },
-    { id: 'c9', name: 'PARIS SAINT GERMAN', crest: './images/club-crests/paris-saint-german.png', icon: '🔵🔴', color: '#004170', accent: '#DA291C', purse: 2000, squad: [], manager: 'Bot Enrique', stadium: 'The Fortress', isUser: false },
-    { id: 'c10', name: 'UVENTUS', crest: './images/club-crests/uventus.png', icon: '⚪⚫', color: '#000000', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Motta', stadium: 'The Adda Dome', isUser: false }
+    { id: 'c1', name: 'ROYAL MADRID C.F.', crest: './images/club-crests/royal-madrid-cf.png', coach: './images/coaches/coach-ancelotti.png', icon: '👑', color: '#FFFFFF', accent: '#D4AF37', purse: 2000, squad: [], manager: 'Bot Carlo', stadium: 'The Fortress', isUser: false },
+    { id: 'c2', name: 'FC BARCA', crest: './images/club-crests/fc-barca.png', coach: './images/coaches/coach-flick.png', icon: '🔵🔴', color: '#004D98', accent: '#A50044', purse: 2000, squad: [], manager: 'Bot Flick', stadium: 'Hostel Nou Camp', isUser: false },
+    { id: 'c3', name: 'MANSISTER UNITED', crest: './images/club-crests/mansister-united.png', coach: './images/coaches/coach-ferguson.png', icon: '🔴⚫', color: '#DA291C', accent: '#000000', purse: 2000, squad: [], manager: 'Bot Fergie', stadium: 'The Adda Dome', isUser: false },
+    { id: 'c4', name: 'MANSISTER CITY', crest: './images/club-crests/mansister-city.png', coach: './images/coaches/coach-guardiola.png', icon: '🩵⚪', color: '#6CABDD', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Pep', stadium: 'Bunker Colosseum', isUser: false },
+    { id: 'c5', name: 'LABOURPOOL FC', crest: './images/club-crests/labourpool-fc.png', coach: './images/coaches/coach-klopp.png', icon: '🔴⚪', color: '#C8102E', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Klopp', stadium: 'Cadet Field Arena', isUser: false },
+    { id: 'c6', name: 'ARSENUL', crest: './images/club-crests/arsenul.png', coach: './images/coaches/coach-arteta.png', icon: '🔴⚪', color: '#EF0107', accent: '#023474', purse: 2000, squad: [], manager: 'Bot Arteta', stadium: 'Parade Ground Stadium', isUser: false },
+    { id: 'c7', name: 'CHILLSEA', crest: './images/club-crests/chillsea.png', coach: './images/coaches/coach-maresca.png', icon: '🔵⚪', color: '#034694', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Maresca', stadium: 'Curfew Park', isUser: false },
+    { id: 'c8', name: 'BAYERN MUNIKH', crest: './images/club-crests/bayern-munikh.png', coach: './images/coaches/coach-kompany.png', icon: '🔴⚪', color: '#DC052D', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Kompany', stadium: 'Dorm Arena', isUser: false },
+    { id: 'c9', name: 'PARIS SAINT GERMAN', crest: './images/club-crests/paris-saint-german.png', coach: './images/coaches/coach-enrique.png', icon: '🔵🔴', color: '#004170', accent: '#DA291C', purse: 2000, squad: [], manager: 'Bot Enrique', stadium: 'The Catwalk Arena', isUser: false },
+    { id: 'c10', name: 'UVENTUS', crest: './images/club-crests/uventus.png', coach: './images/coaches/coach-motta.png', icon: '⚪⚫', color: '#000000', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Motta', stadium: "The Old Lady's House", isUser: false }
   ];
+
+  const COACH_RENDERS = {
+    'c1': './images/coaches/coach-ancelotti.png',
+    'c2': './images/coaches/coach-flick.png',
+    'c3': './images/coaches/coach-ferguson.png',
+    'c4': './images/coaches/coach-guardiola.png',
+    'c5': './images/coaches/coach-klopp.png',
+    'c6': './images/coaches/coach-arteta.png',
+    'c7': './images/coaches/coach-maresca.png',
+    'c8': './images/coaches/coach-kompany.png',
+    'c9': './images/coaches/coach-enrique.png',
+    'c10': './images/coaches/coach-motta.png',
+    'ROYAL MADRID C.F.': './images/coaches/coach-ancelotti.png',
+    'FC BARCA': './images/coaches/coach-flick.png',
+    'MANSISTER UNITED': './images/coaches/coach-ferguson.png',
+    'MANSISTER CITY': './images/coaches/coach-guardiola.png',
+    'LABOURPOOL FC': './images/coaches/coach-klopp.png',
+    'ARSENUL': './images/coaches/coach-arteta.png',
+    'CHILLSEA': './images/coaches/coach-maresca.png',
+    'BAYERN MUNIKH': './images/coaches/coach-kompany.png',
+    'PARIS SAINT GERMAN': './images/coaches/coach-enrique.png',
+    'UVENTUS': './images/coaches/coach-motta.png',
+    'Bot Carlo': './images/coaches/coach-ancelotti.png',
+    'Bot Flick': './images/coaches/coach-flick.png',
+    'Bot Fergie': './images/coaches/coach-ferguson.png',
+    'Bot Pep': './images/coaches/coach-guardiola.png',
+    'Bot Klopp': './images/coaches/coach-klopp.png',
+    'Bot Arteta': './images/coaches/coach-arteta.png',
+    'Bot Maresca': './images/coaches/coach-maresca.png',
+    'Bot Kompany': './images/coaches/coach-kompany.png',
+    'Bot Enrique': './images/coaches/coach-enrique.png',
+    'Bot Motta': './images/coaches/coach-motta.png'
+  };
+
+  const STADIUM_RENDERS = {
+    'Dorm Arena': {
+      exterior: './images/stadiums/stadium-dorm-arena.png',
+      interior: './images/stadiums/stadium-dorm-arena-interior.png'
+    },
+    'Hostel Nou Camp': {
+      exterior: './images/stadiums/stadium-hostel-nou-camp.png',
+      interior: './images/stadiums/stadium-hostel-nou-camp-interior.png'
+    },
+    'The Adda Dome': {
+      exterior: './images/stadiums/stadium-the-adda-dome.png',
+      interior: './images/stadiums/stadium-the-adda-dome-interior.png'
+    },
+    'Cadet Field Arena': {
+      exterior: './images/stadiums/stadium-cadet-field-arena.png',
+      interior: './images/stadiums/stadium-cadet-field-arena-interior.png'
+    },
+    'The Fortress': {
+      exterior: './images/stadiums/stadium-the-fortress.png',
+      interior: './images/stadiums/stadium-the-fortress.png'
+    },
+    'Bunker Colosseum': {
+      exterior: './images/stadiums/stadium-bunker-colosseum.png',
+      interior: './images/stadiums/stadium-bunker-colosseum.png'
+    },
+    'Parade Ground Stadium': {
+      exterior: './images/stadiums/stadium-parade-ground-stadium.png',
+      interior: './images/stadiums/stadium-parade-ground-stadium.png'
+    },
+    'Curfew Park': {
+      exterior: './images/stadiums/stadium-curfew-park.png',
+      interior: './images/stadiums/stadium-curfew-park.png'
+    },
+    'The Catwalk Arena': {
+      exterior: './images/stadiums/stadium-the-catwalk-arena.png',
+      interior: './images/stadiums/stadium-the-catwalk-arena.png'
+    },
+    "The Old Lady's House": {
+      exterior: './images/stadiums/stadium-the-old-ladys-house.png',
+      interior: './images/stadiums/stadium-the-old-ladys-house.png'
+    }
+  };
+
+  function renderCoachAvatar(club, size = 20) {
+    if (!club) return '';
+    const src = club.coach || COACH_RENDERS[club.id] || COACH_RENDERS[club.name] || COACH_RENDERS[club.manager];
+    const fallback = renderClubCrest(club, size) || club.icon || '👔';
+    if (src) {
+      return `<img src="${src}" alt="${club.manager || club.name}" class="coach-avatar-img" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;object-position:top center;vertical-align:middle;display:inline-block;flex-shrink:0;border:1px solid rgba(255,255,255,0.15);" onerror="this.outerHTML='${fallback}';" />`;
+    }
+    return fallback;
+  }
 
   // Preloaded Crest Images Cache for 60fps Canvas Render
   const crestImages = {};
@@ -539,7 +627,12 @@
         triggerDemoQuickClose,
         triggerDemoJumpBenchPhase,
         startLotTimer,
-        presentNextLot
+        presentNextLot,
+        renderCoachAvatar,
+        COACH_RENDERS,
+        STADIUM_RENDERS,
+        STADIUMS,
+        INITIAL_CLUBS
       };
     }
     setupEventListeners();
@@ -674,7 +767,21 @@
     STADIUMS.forEach((stadium) => {
       const pill = document.createElement('div');
       pill.className = `stadium-pill ${stadium === state.userStadium ? 'selected' : ''}`;
-      pill.textContent = stadium;
+      const data = STADIUM_RENDERS[stadium];
+      const extSrc = data ? data.exterior : '';
+
+      pill.innerHTML = `
+        <div class="stadium-tile-thumb" style="width:36px;height:24px;border-radius:5px;overflow:hidden;flex-shrink:0;background:var(--bg-surface-elevated);border:1px solid rgba(255,255,255,0.15);">
+          ${extSrc ? `<img src="${extSrc}" alt="${stadium}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none';">` : ''}
+        </div>
+        <span class="stadium-pill-name">${stadium}</span>
+      `;
+      pill.style.display = 'flex';
+      pill.style.alignItems = 'center';
+      pill.style.gap = '8px';
+      pill.style.padding = '4px 10px 4px 6px';
+      pill.style.borderRadius = '10px';
+
       pill.addEventListener('click', () => {
         $$('.stadium-pill').forEach(p => p.classList.remove('selected'));
         pill.classList.add('selected');
@@ -694,11 +801,14 @@
       const card = document.createElement('div');
       const isSelected = club.id === state.userClubId;
       card.className = `club-choice-card ${isSelected ? 'selected' : ''}`;
+      const coachBadge = !isSelected ? renderCoachAvatar(club, 18) : '';
       card.innerHTML = `
         <div class="club-badge-icon">${renderClubCrest(club, 32)}</div>
         <div class="club-choice-info">
           <div class="club-choice-name">${club.name}</div>
-          <div class="club-choice-tag">${isSelected ? 'Your Club' : club.manager}</div>
+          <div class="club-choice-tag" style="display:flex;align-items:center;gap:5px;">
+            ${isSelected ? '<span>Your Club</span>' : `${coachBadge}<span>${club.manager}</span>`}
+          </div>
         </div>
       `;
 
@@ -874,13 +984,23 @@
     }
   }
 
-  function logBidActivity(text) {
+  function logBidActivity(text, club = null) {
     state.bidLogs.push(text);
     const box = $('bid-activity-feed-box');
     if (!box) return;
 
     const row = document.createElement('div');
-    row.textContent = text;
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.gap = '6px';
+
+    if (club && !club.isUser) {
+      const coachImg = renderCoachAvatar(club, 16);
+      row.innerHTML = `${coachImg}<span>${text}</span>`;
+    } else {
+      row.textContent = text;
+    }
+
     if (text.includes('You (')) {
       row.style.color = 'var(--grad-cyan)';
       row.style.fontWeight = '700';
@@ -1142,7 +1262,7 @@
     if (isUser) {
       logBidActivity(`⚡ You (${bidder.name}) bid ${amount} PTS`);
     } else {
-      logBidActivity(`🤖 [${bidder.manager} (${bidder.name}) bid ${amount} PTS]`);
+      logBidActivity(`🤖 [${bidder.manager} (${bidder.name}) bid ${amount} PTS]`, bidder);
     }
 
     // Anti-Snipe: If bid in final 10 seconds, add +10s
@@ -1712,6 +1832,17 @@
       $('spotlight-home-badge').innerHTML = renderClubCrest(homeClub, 36);
       $('spotlight-away-name').textContent = awayClub.name;
       $('spotlight-away-badge').innerHTML = renderClubCrest(awayClub, 36);
+
+      // Spotlight Backdrop: Stadium Interior (or Exterior fallback)
+      const spotlightCard = $('.spotlight-fixture-card');
+      if (spotlightCard) {
+        const stadiumName = homeClub.stadium || 'The Fortress';
+        const stadiumData = STADIUM_RENDERS[stadiumName];
+        const backdropSrc = stadiumData ? (stadiumData.interior || stadiumData.exterior) : './images/stadiums/stadium-the-fortress.png';
+        spotlightCard.style.backgroundImage = `linear-gradient(180deg, rgba(19, 19, 26, 0.85) 0%, rgba(10, 10, 14, 0.95) 100%), url('${backdropSrc}')`;
+        spotlightCard.style.backgroundSize = 'cover';
+        spotlightCard.style.backgroundPosition = 'center';
+      }
 
       if (userMatch.played) {
         $('spotlight-score-display').textContent = `${userMatch.homeScore} - ${userMatch.awayScore}`;
@@ -2405,7 +2536,12 @@
       buildTacticalFormation,
       simulateMatch,
       generateRoundRobinSchedule,
-      renderUHDCanvas
+      renderUHDCanvas,
+      INITIAL_CLUBS,
+      STADIUMS,
+      COACH_RENDERS,
+      STADIUM_RENDERS,
+      renderCoachAvatar
     };
   }
 })();
