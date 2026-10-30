@@ -28,17 +28,38 @@
   ];
 
   const INITIAL_CLUBS = [
-    { id: 'c1', name: 'Royal Madrid CF', icon: '👑', color: '#FFFFFF', accent: '#D4AF37', purse: 2000, squad: [], manager: 'Bot Ancelotti', stadium: 'The Fortress', isUser: false },
-    { id: 'c2', name: 'FC Barcelonia', icon: '🔵🔴', color: '#004D98', accent: '#A50044', purse: 2000, squad: [], manager: 'Bot Flick', stadium: 'Hostel Nou Camp', isUser: false },
-    { id: 'c3', name: 'Manchestar United', icon: '🔴⚫', color: '#DA291C', accent: '#000000', purse: 2000, squad: [], manager: 'Bot Fergie', stadium: 'The Adda Dome', isUser: false },
-    { id: 'c4', name: 'Manchestar City', icon: '🩵⚪', color: '#6CABDD', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Pep', stadium: 'Bunker Colosseum', isUser: false },
-    { id: 'c5', name: 'Liverpul FC', icon: '🔴⚪', color: '#C8102E', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Klopp', stadium: 'Cadet Field Arena', isUser: false },
-    { id: 'c6', name: 'Arsenalia', icon: '🔴⚪', color: '#EF0107', accent: '#023474', purse: 2000, squad: [], manager: 'Bot Arteta', stadium: 'Parade Ground Stadium', isUser: false },
-    { id: 'c7', name: 'Chelseea', icon: '🔵⚪', color: '#034694', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Maresca', stadium: 'Curfew Park', isUser: false },
-    { id: 'c8', name: 'Bayern Munchena', icon: '🔴⚪', color: '#DC052D', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Kompany', stadium: 'Dorm Arena', isUser: false },
-    { id: 'c9', name: 'Paris Saint-Germaine', icon: '🔵🔴', color: '#004170', accent: '#DA291C', purse: 2000, squad: [], manager: 'Bot Enrique', stadium: 'The Fortress', isUser: false },
-    { id: 'c10', name: 'Juventas', icon: '⚪⚫', color: '#000000', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Motta', stadium: 'The Adda Dome', isUser: false }
+    { id: 'c1', name: 'ROYAL MADRID C.F.', crest: './images/club-crests/royal-madrid-cf.png', icon: '👑', color: '#FFFFFF', accent: '#D4AF37', purse: 2000, squad: [], manager: 'Bot Carlo', stadium: 'The Fortress', isUser: false },
+    { id: 'c2', name: 'FC BARCA', crest: './images/club-crests/fc-barca.png', icon: '🔵🔴', color: '#004D98', accent: '#A50044', purse: 2000, squad: [], manager: 'Bot Flick', stadium: 'Hostel Nou Camp', isUser: false },
+    { id: 'c3', name: 'MANSISTER UNITED', crest: './images/club-crests/mansister-united.png', icon: '🔴⚫', color: '#DA291C', accent: '#000000', purse: 2000, squad: [], manager: 'Bot Fergie', stadium: 'The Adda Dome', isUser: false },
+    { id: 'c4', name: 'MANSISTER CITY', crest: './images/club-crests/mansister-city.png', icon: '🩵⚪', color: '#6CABDD', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Pep', stadium: 'Bunker Colosseum', isUser: false },
+    { id: 'c5', name: 'LABOURPOOL FC', crest: './images/club-crests/labourpool-fc.png', icon: '🔴⚪', color: '#C8102E', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Klopp', stadium: 'Cadet Field Arena', isUser: false },
+    { id: 'c6', name: 'ARSENUL', crest: './images/club-crests/arsenul.png', icon: '🔴⚪', color: '#EF0107', accent: '#023474', purse: 2000, squad: [], manager: 'Bot Arteta', stadium: 'Parade Ground Stadium', isUser: false },
+    { id: 'c7', name: 'CHILLSEA', crest: './images/club-crests/chillsea.png', icon: '🔵⚪', color: '#034694', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Maresca', stadium: 'Curfew Park', isUser: false },
+    { id: 'c8', name: 'BAYERN MUNIKH', crest: './images/club-crests/bayern-munikh.png', icon: '🔴⚪', color: '#DC052D', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Kompany', stadium: 'Dorm Arena', isUser: false },
+    { id: 'c9', name: 'PARIS SAINT GERMAN', crest: './images/club-crests/paris-saint-german.png', icon: '🔵🔴', color: '#004170', accent: '#DA291C', purse: 2000, squad: [], manager: 'Bot Enrique', stadium: 'The Fortress', isUser: false },
+    { id: 'c10', name: 'UVENTUS', crest: './images/club-crests/uventus.png', icon: '⚪⚫', color: '#000000', accent: '#FFFFFF', purse: 2000, squad: [], manager: 'Bot Motta', stadium: 'The Adda Dome', isUser: false }
   ];
+
+  // Preloaded Crest Images Cache for 60fps Canvas Render
+  const crestImages = {};
+  if (typeof Image !== 'undefined') {
+    INITIAL_CLUBS.forEach(c => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = c.crest;
+      crestImages[c.id] = img;
+    });
+  }
+
+  // Crest DOM Render Helper
+  function renderClubCrest(club, size = 24) {
+    if (!club) return '';
+    const crestPath = club.crest || (INITIAL_CLUBS.find(c => c.id === club.id) || {}).crest || '';
+    if (crestPath) {
+      return `<img src="${crestPath}" alt="${club.name}" class="club-crest-img" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;display:inline-block;" onerror="this.outerHTML='${club.icon || '⚽'}';" />`;
+    }
+    return club.icon || '⚽';
+  }
 
   // --- 2. GAME STATE ---
   const state = {
@@ -62,6 +83,8 @@
     auctionHistory: [],
     benchPhaseActive: false,
     lotBidsCount: 0,
+    lotSecondsElapsed: 0,
+    quickCloseActive: false,
     bidLogs: [],
 
     // Post-Draft Ledger View
@@ -345,6 +368,12 @@
     const viewSquad = $('btn-view-squad');
     if (viewSquad) viewSquad.addEventListener('click', openSquadModal);
 
+    // Auditor Telemetry Shortcuts
+    const btnDemoQuickClose = $('btn-demo-quickclose');
+    if (btnDemoQuickClose) btnDemoQuickClose.addEventListener('click', triggerDemoQuickClose);
+    const btnDemoBenchPhase = $('btn-demo-benchphase');
+    if (btnDemoBenchPhase) btnDemoBenchPhase.addEventListener('click', triggerDemoJumpBenchPhase);
+
     // Post-Draft Ledger Screen (P0-2)
     const proceedToSeason = $('btn-proceed-to-season');
     if (proceedToSeason) proceedToSeason.addEventListener('click', proceedFromLedgerToSeason);
@@ -419,7 +448,7 @@
       const isSelected = club.id === state.userClubId;
       card.className = `club-choice-card ${isSelected ? 'selected' : ''}`;
       card.innerHTML = `
-        <div class="club-badge-icon">${club.icon}</div>
+        <div class="club-badge-icon">${renderClubCrest(club, 40)}</div>
         <div class="club-choice-info">
           <div class="club-choice-name">${club.name}</div>
           <div class="club-choice-tag">${isSelected ? 'Your Club' : club.manager}</div>
@@ -491,6 +520,7 @@
     state.benchPhaseActive = allHaveStartingXI;
     const benchBanner = $('bench-phase-banner');
     if (benchBanner) {
+      benchBanner.textContent = '⚡ BENCH PHASE: 20S LOTS';
       benchBanner.style.display = state.benchPhaseActive ? 'block' : 'none';
     }
 
@@ -592,24 +622,84 @@
   }
 
   function startLotTimer() {
+    clearInterval(state.timerInterval);
+    state.lotSecondsElapsed = 0;
+    state.quickCloseActive = false;
+    const quickBanner = $('quick-close-banner');
+    if (quickBanner) quickBanner.style.display = 'none';
+
     const timerElem = $('timer-display-num');
-    timerElem.classList.remove('danger');
+    if (timerElem) timerElem.classList.remove('danger');
 
     state.timerInterval = setInterval(() => {
+      state.lotSecondsElapsed++;
       state.timer--;
-      timerElem.textContent = `${state.timer}s`;
 
-      if (state.timer <= 10) {
-        timerElem.classList.add('danger');
-      } else {
-        timerElem.classList.remove('danger');
+      // Quick-Close Rule: on any lot with 0 bids for 8 seconds, visibly trigger fast-forward closing in 2s
+      if (state.lotBidsCount === 0 && state.lotSecondsElapsed >= 8 && !state.quickCloseActive) {
+        state.quickCloseActive = true;
+        state.timer = 2;
+        if (quickBanner) {
+          quickBanner.textContent = '⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)';
+          quickBanner.style.display = 'block';
+        }
+        logBidActivity(`⚡ QUICK-CLOSE TRIGGERED: NO BIDS IN 8S · CLOSING IN 2S`);
+      }
+
+      if (timerElem) {
+        timerElem.textContent = `${state.timer}s`;
+        if (state.timer <= 10 || state.quickCloseActive) {
+          timerElem.classList.add('danger');
+        } else {
+          timerElem.classList.remove('danger');
+        }
       }
 
       if (state.timer <= 0) {
         clearInterval(state.timerInterval);
+        if (quickBanner) quickBanner.style.display = 'none';
         resolveLotSale();
       }
     }, 1000);
+  }
+
+  // Auditor Telemetry Demo Shortcuts
+  function triggerDemoQuickClose() {
+    if (!state.currentLot) return;
+    state.lotBidsCount = 0;
+    state.lotSecondsElapsed = 8;
+    state.quickCloseActive = true;
+    state.timer = 2;
+    const quickBanner = $('quick-close-banner');
+    if (quickBanner) {
+      quickBanner.textContent = '⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)';
+      quickBanner.style.display = 'block';
+    }
+    const timerElem = $('timer-display-num');
+    if (timerElem) {
+      timerElem.textContent = '2s';
+      timerElem.classList.add('danger');
+    }
+    logBidActivity(`🧪 DEMO TELEMETRY: ⚡ QUICK-CLOSE FORCED (CLOSING IN 2S)`);
+  }
+
+  function triggerDemoJumpBenchPhase() {
+    // Fill each club up to 11 players from queue to simulate fast forward to bench phase
+    state.clubs.forEach((club) => {
+      while (club.squad.length < 11 && state.currentLotIdx < state.auctionQueue.length) {
+        const p = state.auctionQueue[state.currentLotIdx++];
+        club.squad.push(p);
+        club.purse = Math.max(80, club.purse - p.basePrice);
+      }
+    });
+    state.benchPhaseActive = true;
+    const benchBanner = $('bench-phase-banner');
+    if (benchBanner) {
+      benchBanner.textContent = '⚡ BENCH PHASE: 20S LOTS';
+      benchBanner.style.display = 'block';
+    }
+    logBidActivity(`🧪 DEMO TELEMETRY: ⚡ JUMP TO BENCH PHASE (ALL CLUBS HAVE 11 PLAYERS · 20S CLOCK)`);
+    loadNextAuctionLot();
   }
 
   // P1-1 User Bid Execution
@@ -633,6 +723,12 @@
     state.currentBid = amount;
     state.currentBidderId = clubId;
     state.lotBidsCount++;
+
+    if (state.quickCloseActive) {
+      state.quickCloseActive = false;
+      const quickBanner = $('quick-close-banner');
+      if (quickBanner) quickBanner.style.display = 'none';
+    }
 
     const bidder = state.clubs.find(c => c.id === clubId);
     if (isUser) {
@@ -887,7 +983,7 @@
       const tab = document.createElement('div');
       const isActive = club.id === state.activeLedgerClubId;
       tab.className = `stadium-pill ${isActive ? 'selected' : ''}`;
-      tab.innerHTML = `${club.icon} ${club.name} ${club.isUser ? '(YOU)' : ''}`;
+      tab.innerHTML = `${renderClubCrest(club, 20)} ${club.name} ${club.isUser ? '(YOU)' : ''}`;
       tab.addEventListener('click', () => {
         state.activeLedgerClubId = club.id;
         renderDraftLedgerUI();
@@ -909,7 +1005,7 @@
       <div class="surface-panel" style="margin-bottom:14px;border-color:rgba(150,70,255,0.3);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:36px;">${activeClub.icon}</span>
+            <span>${renderClubCrest(activeClub, 44)}</span>
             <div>
               <h3 style="font-size:18px;font-weight:800;">${activeClub.name}</h3>
               <p style="font-size:12px;color:var(--text-muted);">Manager: ${activeClub.manager} · ${activeClub.stadium}</p>
@@ -1194,9 +1290,9 @@
 
       $('spotlight-stadium-tag').textContent = `STADIUM: ${homeClub.stadium || 'The Fortress'}`;
       $('spotlight-home-name').textContent = homeClub.name;
-      $('spotlight-home-badge').textContent = homeClub.icon;
+      $('spotlight-home-badge').innerHTML = renderClubCrest(homeClub, 36);
       $('spotlight-away-name').textContent = awayClub.name;
-      $('spotlight-away-badge').textContent = awayClub.icon;
+      $('spotlight-away-badge').innerHTML = renderClubCrest(awayClub, 36);
 
       if (userMatch.played) {
         $('spotlight-score-display').textContent = `${userMatch.homeScore} - ${userMatch.awayScore}`;
@@ -1227,9 +1323,9 @@
         const item = document.createElement('div');
         item.className = 'sim-fixture-mini';
         item.innerHTML = `
-          <span>${home.name} ${m.played ? m.homeScore : ''}</span>
+          <span>${renderClubCrest(home, 16)} ${home.name} ${m.played ? m.homeScore : ''}</span>
           <span class="tabular-nums" style="color:var(--text-muted);">${m.played ? '-' : 'vs'}</span>
-          <span>${m.played ? m.awayScore : ''} ${away.name}</span>
+          <span>${m.played ? m.awayScore : ''} ${renderClubCrest(away, 16)} ${away.name}</span>
         `;
         simGrid.appendChild(item);
       });
@@ -1249,7 +1345,7 @@
       if (s.isUser) tr.className = 'user-row';
       tr.innerHTML = `
         <td class="tabular-nums">${idx + 1}</td>
-        <td>${s.icon} ${s.name}</td>
+        <td>${renderClubCrest(s, 20)} ${s.name}</td>
         <td class="tabular-nums">${s.p}</td>
         <td class="tabular-nums">${s.gd > 0 ? '+' + s.gd : s.gd}</td>
         <td class="tabular-nums" style="font-weight:800;color:var(--text-white);">${s.pts}</td>
@@ -1282,13 +1378,13 @@
     });
   }
 
-  // --- 12. CHAMPION MOMENT & 9:16 UHD FLEX STUDIO (1080x1920) ---
+  // --- 12. CHAMPION MOMENT & 9:16 HD SHARE STUDIO (1080x1920) ---
   function renderChampionScreen() {
     updateStandingsTable();
     const champ = state.standings[0];
     const champClub = state.clubs.find(c => c.id === champ.clubId);
 
-    $('champ-icon-display').textContent = champClub.icon;
+    $('champ-icon-display').innerHTML = renderClubCrest(champClub, 64);
     $('champ-title-display').textContent = `${champClub.name} ARE CHAMPIONS!`;
     $('champ-manager-display').textContent = `Manager: ${champClub.manager} · ${champClub.stadium}`;
     $('champ-record-display').textContent = `P9 W${champ.w} D${champ.d} L${champ.l} · ${champ.pts} PTS (GD ${champ.gd > 0 ? '+' + champ.gd : champ.gd})`;
@@ -1382,8 +1478,13 @@
     ctx.fillText('CHAMPIONS', 540, 310);
 
     // Club Badge & Name
-    ctx.font = '72px sans-serif';
-    ctx.fillText(champClub.icon, 540, 405);
+    const champCrest = crestImages[champClub.id];
+    if (champCrest && champCrest.complete && champCrest.naturalWidth > 0) {
+      ctx.drawImage(champCrest, 540 - 45, 340, 90, 90);
+    } else {
+      ctx.font = '72px sans-serif';
+      ctx.fillText(champClub.icon, 540, 405);
+    }
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 42px "Space Grotesk", sans-serif';
@@ -1421,9 +1522,26 @@
 
       ctx.font = 'bold 16px "JetBrains Mono", monospace';
       ctx.fillStyle = color;
+
+      if (label.startsWith('GOALKEEPER')) {
+        ctx.fillText('GOALKEEPER:', 155, y);
+        const p = players[0] || tactical.startingGK;
+        if (p) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '600 17px "Inter", sans-serif';
+          ctx.fillText(`${p.name}`, 310, y);
+
+          ctx.font = 'bold 16px "JetBrains Mono", monospace';
+          ctx.fillStyle = '#00DCFF';
+          ctx.fillText(`(${p.ovr})`, 310 + ctx.measureText(p.name).width + 12, y);
+        }
+        y += 50;
+        return;
+      }
+
       ctx.fillText(label, 155, y);
 
-      let xOffset = 280;
+      let xOffset = 310;
       players.forEach(p => {
         ctx.fillStyle = '#FFFFFF';
         ctx.font = '600 17px "Inter", sans-serif';
@@ -1432,9 +1550,9 @@
 
         ctx.font = 'bold 16px "JetBrains Mono", monospace';
         ctx.fillStyle = '#00DCFF';
-        ctx.fillText(`${p.ovr}`, xOffset + 140, y);
+        ctx.fillText(`${p.ovr}`, xOffset + 130, y);
 
-        xOffset += 190;
+        xOffset += 180;
       });
 
       y += 50;
@@ -1444,7 +1562,7 @@
     renderLine(`ATTACK (${tactical.startingFwds.length})`, '#EF4444', tactical.startingFwds);
     renderLine(`MIDFIELD (${tactical.startingMids.length})`, '#F59E0B', tactical.startingMids);
     renderLine(`DEFENCE (${tactical.startingDefs.length})`, '#10B981', tactical.startingDefs);
-    renderLine(`GOALKEEPER (1)`, '#3B82F6', [tactical.startingGK]);
+    renderLine(`GOALKEEPER:`, '#3B82F6', [tactical.startingGK]);
 
     // Dedicated Bench Box (P1-2)
     y += 15;
@@ -1518,7 +1636,7 @@
     ctx.fillStyle = '#00DCFF';
     ctx.fillText('FINAL LEAGUE TABLE', 540, 310);
 
-    ctx.font = '500 19px "Inter", sans-serif';
+    ctx.font = '600 16px "Inter", sans-serif';
     ctx.fillStyle = '#8E8E9F';
     ctx.fillText('9 ROUNDS COMPLETED · SINGLE ROUND-ROBIN RECONCILED', 540, 355);
 
@@ -1560,9 +1678,15 @@
       ctx.fillStyle = isChamp ? '#00DCFF' : (isUser ? '#FF00C8' : '#FFFFFF');
       ctx.fillText(`${idx + 1}`, 105, y + 7);
 
-      ctx.font = '600 20px "Inter", sans-serif';
+      ctx.font = '600 19px "Inter", sans-serif';
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(`${s.icon} ${s.name}`, 165, y + 7);
+      const cImg = crestImages[s.clubId];
+      if (cImg && cImg.complete && cImg.naturalWidth > 0) {
+        ctx.drawImage(cImg, 165, y - 16, 26, 26);
+        ctx.fillText(s.name, 202, y + 7);
+      } else {
+        ctx.fillText(`${s.icon} ${s.name}`, 165, y + 7);
+      }
 
       ctx.textAlign = 'center';
       ctx.font = '500 18px "JetBrains Mono", monospace';
@@ -1591,8 +1715,13 @@
     ctx.fillStyle = '#FFFFFF';
     ctx.fillText('MY SUPER LEAGUE SQUAD', 540, 240);
 
-    ctx.font = '76px sans-serif';
-    ctx.fillText(userClub.icon, 540, 350);
+    const uCrest = crestImages[userClub.id];
+    if (uCrest && uCrest.complete && uCrest.naturalWidth > 0) {
+      ctx.drawImage(uCrest, 540 - 50, 280, 100, 100);
+    } else {
+      ctx.font = '76px sans-serif';
+      ctx.fillText(userClub.icon, 540, 350);
+    }
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 40px "Space Grotesk", sans-serif';

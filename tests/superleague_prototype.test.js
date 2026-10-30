@@ -46,7 +46,7 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       expect(res.text).toContain('id="screen-champion"');
     });
 
-    test('Nostalogic logo and style assets exist on disk', () => {
+    test('Nostalogic logo, style assets and all 10 parody club crests exist on disk', () => {
       const logoPath = path.join(__dirname, '../public/superleague/images/nostalogic-logo.png');
       const cssPath = path.join(__dirname, '../public/superleague/styles.css');
       const jsPath = path.join(__dirname, '../public/superleague/app.js');
@@ -56,6 +56,23 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       expect(fs.existsSync(cssPath)).toBe(true);
       expect(fs.existsSync(jsPath)).toBe(true);
       expect(fs.existsSync(playersPath)).toBe(true);
+
+      const crests = [
+        'royal-madrid-cf.png',
+        'fc-barca.png',
+        'mansister-united.png',
+        'mansister-city.png',
+        'labourpool-fc.png',
+        'arsenul.png',
+        'chillsea.png',
+        'bayern-munikh.png',
+        'paris-saint-german.png',
+        'uventus.png'
+      ];
+      crests.forEach(crest => {
+        const crestFile = path.join(__dirname, '../public/superleague/images/club-crests', crest);
+        expect(fs.existsSync(crestFile)).toBe(true);
+      });
     });
   });
 
@@ -88,7 +105,7 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       });
     });
 
-    test('All key icons are present in the pool', () => {
+    test('All key icons are present in the pool and caught non-pool players are eliminated', () => {
       const names = SUPERLEAGUE_PLAYERS.map(p => p.name);
       expect(names).toContain('Diego Maradona');
       expect(names).toContain('Lionel Messi');
@@ -96,6 +113,20 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       expect(names).toContain('Paolo Maldini');
       expect(names).toContain('Gianluigi Buffon');
       expect(names).toContain('Zinedine Zidane');
+
+      // Canonical stars present
+      expect(names).toContain('Dani Carvajal');
+      expect(names).toContain('Kyle Walker');
+      expect(names).toContain('John Stones');
+      expect(names).toContain('Eduardo Camavinga');
+      const camavinga = SUPERLEAGUE_PLAYERS.find(p => p.name === 'Eduardo Camavinga');
+      expect(camavinga.ovr).toBe(86);
+
+      // Eliminated non-pool players
+      expect(names).not.toContain('Matthijs de Ligt');
+      expect(names).not.toContain('Nico Schlotterbeck');
+      expect(names).not.toContain('Sven Botman');
+      expect(names).not.toContain('Claude Makelele');
     });
   });
 
@@ -160,7 +191,7 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
     test('Purse Guard calculation enforces legal reserve for remaining slots', () => {
       const testClub = {
         id: 'c1',
-        name: 'Royal Madrid CF',
+        name: 'ROYAL MADRID C.F.',
         purse: 2000,
         squad: []
       };
@@ -187,16 +218,16 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
 
     test('Full 10-club draft simulation achieves 100% single-point arithmetic reconciliation', () => {
       const clubs = [
-        { id: 'c1', name: 'Royal Madrid CF', purse: 2000, squad: [] },
-        { id: 'c2', name: 'FC Barcelonia', purse: 2000, squad: [] },
-        { id: 'c3', name: 'Manchestar United', purse: 2000, squad: [] },
-        { id: 'c4', name: 'Manchestar City', purse: 2000, squad: [] },
-        { id: 'c5', name: 'Liverpul FC', purse: 2000, squad: [] },
-        { id: 'c6', name: 'Arsenalia', purse: 2000, squad: [] },
-        { id: 'c7', name: 'Chelseea', purse: 2000, squad: [] },
-        { id: 'c8', name: 'Bayern Munchena', purse: 2000, squad: [] },
-        { id: 'c9', name: 'Paris Saint-Germaine', purse: 2000, squad: [] },
-        { id: 'c10', name: 'Juventas', purse: 2000, squad: [] }
+        { id: 'c1', name: 'ROYAL MADRID C.F.', purse: 2000, squad: [] },
+        { id: 'c2', name: 'FC BARCA', purse: 2000, squad: [] },
+        { id: 'c3', name: 'MANSISTER UNITED', purse: 2000, squad: [] },
+        { id: 'c4', name: 'MANSISTER CITY', purse: 2000, squad: [] },
+        { id: 'c5', name: 'LABOURPOOL FC', purse: 2000, squad: [] },
+        { id: 'c6', name: 'ARSENUL', purse: 2000, squad: [] },
+        { id: 'c7', name: 'CHILLSEA', purse: 2000, squad: [] },
+        { id: 'c8', name: 'BAYERN MUNIKH', purse: 2000, squad: [] },
+        { id: 'c9', name: 'PARIS SAINT GERMAN', purse: 2000, squad: [] },
+        { id: 'c10', name: 'UVENTUS', purse: 2000, squad: [] }
       ];
 
       const queue = [...SUPERLEAGUE_PLAYERS];

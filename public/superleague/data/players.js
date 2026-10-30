@@ -706,13 +706,13 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p65",
-    "name": "Matthijs de Ligt",
+    "name": "Manuel Akanji",
     "pos": "DEF",
     "ovr": 84,
     "basePrice": 65,
-    "country": "Netherlands",
+    "country": "Switzerland",
     "foot": "R",
-    "prime": "Bayern Munich",
+    "prime": "Manchester City",
     "avatar": "⚽"
   },
   {
@@ -761,13 +761,13 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p70",
-    "name": "Nico Schlotterbeck",
+    "name": "Lisandro Martinez",
     "pos": "DEF",
-    "ovr": 83,
+    "ovr": 84,
     "basePrice": 65,
-    "country": "Germany",
+    "country": "Argentina",
     "foot": "L",
-    "prime": "Borussia Dortmund",
+    "prime": "Manchester United",
     "avatar": "⚽"
   },
   {
@@ -783,13 +783,13 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p72",
-    "name": "Sven Botman",
+    "name": "Benjamin Pavard",
     "pos": "DEF",
-    "ovr": 83,
+    "ovr": 84,
     "basePrice": 65,
-    "country": "Netherlands",
-    "foot": "L",
-    "prime": "Newcastle",
+    "country": "France",
+    "foot": "R",
+    "prime": "Inter Milan",
     "avatar": "⚽"
   },
   {
@@ -1256,13 +1256,13 @@ const SUPERLEAGUE_PLAYERS = [
   },
   {
     "id": "p115",
-    "name": "Claude Makelele",
+    "name": "Ilkay Gundogan",
     "pos": "MID",
     "ovr": 86,
     "basePrice": 90,
-    "country": "France",
+    "country": "Germany",
     "foot": "R",
-    "prime": "Chelsea",
+    "prime": "Manchester City",
     "avatar": "⚽"
   },
   {
@@ -1280,8 +1280,8 @@ const SUPERLEAGUE_PLAYERS = [
     "id": "p117",
     "name": "Eduardo Camavinga",
     "pos": "MID",
-    "ovr": 85,
-    "basePrice": 65,
+    "ovr": 86,
+    "basePrice": 90,
     "country": "France",
     "foot": "L",
     "prime": "Real Madrid",

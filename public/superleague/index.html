@@ -245,7 +245,19 @@
       <div class="auction-main-content">
         <!-- Bench Phase Indicator -->
         <div class="bench-phase-banner" id="bench-phase-banner">
-          ⚡ BENCH PHASE ACTIVE · 20s ACCELERATED LOTS
+          ⚡ BENCH PHASE: 20S LOTS
+        </div>
+
+        <!-- Quick-Close Telemetry Indicator -->
+        <div class="quick-close-banner" id="quick-close-banner" style="display:none;">
+          ⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)
+        </div>
+
+        <!-- Auditor Telemetry Demo Shortcuts -->
+        <div class="auction-telemetry-demo-bar">
+          <span class="telemetry-demo-label">AUDITOR CONTROLS:</span>
+          <button type="button" class="btn-demo-pill" id="btn-demo-quickclose">⚡ Test Quick-Close</button>
+          <button type="button" class="btn-demo-pill" id="btn-demo-benchphase">⚡ Jump to Bench Phase</button>
         </div>
 
         <!-- Player Card -->
@@ -388,7 +400,7 @@
           <div class="fixture-teams-row">
             <div class="fixture-team-col">
               <span class="fixture-badge-lg" id="spotlight-home-badge">👑</span>
-              <span class="fixture-team-name" id="spotlight-home-name">Royal Madrid CF</span>
+              <span class="fixture-team-name" id="spotlight-home-name">ROYAL MADRID C.F.</span>
             </div>
 
             <div class="fixture-score-col">
@@ -398,7 +410,7 @@
 
             <div class="fixture-team-col">
               <span class="fixture-badge-lg" id="spotlight-away-badge">🔵🔴</span>
-              <span class="fixture-team-name" id="spotlight-away-name">FC Barcelonia</span>
+              <span class="fixture-team-name" id="spotlight-away-name">FC BARCA</span>
             </div>
           </div>
 
@@ -451,7 +463,7 @@
         
         <div>
           <div style="font-size:40px;margin-bottom:8px;" id="champ-icon-display">👑</div>
-          <h2 class="champion-headline" id="champ-title-display">ROYAL MADRID CF ARE CHAMPIONS!</h2>
+          <h2 class="champion-headline" id="champ-title-display">ROYAL MADRID C.F. ARE CHAMPIONS!</h2>
           <p style="font-size:13px;color:var(--text-muted);margin-top:4px;" id="champ-manager-display">Manager: Gaffer Firoz · The Fortress</p>
         </div>
 
@@ -459,9 +471,9 @@
           P9 W7 D1 L1 · 22 PTS (GD +14)
         </div>
 
-        <!-- 9:16 UHD Canvas Flex Export Studio -->
+        <!-- 9:16 HD Share Export Studio -->
         <div class="cards-flex-shelf">
-          <h4 style="font-size:14px;color:var(--text-muted);text-align:left;">9:16 UHD FLEX CARDS (1080×1920)</h4>
+          <h4 style="font-size:14px;color:var(--text-muted);text-align:left;">9:16 HD SHARE STUDIO (1080×1920)</h4>
 
           <!-- Card 1: Champions Card -->
           <div class="card-export-tile">
