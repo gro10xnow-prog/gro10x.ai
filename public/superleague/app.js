@@ -408,6 +408,9 @@
 
   // --- 6. INITIALIZATION & SPLASH ---
   function init() {
+    if (typeof window !== 'undefined') {
+      window.__SUPERLEAGUE_STATE = state;
+    }
     setupEventListeners();
     renderClubSelection();
     renderStadiumSelection();
