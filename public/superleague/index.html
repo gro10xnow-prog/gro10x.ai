@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>The Super League (V1) — Nostalogic Games</title>
+  <meta name="description" content="The games you grew up playing. The Super League 180-player auction and 9-round season simulation. A GRO10X Studio.">
+  <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- Top Sticky Brand Navigation (Hidden on Splash) -->
+    <header class="app-header" id="app-header">
+      <div class="app-brand-lockup" id="app-brand-btn">
+        <img src="./images/nostalogic-logo.png" alt="Nostalogic Games Logo">
+        <div class="app-brand-text">NOSTA<span>LOGIC</span></div>
+      </div>
+      <div class="badge-live">LIVE NOW</div>
+    </header>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 0: NOSTALOGIC STUDIO SPLASH RITUAL (1.5s Auto-Advance) -->
+    <!-- ============================================================== -->
+    <section class="screen active" id="screen-splash">
+      <div class="splash-motif-wrap">
+        <!-- Thin white line-circle with 45° diagonal slash motif -->
+        <svg class="splash-motif-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="44" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="276" stroke-dashoffset="0"/>
+          <line x1="19" y1="81" x2="81" y2="19" stroke="url(#studioGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="studioGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#00DCFF" />
+              <stop offset="50%" stop-color="#9646FF" />
+              <stop offset="100%" stop-color="#FF00C8" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="splash-wordmark">
+        NOSTA<span class="gradient-text">LOGIC</span>
+      </div>
+      <div class="splash-games-sub">GAMES</div>
+      <div class="splash-tagline">"THE GAMES YOU GREW UP PLAYING."</div>
+      <div class="splash-footer-credit">A GRO10X STUDIO · TAP TO SKIP</div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 1: GAME SELECTION SHELF                                -->
+    <!-- ============================================================== -->
+    <section class="screen" id="screen-shelf">
+      <div class="shelf-header">
+        <h2 class="shelf-title">CHOOSE YOUR GAME</h2>
+        <p class="shelf-subtitle">1 live now · 2 warming up in the tunnel</p>
+      </div>
+
+      <div class="shelf-list">
+        <!-- Hero Tile: The Super League (Live Now) -->
+        <div class="hero-game-card">
+          <div class="hero-card-meta">
+            <div class="badge-live">LIVE NOW</div>
+            <span class="tabular-nums" style="font-size:12px;color:var(--text-dim);font-weight:700;">V1.0 FLAGSHIP</span>
+          </div>
+
+          <h3 class="hero-game-name">THE SUPER LEAGUE</h3>
+          <p class="hero-game-desc">
+            The ultimate dorm-room football fantasy auction. 180 world legends, 10 parody clubs, a 2,000 pts purse, and a fierce 9-round season sprint.
+          </p>
+
+          <div class="hero-game-stats">
+            <div class="stat-chip">
+              <span class="stat-chip-label">Pool</span>
+              <span class="stat-chip-val">180 ICONS</span>
+            </div>
+            <div class="stat-chip">
+              <span class="stat-chip-label">Squad</span>
+              <span class="stat-chip-val">15 SLOTS</span>
+            </div>
+            <div class="stat-chip">
+              <span class="stat-chip-label">Purse</span>
+              <span class="stat-chip-val">2,000 PTS</span>
+            </div>
+            <div class="stat-chip">
+              <span class="stat-chip-label">Season</span>
+              <span class="stat-chip-val">9 ROUNDS</span>
+            </div>
+          </div>
+
+          <button class="btn-gradient" id="btn-play-superleague">
+            PLAY NOW →
+          </button>
+        </div>
+
+        <!-- Coming Soon Grid -->
+        <div class="shelf-grid-coming">
+          <!-- Super Cup Tile -->
+          <div class="coming-card">
+            <div>
+              <span class="badge-coming">WARMING UP</span>
+              <h4 class="coming-card-title">SUPER CUP</h4>
+              <p class="coming-card-desc">Bespoke cricket auction league. Build your dream XI with legendary all-rounders.</p>
+            </div>
+            <button class="btn-notify" id="btn-notify-supercup">NOTIFY ME</button>
+          </div>
+
+          <!-- Live Auction Tile -->
+          <div class="coming-card">
+            <div>
+              <span class="badge-coming">WARMING UP</span>
+              <h4 class="coming-card-title">LIVE AUCTION</h4>
+              <p class="coming-card-desc">Real-time synchronized group auctions with scheduled live room drops.</p>
+            </div>
+            <button class="btn-notify" id="btn-notify-liveauction">NOTIFY ME</button>
+          </div>
+        </div>
+
+        <!-- Lead Form Anchor -->
+        <div style="text-align:center;margin-top:12px;">
+          <a href="#screen-leads" style="font-size:12px;color:var(--text-muted);text-decoration:none;">
+            Want your own league for office / campus? <span style="color:var(--grad-cyan);text-decoration:underline;">Run It For Your People</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 2: THREE DOORS INGRESS                                 -->
+    <!-- ============================================================== -->
+    <section class="screen" id="screen-doors">
+      <div class="doors-wrap">
+        <div class="doors-hero-box">
+          <h2 class="doors-hero-title">HOW DO YOU WANT TO PLAY?</h2>
+          <p class="doors-hero-sub">Enter the arena or gather your circle</p>
+        </div>
+
+        <div class="doors-list">
+          <!-- Door 1: Play Now (Active in V1) -->
+          <div class="door-card primary">
+            <div class="door-meta">
+              <div class="door-title">1. PLAY NOW</div>
+              <span class="badge-live">READY</span>
+            </div>
+            <p class="door-desc">
+              Just you, right now — take the helm against 9 ruthless bot managers, or pass-and-play with friends on this device. Zero waiting.
+            </p>
+            <button class="btn-gradient" id="btn-door-play">ENTER DRAFT ROOM →</button>
+          </div>
+
+          <!-- Door 2: Create a Room -->
+          <div class="door-card">
+            <div class="door-meta">
+              <div class="door-title">2. CREATE A ROOM</div>
+              <span class="badge-coming">P2P ROOM</span>
+            </div>
+            <p class="door-desc">
+              You host. Generate a 6-letter room code and private QR — friends join from their own phones wherever they are.
+            </p>
+            <button class="btn-ghost" id="btn-door-create">HOST PRIVATE ROOM</button>
+          </div>
+
+          <!-- Door 3: Join a Room -->
+          <div class="door-card">
+            <div class="door-meta">
+              <div class="door-title">3. JOIN A ROOM</div>
+              <span class="badge-coming">DIRECT ENTRY</span>
+            </div>
+            <p class="door-desc">
+              Have a 6-character room code from your commissioner? Enter it below to join the lobby.
+            </p>
+            <div class="join-code-row">
+              <input type="text" id="join-room-input" class="join-code-input" placeholder="K7X2QD" maxlength="6">
+              <button class="btn-ghost" style="width:auto;padding:12px 18px;" id="btn-door-join">JOIN</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 3: LOBBY & SETUP RITUAL                                -->
+    <!-- ============================================================== -->
+    <section class="screen" id="screen-lobby">
+      <div class="lobby-wrap">
+        <!-- Room Code & QR Badge -->
+        <div class="room-badge-row">
+          <div>
+            <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;display:block;">ROOM CODE</span>
+            <span class="room-code-tag" id="lobby-room-code">K7X2QD</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);text-align:right;">
+            <span>10 Clubs · 2,000 Pts Purse</span><br>
+            <span style="color:var(--live-green);">● Lobby Open</span>
+          </div>
+        </div>
+
+        <!-- Manager Name Field -->
+        <div class="setup-field-group">
+          <label class="setup-label">YOUR MANAGER NAME</label>
+          <input type="text" id="manager-name-input" class="setup-input" value="Gaffer Firoz" maxlength="24">
+        </div>
+
+        <!-- Home Stadium Selection (8 Nostalgic Stadiums) -->
+        <div class="setup-field-group">
+          <label class="setup-label">HOME STADIUM (SELECT YOUR GROUND)</label>
+          <div class="stadium-scroller" id="stadium-pills-wrap">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- 10 Parody Clubs (First-Come, First-Served) -->
+        <div class="setup-field-group">
+          <label class="setup-label">CLAIM YOUR CLUB (THE 10 PARODY FRANCHISES)</label>
+          <div class="club-selection-grid" id="club-selection-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Start Action -->
+        <button class="btn-gradient" id="btn-start-auction" style="margin-top:12px;">
+          START AUCTION RITUAL →
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 4: THE AUCTION ARENA                                   -->
+    <!-- ============================================================== -->
+    <section class="screen" id="screen-auction">
+      <!-- Auction Header Bar -->
+      <div class="auction-header-bar">
+        <div class="lot-index-tag">
+          <span id="lot-index-display">LOT 1 / 180</span>
+          <span class="lot-pos-pill pos-FWD" id="lot-pos-tag">FWD</span>
+        </div>
+
+        <div class="timer-box">
+          <span class="anti-snipe-banner" id="anti-snipe-banner">ANTI-SNIPE +10s</span>
+          <div class="timer-display" id="timer-display-num">40s</div>
+        </div>
+      </div>
+
+      <div class="auction-main-content">
+        <!-- Bench Phase Indicator -->
+        <div class="bench-phase-banner" id="bench-phase-banner">
+          ⚡ BENCH PHASE ACTIVE · 20s ACCELERATED LOTS
+        </div>
+
+        <!-- Player Card -->
+        <div class="player-lot-card">
+          <div class="player-card-top">
+            <div class="player-avatar-circle">⚽</div>
+            <div class="player-ovr-box">
+              <span class="player-ovr-num" id="player-ovr-display">96</span>
+              <span class="player-ovr-label">PRIME OVR</span>
+            </div>
+          </div>
+
+          <div class="player-info-meta">
+            <h3 class="player-name-lg" id="player-name-display">Diego Maradona</h3>
+            <div class="player-attributes-row">
+              <span class="player-attr-chip" id="player-country-tag">Argentina</span>
+              <span class="player-attr-chip" id="player-foot-tag">Foot: Left</span>
+              <span class="player-attr-chip" id="player-prime-tag">Napoli</span>
+              <span class="player-attr-chip" id="player-base-price-tag" style="color:var(--grad-cyan);">Base: 160 pts</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Bid Status Panel -->
+        <div class="bid-status-panel">
+          <div class="bid-info-col">
+            <span style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">CURRENT HIGHEST BID</span>
+            <div class="current-bid-val" id="current-bid-display">160 PTS</div>
+          </div>
+          <div class="bid-info-col" style="text-align:right;">
+            <span style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">BID LEADER</span>
+            <div class="bid-leader-tag" id="bid-leader-display">Awaiting Opening Bid</div>
+          </div>
+        </div>
+
+        <!-- Banded Bidding Buttons -->
+        <div class="bid-actions-grid">
+          <button class="btn-bid" id="btn-bid-20">
+            <span>RAISE</span>
+            <span class="bid-amount-label tabular-nums">+20 PTS</span>
+          </button>
+          <button class="btn-bid highlight" id="btn-bid-50">
+            <span>RAISE</span>
+            <span class="bid-amount-label tabular-nums">+50 PTS</span>
+          </button>
+          <button class="btn-bid" id="btn-bid-100">
+            <span>RAISE</span>
+            <span class="bid-amount-label tabular-nums">+100 PTS</span>
+          </button>
+        </div>
+
+        <!-- Pass & Squad Controls -->
+        <div class="pass-row">
+          <button class="btn-pass" id="btn-pass-lot">PASS THIS LOT</button>
+          <button class="btn-pass" id="btn-view-squad" style="color:var(--text-white);border-color:var(--border-focus);">VIEW MY SQUAD</button>
+        </div>
+
+        <!-- Purse Guard Console -->
+        <div class="purse-guard-box">
+          <div class="purse-row">
+            <div>
+              <span class="purse-title">YOUR CLUB PURSE</span>
+              <div class="purse-amount" id="user-purse-display">2,000 PTS</div>
+            </div>
+            <div style="text-align:right;">
+              <span class="purse-title">SQUAD PROGRESS</span>
+              <div class="tabular-nums" style="font-size:15px;font-weight:700;color:var(--text-white);" id="user-squad-count-display">0 / 15 SQUAD</div>
+            </div>
+          </div>
+          <div class="purse-guard-reason" id="purse-guard-reason-text">
+            Max allowed bid 1,090 pts — 15 slots open. Guard holding 910 pts for remaining legal squad.
+          </div>
+        </div>
+
+        <!-- Fast Forward Option -->
+        <button class="btn-ghost" id="btn-sim-auction" style="font-size:12px;padding:12px;">
+          ⚡ SIMULATE TO END OF DRAFT (INSTANT FULL 10-CLUB ROSTER)
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 5: THE SEASON SIMULATION (9 ROUNDS)                    -->
+    <!-- ============================================================== -->
+    <section class="screen" id="screen-season">
+      <div class="season-wrap">
+        <div class="season-top-bar">
+          <h3 style="font-size:18px;">SEASON SIMULATION</h3>
+          <div class="round-pill" id="current-round-pill">ROUND 1 / 9</div>
+        </div>
+
+        <!-- Spotlight Fixture Card (User Club Match) -->
+        <div class="spotlight-fixture-card">
+          <div class="stadium-tag-spotlight" id="spotlight-stadium-tag">STADIUM: HOSTEL NOU CAMP</div>
+
+          <div class="fixture-teams-row">
+            <div class="fixture-team-col">
+              <span class="fixture-badge-lg" id="spotlight-home-badge">👑</span>
+              <span class="fixture-team-name" id="spotlight-home-name">Royal Madrid CF</span>
+            </div>
+
+            <div class="fixture-score-col">
+              <div class="fixture-score-nums" id="spotlight-score-display">VS</div>
+              <div class="fixture-minute-tag" id="spotlight-minute-display">KICKOFF READY</div>
+            </div>
+
+            <div class="fixture-team-col">
+              <span class="fixture-badge-lg" id="spotlight-away-badge">🔵🔴</span>
+              <span class="fixture-team-name" id="spotlight-away-name">FC Barcelonia</span>
+            </div>
+          </div>
+
+          <div class="scorers-feed" id="spotlight-scorers-feed" style="display:none;"></div>
+        </div>
+
+        <!-- Simultaneous Matches Grid -->
+        <div>
+          <span style="font-size:11px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;display:block;">OTHER FIXTURES THIS ROUND</span>
+          <div class="simultaneous-grid" id="simultaneous-fixtures-grid"></div>
+        </div>
+
+        <!-- Standings Table -->
+        <div class="standings-table-wrap">
+          <table class="standings-table">
+            <thead>
+              <tr>
+                <th>POS</th>
+                <th>CLUB</th>
+                <th>P</th>
+                <th>GD</th>
+                <th>PTS</th>
+              </tr>
+            </thead>
+            <tbody id="standings-table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Golden Boot Box -->
+        <div class="golden-boot-box">
+          <span style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">GOLDEN BOOT RACE</span>
+          <div id="golden-boot-list"></div>
+        </div>
+
+        <!-- Season Simulation Controls -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+          <button class="btn-gradient" id="btn-sim-round">SIM TO NEXT ROUND →</button>
+          <button class="btn-ghost" id="btn-auto-sim-season">⚡ AUTO-SIM ENTIRE SEASON</button>
+          <button class="btn-gradient" id="btn-view-champion-moment" style="display:none;">VIEW CHAMPION MOMENT 🏆</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 6: CHAMPION MOMENT & 9:16 UHD FLEX STUDIO              -->
+    <!-- ============================================================== -->
+    <section class="screen" id="screen-champion">
+      <div class="champion-wrap">
+        <div class="trophy-hero">🏆</div>
+        
+        <div>
+          <div style="font-size:40px;margin-bottom:8px;" id="champ-icon-display">👑</div>
+          <h2 class="champion-headline" id="champ-title-display">ROYAL MADRID CF ARE CHAMPIONS!</h2>
+          <p style="font-size:13px;color:var(--text-muted);margin-top:4px;" id="champ-manager-display">Manager: Gaffer Firoz · The Fortress</p>
+        </div>
+
+        <div class="champion-record-pill" id="champ-record-display">
+          P9 W7 D1 L1 · 22 PTS (GD +14)
+        </div>
+
+        <!-- 9:16 UHD Canvas Flex Export Studio -->
+        <div class="cards-flex-shelf">
+          <h4 style="font-size:14px;color:var(--text-muted);text-align:left;">9:16 UHD FLEX CARDS (1080×1920)</h4>
+
+          <!-- Card 1: Champions Card -->
+          <div class="card-export-tile">
+            <div class="card-tile-info">
+              <h4>1. CHAMPIONS CARD</h4>
+              <p>Starting XI in formation, bench strength, Golden Boot & wooden spoon.</p>
+            </div>
+            <button class="btn-card-action" id="btn-export-champions-card">DOWNLOAD 4K</button>
+          </div>
+
+          <!-- Card 2: Final Table Card -->
+          <div class="card-export-tile">
+            <div class="card-tile-info">
+              <h4>2. FINAL TABLE CARD</h4>
+              <p>Full 10-club league table with points, goals, and goal difference.</p>
+            </div>
+            <button class="btn-card-action" id="btn-export-table-card">DOWNLOAD 4K</button>
+          </div>
+
+          <!-- Card 3: My Squad Card -->
+          <div class="card-export-tile">
+            <div class="card-tile-info">
+              <h4>3. MY SQUAD CARD</h4>
+              <p>Complete 15-player roster with OVR ratings, positions, and club badge.</p>
+            </div>
+            <button class="btn-card-action" id="btn-export-squad-card">DOWNLOAD 4K</button>
+          </div>
+        </div>
+
+        <!-- Viral Share & Rematch -->
+        <div style="width:100%;display:flex;flex-direction:column;gap:10px;">
+          <button class="btn-gradient" id="btn-viral-share">
+            SHARE WITH FRIENDS 📱
+          </button>
+          <button class="btn-ghost" id="btn-rematch">
+            START REMATCH ↺
+          </button>
+        </div>
+
+        <!-- Lead Form Attached Here -->
+        <div class="leads-banner-card" id="screen-leads">
+          <h3 class="leads-headline">RUN IT FOR YOUR PEOPLE.<br><span class="gradient-text">YOUR NOSTALGIA. OUR LOGIC.</span></h3>
+          <p class="leads-copy">
+            Your own Super League — custom-built for your alumni batch, your office squad, or your campus tournament. We configure the auction room, player pool, and live room drops. Your people play. You take the credit.
+          </p>
+
+          <div id="lead-form-fields" style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <label class="setup-label">YOUR NAME</label>
+              <input type="text" id="lead-name-input" class="setup-input" placeholder="e.g. Arif Chowdhury">
+            </div>
+
+            <div>
+              <label class="setup-label">WHATSAPP NUMBER</label>
+              <input type="tel" id="lead-phone-input" class="setup-input" placeholder="+880 1700-000000">
+            </div>
+
+            <div>
+              <label class="setup-label">ORGANISATION / BATCH / CAMPUS</label>
+              <input type="text" id="lead-org-input" class="setup-input" placeholder="e.g. Cadet College Batch '14 / Grameenphone">
+            </div>
+
+            <div>
+              <label class="setup-label">EXPECTED PLAYERS</label>
+              <div class="chips-select-row">
+                <div class="chip-option" data-val="Under 50">Under 50</div>
+                <div class="chip-option selected" data-val="50 - 200">50 - 200</div>
+                <div class="chip-option" data-val="200+">200+</div>
+              </div>
+            </div>
+
+            <button class="btn-gradient" id="btn-submit-lead" style="margin-top:8px;">
+              REQUEST MY LEAGUE →
+            </button>
+          </div>
+
+          <div class="lead-confirmed-box" id="lead-confirmed-box">
+            <span style="font-size:24px;">✅</span>
+            <div style="font-size:14px;font-weight:700;color:var(--text-white);">LEAGUE REQUEST TRANSMITTED</div>
+            <div style="font-size:12px;color:var(--text-muted);">Your booking reference code:</div>
+            <div class="lead-ref-code" id="lead-confirmed-ref">REF-SL-XXXXX</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:1.4;">
+              A Nostalogic tournament engineer will connect directly via WhatsApp within 4 hours.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div> <!-- /#app -->
+
+  <!-- Modal: Notify Me for Coming Soon Titles -->
+  <div class="modal-overlay" id="modal-notify-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="modal-notify-close">×</button>
+      <h3 id="notify-modal-title" style="font-size:16px;">GET NOTIFIED</h3>
+      <p style="font-size:12px;color:var(--text-muted);">Be the first to enter the lobby when this title goes live.</p>
+      
+      <input type="text" id="modal-notify-name" class="setup-input" placeholder="Your Name">
+      <input type="tel" id="modal-notify-phone" class="setup-input" placeholder="WhatsApp Number (+880...)">
+      
+      <button class="btn-gradient" id="btn-submit-modal-notify">CONFIRM NOTIFICATION</button>
+    </div>
+  </div>
+
+  <!-- Modal: Squad Roster Drawer -->
+  <div class="modal-overlay" id="modal-squad-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="modal-squad-close">×</button>
+      <h3 id="modal-squad-title" style="font-size:16px;">YOUR SQUAD</h3>
+      <div id="modal-squad-list" style="max-height:360px;overflow-y:auto;padding-right:4px;"></div>
+    </div>
+  </div>
+
+  <!-- Data & Logic Scripts -->
+  <script src="./data/players.js"></script>
+  <script src="./app.js"></script>
+
+</body>
+</html>

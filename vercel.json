@@ -305,6 +305,30 @@
       "dest": "/public/prototypes/serviq-pilot/index.html"
     },
     {
+      "src": "/superleague/images/(.*)",
+      "dest": "/public/superleague/images/$1"
+    },
+    {
+      "src": "/superleague/data/(.*)",
+      "dest": "/public/superleague/data/$1"
+    },
+    {
+      "src": "/superleague/app.js",
+      "dest": "/public/superleague/app.js"
+    },
+    {
+      "src": "/superleague/styles.css",
+      "dest": "/public/superleague/styles.css"
+    },
+    {
+      "src": "/superleague(/.*)?",
+      "dest": "/public/superleague/index.html"
+    },
+    {
+      "src": "/prototypes/superleague(/.*)?",
+      "dest": "/public/superleague/index.html"
+    },
+    {
       "src": "/prototypes/mexsa-futsal(/.*)?",
       "dest": "/public/prototypes/mexsa-futsal/index.html"
     },

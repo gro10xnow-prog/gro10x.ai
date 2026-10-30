@@ -1017,6 +1017,34 @@
       "charteredDate": "2026-10-30",
       "completedDate": "2026-10-30",
       "liveUrl": "https://gro10x-ai.vercel.app/prototypes/mexsa-futsal/"
+    },
+    {
+      "id": "PRJ-NOSTALOGIC-SUPERLEAGUE-V1",
+      "code": "[NOSTALOGIC-GAMES]",
+      "venture": "Nostalogic Games // The Super League (V1)",
+      "engine": "Engine 2: Tools & Products / Nostalogic Games (A GRO10X Studio)",
+      "port": "Port 3000 / Production Edge",
+      "sprint": "The Super League (V1): Screens 0-8, 180-Player Pool, Positional Purse Guard Engine, 9-Round Season Sim, 1080x1920 UHD Flex Studio & Lead Intake",
+      "status": "COMPLETED",
+      "pricingType": "Studio Game Title / Sports Entertainment Suite",
+      "creditValuation": 25000,
+      "bdtValuation": 50000,
+      "usdValuation": 412.5,
+      "testsCertified": 13,
+      "artifacts": [
+        "Screen 0: Nostalogic Studio Splash with auto-drawing line-circle slash motif and 1.5s skip ritual",
+        "Screen 1: Game Selection Shelf with The Super League Hero tile, Live Now badge, and 2 Coming Soon tiles with Notify Me capture",
+        "Screen 2: Three Doors Ingress (Play Now, Create a Room, Join a Room with 6-box input)",
+        "Screen 3: Lobby & Setup Ritual (Room Code K7X2QD, Manager Name, 8 Nostalgic Stadiums, 10 Parody Clubs)",
+        "Screen 4: Auction Arena with 180-Player Pool, Positional Purse Guard Engine, 40s timer, Anti-Snipe +10s, Banded Bids, and Quick-Simulate Draft",
+        "Screen 5: Season Simulation with 9-Round Single Round-Robin, Live Match Spotlight with minute ticker, Standings Table, and Golden Boot",
+        "Screen 6: Champion Moment & 9:16 UHD Flex Studio with 1080x1920 Champions Card, Final Table Card, My Squad Card, and Web Share API",
+        "Screen 7: Lead Intake Form (Run It For Your People) connecting to POST /api/leads with REF-SL-XXXXX confirmation",
+        "Automated Jest Test Suite (tests/superleague_prototype.test.js, 13/13 Green)"
+      ],
+      "charteredDate": "2026-10-30",
+      "completedDate": "2026-10-30",
+      "liveUrl": "https://gro10x-ai.vercel.app/superleague/"
     }
   ],
   "totals": {
@@ -1025,6 +1053,9 @@
     "totalCreditsGenerated": 1125000,
     "totalBdtValuation": 2250000,
     "totalUsdValuation": 18562.5,
-    "totalTestsPassingAcrossHoldings": 1495
+    "totalTestsPassingAcrossHoldings": 1495,
+    "totalProjects": 43,
+    "totalCredits": 25000,
+    "totalBdt": 50000
   }
 }

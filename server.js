@@ -615,6 +615,12 @@ app.get(['/prototypes/sahanabag-city', '/prototypes/sahanabag-city/'], (req, res
   res.sendFile(path.join(__dirname, 'public/prototypes/sahanabag-city/index.html'));
 });
 
+// Nostalogic Games — The Super League V1 (Dorm Auction & 9-Round Season OS)
+app.get(['/superleague', '/superleague/', '/prototypes/superleague', '/prototypes/superleague/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/superleague/index.html'));
+});
+app.use('/superleague', express.static(path.join(__dirname, 'public/superleague')));
+
 // MExSA Futsal Premier League Auction & Tournament OS Prototype
 app.get(['/prototypes/mexsa-futsal', '/prototypes/mexsa-futsal/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/mexsa-futsal/index.html'));
