@@ -1698,3 +1698,75 @@ h1, h2, h3, h4, .font-display {
   }
 }
 
+/* S4: Squad Agency & Tactical Controls */
+.agency-panel {
+  background: rgba(150, 70, 255, 0.08);
+  border: 1px solid rgba(150, 70, 255, 0.3);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.formation-picker-wrap {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.formation-pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-mono);
+}
+.formation-pill:hover {
+  border-color: var(--grad-cyan);
+  color: var(--text-white);
+}
+.formation-pill.selected {
+  background: linear-gradient(135deg, var(--grad-cyan), var(--grad-purple));
+  color: #000;
+  border-color: transparent;
+  font-weight: 800;
+}
+.btn-swap {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-swap:hover {
+  background: rgba(0, 220, 255, 0.2);
+  border-color: var(--grad-cyan);
+  color: var(--grad-cyan);
+}
+.btn-swap.active {
+  background: var(--grad-magenta);
+  border-color: var(--grad-magenta);
+  color: #FFFFFF;
+  box-shadow: 0 0 10px rgba(255, 0, 200, 0.4);
+}
+.match-reason-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 220, 255, 0.08);
+  border: 1px solid rgba(0, 220, 255, 0.25);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--text-white);
+}
+
+

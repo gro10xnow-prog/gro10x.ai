@@ -616,6 +616,9 @@ app.get(['/prototypes/sahanabag-city', '/prototypes/sahanabag-city/'], (req, res
 });
 
 // Nostalogic Games — The Super League V1 (Dorm Auction & 9-Round Season OS)
+app.get('/superleague/RENDER-MANIFEST.md', (req, res) => {
+  res.type('text/markdown').sendFile(path.join(__dirname, 'public/superleague/RENDER-MANIFEST.md'));
+});
 app.get(['/superleague', '/superleague/', '/prototypes/superleague', '/prototypes/superleague/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/superleague/index.html'));
 });

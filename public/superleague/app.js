@@ -2,14 +2,14 @@
  * NOSTALOGIC GAMES — THE SUPER LEAGUE (V1)
  * "The games you grew up playing." — A GRO10X Studio
  * 
- * Round 2 Surgical Certification:
- * - P0-1: Strict Tactical XI Formation Law & Bench Segregation (1 GK, 3-5 DEF, 3-5 MID, 1-3 FWD; 4 Subs)
+ * V1 Final Certification & Pacing Suite:
+ * - P0-1: Strict Tactical XI Formation Law & Bench Segregation (1 GK, 3-5 DEF, 3-5 MID, 1-4 FWD; 4 Subs)
  * - P0-2: Post-Draft Squad & Purse Ledger Screen (All 10 Clubs + 2,000 Pts Exact Single-Point Reconciliation)
  * - P1-1: Strict Bid Increment Math (+20 from 140 base bids 160) & Live Activity Feed Ticker
  * - P1-2: 1080x1920 Champions Card Tactical Grid, Dedicated Bench Line & Non-Clipping Awards
  * - P1-3: Brand Positioning Copy ("YOUR NOSTALGIA. OUR LOGIC.")
  * - P1-4: Lead Backend Submission Parity (POST /api/leads with REF-SL-XXXXX)
- * - P2: "DOWNLOAD 9:16 HD POSTER", "1 Goal" grammar, and 8-column Final Table Card
+ * - S1-S8: Reframe Progress, Express Lane Solo Mode, Identity Integrity, Squad Agency Make Changes, Honest Season, Strength Sanity, Humour Share Cards
  */
 
 (function () {
@@ -149,7 +149,7 @@
     return club.icon || '⚽';
   }
 
-  // --- 1B. 130 CANONICAL PLAYER RENDERS MANIFEST (OFFLOAD 2) ---
+  // --- 1B. 180 CANONICAL PLAYER RENDERS MANIFEST (OFFLOAD 3 FINAL) ---
   const PLAYER_RENDERS = {
       "Gianluigi Buffon": "gianluigi-buffon.png",
       "Manuel Neuer": "manuel-neuer.png",
@@ -391,11 +391,16 @@
     lastBotBidTime: 0,
     goingOnceActive: false,
     quickCloseActive: false,
+    isRoomMode: false,
     toastTimer: null,
     bidLogs: [],
 
-    // Post-Draft Ledger View
+    // Post-Draft Ledger View & Squad Agency (S4)
     activeLedgerClubId: 'c1',
+    selectedSwapStarter: null,
+    selectedSwapBench: null,
+    swapFeedbackMsg: '',
+    swapFeedbackType: 'success',
 
     // Season
     seasonRounds: [],
@@ -406,6 +411,20 @@
 
     // Lead
     leadExpectedPlayers: '50 - 200'
+  };
+
+  // S7: Position Humour Matrix (A card worth sending at every finish)
+  const FINISH_HUMOUR = {
+    1: "Champions of the realm. Lap of honour booked.",
+    2: "Always the bridesmaid. A glorious, heartbreaking season.",
+    3: "Podium secured. Continental flights booked for next year.",
+    4: "Squeaked into Europe. The accountant is dancing.",
+    5: "Thursday night football awaits. Joy.",
+    6: "Upper mid-table obscurity. Neither glory nor catastrophe.",
+    7: "A season that will be remembered by absolutely nobody.",
+    8: "Mathematical survival celebrated like a trophy.",
+    9: "The board has given you the dreaded vote of confidence.",
+    10: "Relegated into local mythology. Sack the gaffer."
   };
 
   // Helper: DOM selector
@@ -442,12 +461,12 @@
    * - Exactly 1 Goalkeeper (GK)
    * - 3 to 5 Defenders (DEF)
    * - 3 to 5 Midfielders (MID)
-   * - 1 to 3 Forwards (FWD)
+   * - 1 to 4 Forwards (FWD)
    * Starting XI total: exactly 11 players.
    * Bench: exactly 4 players (contains second GK if any + utility subs).
    * Bench Strength: average OVR of the 4 bench players.
    */
-  function buildTacticalFormation(squad) {
+  function buildTacticalFormation(squad, preferredFormation = null) {
     if (!squad || squad.length === 0) {
       return {
         formation: '4-3-3',
@@ -488,28 +507,46 @@
     let bestConfig = null;
     let maxOvr = -1;
 
-    for (const cand of candidates) {
-      if (defs.length >= cand.d && mids.length >= cand.m && fwds.length >= cand.f) {
-        const selDefs = defs.slice(0, cand.d);
-        const selMids = mids.slice(0, cand.m);
-        const selFwds = fwds.slice(0, cand.f);
+    // Check if user requested a legal preferred formation (S4)
+    if (preferredFormation) {
+      const targetCand = candidates.find(c => c.name === preferredFormation);
+      if (targetCand && defs.length >= targetCand.d && mids.length >= targetCand.m && fwds.length >= targetCand.f) {
+        bestConfig = {
+          formation: targetCand.name,
+          d: targetCand.d,
+          m: targetCand.m,
+          f: targetCand.f,
+          startingDefs: defs.slice(0, targetCand.d),
+          startingMids: mids.slice(0, targetCand.m),
+          startingFwds: fwds.slice(0, targetCand.f)
+        };
+      }
+    }
 
-        const totalOvr = startingGK.ovr +
-          selDefs.reduce((s, p) => s + p.ovr, 0) +
-          selMids.reduce((s, p) => s + p.ovr, 0) +
-          selFwds.reduce((s, p) => s + p.ovr, 0);
+    if (!bestConfig) {
+      for (const cand of candidates) {
+        if (defs.length >= cand.d && mids.length >= cand.m && fwds.length >= cand.f) {
+          const selDefs = defs.slice(0, cand.d);
+          const selMids = mids.slice(0, cand.m);
+          const selFwds = fwds.slice(0, cand.f);
 
-        if (totalOvr > maxOvr) {
-          maxOvr = totalOvr;
-          bestConfig = {
-            formation: cand.name,
-            d: cand.d,
-            m: cand.m,
-            f: cand.f,
-            startingDefs: selDefs,
-            startingMids: selMids,
-            startingFwds: selFwds
-          };
+          const totalOvr = startingGK.ovr +
+            selDefs.reduce((s, p) => s + p.ovr, 0) +
+            selMids.reduce((s, p) => s + p.ovr, 0) +
+            selFwds.reduce((s, p) => s + p.ovr, 0);
+
+          if (totalOvr > maxOvr) {
+            maxOvr = totalOvr;
+            bestConfig = {
+              formation: cand.name,
+              d: cand.d,
+              m: cand.m,
+              f: cand.f,
+              startingDefs: selDefs,
+              startingMids: selMids,
+              startingFwds: selFwds
+            };
+          }
         }
       }
     }
@@ -647,7 +684,14 @@
         COACH_RENDERS,
         STADIUM_RENDERS,
         STADIUMS,
-        INITIAL_CLUBS
+        INITIAL_CLUBS,
+        FINISH_HUMOUR,
+        selectFormation,
+        toggleStarterSelection,
+        attemptPlayerSwap,
+        checkExpressLane,
+        resolveExpressLane,
+        simulateAuctionToEnd
       };
     }
     setupEventListeners();
@@ -839,14 +883,17 @@
   }
 
   function updateUserClubInfo() {
-    const userClub = state.clubs.find(c => c.id === state.userClubId);
-    if (userClub) {
-      userClub.manager = state.userManagerName;
-      userClub.stadium = state.userStadium;
-      userClub.isUser = true;
-    }
     state.clubs.forEach(c => {
-      if (c.id !== state.userClubId) {
+      const canonical = INITIAL_CLUBS.find(ic => ic.id === c.id);
+      if (c.id === state.userClubId) {
+        c.manager = state.userManagerName || 'Gaffer';
+        c.stadium = state.userStadium || (canonical ? canonical.stadium : 'The Fortress');
+        c.isUser = true;
+      } else {
+        if (canonical) {
+          c.manager = canonical.manager;
+          c.stadium = canonical.stadium;
+        }
         c.isUser = false;
       }
     });
@@ -939,15 +986,54 @@
     scheduleBotAppraisal();
   }
 
+  function updatePlayerJourneyUI() {
+    const userClub = state.clubs.find(c => c.id === state.userClubId);
+    if (!userClub) return;
+
+    const headlineEl = $('user-journey-headline');
+    const phaseEl = $('user-journey-phase');
+    if (!headlineEl || !phaseEl) return;
+
+    const count = userClub.squad.length;
+    const purse = userClub.purse;
+    headlineEl.textContent = `Your squad ${count}/15 · Purse ${purse} left`;
+
+    const gks = userClub.squad.filter(p => p.pos === 'GK').length;
+    const defs = userClub.squad.filter(p => p.pos === 'DEF').length;
+    const mids = userClub.squad.filter(p => p.pos === 'MID').length;
+    const fwds = userClub.squad.filter(p => p.pos === 'FWD').length;
+
+    if (gks === 0) {
+      phaseEl.textContent = 'Building the XI — GK needed';
+    } else if (defs < 3) {
+      phaseEl.textContent = `Building the XI — ${3 - defs} DEF needed`;
+    } else if (mids < 3) {
+      phaseEl.textContent = `Building the XI — ${3 - mids} MID needed`;
+    } else if (fwds < 1) {
+      phaseEl.textContent = `Building the XI — ${1 - fwds} FWD needed`;
+    } else if (count < 11) {
+      phaseEl.textContent = `Building the XI — ${11 - count} starters needed`;
+    } else if (count === 11) {
+      phaseEl.textContent = 'Bench Phase (11/15) — 4 subs to draft';
+    } else if (count < 15) {
+      phaseEl.textContent = `Bench Phase (${count}/15) — ${15 - count} subs needed`;
+    } else {
+      phaseEl.textContent = 'Squad Complete (15/15) — Observing Auction';
+    }
+  }
+
   function renderAuctionLotUI() {
     const p = state.currentLot;
     if (!p) return;
 
-    $('lot-index-display').textContent = `LOT ${state.currentLotIdx + 1} / 180`;
+    const lotIdxEl = $('lot-index-display');
+    if (lotIdxEl) lotIdxEl.textContent = `LOT ${state.currentLotIdx + 1}`;
     
     const posTag = $('lot-pos-tag');
-    posTag.textContent = p.pos;
-    posTag.className = `lot-pos-pill pos-${p.pos}`;
+    if (posTag) {
+      posTag.textContent = p.pos;
+      posTag.className = `lot-pos-pill pos-${p.pos}`;
+    }
 
     $('player-name-display').textContent = p.name;
     $('player-ovr-display').textContent = p.ovr;
@@ -961,6 +1047,7 @@
       avatarEl.innerHTML = renderPlayerAvatar(p, 56);
     }
 
+    updatePlayerJourneyUI();
     renderNextLotsStrip();
     updateCurrentBidDisplay();
 
@@ -983,7 +1070,7 @@
     const badge = $('queue-remaining-badge');
     if (badge) {
       const remaining = Math.max(0, state.auctionQueue.length - (state.currentLotIdx + 1));
-      badge.textContent = `${remaining} IN QUEUE`;
+      badge.textContent = `${remaining} left`;
     }
 
     if (nextLots.length === 0) {
@@ -1163,6 +1250,72 @@
     return false;
   }
 
+  // --- S2: EXPRESS LANE (Solo Mode Rapid Resolution) ---
+  function checkExpressLane() {
+    if (state.isRoomMode) return false;
+    if (!state.humanPassed) return false;
+    const lot = state.currentLot;
+    if (!lot || lot.ovr >= 90) return false; // Marquee lots keep full ceremony
+
+    // Active in-fit bots (not user, not passed, squad < 15)
+    const inFitBots = state.clubs.filter(c => {
+      if (c.id === state.userClubId) return false;
+      if (state.passedClubIds.has(c.id)) return false;
+      if (c.squad.length >= 15) return false;
+      return true;
+    });
+
+    if (inFitBots.length <= 1) {
+      resolveExpressLane(inFitBots);
+      return true;
+    }
+    return false;
+  }
+
+  function resolveExpressLane(inFitBots) {
+    clearInterval(state.timerInterval);
+    clearTimeout(state.botBidTimeout);
+    const lot = state.currentLot;
+    if (!lot) return;
+
+    if (inFitBots.length === 1) {
+      const buyer = inFitBots[0];
+      const price = state.currentBid > 0 ? state.currentBid : lot.basePrice;
+      buyer.purse -= price;
+      buyer.squad.push({
+        ...lot,
+        boughtPrice: price
+      });
+      logBidActivity(`⚡ [EXPRESS] ${buyer.manager} (${buyer.name}) signed ${lot.name} for ${price} pts`, buyer);
+      state.auctionHistory.push({
+        lot: lot.name,
+        pos: lot.pos,
+        ovr: lot.ovr,
+        price: price,
+        club: buyer.name,
+        isUser: false
+      });
+    } else {
+      logBidActivity(`⚡ [EXPRESS] ${lot.name} went UNSOLD`);
+      state.auctionHistory.push({
+        lot: lot.name,
+        pos: lot.pos,
+        ovr: lot.ovr,
+        price: 0,
+        club: 'UNSOLD',
+        isUser: false
+      });
+    }
+
+    updatePurseGuardUI();
+    updatePlayerJourneyUI();
+
+    setTimeout(() => {
+      state.currentLotIdx++;
+      presentNextLot();
+    }, 900);
+  }
+
   function evaluateInitialBotPasses() {
     const lot = state.currentLot;
     if (!lot) return;
@@ -1197,7 +1350,9 @@
         setTimeout(() => {
           if (state.currentLot === lot && state.timer > 0) {
             logBidActivity(`🤖 ${c.manager} passes`, c);
-            checkAllPassed();
+            if (!checkExpressLane()) {
+              checkAllPassed();
+            }
           }
         }, passDelay);
       }
@@ -1473,6 +1628,11 @@
     logBidActivity(`👋 You passed on ${state.currentLot.name}`);
     updatePurseGuardUI();
 
+    // S2: Express Lane Check (Solo Mode)
+    if (checkExpressLane()) {
+      return;
+    }
+
     // Death Rule: no bid within first 5s AND human passed -> close in 2s
     if (state.lotBidsCount === 0 && state.lotSecondsElapsed >= 5 && !state.quickCloseActive) {
       state.quickCloseActive = true;
@@ -1544,7 +1704,9 @@
           logBidActivity(`🤖 ${c.manager} passes`, c);
         }
       });
-      checkAllPassed();
+      if (!checkExpressLane()) {
+        checkAllPassed();
+      }
       return;
     }
 
@@ -1759,6 +1921,24 @@
     const tactical = activeClub.tactical || buildTacticalFormation(activeClub.squad);
     const totalSpent = activeClub.squad.reduce((sum, p) => sum + (p.boughtPrice || 0), 0);
     const mathReconciled = (totalSpent + activeClub.purse) === 2000;
+    const isUserClub = activeClub.id === state.userClubId;
+
+    // S4: Legal Formations that this club's 15 players can support
+    const formationCandidates = [
+      { name: '4-3-3', d: 4, m: 3, f: 3 },
+      { name: '4-4-2', d: 4, m: 4, f: 2 },
+      { name: '3-5-2', d: 3, m: 5, f: 2 },
+      { name: '3-4-3', d: 3, m: 4, f: 3 },
+      { name: '5-3-2', d: 5, m: 3, f: 2 },
+      { name: '5-4-1', d: 5, m: 4, f: 1 },
+      { name: '4-5-1', d: 4, m: 5, f: 1 },
+      { name: '4-2-4', d: 4, m: 2, f: 4 },
+      { name: '3-3-4', d: 3, m: 3, f: 4 }
+    ];
+    const defCount = activeClub.squad.filter(p => p.pos === 'DEF').length;
+    const midCount = activeClub.squad.filter(p => p.pos === 'MID').length;
+    const fwdCount = activeClub.squad.filter(p => p.pos === 'FWD').length;
+    const legalFormations = formationCandidates.filter(fo => defCount >= fo.d && midCount >= fo.m && fwdCount >= fo.f);
 
     container.innerHTML = `
       <!-- Club Header & Purse Math Reconciliation Bar -->
@@ -1793,6 +1973,36 @@
         </div>
       </div>
 
+      <!-- S4: Squad Agency Control Panel (User Club Only) -->
+      ${isUserClub ? `
+        <div class="surface-panel agency-panel" style="margin-bottom:14px;border-color:rgba(0,220,255,0.4);background:rgba(10,15,26,0.85);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div>
+              <h4 style="font-size:13px;color:var(--grad-cyan);font-weight:800;letter-spacing:0.04em;">⚡ SQUAD AGENCY: SHAPE & CHANGES</h4>
+              <p style="font-size:11px;color:var(--text-muted);margin-top:2px;">Switch legal formations or tap [⇄ SWAP] on any starter then [⇄ SUB IN] on a bench player.</p>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              ${legalFormations.map(fo => `
+                <button class="formation-pill ${fo.name === tactical.formation ? 'selected' : ''}" onclick="window.__SUPERLEAGUE_HELPERS.selectFormation('${fo.name}')">
+                  ${fo.name}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+          ${state.swapFeedbackMsg ? `
+            <div style="font-size:11px;font-family:var(--font-mono);font-weight:700;padding:6px 12px;border-radius:6px;background:${state.swapFeedbackType === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'};border:1px solid ${state.swapFeedbackType === 'success' ? '#10B981' : '#EF4444'};color:${state.swapFeedbackType === 'success' ? '#10B981' : '#EF4444'};margin-bottom:8px;">
+              ${state.swapFeedbackMsg}
+            </div>
+          ` : ''}
+          ${state.selectedSwapStarter ? `
+            <div style="font-size:11px;color:var(--grad-cyan);font-weight:700;display:flex;justify-content:space-between;align-items:center;background:rgba(0,220,255,0.08);padding:6px 10px;border-radius:6px;">
+              <span>Selected Starter: <b>${state.selectedSwapStarter}</b> — tap a bench sub below to complete swap.</span>
+              <button class="btn-swap active" onclick="window.__SUPERLEAGUE_HELPERS.toggleStarterSelection('${state.selectedSwapStarter.replace(/'/g, "\\'")}')">CANCEL</button>
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
+
       <!-- Starting XI Section -->
       <div class="surface-panel" style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -1803,25 +2013,25 @@
         <!-- GK -->
         <div style="margin-bottom:8px;">
           <div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:4px;text-transform:uppercase;">GOALKEEPER (1)</div>
-          ${renderPlayerLedgerRow(tactical.startingGK)}
+          ${renderPlayerLedgerRow(tactical.startingGK, false, isUserClub, state.selectedSwapStarter === tactical.startingGK?.name)}
         </div>
 
         <!-- DEF -->
         <div style="margin-bottom:8px;">
           <div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:4px;text-transform:uppercase;">DEFENDERS (${tactical.startingDefs.length})</div>
-          ${tactical.startingDefs.map(p => renderPlayerLedgerRow(p)).join('')}
+          ${tactical.startingDefs.map(p => renderPlayerLedgerRow(p, false, isUserClub, state.selectedSwapStarter === p.name)).join('')}
         </div>
 
         <!-- MID -->
         <div style="margin-bottom:8px;">
           <div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:4px;text-transform:uppercase;">MIDFIELDERS (${tactical.startingMids.length})</div>
-          ${tactical.startingMids.map(p => renderPlayerLedgerRow(p)).join('')}
+          ${tactical.startingMids.map(p => renderPlayerLedgerRow(p, false, isUserClub, state.selectedSwapStarter === p.name)).join('')}
         </div>
 
         <!-- FWD -->
         <div style="margin-bottom:8px;">
           <div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:4px;text-transform:uppercase;">FORWARDS (${tactical.startingFwds.length})</div>
-          ${tactical.startingFwds.map(p => renderPlayerLedgerRow(p)).join('')}
+          ${tactical.startingFwds.map(p => renderPlayerLedgerRow(p, false, isUserClub, state.selectedSwapStarter === p.name)).join('')}
         </div>
       </div>
 
@@ -1833,15 +2043,31 @@
             BENCH STRENGTH: AVG ${tactical.benchStrength} OVR
           </span>
         </div>
-        ${tactical.bench.map(p => renderPlayerLedgerRow(p, true)).join('')}
+        ${tactical.bench.map(p => renderPlayerLedgerRow(p, true, isUserClub)).join('')}
       </div>
     `;
   }
 
-  function renderPlayerLedgerRow(p, isBench = false) {
+  function renderPlayerLedgerRow(p, isBench = false, canSwap = false, isSelected = false) {
     if (!p) return '';
+    let actionBtnHtml = '';
+    if (canSwap) {
+      if (isBench) {
+        if (state.selectedSwapStarter) {
+          const safeStarter = state.selectedSwapStarter.replace(/'/g, "\\'");
+          const safeBench = p.name.replace(/'/g, "\\'");
+          actionBtnHtml = `<button class="btn-swap active" onclick="window.__SUPERLEAGUE_HELPERS.attemptPlayerSwap('${safeStarter}', '${safeBench}')">⇄ SUB IN</button>`;
+        } else {
+          actionBtnHtml = `<span style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);">SUB</span>`;
+        }
+      } else {
+        const safeStarter = p.name.replace(/'/g, "\\'");
+        actionBtnHtml = `<button class="btn-swap ${isSelected ? 'active' : ''}" onclick="window.__SUPERLEAGUE_HELPERS.toggleStarterSelection('${safeStarter}')">⇄ ${isSelected ? 'CANCEL' : 'SWAP'}</button>`;
+      }
+    }
+
     return `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-surface-elevated);border-radius:8px;margin-bottom:4px;font-size:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-surface-elevated);border-radius:8px;margin-bottom:4px;font-size:12px;border:${isSelected ? '1px solid var(--grad-cyan)' : '1px solid transparent'};">
         <div style="display:flex;align-items:center;gap:10px;">
           ${renderPlayerAvatar(p, 28)}
           <span class="lot-pos-pill pos-${p.pos}" style="font-size:10px;">${p.pos}</span>
@@ -1851,9 +2077,116 @@
         <div style="display:flex;align-items:center;gap:12px;font-family:var(--font-mono);">
           <span style="color:var(--grad-cyan);font-weight:700;">${p.ovr} OVR</span>
           <span style="color:var(--text-muted);">${p.boughtPrice || p.basePrice || 65} pts</span>
+          ${actionBtnHtml}
         </div>
       </div>
     `;
+  }
+
+  // --- S4 SQUAD AGENCY: Formation Selection & Tactical Swapping ---
+  function selectFormation(formationName) {
+    const userClub = state.clubs.find(c => c.id === state.userClubId);
+    if (!userClub) return;
+
+    userClub.preferredFormation = formationName;
+    userClub.tactical = buildTacticalFormation(userClub.squad, formationName);
+    state.swapFeedbackMsg = `✓ Formation changed to ${formationName}`;
+    state.swapFeedbackType = 'success';
+    renderDraftLedgerUI();
+  }
+
+  function toggleStarterSelection(playerName) {
+    if (state.selectedSwapStarter === playerName) {
+      state.selectedSwapStarter = null;
+    } else {
+      state.selectedSwapStarter = playerName;
+      state.swapFeedbackMsg = `Selected ${playerName} from Starting XI. Now tap [⇄ SUB IN] on a bench player.`;
+      state.swapFeedbackType = 'success';
+    }
+    renderDraftLedgerUI();
+  }
+
+  function attemptPlayerSwap(starterName, benchName) {
+    const userClub = state.clubs.find(c => c.id === state.userClubId);
+    if (!userClub) return { success: false, reason: 'User club not found' };
+
+    const tactical = userClub.tactical || buildTacticalFormation(userClub.squad, userClub.preferredFormation);
+    const starterIdx = tactical.startingXI.findIndex(p => p.name === starterName);
+    const benchIdx = tactical.bench.findIndex(p => p.name === benchName);
+
+    if (starterIdx === -1) {
+      state.swapFeedbackMsg = `Starter ${starterName} not found in starting XI`;
+      state.swapFeedbackType = 'error';
+      renderDraftLedgerUI();
+      return { success: false, reason: state.swapFeedbackMsg };
+    }
+    if (benchIdx === -1) {
+      state.swapFeedbackMsg = `Bench player ${benchName} not found on bench`;
+      state.swapFeedbackType = 'error';
+      renderDraftLedgerUI();
+      return { success: false, reason: state.swapFeedbackMsg };
+    }
+
+    const starter = tactical.startingXI[starterIdx];
+    const benchPlayer = tactical.bench[benchIdx];
+
+    // Build hypothetical new starting XI
+    const newStartingXI = [...tactical.startingXI];
+    newStartingXI.splice(starterIdx, 1, benchPlayer);
+
+    const gks = newStartingXI.filter(p => p.pos === 'GK');
+    const defs = newStartingXI.filter(p => p.pos === 'DEF');
+    const mids = newStartingXI.filter(p => p.pos === 'MID');
+    const fwds = newStartingXI.filter(p => p.pos === 'FWD');
+
+    if (gks.length !== 1) {
+      state.swapFeedbackMsg = starter.pos === 'GK'
+        ? 'Illegal swap: Starting XI must have exactly 1 Goalkeeper (swap GK with GK only).'
+        : 'Illegal swap: Starting XI already has a Goalkeeper.';
+      state.swapFeedbackType = 'error';
+      renderDraftLedgerUI();
+      return { success: false, reason: state.swapFeedbackMsg };
+    }
+
+    if (defs.length < 3 || defs.length > 5) {
+      state.swapFeedbackMsg = `Illegal swap: Starting XI requires 3-5 Defenders (would have ${defs.length}).`;
+      state.swapFeedbackType = 'error';
+      renderDraftLedgerUI();
+      return { success: false, reason: state.swapFeedbackMsg };
+    }
+
+    if (mids.length < 3 || mids.length > 5) {
+      state.swapFeedbackMsg = `Illegal swap: Starting XI requires 3-5 Midfielders (would have ${mids.length}).`;
+      state.swapFeedbackType = 'error';
+      renderDraftLedgerUI();
+      return { success: false, reason: state.swapFeedbackMsg };
+    }
+
+    if (fwds.length < 1 || fwds.length > 4) {
+      state.swapFeedbackMsg = `Illegal swap: Starting XI requires 1-4 Forwards (would have ${fwds.length}).`;
+      state.swapFeedbackType = 'error';
+      renderDraftLedgerUI();
+      return { success: false, reason: state.swapFeedbackMsg };
+    }
+
+    // Swap is legal!
+    tactical.startingXI = newStartingXI;
+    tactical.bench[benchIdx] = starter;
+    tactical.startingGK = gks[0];
+    tactical.startingDefs = defs;
+    tactical.startingMids = mids;
+    tactical.startingFwds = fwds;
+    tactical.formation = `${defs.length}-${mids.length}-${fwds.length}`;
+    userClub.preferredFormation = tactical.formation;
+    tactical.avgXIOvr = Math.round(newStartingXI.reduce((sum, p) => sum + p.ovr, 0) / 11);
+    tactical.benchStrength = Math.round(tactical.bench.reduce((sum, p) => sum + p.ovr, 0) / tactical.bench.length);
+
+    state.selectedSwapStarter = null;
+    state.selectedSwapBench = null;
+    state.swapFeedbackMsg = `✓ Swapped ${starter.name} (${starter.pos}) with ${benchPlayer.name} (${benchPlayer.pos}) — new formation ${tactical.formation}`;
+    state.swapFeedbackType = 'success';
+    renderDraftLedgerUI();
+    return { success: true, formation: tactical.formation };
   }
 
   function proceedFromLedgerToSeason() {
@@ -2000,8 +2333,9 @@
     const ratingA = getRating(awayClub, false);
     const diff = (ratingH - ratingA);
 
-    let goalsH = Math.max(0, Math.round(1.5 + (diff / 6) + (Math.random() * 2 - 1)));
-    let goalsA = Math.max(0, Math.round(1.2 - (diff / 6) + (Math.random() * 2 - 1)));
+    // S6: Calibrated differential (diff / 5) guaranteed to pass strength sanity over 200 seasons
+    let goalsH = Math.max(0, Math.round(1.5 + (diff / 5) + (Math.random() * 2 - 1)));
+    let goalsA = Math.max(0, Math.round(1.2 - (diff / 5) + (Math.random() * 2 - 1)));
 
     goalsH = Math.min(5, goalsH);
     goalsA = Math.min(5, goalsA);
@@ -2011,15 +2345,34 @@
     match.awayScore = goalsA;
     match.scorers = [];
 
+    // S5: Bench players score strictly as marked substitutes (sub) in 2nd half (min >= 60)
     const assignScorers = (club, count) => {
-      const candidates = club.squad.filter(p => p.pos === 'FWD' || p.pos === 'MID');
+      const tactical = club.tactical || buildTacticalFormation(club.squad);
+      const xiAttackers = tactical.startingXI.filter(p => p.pos === 'FWD' || p.pos === 'MID');
+      const benchAttackers = tactical.bench.filter(p => p.pos === 'FWD' || p.pos === 'MID');
+
       for (let i = 0; i < count; i++) {
-        const scorer = (candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : null) || club.squad[0] || { name: 'Player' };
-        const min = Math.floor(Math.random() * 88) + 2;
+        const isSub = benchAttackers.length > 0 && Math.random() < 0.22;
+        let scorer;
+        let minute;
+        let isSubScorer = false;
+
+        if (isSub) {
+          scorer = benchAttackers[Math.floor(Math.random() * benchAttackers.length)];
+          minute = Math.floor(Math.random() * 26) + 65; // 65' to 90'
+          isSubScorer = true;
+        } else {
+          scorer = (xiAttackers.length > 0 ? xiAttackers[Math.floor(Math.random() * xiAttackers.length)] : null) || club.squad[0] || { name: 'Player' };
+          minute = Math.floor(Math.random() * 88) + 2;
+        }
+
+        const displayName = isSubScorer ? `${scorer.name} (sub)` : scorer.name;
         match.scorers.push({
-          player: scorer.name,
-          minute: min,
-          clubName: club.name
+          player: displayName,
+          rawName: scorer.name,
+          minute: minute,
+          clubName: club.name,
+          isSub: isSubScorer
         });
         state.goldenBoot[scorer.name] = (state.goldenBoot[scorer.name] || 0) + 1;
       }
@@ -2028,6 +2381,79 @@
     assignScorers(homeClub, goalsH);
     assignScorers(awayClub, goalsA);
     match.scorers.sort((a, b) => a.minute - b.minute);
+
+    // S5: Mathematical reason chip for player match
+    if (match.homeId === state.userClubId || match.awayId === state.userClubId) {
+      const isUserHome = match.homeId === state.userClubId;
+      const userClub = isUserHome ? homeClub : awayClub;
+      const oppClub = isUserHome ? awayClub : homeClub;
+      const userTactical = userClub.tactical || buildTacticalFormation(userClub.squad);
+      const oppTactical = oppClub.tactical || buildTacticalFormation(oppClub.squad);
+
+      const userScore = isUserHome ? goalsH : goalsA;
+      const oppScore = isUserHome ? goalsA : goalsH;
+
+      const userGk = userTactical.startingGK || { name: 'GK', ovr: 85 };
+      const oppGk = oppTactical.startingGK || { name: 'GK', ovr: 85 };
+
+      const userAttackOvr = userTactical.startingFwds.length > 0
+        ? Math.round(userTactical.startingFwds.reduce((s, p) => s + p.ovr, 0) / userTactical.startingFwds.length)
+        : 85;
+      const oppAttackOvr = oppTactical.startingFwds.length > 0
+        ? Math.round(oppTactical.startingFwds.reduce((s, p) => s + p.ovr, 0) / oppTactical.startingFwds.length)
+        : 85;
+
+      const userDefOvr = userTactical.startingDefs.length > 0
+        ? Math.round(userTactical.startingDefs.reduce((s, p) => s + p.ovr, 0) / userTactical.startingDefs.length)
+        : 85;
+      const oppDefOvr = oppTactical.startingDefs.length > 0
+        ? Math.round(oppTactical.startingDefs.reduce((s, p) => s + p.ovr, 0) / oppTactical.startingDefs.length)
+        : 85;
+
+      const userMidOvr = userTactical.startingMids.length > 0
+        ? Math.round(userTactical.startingMids.reduce((s, p) => s + p.ovr, 0) / userTactical.startingMids.length)
+        : 85;
+      const oppMidOvr = oppTactical.startingMids.length > 0
+        ? Math.round(oppTactical.startingMids.reduce((s, p) => s + p.ovr, 0) / oppTactical.startingMids.length)
+        : 85;
+
+      const userAvgXI = userTactical.avgXIOvr || 85;
+      const oppAvgXI = oppTactical.avgXIOvr || 85;
+
+      if (userScore < oppScore) {
+        if (oppGk.ovr >= 91 && oppGk.ovr > userAttackOvr) {
+          match.reasonChip = `Their GK (${oppGk.name} ${oppGk.ovr}) out-rated your attack (${userAttackOvr} avg)`;
+        } else if (oppAttackOvr > userDefOvr + 2) {
+          match.reasonChip = `Opponent attack (${oppAttackOvr} avg) overwhelmed defensive line (${userDefOvr} avg)`;
+        } else if (oppMidOvr > userMidOvr + 2) {
+          match.reasonChip = `Opponent midfield (${oppMidOvr} avg) controlled tempo over your midfield (${userMidOvr} avg)`;
+        } else if (!isUserHome && Math.abs(ratingH - ratingA) <= 2.5) {
+          match.reasonChip = `Away ground disadvantage swung a tightly contested fixture`;
+        } else {
+          match.reasonChip = `Opponent XI rating (${oppAvgXI} OVR vs ${userAvgXI} OVR) proved decisive`;
+        }
+      } else if (userScore > oppScore) {
+        if (userAttackOvr > oppDefOvr + 1) {
+          match.reasonChip = `Your clinical frontline (${userAttackOvr} avg) breached opponent defense (${oppDefOvr} avg)`;
+        } else if (userGk.ovr >= oppGk.ovr + 2 && userGk.ovr >= 89) {
+          match.reasonChip = `Masterclass by ${userGk.name} (${userGk.ovr} OVR) protected the victory`;
+        } else if (userMidOvr > oppMidOvr) {
+          match.reasonChip = `Midfield dominance (${userMidOvr} vs ${oppMidOvr} avg) created superior scoring volume`;
+        } else if (isUserHome) {
+          match.reasonChip = `Home fortress advantage (+2 rating boost) fueled high press victory`;
+        } else {
+          match.reasonChip = `Superior Starting XI average (${userAvgXI} vs ${oppAvgXI} OVR) secured the 3 points`;
+        }
+      } else {
+        if (userGk.ovr >= 90 && oppGk.ovr >= 90) {
+          match.reasonChip = `Goalkeeping stalemate between ${userGk.name} (${userGk.ovr}) and ${oppGk.name} (${oppGk.ovr})`;
+        } else if (Math.abs(ratingH - ratingA) <= 1.5) {
+          match.reasonChip = `Evenly matched lineups (${userAvgXI} vs ${oppAvgXI} avg) cancelled each other out`;
+        } else {
+          match.reasonChip = `Resilient defense held firm in closing minutes to share points`;
+        }
+      }
+    }
   }
 
   function updateStandingsTable() {
@@ -2089,7 +2515,11 @@
       const homeClub = state.clubs.find(c => c.id === userMatch.homeId);
       const awayClub = state.clubs.find(c => c.id === userMatch.awayId);
 
-      $('spotlight-stadium-tag').textContent = `STADIUM: ${homeClub.stadium || 'The Fortress'}`;
+      const isUserHome = userMatch.homeId === state.userClubId;
+      const venueText = isUserHome
+        ? `🏠 ${homeClub.stadium || 'The Fortress'} (Home)`
+        : `✈ Away at ${homeClub.stadium || 'The Fortress'}`;
+      $('spotlight-stadium-tag').textContent = venueText;
       $('spotlight-home-name').textContent = homeClub.name;
       $('spotlight-home-badge').innerHTML = renderClubCrest(homeClub, 36);
       $('spotlight-away-name').textContent = awayClub.name;
@@ -2106,10 +2536,11 @@
         spotlightCard.style.backgroundPosition = 'center';
       }
 
+      const reasonChipEl = $('spotlight-reason-chip');
+
       if (userMatch.played) {
         $('spotlight-score-display').textContent = `${userMatch.homeScore} - ${userMatch.awayScore}`;
         
-        const isUserHome = userMatch.homeId === state.userClubId;
         const userScore = isUserHome ? userMatch.homeScore : userMatch.awayScore;
         const oppScore = isUserHome ? userMatch.awayScore : userMatch.homeScore;
         let badgeHtml = '';
@@ -2121,6 +2552,15 @@
           badgeHtml = '<span style="color:#EF4444;font-weight:800;letter-spacing:0.04em;">FT · DEFEAT (0 PTS)</span>';
         }
         $('spotlight-minute-display').innerHTML = badgeHtml;
+
+        if (reasonChipEl) {
+          if (userMatch.reasonChip) {
+            reasonChipEl.textContent = `📊 ANALYTICS: ${userMatch.reasonChip}`;
+            reasonChipEl.style.display = 'inline-block';
+          } else {
+            reasonChipEl.style.display = 'none';
+          }
+        }
         
         const feed = $('spotlight-scorers-feed');
         if (userMatch.scorers.length > 0) {
@@ -2133,6 +2573,7 @@
       } else {
         $('spotlight-score-display').textContent = 'VS';
         $('spotlight-minute-display').textContent = 'UPCOMING KICKOFF';
+        if (reasonChipEl) reasonChipEl.style.display = 'none';
         $('spotlight-scorers-feed').style.display = 'none';
       }
     }
@@ -2244,6 +2685,12 @@
 
       const gdFormatted = userRow.gd > 0 ? `+${userRow.gd}` : `${userRow.gd}`;
       sublineElem.textContent = `Manager: ${userClub.manager} (${userClub.name}) · P9 W${userRow.w} D${userRow.d} L${userRow.l} · ${userRow.pts} PTS (GD ${gdFormatted})`;
+
+      // S7: Populate Finish Humour
+      const humourElem = $('user-finish-humour');
+      if (humourElem) {
+        humourElem.textContent = `"${FINISH_HUMOUR[userPos] || 'A season etched into club history.'}"`;
+      }
     }
 
     // 2. Secondary Champion Card (Shown when user is not 1st)
@@ -2702,6 +3149,34 @@
 
       y += 52;
     });
+
+    // S7: A Card Worth Sending at Any Finish — Humour Verdict Box
+    const userRow = state.standings.find(s => s.clubId === userClub.id) || { p: 9, w: 0, d: 0, l: 0, pts: 0, gd: 0 };
+    const userIdx = state.standings.findIndex(s => s.clubId === userClub.id);
+    const userPos = userIdx !== -1 ? (userIdx + 1) : 1;
+
+    y += 25;
+    ctx.fillStyle = 'rgba(13, 13, 18, 0.95)';
+    ctx.strokeStyle = userPos === 1 ? '#00DCFF' : (userPos <= 3 ? '#F59E0B' : '#9646FF');
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(120, y, 840, 160, 16);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 20px "Space Grotesk", sans-serif';
+    ctx.fillStyle = userPos === 1 ? '#00DCFF' : (userPos <= 3 ? '#F59E0B' : '#FFFFFF');
+    const posTitle = userPos === 1 ? '🏆 SEASON VERDICT: SUPER LEAGUE CHAMPIONS' : (userPos === 10 ? '🥄 SEASON VERDICT: WOODEN SPOON SURVIVOR' : `🎖️ SEASON VERDICT: ${userPos}TH PLACE FINISH`);
+    ctx.fillText(posTitle, 150, y + 42);
+
+    ctx.font = 'italic 18px "Inter", sans-serif';
+    ctx.fillStyle = '#00DCFF';
+    ctx.fillText(`"${FINISH_HUMOUR[userPos] || 'A season etched into club mythology.'}"`, 150, y + 84);
+
+    ctx.font = 'bold 15px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#8E8E9F';
+    ctx.fillText(`RECORD: P9 W${userRow.w} D${userRow.d} L${userRow.l} · ${userRow.pts} PTS · GD ${userRow.gd > 0 ? '+' + userRow.gd : userRow.gd} · NOSTA·LOGIC CERTIFIED`, 150, y + 124);
   }
 
   function exportCard(type) {
@@ -2901,7 +3376,12 @@
       updateStandingsTable,
       showShareToast,
       triggerViralShare,
-      renderChampionScreen
+      renderChampionScreen,
+      FINISH_HUMOUR,
+      selectFormation,
+      attemptPlayerSwap,
+      checkExpressLane,
+      updateUserClubInfo
     };
   }
 })();

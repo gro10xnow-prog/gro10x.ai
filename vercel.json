@@ -313,6 +313,18 @@
       "dest": "/public/superleague/data/$1"
     },
     {
+      "src": "/superleague/RENDER-MANIFEST.md",
+      "dest": "/public/superleague/RENDER-MANIFEST.md"
+    },
+    {
+      "src": "/superleague/COACH-QUEUE.md",
+      "dest": "/public/superleague/COACH-QUEUE.md"
+    },
+    {
+      "src": "/superleague/STADIUM-QUEUE.md",
+      "dest": "/public/superleague/STADIUM-QUEUE.md"
+    },
+    {
       "src": "/superleague/app.js",
       "dest": "/public/superleague/app.js"
     },

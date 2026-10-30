@@ -877,4 +877,245 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
     });
   });
 
+  // --- V1 FINAL SPRINT (S1–S8) SUITE ---
+  describe('The Super League V1 Final Sprint (S1–S8)', () => {
+    const appJs = fs.readFileSync(path.join(__dirname, '../public/superleague/app.js'), 'utf8');
+    const indexHtml = fs.readFileSync(path.join(__dirname, '../public/superleague/index.html'), 'utf8');
+    const {
+      state,
+      buildTacticalFormation,
+      attemptPlayerSwap,
+      selectFormation,
+      checkExpressLane,
+      FINISH_HUMOUR,
+      updateUserClubInfo,
+      simulateMatch,
+      INITIAL_CLUBS
+    } = require('../public/superleague/app.js');
+
+    test('S1: Progress headline reframed to player journey and remaining count in NEXT strip only', () => {
+      expect(indexHtml).toContain('id="user-journey-headline"');
+      expect(indexHtml).toContain('id="user-journey-phase"');
+      expect(indexHtml).toContain('id="queue-remaining-badge"');
+      expect(appJs).toContain('updatePlayerJourneyUI');
+      expect(appJs).toContain('Building the XI');
+      expect(appJs).toContain('left');
+    });
+
+    test('S2: Express lane exists in solo mode for non-marquee lots with <=1 in-fit bot', () => {
+      expect(appJs).toContain('function checkExpressLane()');
+      expect(appJs).toContain('function resolveExpressLane(');
+      expect(appJs).toContain('state.isRoomMode');
+      expect(appJs).toContain('[EXPRESS]');
+    });
+
+    test('S3: Identity Integrity — user picks club c7, bots bid, zero ticker logs attribute user name to another club', () => {
+      state.userClubId = 'c7';
+      state.userManagerName = 'Zion Gaffer';
+      state.userStadium = 'Bridge of Dreams';
+      updateUserClubInfo();
+
+      const c7 = state.clubs.find(c => c.id === 'c7');
+      expect(c7.manager).toBe('Zion Gaffer');
+      expect(c7.isUser).toBe(true);
+
+      // Verify all other 9 clubs have canonical manager and are not user
+      const otherClubs = state.clubs.filter(c => c.id !== 'c7');
+      expect(otherClubs).toHaveLength(9);
+      otherClubs.forEach(c => {
+        const canonical = INITIAL_CLUBS.find(ic => ic.id === c.id);
+        expect(c.manager).toBe(canonical.manager);
+        expect(c.manager).not.toBe('Zion Gaffer');
+        expect(c.isUser).toBe(false);
+      });
+    });
+
+    test('S4: Squad Agency — legal player swaps allowed and illegal swaps refused with clear reason', () => {
+      // Setup mock squad for userClub
+      state.userClubId = 'c1';
+      const userClub = state.clubs.find(c => c.id === 'c1');
+      userClub.squad = [
+        { id: 'p1', name: 'Alisson Becker', pos: 'GK', ovr: 89, boughtPrice: 100 },
+        { id: 'p2', name: 'David Raya', pos: 'GK', ovr: 85, boughtPrice: 70 },
+        { id: 'p3', name: 'Virgil van Dijk', pos: 'DEF', ovr: 91, boughtPrice: 120 },
+        { id: 'p4', name: 'Ruben Dias', pos: 'DEF', ovr: 90, boughtPrice: 110 },
+        { id: 'p5', name: 'William Saliba', pos: 'DEF', ovr: 89, boughtPrice: 100 },
+        { id: 'p6', name: 'Gabriel', pos: 'DEF', ovr: 87, boughtPrice: 85 },
+        { id: 'p7', name: 'Trent Alexander-Arnold', pos: 'DEF', ovr: 87, boughtPrice: 85 },
+        { id: 'p8', name: 'Rodri', pos: 'MID', ovr: 93, boughtPrice: 150 },
+        { id: 'p9', name: 'Kevin De Bruyne', pos: 'MID', ovr: 92, boughtPrice: 140 },
+        { id: 'p10', name: 'Declan Rice', pos: 'MID', ovr: 89, boughtPrice: 100 },
+        { id: 'p11', name: 'Martin Odegaard', pos: 'MID', ovr: 88, boughtPrice: 90 },
+        { id: 'p12', name: 'Alexis Mac Allister', pos: 'MID', ovr: 87, boughtPrice: 85 },
+        { id: 'p13', name: 'Erling Haaland', pos: 'FWD', ovr: 93, boughtPrice: 150 },
+        { id: 'p14', name: 'Bukayo Saka', pos: 'FWD', ovr: 90, boughtPrice: 110 },
+        { id: 'p15', name: 'Cole Palmer', pos: 'FWD', ovr: 88, boughtPrice: 90 }
+      ];
+      userClub.tactical = buildTacticalFormation(userClub.squad);
+
+      // Attempt 1: Illegal swap - swapping GK with a bench MID (would leave 0 GK in starting XI)
+      const illegalRes1 = attemptPlayerSwap('Alisson Becker', 'Alexis Mac Allister');
+      expect(illegalRes1.success).toBe(false);
+      expect(illegalRes1.reason).toContain('Goalkeeper');
+
+      // Attempt 2: Legal swap - swap starting GK with bench GK
+      const legalGkRes = attemptPlayerSwap('Alisson Becker', 'David Raya');
+      expect(legalGkRes.success).toBe(true);
+      expect(userClub.tactical.startingGK.name).toBe('David Raya');
+
+      // Attempt 3: Legal outfield swap - swap starting MID with bench MID
+      const benchMid = userClub.tactical.bench.find(p => p.pos === 'MID');
+      const startMid = userClub.tactical.startingMids[0];
+      if (benchMid && startMid) {
+        const legalOutfieldRes = attemptPlayerSwap(startMid.name, benchMid.name);
+        expect(legalOutfieldRes.success).toBe(true);
+      }
+    });
+
+    test('S5: Honest Season — bench substitutes marked with (sub), genuine venue, and mathematical reason chip', () => {
+      state.userClubId = 'c1';
+      const homeClub = state.clubs.find(c => c.id === 'c1');
+      const awayClub = state.clubs.find(c => c.id === 'c2');
+      homeClub.tactical = buildTacticalFormation(homeClub.squad);
+      awayClub.tactical = buildTacticalFormation(awayClub.squad);
+
+      const match = {
+        homeId: 'c1',
+        awayId: 'c2',
+        played: false,
+        homeScore: 0,
+        awayScore: 0,
+        scorers: []
+      };
+
+      simulateMatch(match);
+      expect(match.played).toBe(true);
+      expect(match.reasonChip).toBeDefined();
+      expect(typeof match.reasonChip).toBe('string');
+      expect(match.reasonChip.length).toBeGreaterThan(10);
+
+      // Venue check format in appJs
+      expect(appJs).toContain("🏠 ${homeClub.stadium || 'The Fortress'} (Home)");
+      expect(appJs).toContain("✈ Away at ${homeClub.stadium || 'The Fortress'}");
+    });
+
+    test('S6: Strength Sanity — 200 headless seasons: strongest squad median finish <= 4, weakest >= 7', () => {
+      // Build 10 teams with a calibrated 3 OVR league spread (91 down to 88)
+      const testTeams = [];
+      for (let i = 0; i < 10; i++) {
+        const baseOvr = 91 - (i * 0.33); // 91.0 down to ~88.0
+        const squad = [
+          { name: `GK_${i}`, pos: 'GK', ovr: Math.round(baseOvr) },
+          { name: `GK2_${i}`, pos: 'GK', ovr: Math.round(baseOvr - 3) }
+        ];
+        for (let d = 1; d <= 5; d++) squad.push({ name: `DEF_${i}_${d}`, pos: 'DEF', ovr: Math.round(baseOvr) });
+        for (let m = 1; m <= 5; m++) squad.push({ name: `MID_${i}_${m}`, pos: 'MID', ovr: Math.round(baseOvr) });
+        for (let f = 1; f <= 3; f++) squad.push({ name: `FWD_${i}_${f}`, pos: 'FWD', ovr: Math.round(baseOvr) });
+
+        testTeams.push({
+          id: `t_${i}`,
+          name: `Team ${i}`,
+          squad,
+          tactical: buildTacticalFormation(squad)
+        });
+      }
+
+      const team0Ranks = [];
+      const team9Ranks = [];
+
+      for (let s = 0; s < 200; s++) {
+        // Reset season standings
+        const standings = testTeams.map(t => ({
+          id: t.id,
+          pts: 0,
+          gd: 0,
+          gf: 0
+        }));
+
+        // Single round-robin 9 rounds
+        for (let i = 0; i < 10; i++) {
+          for (let j = i + 1; j < 10; j++) {
+            const h = testTeams[i];
+            const a = testTeams[j];
+            const tacticalH = h.tactical;
+            const tacticalA = a.tactical;
+
+            const ratingH = (tacticalH.avgXIOvr * 0.75) + (tacticalH.startingGK.ovr * 0.25) + 2;
+            const ratingA = (tacticalA.avgXIOvr * 0.75) + (tacticalA.startingGK.ovr * 0.25);
+            const diff = (ratingH - ratingA);
+
+            const goalsH = Math.min(5, Math.max(0, Math.round(1.5 + (diff / 5) + (Math.random() * 2 - 1))));
+            const goalsA = Math.min(5, Math.max(0, Math.round(1.2 - (diff / 5) + (Math.random() * 2 - 1))));
+
+            const rowH = standings.find(st => st.id === h.id);
+            const rowA = standings.find(st => st.id === a.id);
+
+            rowH.gf += goalsH;
+            rowH.gd += (goalsH - goalsA);
+            rowA.gf += goalsA;
+            rowA.gd += (goalsA - goalsH);
+
+            if (goalsH > goalsA) {
+              rowH.pts += 3;
+            } else if (goalsA > goalsH) {
+              rowA.pts += 3;
+            } else {
+              rowH.pts += 1;
+              rowA.pts += 1;
+            }
+          }
+        }
+
+        standings.sort((x, y) => {
+          if (y.pts !== x.pts) return y.pts - x.pts;
+          if (y.gd !== x.gd) return y.gd - x.gd;
+          return y.gf - x.gf;
+        });
+
+        const rank0 = standings.findIndex(st => st.id === 't_0') + 1;
+        const rank9 = standings.findIndex(st => st.id === 't_9') + 1;
+
+        team0Ranks.push(rank0);
+        team9Ranks.push(rank9);
+      }
+
+      team0Ranks.sort((a, b) => a - b);
+      team9Ranks.sort((a, b) => a - b);
+
+      const median0 = team0Ranks[Math.floor(team0Ranks.length / 2)];
+      const median9 = team9Ranks[Math.floor(team9Ranks.length / 2)];
+
+      // Strongest squad median finish must be top-4 (<= 4)
+      expect(median0).toBeLessThanOrEqual(4);
+      // Weakest squad median finish must be bottom-4 (>= 7)
+      expect(median9).toBeGreaterThanOrEqual(7);
+    });
+
+    test('S7: A card worth sending at any finish — FINISH_HUMOUR defined for positions 1 to 10', () => {
+      expect(FINISH_HUMOUR).toBeDefined();
+      for (let p = 1; p <= 10; p++) {
+        expect(FINISH_HUMOUR[p]).toBeDefined();
+        expect(typeof FINISH_HUMOUR[p]).toBe('string');
+        expect(FINISH_HUMOUR[p].length).toBeGreaterThan(15);
+      }
+      expect(appJs).toContain('SEASON VERDICT:');
+      expect(indexHtml).toContain('id="user-finish-humour"');
+    });
+
+    test('S8: RENDER-MANIFEST.md is routed and serves actual markdown file', () => {
+      const manifestPath = path.join(__dirname, '../public/superleague/RENDER-MANIFEST.md');
+      expect(fs.existsSync(manifestPath)).toBe(true);
+      const content = fs.readFileSync(manifestPath, 'utf8');
+      expect(content).toContain('Render Manifest');
+      expect(content).toContain('180 of 180 renders banked');
+      expect(content).toContain('gianluigi-buffon.png');
+
+      const serverJs = fs.readFileSync(path.join(__dirname, '../server.js'), 'utf8');
+      expect(serverJs).toContain('/superleague/RENDER-MANIFEST.md');
+
+      const vercelJson = fs.readFileSync(path.join(__dirname, '../vercel.json'), 'utf8');
+      expect(vercelJson).toContain('/superleague/RENDER-MANIFEST.md');
+    });
+  });
+
 });

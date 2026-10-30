@@ -229,23 +229,23 @@
     <!-- SCREEN 4: THE AUCTION ARENA                                   -->
     <!-- ============================================================== -->
     <section class="screen" id="screen-auction">
-      <!-- Auction Header Bar -->
+      <!-- Auction Header Bar: S1 Player Journey Reframe -->
       <div class="auction-header-bar">
-        <div class="lot-index-tag">
-          <span id="lot-index-display">LOT 1 / 180</span>
-          <span class="lot-pos-pill pos-FWD" id="lot-pos-tag">FWD</span>
+        <div class="player-journey-tag" id="player-journey-tag">
+          <div id="user-journey-headline" style="font-size:13px;font-weight:800;color:var(--text-white);letter-spacing:-0.01em;">Your squad 0/15 · Purse 2,000 left</div>
+          <div id="user-journey-phase" style="font-size:11px;color:var(--grad-cyan);font-weight:700;margin-top:2px;">Building the XI — GK needed</div>
         </div>
 
         <div class="timer-box">
           <span class="anti-snipe-banner" id="anti-snipe-banner">ANTI-SNIPE +10s</span>
-          <div class="timer-display" id="timer-display-num">40s</div>
+          <div class="timer-display" id="timer-display-num">12s</div>
         </div>
       </div>
 
       <div class="auction-main-content">
         <!-- Bench Phase Indicator -->
         <div class="bench-phase-banner" id="bench-phase-banner">
-          ⚡ BENCH PHASE: 20S LOTS
+          ⚡ BENCH PHASE: 8S LOTS
         </div>
 
         <!-- Quick-Close Telemetry Indicator -->
@@ -262,6 +262,10 @@
 
         <!-- Player Card -->
         <div class="player-lot-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="lot-pos-pill pos-FWD" id="lot-pos-tag">FWD</span>
+            <span id="lot-index-display" style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono);">LOT 1</span>
+          </div>
           <div class="player-card-top">
             <div class="player-avatar-circle" id="player-avatar-circle">⚽</div>
             <div class="player-ovr-box">
@@ -285,7 +289,7 @@
         <div class="upcoming-lots-wrap" style="margin-top:10px;margin-bottom:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">ON DECK (NEXT LOTS)</span>
-            <span id="queue-remaining-badge" style="font-size:10px;color:var(--grad-cyan);font-family:var(--font-mono);">179 IN QUEUE</span>
+            <span id="queue-remaining-badge" style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">179 left</span>
           </div>
           <div class="next-lots-strip" id="next-lots-strip"></div>
         </div>
@@ -415,6 +419,7 @@
             <div class="fixture-score-col">
               <div class="fixture-score-nums" id="spotlight-score-display">VS</div>
               <div class="fixture-minute-tag" id="spotlight-minute-display">KICKOFF READY</div>
+              <div class="match-reason-chip" id="spotlight-reason-chip" style="display:none;"></div>
             </div>
 
             <div class="fixture-team-col">
@@ -474,6 +479,7 @@
           <div style="font-size:12px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--grad-cyan);margin-bottom:6px;" id="user-finish-tag">YOUR SEASON VERDICT</div>
           <h2 class="champion-headline" id="user-finish-headline" style="font-size:28px;font-weight:900;letter-spacing:-0.02em;margin-bottom:8px;line-height:1.2;">YOU FINISHED 1ST — SUPER LEAGUE CHAMPIONS!</h2>
           <p style="font-size:14px;color:var(--text-muted);margin-top:2px;" id="user-finish-subline">Manager: Gaffer Firoz · P9 W7 D1 L1 · 22 PTS (GD +14)</p>
+          <div id="user-finish-humour" style="font-size:14px;font-style:italic;color:var(--grad-cyan);margin-top:6px;font-weight:600;">"Champions of the realm. Lap of honour booked."</div>
           <div id="secondary-champ-container" style="display:none;margin-top:14px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border-subtle);font-size:12px;color:var(--text-dim);"></div>
         </div>
 
@@ -603,8 +609,8 @@
   </div>
 
   <!-- Data & Logic Scripts -->
-  <script src="./data/players.js?v=20261031_pacing_v2"></script>
-  <script src="./app.js?v=20261031_pacing_v2"></script>
+  <script src="./data/players.js?v=20261031_final_sprint"></script>
+  <script src="./app.js?v=20261031_final_sprint"></script>
 
 </body>
 </html>
