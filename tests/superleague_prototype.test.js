@@ -631,7 +631,8 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       const manifestPath = path.join(__dirname, '../public/superleague/RENDER-MANIFEST.md');
       expect(fs.existsSync(manifestPath)).toBe(true);
       const content = fs.readFileSync(manifestPath, 'utf8');
-      expect(content).toContain('OFFLOAD 3 FINAL · 180 / 180 PLAYERS');
+      expect(content).toContain('OFFLOAD 3 · FINAL');
+      expect(content).toContain('180 of 180 renders banked — POOL COMPLETE');
       
       // Count player rows in table
       const rows = content.split('\n').filter(line => line.startsWith('|') && line.includes('.png'));

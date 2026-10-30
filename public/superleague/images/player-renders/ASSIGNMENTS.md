@@ -1,0 +1,173 @@
+# Super League — Player Render Assignments (v2, 2026-10-30)
+
+Founder decision: Hazard is reserved for TESTING/QA only. Production: Zayan, Sivan, BAGH AI.
+Done: 17 of 180. Remaining: 163. Template: locked one-liner + framing amendment (upper-body composition, no text or logos anywhere including background boards). Rounds of 4 per response.
+
+## Zayan — 55 players
+- [GK 93] Lev Yashin in his prime — pose: wearing goalkeeper gloves, holding a football under one arm → lev-yashin.png
+- [GK 90] Thibaut Courtois — pose: wearing goalkeeper gloves, arms spread commanding his defence → thibaut-courtois.png
+- [GK 89] Petr Cech in his prime — pose: wearing goalkeeper gloves, mid-dive save pose → petr-cech.png
+- [GK 87] Emiliano Martinez — pose: wearing goalkeeper gloves, holding a football under one arm → emiliano-martinez.png
+- [GK 85] David Raya — pose: wearing goalkeeper gloves, arms spread commanding his defence → david-raya.png
+- [DEF 94] Franco Baresi in his prime — pose: calm stare into camera, arms crossed → franco-baresi.png
+- [DEF 92] Alessandro Nesta in his prime — pose: fierce shout, fist clenched at chest → alessandro-nesta.png
+- [DEF 91] Fabio Cannavaro in his prime — pose: strong standing tackle stance, focused stare → fabio-cannavaro.png
+- [DEF 90] Giacinto Facchetti in his prime — pose: calm stare into camera, arms crossed → giacinto-facchetti.png
+- [DEF 89] Paul Breitner in his prime — pose: fierce shout, fist clenched at chest → paul-breitner.png
+- [DEF 89] Nemanja Vidic in his prime — pose: strong standing tackle stance, focused stare → nemanja-vidic.png
+- [DEF 88] John Terry in his prime — pose: calm stare into camera, arms crossed → john-terry.png
+- [DEF 87] Tony Adams in his prime — pose: fierce shout, fist clenched at chest → tony-adams.png
+- [DEF 87] Trent Alexander-Arnold — pose: strong standing tackle stance, focused stare → trent-alexanderarnold.png
+- [DEF 86] Josko Gvardiol — pose: calm stare into camera, arms crossed → josko-gvardiol.png
+- [DEF 85] Alphonso Davies — pose: fierce shout, fist clenched at chest → alphonso-davies.png
+- [DEF 85] Ronald Araujo — pose: strong standing tackle stance, focused stare → ronald-araujo.png
+- [DEF 84] Ben White — pose: calm stare into camera, arms crossed → ben-white.png
+- [DEF 84] Ibrahima Konate — pose: fierce shout, fist clenched at chest → ibrahima-konate.png
+- [DEF 83] Kyle Walker — pose: strong standing tackle stance, focused stare → kyle-walker.png
+- [DEF 83] Marc Cucurella — pose: calm stare into camera, arms crossed → marc-cucurella.png
+- [DEF 81] Leny Yoro — pose: fierce shout, fist clenched at chest → leny-yoro.png
+- [DEF 80] Myles Lewis-Skelly — pose: strong standing tackle stance, focused stare → myles-lewisskelly.png
+- [MID 93] Andres Iniesta in his prime — pose: mid-pass pose, looking up → andres-iniesta.png
+- [MID 92] Lothar Matthaus in his prime — pose: arms crossed, calm stare into camera → lothar-matthaus.png
+- [MID 91] Toni Kroos in his prime — pose: dribbling pose, ball at feet, eyes up → toni-kroos.png
+- [MID 91] Socrates in his prime — pose: mid-pass pose, looking up → socrates.png
+- [MID 90] Patrick Vieira in his prime — pose: arms crossed, calm stare into camera → patrick-vieira.png
+- [MID 89] Frank Lampard in his prime — pose: dribbling pose, ball at feet, eyes up → frank-lampard.png
+- [MID 89] Fernando Redondo in his prime — pose: mid-pass pose, looking up → fernando-redondo.png
+- [MID 88] Jamal Musiala — pose: arms crossed, calm stare into camera → jamal-musiala.png
+- [MID 88] Cesc Fabregas in his prime — pose: dribbling pose, ball at feet, eyes up → cesc-fabregas.png
+- [MID 87] Declan Rice — pose: mid-pass pose, looking up → declan-rice.png
+- [MID 87] Cole Palmer — pose: arms crossed, calm stare into camera → cole-palmer.png
+- [MID 86] Bernardo Silva — pose: dribbling pose, ball at feet, eyes up → bernardo-silva.png
+- [MID 85] Dominik Szoboszlai — pose: mid-pass pose, looking up → dominik-szoboszlai.png
+- [MID 85] Sandro Tonali — pose: arms crossed, calm stare into camera → sandro-tonali.png
+- [MID 84] Aurelien Tchouameni — pose: dribbling pose, ball at feet, eyes up → aurelien-tchouameni.png
+- [MID 84] Xavi Simons — pose: mid-pass pose, looking up → xavi-simons.png
+- [MID 83] Arda Guler — pose: arms crossed, calm stare into camera → arda-guler.png
+- [MID 82] Kobbie Mainoo — pose: dribbling pose, ball at feet, eyes up → kobbie-mainoo.png
+- [MID 81] Franco Mastantuono — pose: mid-pass pose, looking up → franco-mastantuono.png
+- [FWD 93] Johan Cruyff in his prime — pose: fist raised celebrating → johan-cruyff.png
+- [FWD 93] Ferenc Puskas in his prime — pose: arms spread wide celebrating → ferenc-puskas.png
+- [FWD 92] George Best in his prime — pose: fierce roar celebration, both fists clenched → george-best.png
+- [FWD 90] Andriy Shevchenko in his prime — pose: fist raised celebrating → andriy-shevchenko.png
+- [FWD 89] Didier Drogba in his prime — pose: arms spread wide celebrating → didier-drogba.png
+- [FWD 89] Vinicius Junior — pose: fierce roar celebration, both fists clenched → vinicius-junior.png
+- [FWD 88] Ousmane Dembele — pose: fist raised celebrating → ousmane-dembele.png
+- [FWD 87] Julian Alvarez — pose: arms spread wide celebrating → julian-alvarez.png
+- [FWD 86] Rafael Leao — pose: fierce roar celebration, both fists clenched → rafael-leao.png
+- [FWD 84] Cody Gakpo — pose: fist raised celebrating → cody-gakpo.png
+- [FWD 83] Antoine Semenyo — pose: arms spread wide celebrating → antoine-semenyo.png
+- [FWD 82] Benjamin Sesko — pose: fierce roar celebration, both fists clenched → benjamin-sesko.png
+- [FWD 79] Endrick — pose: fist raised celebrating → endrick.png
+
+## Sivan — 54 players
+- [GK 92] Iker Casillas in his prime — pose: wearing goalkeeper gloves, holding a football under one arm → iker-casillas.png
+- [GK 89] Alisson Becker — pose: wearing goalkeeper gloves, arms spread commanding his defence → alisson-becker.png
+- [GK 88] Jan Oblak — pose: wearing goalkeeper gloves, mid-dive save pose → jan-oblak.png
+- [GK 87] Mike Maignan — pose: wearing goalkeeper gloves, holding a football under one arm → mike-maignan.png
+- [GK 85] Wojciech Szczesny — pose: wearing goalkeeper gloves, arms spread commanding his defence → wojciech-szczesny.png
+- [DEF 94] Franz Beckenbauer in his prime — pose: calm stare into camera, arms crossed → franz-beckenbauer.png
+- [DEF 92] Roberto Carlos in his prime — pose: fierce shout, fist clenched at chest → roberto-carlos.png
+- [DEF 90] Carles Puyol in his prime — pose: strong standing tackle stance, focused stare → carles-puyol.png
+- [DEF 89] Philipp Lahm in his prime — pose: calm stare into camera, arms crossed → philipp-lahm.png
+- [DEF 89] Djalma Santos in his prime — pose: fierce shout, fist clenched at chest → djalma-santos.png
+- [DEF 88] Marcel Desailly in his prime — pose: strong standing tackle stance, focused stare → marcel-desailly.png
+- [DEF 88] Marcelo in his prime — pose: calm stare into camera, arms crossed → marcelo.png
+- [DEF 87] William Saliba — pose: fierce shout, fist clenched at chest → william-saliba.png
+- [DEF 86] Alessandro Bastoni — pose: strong standing tackle stance, focused stare → alessandro-bastoni.png
+- [DEF 86] Theo Hernandez — pose: calm stare into camera, arms crossed → theo-hernandez.png
+- [DEF 85] Eder Militao — pose: fierce shout, fist clenched at chest → eder-militao.png
+- [DEF 85] Antonio Rudiger — pose: strong standing tackle stance, focused stare → antonio-rudiger.png
+- [DEF 84] Andy Robertson — pose: calm stare into camera, arms crossed → andy-robertson.png
+- [DEF 84] Joao Cancelo — pose: fierce shout, fist clenched at chest → joao-cancelo.png
+- [DEF 83] Reece James — pose: strong standing tackle stance, focused stare → reece-james.png
+- [DEF 82] Pau Cubarsi — pose: calm stare into camera, arms crossed → pau-cubarsi.png
+- [DEF 81] Malo Gusto — pose: fierce shout, fist clenched at chest → malo-gusto.png
+- [MID 96] Diego Maradona in his prime — pose: mid-pass pose, looking up → diego-maradona.png
+- [MID 93] Michel Platini in his prime — pose: arms crossed, calm stare into camera → michel-platini.png
+- [MID 92] Zico in his prime — pose: dribbling pose, ball at feet, eyes up → zico.png
+- [MID 91] Kaka in his prime — pose: mid-pass pose, looking up → kaka.png
+- [MID 90] Rodri — pose: arms crossed, calm stare into camera → rodri.png
+- [MID 90] Frank Rijkaard in his prime — pose: dribbling pose, ball at feet, eyes up → frank-rijkaard.png
+- [MID 89] Paul Scholes in his prime — pose: mid-pass pose, looking up → paul-scholes.png
+- [MID 89] Xabi Alonso in his prime — pose: arms crossed, calm stare into camera → xabi-alonso.png
+- [MID 88] Florian Wirtz — pose: dribbling pose, ball at feet, eyes up → florian-wirtz.png
+- [MID 88] Bastian Schweinsteiger in his prime — pose: mid-pass pose, looking up → bastian-schweinsteiger.png
+- [MID 87] Martin Odegaard — pose: arms crossed, calm stare into camera → martin-odegaard.png
+- [MID 87] Nicolo Barella — pose: dribbling pose, ball at feet, eyes up → nicolo-barella.png
+- [MID 86] Alexis Mac Allister — pose: mid-pass pose, looking up → alexis-mac-allister.png
+- [MID 85] Enzo Fernandez — pose: arms crossed, calm stare into camera → enzo-fernandez.png
+- [MID 84] Gavi — pose: dribbling pose, ball at feet, eyes up → gavi.png
+- [MID 84] Martin Zubimendi — pose: mid-pass pose, looking up → martin-zubimendi.png
+- [MID 84] Joao Neves — pose: arms crossed, calm stare into camera → joao-neves.png
+- [MID 83] Warren Zaire-Emery — pose: dribbling pose, ball at feet, eyes up → warren-zaireemery.png
+- [MID 81] Adam Wharton — pose: mid-pass pose, looking up → adam-wharton.png
+- [FWD 95] Ronaldo Nazario in his prime — pose: fist raised celebrating → ronaldo-nazario.png
+- [FWD 93] Marco van Basten in his prime — pose: arms spread wide celebrating → marco-van-basten.png
+- [FWD 92] Thierry Henry in his prime — pose: fierce roar celebration, both fists clenched → thierry-henry.png
+- [FWD 91] Zlatan Ibrahimovic in his prime — pose: fist raised celebrating → zlatan-ibrahimovic.png
+- [FWD 90] Kenny Dalglish in his prime — pose: arms spread wide celebrating → kenny-dalglish.png
+- [FWD 89] Raul in his prime — pose: fierce roar celebration, both fists clenched → raul.png
+- [FWD 89] Harry Kane — pose: fist raised celebrating → harry-kane.png
+- [FWD 87] Bukayo Saka — pose: arms spread wide celebrating → bukayo-saka.png
+- [FWD 87] Lautaro Martinez — pose: fierce roar celebration, both fists clenched → lautaro-martinez.png
+- [FWD 86] Alexander Isak — pose: fist raised celebrating → alexander-isak.png
+- [FWD 84] Bryan Mbeumo — pose: arms spread wide celebrating → bryan-mbeumo.png
+- [FWD 83] Hugo Ekitike — pose: fierce roar celebration, both fists clenched → hugo-ekitike.png
+- [FWD 82] Nick Woltemade — pose: fist raised celebrating → nick-woltemade.png
+
+## BAGH AI — 54 players
+- [GK 91] Oliver Kahn in his prime — pose: wearing goalkeeper gloves, holding a football under one arm → oliver-kahn.png
+- [GK 89] Gianluigi Donnarumma — pose: wearing goalkeeper gloves, arms spread commanding his defence → gianluigi-donnarumma.png
+- [GK 88] Marc-Andre ter Stegen — pose: wearing goalkeeper gloves, mid-dive save pose → marcandre-ter-stegen.png
+- [GK 86] Hugo Lloris — pose: wearing goalkeeper gloves, holding a football under one arm → hugo-lloris.png
+- [GK 84] Jordan Pickford — pose: wearing goalkeeper gloves, arms spread commanding his defence → jordan-pickford.png
+- [DEF 92] Bobby Moore in his prime — pose: calm stare into camera, arms crossed → bobby-moore.png
+- [DEF 91] Cafu in his prime — pose: fierce shout, fist clenched at chest → cafu.png
+- [DEF 90] Carlos Alberto in his prime — pose: strong standing tackle stance, focused stare → carlos-alberto.png
+- [DEF 89] Dani Alves in his prime — pose: calm stare into camera, arms crossed → dani-alves.png
+- [DEF 89] Rio Ferdinand in his prime — pose: fierce shout, fist clenched at chest → rio-ferdinand.png
+- [DEF 88] Gerard Pique in his prime — pose: strong standing tackle stance, focused stare → gerard-pique.png
+- [DEF 88] Achraf Hakimi — pose: calm stare into camera, arms crossed → achraf-hakimi.png
+- [DEF 87] Ruben Dias — pose: fierce shout, fist clenched at chest → ruben-dias.png
+- [DEF 86] Gabriel Magalhaes — pose: strong standing tackle stance, focused stare → gabriel-magalhaes.png
+- [DEF 86] Marquinhos — pose: calm stare into camera, arms crossed → marquinhos.png
+- [DEF 85] Jules Kounde — pose: fierce shout, fist clenched at chest → jules-kounde.png
+- [DEF 85] Nuno Mendes — pose: strong standing tackle stance, focused stare → nuno-mendes.png
+- [DEF 84] Dayot Upamecano — pose: calm stare into camera, arms crossed → dayot-upamecano.png
+- [DEF 84] Jeremie Frimpong — pose: fierce shout, fist clenched at chest → jeremie-frimpong.png
+- [DEF 83] Jurrien Timber — pose: strong standing tackle stance, focused stare → jurrien-timber.png
+- [DEF 82] Dean Huijsen — pose: calm stare into camera, arms crossed → dean-huijsen.png
+- [DEF 81] Tino Livramento — pose: fierce shout, fist clenched at chest → tino-livramento.png
+- [MID 93] Xavi Hernandez in his prime — pose: mid-pass pose, looking up → xavi-hernandez.png
+- [MID 92] Andrea Pirlo in his prime — pose: arms crossed, calm stare into camera → andrea-pirlo.png
+- [MID 91] Luka Modric in his prime — pose: dribbling pose, ball at feet, eyes up → luka-modric.png
+- [MID 91] Ruud Gullit in his prime — pose: mid-pass pose, looking up → ruud-gullit.png
+- [MID 90] Steven Gerrard in his prime — pose: arms crossed, calm stare into camera → steven-gerrard.png
+- [MID 90] Johan Neeskens in his prime — pose: dribbling pose, ball at feet, eyes up → johan-neeskens.png
+- [MID 89] Jude Bellingham — pose: mid-pass pose, looking up → jude-bellingham.png
+- [MID 88] Clarence Seedorf in his prime — pose: arms crossed, calm stare into camera → clarence-seedorf.png
+- [MID 88] Federico Valverde — pose: dribbling pose, ball at feet, eyes up → federico-valverde.png
+- [MID 87] Pedri — pose: mid-pass pose, looking up → pedri.png
+- [MID 87] Vitinha — pose: arms crossed, calm stare into camera → vitinha.png
+- [MID 86] Phil Foden — pose: dribbling pose, ball at feet, eyes up → phil-foden.png
+- [MID 86] Bruno Fernandes — pose: mid-pass pose, looking up → bruno-fernandes.png
+- [MID 85] Ryan Gravenberch — pose: arms crossed, calm stare into camera → ryan-gravenberch.png
+- [MID 84] Eduardo Camavinga — pose: dribbling pose, ball at feet, eyes up → eduardo-camavinga.png
+- [MID 84] Tijjani Reijnders — pose: mid-pass pose, looking up → tijjani-reijnders.png
+- [MID 84] Desire Doue — pose: arms crossed, calm stare into camera → desire-doue.png
+- [MID 82] Nico Paz — pose: dribbling pose, ball at feet, eyes up → nico-paz.png
+- [MID 81] Elliot Anderson — pose: mid-pass pose, looking up → elliot-anderson.png
+- [FWD 94] Gerd Muller in his prime — pose: fist raised celebrating → gerd-muller.png
+- [FWD 93] Eusebio in his prime — pose: arms spread wide celebrating → eusebio.png
+- [FWD 92] Romario in his prime — pose: fierce roar celebration, both fists clenched → romario.png
+- [FWD 90] Gabriel Batistuta in his prime — pose: fist raised celebrating → gabriel-batistuta.png
+- [FWD 89] Samuel Eto'o in his prime — pose: arms spread wide celebrating → samuel-etoo.png
+- [FWD 89] Lamine Yamal — pose: fierce roar celebration, both fists clenched → lamine-yamal.png
+- [FWD 88] Robert Lewandowski — pose: fist raised celebrating → robert-lewandowski.png
+- [FWD 87] Raphinha — pose: arms spread wide celebrating → raphinha.png
+- [FWD 86] Antoine Griezmann — pose: fierce roar celebration, both fists clenched → antoine-griezmann.png
+- [FWD 85] Viktor Gyokeres — pose: fist raised celebrating → viktor-gyokeres.png
+- [FWD 83] Anthony Gordon — pose: arms spread wide celebrating → anthony-gordon.png
+- [FWD 82] Marcus Rashford — pose: fierce roar celebration, both fists clenched → marcus-rashford.png
+- [FWD 82] Estevao — pose: fist raised celebrating → estevao.png
