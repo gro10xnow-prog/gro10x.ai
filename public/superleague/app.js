@@ -484,6 +484,13 @@
   function init() {
     if (typeof window !== 'undefined') {
       window.__SUPERLEAGUE_STATE = state;
+      window.__SUPERLEAGUE_HELPERS = {
+        updateQuickCloseBanner,
+        triggerDemoQuickClose,
+        triggerDemoJumpBenchPhase,
+        startLotTimer,
+        presentNextLot
+      };
     }
     setupEventListeners();
     renderClubSelection();
@@ -720,6 +727,16 @@
     state.lotBidsCount = 0;
     state.timer = state.benchPhaseActive ? 20 : 40;
 
+    const timerElem = $('timer-display-num');
+    if (timerElem) {
+      timerElem.textContent = `${state.timer}s`;
+      if (state.timer <= 10) {
+        timerElem.classList.add('danger');
+      } else {
+        timerElem.classList.remove('danger');
+      }
+    }
+
     // Log new lot to ticker
     logBidActivity(`[LOT ${state.currentLotIdx + 1}] ${state.currentLot.name} (${state.currentLot.pos} · ${state.currentLot.ovr} OVR) · Base ${state.currentLot.basePrice} PTS`);
 
@@ -755,6 +772,16 @@
 
     renderNextLotsStrip();
     updateCurrentBidDisplay();
+
+    const timerElem = $('timer-display-num');
+    if (timerElem) {
+      timerElem.textContent = `${state.timer}s`;
+      if (state.timer <= 10 || state.quickCloseActive) {
+        timerElem.classList.add('danger');
+      } else {
+        timerElem.classList.remove('danger');
+      }
+    }
   }
 
   function renderNextLotsStrip() {
@@ -844,6 +871,15 @@
     });
   }
 
+  function updateQuickCloseBanner() {
+    const quickBanner = $('quick-close-banner');
+    if (!quickBanner) return;
+    const hasBids = state.lotBidsCount > 0 || state.currentBid > 0 || state.currentBidderId !== null;
+    quickBanner.textContent = hasBids
+      ? '⚡ QUICK-CLOSE (CLOSING IN 2S)'
+      : '⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)';
+  }
+
   function startLotTimer() {
     clearInterval(state.timerInterval);
     state.lotSecondsElapsed = 0;
@@ -852,7 +888,14 @@
     if (quickBanner) quickBanner.style.display = 'none';
 
     const timerElem = $('timer-display-num');
-    if (timerElem) timerElem.classList.remove('danger');
+    if (timerElem) {
+      timerElem.textContent = `${state.timer}s`;
+      if (state.timer <= 10) {
+        timerElem.classList.add('danger');
+      } else {
+        timerElem.classList.remove('danger');
+      }
+    }
 
     state.timerInterval = setInterval(() => {
       state.lotSecondsElapsed++;
@@ -862,11 +905,13 @@
       if (state.lotBidsCount === 0 && state.lotSecondsElapsed >= 8 && !state.quickCloseActive) {
         state.quickCloseActive = true;
         state.timer = 2;
-        if (quickBanner) {
-          quickBanner.textContent = '⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)';
-          quickBanner.style.display = 'block';
-        }
+        updateQuickCloseBanner();
+        if (quickBanner) quickBanner.style.display = 'block';
         logBidActivity(`⚡ QUICK-CLOSE TRIGGERED: NO BIDS IN 8S · CLOSING IN 2S`);
+      }
+
+      if (state.quickCloseActive) {
+        updateQuickCloseBanner();
       }
 
       if (timerElem) {
@@ -881,6 +926,7 @@
       if (state.timer <= 0) {
         clearInterval(state.timerInterval);
         if (quickBanner) quickBanner.style.display = 'none';
+        state.quickCloseActive = false;
         resolveLotSale();
       }
     }, 1000);
@@ -889,21 +935,19 @@
   // Auditor Telemetry Demo Shortcuts
   function triggerDemoQuickClose() {
     if (!state.currentLot) return;
-    state.lotBidsCount = 0;
-    state.lotSecondsElapsed = 8;
+    state.lotSecondsElapsed = Math.max(state.lotSecondsElapsed, 8);
     state.quickCloseActive = true;
     state.timer = 2;
     const quickBanner = $('quick-close-banner');
-    if (quickBanner) {
-      quickBanner.textContent = '⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)';
-      quickBanner.style.display = 'block';
-    }
+    updateQuickCloseBanner();
+    if (quickBanner) quickBanner.style.display = 'block';
     const timerElem = $('timer-display-num');
     if (timerElem) {
       timerElem.textContent = '2s';
       timerElem.classList.add('danger');
     }
-    logBidActivity(`🧪 DEMO TELEMETRY: ⚡ QUICK-CLOSE FORCED (CLOSING IN 2S)`);
+    const hasBids = state.lotBidsCount > 0 || state.currentBid > 0 || state.currentBidderId !== null;
+    logBidActivity(`🧪 DEMO TELEMETRY: ⚡ QUICK-CLOSE FORCED (${hasBids ? 'ACTIVE BID' : 'NO BIDS'} · CLOSING IN 2S)`);
   }
 
   function triggerDemoJumpBenchPhase() {
@@ -1002,6 +1046,12 @@
     state.benchPhaseActive = true;
     state.timer = 20;
 
+    const timerElem = $('timer-display-num');
+    if (timerElem) {
+      timerElem.textContent = '20s';
+      timerElem.classList.remove('danger');
+    }
+
     const benchBanner = $('bench-phase-banner');
     if (benchBanner) {
       benchBanner.textContent = '⚡ BENCH PHASE: 20S LOTS';
@@ -1035,9 +1085,7 @@
     state.lotBidsCount++;
 
     if (state.quickCloseActive) {
-      state.quickCloseActive = false;
-      const quickBanner = $('quick-close-banner');
-      if (quickBanner) quickBanner.style.display = 'none';
+      updateQuickCloseBanner();
     }
 
     const bidder = state.clubs.find(c => c.id === clubId);
@@ -1125,6 +1173,10 @@
   }
 
   function resolveLotSale() {
+    const quickBanner = $('quick-close-banner');
+    if (quickBanner) quickBanner.style.display = 'none';
+    state.quickCloseActive = false;
+
     const lot = state.currentLot;
     if (state.currentBidderId && state.currentBid > 0) {
       const winner = state.clubs.find(c => c.id === state.currentBidderId);

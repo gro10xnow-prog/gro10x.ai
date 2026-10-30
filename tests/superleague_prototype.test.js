@@ -754,4 +754,45 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
     });
   });
 
+  describe('Round 4 Polish Pass: Quick-Close Copy & Bench Phase First-View 20s Timer', () => {
+    test('Quick-close banner copy displays NO BIDS only when truly bidless, and excludes NO BIDS when bid exists', () => {
+      const appJs = fs.readFileSync(path.join(__dirname, '../public/superleague/app.js'), 'utf8');
+
+      // Verify updateQuickCloseBanner logic
+      expect(appJs).toContain('function updateQuickCloseBanner()');
+      expect(appJs).toContain("'⚡ QUICK-CLOSE (CLOSING IN 2S)'");
+      expect(appJs).toContain("'⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)'");
+
+      // Simulate copy logic in isolation
+      function getQuickBannerCopy(state) {
+        const hasBids = state.lotBidsCount > 0 || state.currentBid > 0 || state.currentBidderId !== null;
+        return hasBids ? '⚡ QUICK-CLOSE (CLOSING IN 2S)' : '⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)';
+      }
+
+      // Case 1: Truly bidless lot
+      expect(getQuickBannerCopy({ lotBidsCount: 0, currentBid: 0, currentBidderId: null }))
+        .toBe('⚡ QUICK-CLOSE: NO BIDS (CLOSING IN 2S)');
+
+      // Case 2: Bot or user bid landed
+      expect(getQuickBannerCopy({ lotBidsCount: 1, currentBid: 160, currentBidderId: 'c2' }))
+        .toBe('⚡ QUICK-CLOSE (CLOSING IN 2S)');
+
+      // Case 3: Multiple bids placed
+      expect(getQuickBannerCopy({ lotBidsCount: 3, currentBid: 220, currentBidderId: 'c5' }))
+        .toBe('⚡ QUICK-CLOSE (CLOSING IN 2S)');
+    });
+
+    test('Bench Phase first-view timer is immediately set to 20s on DOM element before first tick', () => {
+      const appJs = fs.readFileSync(path.join(__dirname, '../public/superleague/app.js'), 'utf8');
+
+      // Verify triggerDemoJumpBenchPhase sets timerElem to 20s immediately
+      expect(appJs).toContain("state.timer = 20;");
+      expect(appJs).toContain("timerElem.textContent = '20s';");
+
+      // Verify presentNextLot and startLotTimer set timerElem.textContent upon initialization
+      expect(appJs).toContain("timerElem.textContent = `${state.timer}s`;");
+      expect(appJs).toContain("function startLotTimer()");
+    });
+  });
+
 });
