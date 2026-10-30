@@ -9,17 +9,17 @@
  * 1. Prototype HTML file exists on disk at public/prototypes/mexsa-futsal/index.html
  * 2. GET /prototypes/mexsa-futsal returns HTTP 200 with text/html
  * 3. GET /prototypes/mexsa-futsal/ (trailing slash) returns HTTP 200 OK
- * 4. 8 permanent franchises are pre-configured with distinct identities
+ * 4. 8 permanent MExSA-aligned franchises configured (Titans, Strikers, Red Crescent, Warriors, Vipers, Mavericks, Rovers, Horizon)
  * 5. Purse Guard Engine mathematically enforces:
  *    - Base price 20 points
  *    - Formula: maxBid = purse - ((spotsOpen - 1) * 20)
  *    - Foreign cap: max 2 foreign players
  *    - Goalkeeper mandate: min 2 GKs
- * 6. Live bidding console: 40-second timer, +10s anti-snipe, banded bid increments (+10, +25, +50)
- * 7. Autonomous AI bot bidding personalities & Quick-Simulate draft capability
- * 8. Unsold reserve pool drawer with recall mechanism
- * 9. Surface B: 9:16 UHD Social Pack canvas generator (1080x1920) with 1-click PNG download
- * 10. Surface C: Tournament matchday center with 2 groups of 4, organiser score modal, and knockout brackets
+ * 6. Live bidding console: 40-second timer, +10s anti-snipe, banded bid increments (+10, +25, +50), Live Auction Log
+ * 7. Autonomous AI Franchise Bots & Quick-Simulate Draft capability are implemented
+ * 8. Unsold reserve pool drawer with recall mechanism & Synthetic Sample Roster notice
+ * 9. Surface B: 9:16 UHD Social Pack Canvas (1080x1920) generator is mounted
+ * 10. Surface C: Tournament Matchday Center with 2 groups of 4, organiser score modal, official event dates
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -53,23 +53,22 @@ describe('MExSA Futsal Premier League Prototype Suite', () => {
     expect(res.headers['content-type']).toMatch(/html/);
   });
 
-  test('4. All 8 permanent franchises are configured with high-contrast themes', async () => {
+  test('4. All 8 MExSA-aligned franchises are configured with high-contrast themes', async () => {
     const res = await request(app).get('/prototypes/mexsa-futsal');
     const content = res.text;
-    expect(content).toContain('Apex Strikers');
-    expect(content).toContain('Klang Titans');
-    expect(content).toContain('Merdeka FC');
-    expect(content).toContain('Bangsar Warriors');
-    expect(content).toContain('Damansara United');
-    expect(content).toContain('Subang Galaxy');
-    expect(content).toContain('Cyberjaya Knights');
-    expect(content).toContain('Shah Alam Phoenix');
+    expect(content).toContain('MExSA Titans');
+    expect(content).toContain('Alumni Strikers');
+    expect(content).toContain('Red Crescent FC');
+    expect(content).toContain('Merdeka Warriors');
+    expect(content).toContain('Varsity Vipers');
+    expect(content).toContain('Metro Mavericks');
+    expect(content).toContain('Royal Rovers');
+    expect(content).toContain('Horizon United');
   });
 
   test('5. Mathematical Purse Guard Engine enforces 1000 pts purse, base 20, min 2 GKs, max 2 foreign', async () => {
     const res = await request(app).get('/prototypes/mexsa-futsal');
     const content = res.text;
-    // Core parameters
     expect(content).toContain('getPurseGuardMetrics');
     expect(content).toContain('spotsOpen = 10 - currentCount');
     expect(content).toContain('maxBid = franchise.purse - ((spotsOpen - 1) * 20)');
@@ -79,7 +78,7 @@ describe('MExSA Futsal Premier League Prototype Suite', () => {
     expect(content).toContain('Purse: 1,000 Pts');
   });
 
-  test('6. Live Bidding Console implements 40s timer, anti-snipe +10s, banded increments and Web Audio', async () => {
+  test('6. Live Bidding Console implements 40s timer, anti-snipe +10s, banded increments and Live Auction Log', async () => {
     const res = await request(app).get('/prototypes/mexsa-futsal');
     const content = res.text;
     expect(content).toContain('lotTimer = 40');
@@ -89,6 +88,7 @@ describe('MExSA Futsal Premier League Prototype Suite', () => {
     expect(content).toContain('+10 Pts (<100)');
     expect(content).toContain('+25 Pts (100–299)');
     expect(content).toContain('+50 Pts (≥300)');
+    expect(content).toContain('LIVE AUCTION LOG');
     expect(content).toContain('playGavelStrike');
     expect(content).toContain('playBidChime');
     expect(content).toContain('AudioContext');
@@ -104,13 +104,14 @@ describe('MExSA Futsal Premier League Prototype Suite', () => {
     expect(content).toContain('btnSpeedDemo');
   });
 
-  test('8. Unsold Reserve Pool Drawer with recall mechanism is mounted', async () => {
+  test('8. Unsold Reserve Pool Drawer and Synthetic Sample Roster Notice are mounted', async () => {
     const res = await request(app).get('/prototypes/mexsa-futsal');
     const content = res.text;
     expect(content).toContain('id="surface-reserve"');
     expect(content).toContain('id="reservePoolGrid"');
     expect(content).toContain('recallReservePlayer');
     expect(content).toContain('unsoldReserve');
+    expect(content).toContain('Synthetic Sample Roster (125 Demo Players)');
   });
 
   test('9. Surface B: 9:16 Social Pack Canvas (1080x1920) generator is mounted', async () => {
@@ -125,9 +126,11 @@ describe('MExSA Futsal Premier League Prototype Suite', () => {
     expect(content).toContain('downloadSocialCardPNG');
   });
 
-  test('10. Surface C: Tournament Matchday Center includes 2 groups of 4, organizer score modal, and knockouts', async () => {
+  test('10. Surface C: Tournament Matchday Center includes 2 groups of 4, organiser score modal, and official dates', async () => {
     const res = await request(app).get('/prototypes/mexsa-futsal');
     const content = res.text;
+    expect(content).toContain('AUCTION: 21 NOV 2026');
+    expect(content).toContain('TOURNAMENT: 4 DEC 2026');
     expect(content).toContain('id="surface-tournament"');
     expect(content).toContain('id="groupATableBody"');
     expect(content).toContain('id="groupBTableBody"');
