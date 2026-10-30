@@ -74,6 +74,15 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
         expect(fs.existsSync(crestFile)).toBe(true);
       });
     });
+
+    test('Lobby club cards have mobile responsive non-overflow CSS rules', () => {
+      const css = fs.readFileSync(path.join(__dirname, '../public/superleague/styles.css'), 'utf8');
+      expect(css).toContain('.club-selection-grid');
+      expect(css).toContain('min-width: 0;');
+      expect(css).toContain('white-space: normal;');
+      expect(css).toContain('word-break: break-word;');
+      expect(css).toContain('@media (max-width: 380px)');
+    });
   });
 
   // --- GATE 4B: 180-PLAYER POOL VERIFICATION ---

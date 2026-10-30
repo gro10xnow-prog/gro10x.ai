@@ -690,18 +690,22 @@ h1, h2, h3, h4, .font-display {
 .club-selection-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .club-choice-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 8px 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0; /* Prevents flex children from causing overflow */
+  box-sizing: border-box;
   transition: all 0.2s ease;
   position: relative;
 }
@@ -722,27 +726,64 @@ h1, h2, h3, h4, .font-display {
 }
 
 .club-badge-icon {
-  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.club-badge-icon img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .club-choice-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  overflow: hidden;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
 }
 
 .club-choice-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal; /* Allow clean wrap on mobile */
+  word-break: break-word;
+  line-height: 1.15;
+  color: var(--text-white);
 }
 
 .club-choice-tag {
   font-size: 10px;
   color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 380px) {
+  .club-selection-grid {
+    gap: 6px;
+  }
+  .club-choice-card {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+  .club-badge-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .club-badge-icon img {
+    width: 28px;
+    height: 28px;
+  }
+  .club-choice-name {
+    font-size: 10px;
+  }
 }
 
 /* ------------------------------------------------------------- */

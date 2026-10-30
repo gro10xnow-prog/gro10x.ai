@@ -448,7 +448,7 @@
       const isSelected = club.id === state.userClubId;
       card.className = `club-choice-card ${isSelected ? 'selected' : ''}`;
       card.innerHTML = `
-        <div class="club-badge-icon">${renderClubCrest(club, 40)}</div>
+        <div class="club-badge-icon">${renderClubCrest(club, 32)}</div>
         <div class="club-choice-info">
           <div class="club-choice-name">${club.name}</div>
           <div class="club-choice-tag">${isSelected ? 'Your Club' : club.manager}</div>
