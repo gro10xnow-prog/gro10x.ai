@@ -609,6 +609,13 @@ h1, h2, h3, h4, .font-display {
   gap: 18px;
 }
 
+@media (max-width: 480px) {
+  .lobby-wrap {
+    padding: 14px 10px;
+    gap: 14px;
+  }
+}
+
 .room-badge-row {
   display: flex;
   justify-content: space-between;
@@ -753,6 +760,7 @@ h1, h2, h3, h4, .font-display {
   font-weight: 700;
   white-space: normal; /* Allow clean wrap on mobile */
   word-break: break-word;
+  overflow-wrap: anywhere;
   line-height: 1.15;
   color: var(--text-white);
 }
@@ -765,12 +773,12 @@ h1, h2, h3, h4, .font-display {
   text-overflow: ellipsis;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 480px) {
   .club-selection-grid {
     gap: 6px;
   }
   .club-choice-card {
-    padding: 6px 8px;
+    padding: 6px 7px;
     gap: 6px;
   }
   .club-badge-icon {
@@ -783,6 +791,46 @@ h1, h2, h3, h4, .font-display {
   }
   .club-choice-name {
     font-size: 10px;
+    line-height: 1.12;
+  }
+}
+
+@media (max-width: 380px) {
+  .club-selection-grid {
+    gap: 6px;
+  }
+  .club-choice-card {
+    padding: 6px 6px;
+    gap: 6px;
+  }
+  .club-badge-icon {
+    width: 26px;
+    height: 26px;
+  }
+  .club-badge-icon img {
+    width: 26px;
+    height: 26px;
+  }
+  .club-choice-name {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 350px) {
+  .club-choice-card {
+    padding: 5px 6px;
+    gap: 5px;
+  }
+  .club-badge-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .club-badge-icon img {
+    width: 24px;
+    height: 24px;
+  }
+  .club-choice-name {
+    font-size: 9.5px;
   }
 }
 
