@@ -172,7 +172,10 @@
       { name: '3-4-3', d: 3, m: 4, f: 3 },
       { name: '4-5-1', d: 4, m: 5, f: 1 },
       { name: '5-3-2', d: 5, m: 3, f: 2 },
-      { name: '5-4-1', d: 5, m: 4, f: 1 }
+      { name: '5-4-1', d: 5, m: 4, f: 1 },
+      { name: '5-2-3', d: 5, m: 2, f: 3 },
+      { name: '4-2-4', d: 4, m: 2, f: 4 },
+      { name: '3-3-4', d: 3, m: 3, f: 4 }
     ];
 
     let bestConfig = null;
@@ -204,19 +207,40 @@
       }
     }
 
-    // Dynamic fallback if squad has unique distribution
+    // Dynamic fallback: strictly guaranteed 10 outfielders (so startingXI has exactly 11 players)
     if (!bestConfig) {
-      const dCount = Math.min(defs.length, 4);
-      const mCount = Math.min(mids.length, 4);
-      const fCount = Math.min(fwds.length, 2);
+      const outfielders = [...defs, ...mids, ...fwds].sort((a, b) => b.ovr - a.ovr);
+      let dCount = Math.min(Math.max(defs.length, 3), 5);
+      let mCount = Math.min(Math.max(mids.length, 3), 5);
+      let fCount = 10 - dCount - mCount;
+      if (fCount < 1) {
+        fCount = 1;
+        if (dCount > 3) dCount--;
+        else if (mCount > 3) mCount--;
+      }
+
+      let selDefs = defs.slice(0, dCount);
+      let selMids = mids.slice(0, mCount);
+      let selFwds = fwds.slice(0, fCount);
+
+      const currentSelected = new Set([...selDefs, ...selMids, ...selFwds].map(p => p.id || p.name));
+      const remainingOutfielders = outfielders.filter(p => !currentSelected.has(p.id || p.name));
+
+      while ((selDefs.length + selMids.length + selFwds.length) < 10 && remainingOutfielders.length > 0) {
+        const next = remainingOutfielders.shift();
+        if (next.pos === 'DEF') selDefs.push(next);
+        else if (next.pos === 'MID') selMids.push(next);
+        else selFwds.push(next);
+      }
+
       bestConfig = {
-        formation: `${dCount}-${mCount}-${fCount}`,
-        d: dCount,
-        m: mCount,
-        f: fCount,
-        startingDefs: defs.slice(0, dCount),
-        startingMids: mids.slice(0, mCount),
-        startingFwds: fwds.slice(0, fCount)
+        formation: `${selDefs.length}-${selMids.length}-${selFwds.length}`,
+        d: selDefs.length,
+        m: selMids.length,
+        f: selFwds.length,
+        startingDefs: selDefs,
+        startingMids: selMids,
+        startingFwds: selFwds
       };
     }
 
@@ -241,6 +265,7 @@
     return {
       formation: bestConfig.formation,
       startingXI,
+      xi: startingXI,
       startingGK,
       startingDefs: bestConfig.startingDefs,
       startingMids: bestConfig.startingMids,
@@ -684,22 +709,98 @@
   }
 
   function triggerDemoJumpBenchPhase() {
-    // Fill each club up to 11 players from queue to simulate fast forward to bench phase
-    state.clubs.forEach((club) => {
-      while (club.squad.length < 11 && state.currentLotIdx < state.auctionQueue.length) {
-        const p = state.auctionQueue[state.currentLotIdx++];
-        club.squad.push(p);
-        club.purse = Math.max(80, club.purse - p.basePrice);
+    clearInterval(state.timerInterval);
+    clearTimeout(state.botBidTimeout);
+
+    // If active bid exists on current lot, resolve it
+    if (state.currentBidderId && state.currentBid > 0 && state.currentLot) {
+      const winner = state.clubs.find(c => c.id === state.currentBidderId);
+      if (winner && winner.squad.length < 11) {
+        winner.purse -= state.currentBid;
+        winner.squad.push({
+          ...state.currentLot,
+          boughtPrice: state.currentBid
+        });
       }
-    });
+      state.currentLotIdx++;
+      state.currentBidderId = null;
+      state.currentBid = 0;
+    }
+
+    // Sequentially assign lots until all 10 clubs have exactly 11 players
+    while (state.clubs.some(c => c.squad.length < 11) && state.currentLotIdx < state.auctionQueue.length) {
+      const lot = state.auctionQueue[state.currentLotIdx++];
+
+      const eligible = state.clubs.filter(c => {
+        if (c.squad.length >= 11) return false;
+
+        const slotsLeftTotal = 15 - c.squad.length;
+        const reserveNeeded = (slotsLeftTotal - 1) * 65;
+        const maxBid = c.purse - reserveNeeded;
+        if (maxBid < lot.basePrice) return false;
+
+        const gks = c.squad.filter(p => p.pos === 'GK').length;
+        const defs = c.squad.filter(p => p.pos === 'DEF').length;
+        const mids = c.squad.filter(p => p.pos === 'MID').length;
+        const fwds = c.squad.filter(p => p.pos === 'FWD').length;
+
+        if (lot.pos === 'GK') {
+          // Starting XI: strictly max 1 GK
+          if (gks >= 1) return false;
+        } else {
+          // In starting XI: max 5 DEF, 5 MID, 3 FWD
+          if (lot.pos === 'DEF' && defs >= 5) return false;
+          if (lot.pos === 'MID' && mids >= 5) return false;
+          if (lot.pos === 'FWD' && fwds >= 3) return false;
+
+          // Must reserve slots for missing mandatory positions in starting XI
+          const slotsLeftInXI = 11 - c.squad.length;
+          let neededSlots = 0;
+          if (gks === 0 && lot.pos !== 'GK') neededSlots += 1;
+          if (defs < 3 && lot.pos !== 'DEF') neededSlots += (3 - defs);
+          if (mids < 3 && lot.pos !== 'MID') neededSlots += (3 - mids);
+          if (fwds < 1 && lot.pos !== 'FWD') neededSlots += (1 - fwds);
+
+          if (slotsLeftInXI - 1 < neededSlots) return false;
+        }
+
+        return true;
+      });
+
+      if (eligible.length > 0) {
+        // Sort: need for this position first, then fewest players, then highest purse
+        eligible.sort((a, b) => {
+          const aCount = a.squad.filter(p => p.pos === lot.pos).length;
+          const bCount = b.squad.filter(p => p.pos === lot.pos).length;
+          if (aCount !== bCount) return aCount - bCount;
+          if (a.squad.length !== b.squad.length) return a.squad.length - b.squad.length;
+          return b.purse - a.purse;
+        });
+
+        const buyer = eligible[0];
+        const slotsLeftTotal = 15 - buyer.squad.length;
+        const maxBid = buyer.purse - (slotsLeftTotal - 1) * 65;
+        const price = Math.min(maxBid, lot.basePrice);
+
+        buyer.purse -= price;
+        buyer.squad.push({
+          ...lot,
+          boughtPrice: price
+        });
+      }
+    }
+
     state.benchPhaseActive = true;
+    state.timer = 20;
+
     const benchBanner = $('bench-phase-banner');
     if (benchBanner) {
       benchBanner.textContent = '⚡ BENCH PHASE: 20S LOTS';
       benchBanner.style.display = 'block';
     }
+
     logBidActivity(`🧪 DEMO TELEMETRY: ⚡ JUMP TO BENCH PHASE (ALL CLUBS HAVE 11 PLAYERS · 20S CLOCK)`);
-    loadNextAuctionLot();
+    presentNextLot();
   }
 
   // P1-1 User Bid Execution
@@ -857,8 +958,8 @@
     clearInterval(state.timerInterval);
     clearTimeout(state.botBidTimeout);
 
-    // Resolve active bid if any
-    if (state.currentBidderId && state.currentBid > 0) {
+    // 1. Resolve active bid if any
+    if (state.currentBidderId && state.currentBid > 0 && state.currentLot) {
       const winner = state.clubs.find(c => c.id === state.currentBidderId);
       if (winner && winner.squad.length < 15) {
         winner.purse -= state.currentBid;
@@ -868,28 +969,57 @@
         });
       }
       state.currentLotIdx++;
+      state.currentBidderId = null;
+      state.currentBid = 0;
     }
 
-    // Allocate remaining lots to clubs that need players
+    // 2. Allocate remaining lots to clubs that need players
     while (state.clubs.some(c => c.squad.length < 15) && state.currentLotIdx < state.auctionQueue.length) {
-      const lot = state.auctionQueue[state.currentLotIdx];
-      state.currentLotIdx++;
+      const lot = state.auctionQueue[state.currentLotIdx++];
 
-      const clubsNeeding = state.clubs.filter(c => {
+      const eligible = state.clubs.filter(c => {
         if (c.squad.length >= 15) return false;
-        const guard = getPurseGuardInfo(c.id, lot);
-        if (!guard.allowed) return false;
+        const slotsLeftTotal = 15 - c.squad.length;
+        const reserveNeeded = (slotsLeftTotal - 1) * 65;
+        const maxBid = c.purse - reserveNeeded;
+        if (maxBid < 65) return false;
 
-        const posCount = c.squad.filter(p => p.pos === lot.pos).length;
-        if (lot.pos === 'GK' && posCount >= 2) return false;
-        return guard.maxBid >= lot.basePrice;
+        const gks = c.squad.filter(p => p.pos === 'GK').length;
+        const defs = c.squad.filter(p => p.pos === 'DEF').length;
+        const mids = c.squad.filter(p => p.pos === 'MID').length;
+        const fwds = c.squad.filter(p => p.pos === 'FWD').length;
+
+        // Max 2 GKs
+        if (lot.pos === 'GK' && gks >= 2) return false;
+
+        // Ensure requirements for starters if not yet fulfilled
+        let needed = 0;
+        if (gks === 0 && lot.pos !== 'GK') needed++;
+        if (defs < 3 && lot.pos !== 'DEF') needed += (3 - defs);
+        if (mids < 3 && lot.pos !== 'MID') needed += (3 - mids);
+        if (fwds < 1 && lot.pos !== 'FWD') needed += (1 - fwds);
+
+        if (slotsLeftTotal - 1 < needed) return false;
+        return true;
       });
 
-      if (clubsNeeding.length > 0) {
-        clubsNeeding.sort((a, b) => b.purse - a.purse);
-        const buyer = clubsNeeding[0];
-        const price = Math.min(buyer.purse - (14 - buyer.squad.length) * 65, lot.basePrice);
-        
+      if (eligible.length > 0) {
+        eligible.sort((a, b) => {
+          // Prioritize clubs lacking mandatory starting positions
+          const gksA = a.squad.filter(p => p.pos === 'GK').length;
+          const gksB = b.squad.filter(p => p.pos === 'GK').length;
+          if (lot.pos === 'GK' && gksA === 0 && gksB > 0) return -1;
+          if (lot.pos === 'GK' && gksB === 0 && gksA > 0) return 1;
+
+          if (a.squad.length !== b.squad.length) return a.squad.length - b.squad.length;
+          return b.purse - a.purse;
+        });
+
+        const buyer = eligible[0];
+        const slotsLeftTotal = 15 - buyer.squad.length;
+        const maxBid = buyer.purse - (slotsLeftTotal - 1) * 65;
+        const price = Math.max(65, Math.min(maxBid, lot.basePrice));
+
         buyer.purse -= price;
         buyer.squad.push({
           ...lot,
@@ -898,55 +1028,32 @@
       }
     }
 
-    // Strict Formation Balancing pass: ensure exactly 15 players and at least 1 GK
+    // 3. Safety Pass: If any club still has < 15, allocate from undrafted pool (never duplicate!)
+    const allDraftedIds = new Set();
+    state.clubs.forEach(c => c.squad.forEach(p => allDraftedIds.add(p.id)));
+    const undrafted = state.auctionQueue.filter(p => !allDraftedIds.has(p.id));
+
     state.clubs.forEach(c => {
-      // 1. Ensure GK
-      const hasGK = c.squad.some(p => p.pos === 'GK');
-      if (!hasGK) {
-        const gkCandidate = state.allPlayers.find(p => p.pos === 'GK' && !c.squad.some(s => s.id === p.id));
-        if (gkCandidate) {
-          if (c.squad.length >= 15) {
-            c.squad.sort((a, b) => a.ovr - b.ovr);
-            const removed = c.squad.shift();
-            c.purse += removed.boughtPrice || 65;
-          }
-          const cost = Math.min(c.purse, gkCandidate.basePrice);
-          c.purse -= cost;
-          c.squad.push({ ...gkCandidate, boughtPrice: cost });
+      while (c.squad.length < 15 && undrafted.length > 0) {
+        const gks = c.squad.filter(p => p.pos === 'GK').length;
+        let candidateIdx = -1;
+        if (gks === 0) {
+          candidateIdx = undrafted.findIndex(p => p.pos === 'GK');
+        } else {
+          candidateIdx = undrafted.findIndex(p => p.pos !== 'GK' || gks < 2);
         }
-      }
+        if (candidateIdx === -1) candidateIdx = 0;
+        const lot = undrafted.splice(candidateIdx, 1)[0];
 
-      // 2. Ensure minimum outfield distribution (at least 3 DEF, 3 MID, 1 FWD)
-      const defCount = c.squad.filter(p => p.pos === 'DEF').length;
-      if (defCount < 3) {
-        const defCandidate = state.allPlayers.find(p => p.pos === 'DEF' && !c.squad.some(s => s.id === p.id));
-        if (defCandidate && c.squad.length >= 15) {
-          const removableIdx = c.squad.findIndex(p => p.pos !== 'GK');
-          if (removableIdx !== -1) {
-            const removed = c.squad.splice(removableIdx, 1)[0];
-            c.purse += removed.boughtPrice || 65;
-            const cost = Math.min(c.purse, defCandidate.basePrice);
-            c.purse -= cost;
-            c.squad.push({ ...defCandidate, boughtPrice: cost });
-          }
-        }
-      }
+        const slotsLeftTotal = 15 - c.squad.length;
+        const maxBid = c.purse - (slotsLeftTotal - 1) * 65;
+        const price = Math.max(65, Math.min(maxBid, lot.basePrice));
 
-      // 3. Top off to exactly 15 players
-      while (c.squad.length < 15) {
-        const fillPlayer = state.allPlayers.find(p => !c.squad.some(s => s.id === p.id)) || {
-          id: 'sub_' + Math.random(),
-          name: 'Academy Reserve',
-          pos: 'MID',
-          ovr: 83,
-          basePrice: 65,
-          country: 'Global',
-          foot: 'R',
-          prime: 'Academy'
-        };
-        const cost = Math.min(c.purse, 65);
-        c.purse = Math.max(0, c.purse - cost);
-        c.squad.push({ ...fillPlayer, boughtPrice: cost });
+        c.purse -= price;
+        c.squad.push({
+          ...lot,
+          boughtPrice: price
+        });
       }
     });
 
@@ -1615,7 +1722,10 @@
     ctx.fillText('💎 Best Value Signing:', 170, y + 150);
     ctx.fillStyle = '#10B981';
     ctx.font = 'bold 18px "JetBrains Mono", monospace';
-    ctx.fillText(`${bestVal ? bestVal.name : 'Paolo Maldini'} (${bestVal ? bestVal.boughtPrice : 160} pts · ${bestVal ? bestVal.ovr : 95} OVR)`, 410, y + 150);
+    const bestValName = bestVal ? bestVal.name : 'Paolo Maldini';
+    const bestValPrice = (bestVal && (bestVal.boughtPrice || bestVal.basePrice)) || 65;
+    const bestValOvr = (bestVal && bestVal.ovr) || 95;
+    ctx.fillText(`${bestValName} (${bestValPrice} pts · ${bestValOvr} OVR)`, 410, y + 150);
 
     // Wooden Spoon
     ctx.font = '500 17px "Inter", sans-serif';

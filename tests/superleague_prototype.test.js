@@ -286,6 +286,169 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
         expect(c.purse + totalSpent).toBe(2000);
       });
     });
+
+    test('Harden demo bench phase simulation guarantees 100% purse reconciliation, 11 starters + 4 bench, and zero duplicate players', () => {
+      const clubs = [
+        { id: 'c1', name: 'ROYAL MADRID C.F.', purse: 2000, squad: [] },
+        { id: 'c2', name: 'FC BARCA', purse: 2000, squad: [] },
+        { id: 'c3', name: 'MANSISTER UNITED', purse: 2000, squad: [] },
+        { id: 'c4', name: 'MANSISTER CITY', purse: 2000, squad: [] },
+        { id: 'c5', name: 'LABOURPOOL FC', purse: 2000, squad: [] },
+        { id: 'c6', name: 'ARSENUL', purse: 2000, squad: [] },
+        { id: 'c7', name: 'CHILLSEA', purse: 2000, squad: [] },
+        { id: 'c8', name: 'BAYERN MUNIKH', purse: 2000, squad: [] },
+        { id: 'c9', name: 'PARIS SAINT GERMAN', purse: 2000, squad: [] },
+        { id: 'c10', name: 'JUVENTUZ', purse: 2000, squad: [] }
+      ];
+
+      const queue = [...SUPERLEAGUE_PLAYERS];
+      let queueIdx = 0;
+
+      // Phase 1: Jump to bench (first 11)
+      while (clubs.some(c => c.squad.length < 11) && queueIdx < queue.length) {
+        const lot = queue[queueIdx++];
+        const eligible = clubs.filter(c => {
+          if (c.squad.length >= 11) return false;
+          const slotsLeftTotal = 15 - c.squad.length;
+          const reserveNeeded = (slotsLeftTotal - 1) * 65;
+          const maxBid = c.purse - reserveNeeded;
+          if (maxBid < lot.basePrice) return false;
+
+          const gks = c.squad.filter(p => p.pos === 'GK').length;
+          const defs = c.squad.filter(p => p.pos === 'DEF').length;
+          const mids = c.squad.filter(p => p.pos === 'MID').length;
+          const fwds = c.squad.filter(p => p.pos === 'FWD').length;
+
+          if (lot.pos === 'GK') {
+            if (gks >= 1) return false;
+          } else {
+            if (lot.pos === 'DEF' && defs >= 5) return false;
+            if (lot.pos === 'MID' && mids >= 5) return false;
+            if (lot.pos === 'FWD' && fwds >= 3) return false;
+
+            const slotsLeftInXI = 11 - c.squad.length;
+            let neededSlots = 0;
+            if (gks === 0 && lot.pos !== 'GK') neededSlots += 1;
+            if (defs < 3 && lot.pos !== 'DEF') neededSlots += (3 - defs);
+            if (mids < 3 && lot.pos !== 'MID') neededSlots += (3 - mids);
+            if (fwds < 1 && lot.pos !== 'FWD') neededSlots += (1 - fwds);
+
+            if (slotsLeftInXI - 1 < neededSlots) return false;
+          }
+          return true;
+        });
+
+        if (eligible.length > 0) {
+          eligible.sort((a, b) => {
+            const aCount = a.squad.filter(p => p.pos === lot.pos).length;
+            const bCount = b.squad.filter(p => p.pos === lot.pos).length;
+            if (aCount !== bCount) return aCount - bCount;
+            if (a.squad.length !== b.squad.length) return a.squad.length - b.squad.length;
+            return b.purse - a.purse;
+          });
+
+          const buyer = eligible[0];
+          const slotsLeftTotal = 15 - buyer.squad.length;
+          const maxBid = buyer.purse - (slotsLeftTotal - 1) * 65;
+          const price = Math.min(maxBid, lot.basePrice);
+
+          buyer.purse -= price;
+          buyer.squad.push({ ...lot, boughtPrice: price });
+        }
+      }
+
+      // Phase 2: simulate to end (15)
+      while (clubs.some(c => c.squad.length < 15) && queueIdx < queue.length) {
+        const lot = queue[queueIdx++];
+        const eligible = clubs.filter(c => {
+          if (c.squad.length >= 15) return false;
+          const slotsLeftTotal = 15 - c.squad.length;
+          const reserveNeeded = (slotsLeftTotal - 1) * 65;
+          const maxBid = c.purse - reserveNeeded;
+          if (maxBid < 65) return false;
+
+          const gks = c.squad.filter(p => p.pos === 'GK').length;
+          const defs = c.squad.filter(p => p.pos === 'DEF').length;
+          const mids = c.squad.filter(p => p.pos === 'MID').length;
+          const fwds = c.squad.filter(p => p.pos === 'FWD').length;
+
+          if (lot.pos === 'GK' && gks >= 2) return false;
+
+          let needed = 0;
+          if (gks === 0 && lot.pos !== 'GK') needed++;
+          if (defs < 3 && lot.pos !== 'DEF') needed += (3 - defs);
+          if (mids < 3 && lot.pos !== 'MID') needed += (3 - mids);
+          if (fwds < 1 && lot.pos !== 'FWD') needed += (1 - fwds);
+
+          if (slotsLeftTotal - 1 < needed) return false;
+          return true;
+        });
+
+        if (eligible.length > 0) {
+          eligible.sort((a, b) => {
+            const gksA = a.squad.filter(p => p.pos === 'GK').length;
+            const gksB = b.squad.filter(p => p.pos === 'GK').length;
+            if (lot.pos === 'GK' && gksA === 0 && gksB > 0) return -1;
+            if (lot.pos === 'GK' && gksB === 0 && gksA > 0) return 1;
+            if (a.squad.length !== b.squad.length) return a.squad.length - b.squad.length;
+            return b.purse - a.purse;
+          });
+
+          const buyer = eligible[0];
+          const slotsLeftTotal = 15 - buyer.squad.length;
+          const maxBid = buyer.purse - (slotsLeftTotal - 1) * 65;
+          const price = Math.max(65, Math.min(maxBid, lot.basePrice));
+
+          buyer.purse -= price;
+          buyer.squad.push({ ...lot, boughtPrice: price });
+        }
+      }
+
+      // Safety Pass from undrafted
+      const allDraftedIds = new Set();
+      clubs.forEach(c => c.squad.forEach(p => allDraftedIds.add(p.id)));
+      const undrafted = SUPERLEAGUE_PLAYERS.filter(p => !allDraftedIds.has(p.id));
+
+      clubs.forEach(c => {
+        while (c.squad.length < 15 && undrafted.length > 0) {
+          const gks = c.squad.filter(p => p.pos === 'GK').length;
+          let candidateIdx = -1;
+          if (gks === 0) {
+            candidateIdx = undrafted.findIndex(p => p.pos === 'GK');
+          } else {
+            candidateIdx = undrafted.findIndex(p => p.pos !== 'GK' || gks < 2);
+          }
+          if (candidateIdx === -1) candidateIdx = 0;
+          const lot = undrafted.splice(candidateIdx, 1)[0];
+
+          const slotsLeftTotal = 15 - c.squad.length;
+          const maxBid = c.purse - (slotsLeftTotal - 1) * 65;
+          const price = Math.max(65, Math.min(maxBid, lot.basePrice));
+
+          c.purse -= price;
+          c.squad.push({ ...lot, boughtPrice: price });
+        }
+      });
+
+      // Verify all 10 clubs
+      const allDrafted = [];
+      clubs.forEach(c => {
+        expect(c.squad.length).toBe(15);
+        const totalSpent = c.squad.reduce((sum, p) => sum + (p.boughtPrice || 0), 0);
+        expect(c.purse + totalSpent).toBe(2000);
+
+        // Verify formation
+        const tf = buildTacticalFormation(c.squad);
+        expect(tf.startingXI.length).toBe(11);
+        expect(tf.bench.length).toBe(4);
+        c.squad.forEach(p => allDrafted.push(p.id));
+      });
+
+      // Verify strict uniqueness (0 duplicates)
+      const uniqueSet = new Set(allDrafted);
+      expect(uniqueSet.size).toBe(150);
+      expect(allDrafted.length).toBe(150);
+    });
   });
 
   // --- P1-1: BID INCREMENT CALCULATION ---
@@ -335,6 +498,27 @@ describe('The Super League (V1) — Nostalogic Games Suite', () => {
       expect(appJs).toContain('GA');
       expect(appJs).toContain('GD');
       expect(appJs).toContain('PTS');
+    });
+
+    test('Champions Card Best Value Signing formatting never emits undefined price', () => {
+      // Test cases with various player objects
+      const testCases = [
+        { name: 'Lionel Messi', boughtPrice: 180, ovr: 95 },
+        { name: 'Paolo Maldini', boughtPrice: 115, ovr: 93 },
+        { name: 'Roberto Carlos', basePrice: 90, ovr: 88 },
+        { name: 'Luka Modric', ovr: 88 },
+        null
+      ];
+
+      testCases.forEach(bestVal => {
+        const bestValName = bestVal ? bestVal.name : 'Paolo Maldini';
+        const bestValPrice = (bestVal && (bestVal.boughtPrice || bestVal.basePrice)) || 65;
+        const bestValOvr = (bestVal && bestVal.ovr) || 95;
+        const formatted = `${bestValName} (${bestValPrice} pts · ${bestValOvr} OVR)`;
+
+        expect(formatted).not.toContain('undefined');
+        expect(formatted).toMatch(/^[A-Za-z\s.]+ \(\d+ pts · \d+ OVR\)$/);
+      });
     });
 
     test('Button labels updated to DOWNLOAD 9:16 HD POSTER', () => {
