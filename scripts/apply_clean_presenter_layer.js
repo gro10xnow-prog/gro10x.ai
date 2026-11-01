@@ -109,7 +109,7 @@ const audioAndCaptionWidgetLines = [
   '  <!-- ========================================================= -->',
   '  <div id="captionBand" class="no-print fixed bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-4xl w-[92%] pointer-events-none transition-all duration-200">',
   '    <div class="bg-black/90 backdrop-blur-md border border-white/15 px-6 py-2.5 rounded-2xl shadow-2xl text-center">',
-  '      <p id="captionText" class="text-sm sm:text-base md:text-lg font-medium text-white leading-relaxed tracking-wide">',
+  '      <p id="captionText" class="bangla-caption text-sm sm:text-base md:text-lg font-medium text-white leading-relaxed">',
   '        <!-- Synced Bengali sentence appears here -->',
   '      </p>',
   '    </div>',

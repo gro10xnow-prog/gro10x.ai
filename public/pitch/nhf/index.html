@@ -8,7 +8,7 @@
   <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -40,6 +40,10 @@
     }
 
     .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .bangla-caption {
+      font-family: 'Hind Siliguri', sans-serif !important;
+      letter-spacing: normal !important;
+    }
     .mono { font-family: 'JetBrains Mono', monospace; }
 
     /* Ambient Background Radar */
@@ -2290,7 +2294,7 @@
   <!-- ========================================================= -->
   <div id="captionBand" class="no-print fixed bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-4xl w-[92%] pointer-events-none transition-all duration-200">
     <div class="bg-black/90 backdrop-blur-md border border-white/15 px-6 py-2.5 rounded-2xl shadow-2xl text-center">
-      <p id="captionText" class="text-sm sm:text-base md:text-lg font-medium text-white leading-relaxed tracking-wide">
+      <p id="captionText" class="bangla-caption text-sm sm:text-base md:text-lg font-medium text-white leading-relaxed">
         <!-- Synced Bengali sentence appears here -->
       </p>
     </div>
