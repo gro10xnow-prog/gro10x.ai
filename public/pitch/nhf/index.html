@@ -567,11 +567,11 @@
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-400">Total Interest Payable:</span>
-                  <span id="deckOutInterest" class="mono font-bold text-amber-400">BDT 44,69,800</span>
+                  <span id="deckOutInterest" class="mono font-bold text-amber-400">BDT 44,69,760</span>
                 </div>
                 <div class="flex justify-between pt-2 border-t border-white/5 font-bold">
                   <span class="text-gray-300">Total Amount Payable:</span>
-                  <span id="deckOutTotal" class="mono text-white">BDT 89,69,800</span>
+                  <span id="deckOutTotal" class="mono text-white">BDT 89,69,760</span>
                 </div>
               </div>
             </div>
@@ -1210,10 +1210,11 @@
 
       // Standard Amortization Formula: EMI = P * R * (1+R)^N / ((1+R)^N - 1)
       const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
-      const totalPayment = emi * N;
+      const roundedEmi = Math.round(emi);
+      const totalPayment = roundedEmi * N;
       const totalInterest = totalPayment - P;
 
-      document.getElementById('deckOutEMI').textContent = formatBDT(emi);
+      document.getElementById('deckOutEMI').textContent = formatBDT(roundedEmi);
       document.getElementById('deckOutPrincipal').textContent = formatBDT(P);
       document.getElementById('deckOutInterest').textContent = formatBDT(totalInterest);
       document.getElementById('deckOutTotal').textContent = formatBDT(totalPayment);

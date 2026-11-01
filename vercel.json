@@ -257,6 +257,18 @@
       "dest": "/public/pitch/ryze-dop/index.html"
     },
     {
+      "src": "/pitch/nhf/copilot(.*)",
+      "dest": "/public/pitch/nhf/copilot.html"
+    },
+    {
+      "src": "/pitch/nhf/assets/(.*)",
+      "dest": "/public/pitch/nhf/assets/$1"
+    },
+    {
+      "src": "/pitch/nhf(/.*)?",
+      "dest": "/public/pitch/nhf/index.html"
+    },
+    {
       "src": "/pitch(/.*)?",
       "dest": "/public/pitch/index.html"
     },
