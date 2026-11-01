@@ -48,9 +48,10 @@
         <div class="text-[9px] text-gray-400 mono mt-0.5 truncate">National Housing Finance · Boardroom HUD</div>
       </div>
 
-      <!-- Right: Pacing Chip (Remaining Time with Color States) (D1) -->
+      <!-- Right: Pacing Chip (Remaining Time with Color States) (D1 & M3) -->
       <div class="flex items-center gap-1.5 bg-black/60 px-2 py-1 rounded-xl border border-white/10 shrink-0">
         <div class="text-right">
+          <div class="text-[8px] font-bold text-gray-400 mono uppercase tracking-wider leading-none mb-0.5">REMAINING</div>
           <div id="timer-display" class="text-xs font-black mono text-emerald-400 leading-none">15:00</div>
           <div class="text-[8px] text-gray-500 mono mt-0.5">15:00 total</div>
         </div>
@@ -64,24 +65,24 @@
 
     </div>
 
-    <!-- Quick Navigation Tabs (Every Tab Labeled with Words - D2) -->
-    <div class="max-w-md mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-      <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-emerald-500 text-black transition shrink-0 flex items-center gap-1">
+    <!-- Quick Navigation Tabs (Every Tab Labeled with Words - D2 & M2: 2 Rows Wrap, Zero Horizontal Scroll) -->
+    <div class="max-w-md mx-auto mt-2 grid grid-cols-3 gap-1.5 py-0.5">
+      <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-[11px] font-bold py-1.5 px-1.5 rounded-xl bg-emerald-500 text-black transition flex items-center justify-center gap-1 text-center truncate">
         🎙️ Notes
       </button>
-      <button onclick="switchTab('courtesies')" id="tab-btn-courtesies" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0 flex items-center gap-1">
+      <button onclick="switchTab('courtesies')" id="tab-btn-courtesies" class="tab-btn text-[11px] font-bold py-1.5 px-1.5 rounded-xl bg-white/10 text-gray-300 hover:text-white transition flex items-center justify-center gap-1 text-center truncate">
         🏛️ Courtesies
       </button>
-      <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0 flex items-center gap-1">
+      <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-[11px] font-bold py-1.5 px-1.5 rounded-xl bg-white/10 text-gray-300 hover:text-white transition flex items-center justify-center gap-1 text-center truncate">
         ⚔️ Objections
       </button>
-      <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0 flex items-center gap-1">
+      <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp" class="tab-btn text-[11px] font-bold py-1.5 px-1.5 rounded-xl bg-white/10 text-gray-300 hover:text-white transition flex items-center justify-center gap-1 text-center truncate">
         💬 WhatsApp Kit
       </button>
-      <button onclick="switchTab('rehearsal')" id="tab-btn-rehearsal" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0 flex items-center gap-1">
+      <button onclick="switchTab('rehearsal')" id="tab-btn-rehearsal" class="tab-btn text-[11px] font-bold py-1.5 px-1.5 rounded-xl bg-white/10 text-gray-300 hover:text-white transition flex items-center justify-center gap-1 text-center truncate">
         ⏱️ Rehearsal
       </button>
-      <a href="/pitch/nhf" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-emerald-300 border border-emerald-500/30 transition shrink-0 flex items-center gap-1">
+      <a href="/pitch/nhf" target="_blank" class="text-[11px] font-bold py-1.5 px-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-emerald-300 border border-emerald-500/30 transition flex items-center justify-center gap-1 text-center truncate">
         📺 TV Deck ↗
       </a>
     </div>
@@ -194,7 +195,7 @@
         <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
           <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
           <p>"Slide 5-e amra native interactive calculator component integrate korechi. Eta static chobi na — apnara live screen-e slider adjust kore dynamic monthly installment calculate korte parchen."</p>
-          <p>"Default figure-e amra dhorchi 45 Lakh Taka loan, 15-year tenure, ebong 10.50% interest rate, jar fole estimated monthly installment ashe BDT 49,832. Borrower shathe shathe principal, total interest payable, ebong total repayment dekhte paay."</p>
+          <p>"Default figure-e amra dhorchi 45 Lakh Taka loan, 15-year tenure, ebong 10.50% interest rate, jar fole estimated monthly installment ashe BDT 49,743. Borrower shathe shathe principal, total interest payable, ebong total repayment dekhte paay."</p>
           <p>"Slide caption-e amra clearly mention korechi: 'Illustrative — to be aligned to National Housing's official rate schedule.' Pilot approve holei Week 1-e apnader official interest rate matrix onujayi ei formula exact calibrate kora hobe."</p>
         </div>
       </details>
