@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>AI for Trade Marketing Operations — GRO10X × Asiatic TMS</title>
+
+  <!-- Google Typography: Space Grotesk, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --bg-dark: #070B12;
+      --card-dark: #0E1626;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --electric-emerald: #00DF89;
+      --emerald-glow: rgba(0, 223, 137, 0.25);
+      --cyan-accent: #00F0FF;
+      --cyan-glow: rgba(0, 240, 255, 0.25);
+      --amber-accent: #F59E0B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Ambient Technical Grid */
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 223, 137, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
+    }
+
+    .spotlight {
+      background: radial-gradient(circle at 50% 12%, rgba(0, 223, 137, 0.12) 0%, rgba(14, 22, 38, 0.6) 45%, rgba(7, 11, 18, 0) 80%);
+    }
+
+    .glass-card {
+      background: rgba(14, 22, 38, 0.82);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .glass-card-hover {
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(0, 223, 137, 0.35);
+      box-shadow: 0 10px 30px -10px rgba(0, 223, 137, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Slide Deck Layout */
+    .slide-viewport {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      opacity: 0;
+      transform: scale(0.99);
+      transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 5rem 1.5rem 5.5rem 1.5rem;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (min-width: 768px) {
+      .slide {
+        padding: 5.5rem 3.5rem 5.5rem 3.5rem;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .slide {
+        padding: 5.75rem 5rem 5.5rem 5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow-y: hidden;
+      }
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+      z-index: 10;
+    }
+
+    /* Custom Scrollbar for inner overflow if mobile */
+    .slide::-webkit-scrollbar {
+      width: 4px;
+    }
+    .slide::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-[#070B12] text-slate-100 bg-grid">
+
+  <!-- ========================================================= -->
+  <!-- PERSISTENT TOP APP BAR (Branding + Navigation + Telemetry)  -->
+  <!-- ========================================================= -->
+  <header class="fixed top-0 left-0 right-0 z-50 h-14 md:h-16 px-4 md:px-8 flex items-center justify-between border-b border-white/10 bg-[#070B12]/90 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center font-black text-emerald-400 text-xs">
+        10X
+      </div>
+      <div class="flex flex-col">
+        <span class="text-xs md:text-sm font-bold tracking-tight text-white flex items-center gap-2">
+          GRO10X <span class="text-gray-500 font-normal">×</span> ASIATIC TMS
+        </span>
+        <span class="text-[10px] text-gray-400 hidden sm:inline">AI for Trade Marketing Operations</span>
+      </div>
+    </div>
+
+    <!-- Active Slide Title & Indicator -->
+    <div class="flex items-center gap-2 md:gap-3">
+      <span id="slideCounterBadge" class="mono text-[10px] md:text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-emerald-400 font-semibold">
+        Slide 1 of 11
+      </span>
+      <span id="slideSectionTitle" class="text-xs text-gray-300 font-medium hidden md:inline">
+        Executive Briefing
+      </span>
+    </div>
+
+    <!-- Utility Controls -->
+    <div class="flex items-center gap-2">
+      <a href="/pitch/tms/copilot" target="_blank" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 text-[11px] font-semibold flex items-center gap-1.5 transition">
+        <span>📱</span> <span class="hidden sm:inline">Co-Pilot</span>
+      </a>
+      <button onclick="toggleFullscreen()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 flex items-center justify-center text-xs transition" title="Toggle Fullscreen (F)">
+        ⛶
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- SLIDE VIEWPORT (11 SLIDES CONTAINER)                      -->
+  <!-- ========================================================= -->
+  <main class="slide-viewport">
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 1: COVER                                          -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-1" class="slide active">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-6 w-fit">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          CONFIDENTIAL EXECUTIVE BRIEFING · STRATEGIC EXPLORATION
+        </div>
+
+        <!-- Headline & Subheadline -->
+        <h1 class="heading-font text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.1] mb-6">
+          AI for Trade Marketing <br class="hidden sm:inline">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-200">
+            Operations
+          </span>
+        </h1>
+        <p class="text-slate-300 text-base sm:text-lg md:text-xl font-normal max-w-3xl leading-relaxed mb-10">
+          Modernizing field merchandising audits, daily operational reporting, and high-volume promoter velocity with autonomous digital teammates.
+        </p>
+
+        <!-- Metadata Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[11px] mono uppercase text-gray-400 mb-1">Prepared For</div>
+            <div class="text-base font-bold text-white">Asad Jashim</div>
+            <div class="text-xs text-emerald-400 font-medium">Chief Commercial Officer</div>
+            <div class="text-xs text-gray-400">Asiatic Trade Marketing Services Limited</div>
+            <div class="text-[10px] text-gray-500 mt-1">Asiatic 3sixty Group</div>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10">
+            <div class="text-[11px] mono uppercase text-gray-400 mb-1">Presented By</div>
+            <div class="text-base font-bold text-white">GRO10X Executive Office</div>
+            <div class="text-xs text-cyan-400 font-medium">Zayan, Chief of Staff & Virtual CTO</div>
+            <div class="text-xs text-gray-400">Leadership: Firoz & Engineering Squads</div>
+            <div class="text-[10px] text-gray-500 mt-1">Autonomous AI Agency</div>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-white/10 sm:col-span-2 lg:col-span-1">
+            <div class="text-[11px] mono uppercase text-gray-400 mb-1">Focus & Cadence</div>
+            <div class="text-base font-bold text-white">Field Speed & Audit Integrity</div>
+            <div class="text-xs text-gray-300">Merchandising · Reporting · Hiring</div>
+            <div class="text-[10px] mono text-emerald-400 mt-2 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              3–4 Week Deployment Cycles
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 2: THE FIELD REALITY                              -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-2" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-emerald-400 font-semibold mb-2">01 / MARKET CONTEXT</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          The Field Reality: 97% of Commerce Happens in the Field
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          While digital advertising captures executive attention, Bangladesh retail is won or lost on physical shelves across thousands of fragmented general trade outlets.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          <!-- Card 1 -->
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-emerald-400">
+            <div class="text-3xl sm:text-4xl font-extrabold text-emerald-400 heading-font mb-2">~97%</div>
+            <h3 class="text-base font-bold text-white mb-2">Traditional Trade Dominance</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              The overwhelming majority of national retail volume flows through neighborhood mudir dokans, tea stalls, and general trade counters.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-cyan-400">
+            <div class="text-3xl sm:text-4xl font-extrabold text-cyan-400 heading-font mb-2">Front Line</div>
+            <h3 class="text-base font-bold text-white mb-2">The Field Force as Brand Sensor</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Merchandisers and field promoters are a brand’s only live sensory organ in retail—responsible for visibility, share-of-shelf, and audit truth.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-amber-400">
+            <div class="text-3xl sm:text-4xl font-extrabold text-amber-400 heading-font mb-2">3k–4k</div>
+            <h3 class="text-base font-bold text-white mb-2">Group Contractual Scale</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Asiatic 3sixty group mobilizes ~3,000–4,000 contractual field personnel across Bangladesh—an operational footprint of immense national scale.
+            </p>
+          </div>
+        </div>
+
+        <div class="text-[11px] mono text-gray-500 border-t border-white/5 pt-3">
+          * Source: The Business Standard (TBS) Consumer-Market Supplement; Asiatic 3sixty group-level workforce figures from public leadership statements.
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 3: WHERE FIELD OPERATIONS LEAK                   -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-3" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-red-400 font-semibold mb-2">02 / OPERATIONAL TAX</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          Where High-Scale Field Execution Leaks
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          When field forces scale across hundreds of territories, manual coordination creates operational friction, audit fatigue, and blind spots.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5 mb-8">
+          <!-- Leak 1 -->
+          <div class="glass-card p-5 rounded-2xl border-l-4 border-l-red-500">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">📸</span>
+              <h3 class="text-base font-bold text-white">Manual Merchandising Audit Bottleneck</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Human auditors reviewing thousands of shelf photos daily experience severe cognitive fatigue. Duplicate uploads, old gallery photos, and planogram non-compliance slip through undetected.
+            </p>
+          </div>
+
+          <!-- Leak 2 (Correction 1 Applied) -->
+          <div class="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">⏳</span>
+              <h3 class="text-base font-bold text-white">Lagged Field Report Consolidation</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Daily logs from territory supervisors require heavy manual collation, transcription, and validation—creating reporting lag that stretches across days rather than hours before brand teams see truth.
+            </p>
+          </div>
+
+          <!-- Leak 3 -->
+          <div class="glass-card p-5 rounded-2xl border-l-4 border-l-orange-500">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">📉</span>
+              <h3 class="text-base font-bold text-white">Invisible Out-of-Stock (OOS) Blindspots</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Stockouts, distributor delivery gaps, and competitor display takeovers go unmeasured between periodic audit visits, leaving brand sales leaking silently.
+            </p>
+          </div>
+
+          <!-- Leak 4 -->
+          <div class="glass-card p-5 rounded-2xl border-l-4 border-l-purple-500">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">👥</span>
+              <h3 class="text-base font-bold text-white">High-Churn Field Force Sourcing</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Activation campaigns require sourcing, screening, and scheduling dozens or hundreds of brand promoters under intense campaign deadlines with heavy manual recruiter overhead.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 4: WHO GRO10X IS                                  -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-4" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-emerald-400 font-semibold mb-2">03 / ABOUT GRO10X</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          Software That Thinks: Digital Teammates & Fast AI Systems
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          GRO10X is an AI agency engineered for high-throughput enterprise operations. We build custom applications, autonomous agents, and digital teammates that absorb routine operational strain.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-emerald-400">
+            <div class="text-xs mono uppercase text-emerald-400 font-bold mb-2">Cadence</div>
+            <h3 class="text-lg font-bold text-white mb-2">3–4 Week Sprints</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              No multi-month consulting decks. We design, build, and deploy production-grade software directly into live workflows in under 30 days.
+            </p>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-cyan-400">
+            <div class="text-xs mono uppercase text-cyan-400 font-bold mb-2">Architecture</div>
+            <h3 class="text-lg font-bold text-white mb-2">Autonomous Teammates</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Specialized digital agents that inspect thousands of images, parse unstructured messaging data, and compile verified reports 24/7.
+            </p>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-teal-400">
+            <div class="text-xs mono uppercase text-teal-400 font-bold mb-2">Integration</div>
+            <h3 class="text-lg font-bold text-white mb-2">Zero IT Disruption</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Operates natively inside tools field workers already use—WhatsApp, Telegram, and standard mobile cameras—with zero app download friction.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center font-bold text-emerald-300 text-sm">
+              Z
+            </div>
+            <div>
+              <div class="text-sm font-bold text-white">Presented by Zayan</div>
+              <div class="text-xs text-gray-400">Chief of Staff & Virtual CTO, GRO10X · Engineering Leadership alongside Firoz</div>
+            </div>
+          </div>
+          <div class="text-xs mono text-emerald-400 font-medium">
+            Production-Ready AI Systems
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 5: SOLUTION 1 — MERCHANDISING PHOTO VERIFICATION  -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-5" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-cyan-400 font-semibold mb-2">04 / SOLUTION 1</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          Vision AI: Automated Shelf & Display Verification
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          Transforming manual photo audits into an automated visual inspection pipeline that catches display errors instantly and prevents audit fraud.
+        </p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-emerald-400 font-bold mb-2">Step 1 · Mobile Upload</div>
+            <h3 class="text-base font-bold text-white mb-2">Native Field Capture</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Merchandisers snap photos of end-caps, shelf bays, and cooler doors via their standard field flow. Metadata (GPS, timestamp) is extracted securely.
+            </p>
+          </div>
+
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-cyan-400 font-bold mb-2">Step 2 · Computer Vision</div>
+            <h3 class="text-base font-bold text-white mb-2">Automated Checks</h3>
+            <ul class="text-xs sm:text-sm text-slate-300 space-y-1.5 list-disc list-inside">
+              <li><strong>Display Presence</strong>: Brand facings & POSM verified</li>
+              <li><strong>Duplicate Detection</strong>: Reused gallery photos flagged</li>
+              <li><strong>Geo-Lock</strong>: Verified against assigned outlet coordinates</li>
+            </ul>
+          </div>
+
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-amber-400 font-bold mb-2">Step 3 · Exception Routing</div>
+            <h3 class="text-base font-bold text-white mb-2">Supervisor Review</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Auditors no longer scroll through thousands of clean photos. Only flagged violations, missing POSMs, or suspected duplicates appear on the supervisor desk.
+            </p>
+          </div>
+        </div>
+
+        <!-- Correction 2 Applied -->
+        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
+          <span class="text-emerald-400 text-lg">🎯</span>
+          <p class="text-xs sm:text-sm text-emerald-200">
+            <strong>Pilot Design Intent</strong>: The pilot is engineered to automatically clear the compliant majority of routine shelf submissions, routing only flagged exceptions to human supervisors for high-priority review.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 6: SOLUTION 2 — FIELD REPORTING TEAMMATE          -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-6" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-emerald-400 font-semibold mb-2">05 / SOLUTION 2</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          Field Reporting Teammate: WhatsApp-First Intake
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          Replacing cumbersome end-of-day spreadsheet consolidation with an intelligent digital teammate that ingests raw field chatter and formats executive-ready reports.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+          <div class="glass-card p-6 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-emerald-400 font-bold mb-2">Field Worker Ingress</div>
+            <h3 class="text-lg font-bold text-white mb-3">Zero App Download Friction</h3>
+            <p class="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed">
+              Field promoters and territory officers submit brief voice notes, Bangla or English texts, and visit photos directly into a private WhatsApp bot channel.
+            </p>
+            <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-gray-300 space-y-1">
+              <div class="text-emerald-400 text-[10px] uppercase font-bold">Sample Field Ingress:</div>
+              <div>"Dhanmondi outlet #142 done. 12 units sold, competitor running 10% discount on 500ml."</div>
+            </div>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-cyan-400 font-bold mb-2">Supervisor Dashboard</div>
+            <h3 class="text-lg font-bold text-white mb-3">Structured Extraction</h3>
+            <p class="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed">
+              The digital teammate extracts clean schemas (outlet ID, SKU counts, competitor intelligence, visit timestamps) and reconciles against the daily route plan.
+            </p>
+            <!-- Correction 3 Applied -->
+            <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-gray-300 space-y-1">
+              <div class="text-cyan-400 text-[10px] uppercase font-bold">Operational Result:</div>
+              <div>Supervisor- and client-ready daily summaries consolidated on the <strong>same day</strong> without manual spreadsheet drag.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 7: SOLUTION 3 — COVERAGE & OUT-OF-STOCK INTEL     -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-7" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-cyan-400 font-semibold mb-2">06 / SOLUTION 3</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          Coverage & Out-of-Stock Intelligence
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          Transforming isolated audit logs into an interactive operational radar that identifies stockouts, route coverage dead zones, and territory anomalies.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-red-400">
+            <div class="text-xl mb-2">🚨</div>
+            <h3 class="text-base font-bold text-white mb-2">Stockout Early Warning</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Detects recurring SKU stockouts across retail clusters before brand inventory managers receive distributor complaints.
+            </p>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-cyan-400">
+            <div class="text-xl mb-2">🗺️</div>
+            <h3 class="text-base font-bold text-white mb-2">Coverage Dead Zones</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Cross-references outlet visit timestamps against assigned beat plans to highlight under-visited upazilas and high-potential retail corridors.
+            </p>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl glass-card-hover border-t-2 border-t-emerald-400">
+            <div class="text-xl mb-2">📊</div>
+            <h3 class="text-base font-bold text-white mb-2">Competitor Presence Radar</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Aggregates field observations on rival promotions, temporary POSM blitzes, and discount wars into actionable commercial alerts.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-xs sm:text-sm text-slate-300">
+          <strong class="text-white">Commercial Value</strong>: Gives Asiatic TMS operations leads an unfair speed advantage when reporting campaign health and retail compliance back to major brand clients.
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 8: SOLUTION 4 — FIELD HIRING AT SCALE             -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-8" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-amber-400 font-semibold mb-2">07 / SOLUTION 4</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          Field Hiring at Scale: The Recruiter Digital Agent
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          High-volume field campaigns require continuous promoter and merchandiser hiring under tight deadlines. Our Recruiter Agent screens and schedules candidates 24/7.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-emerald-400 font-bold mb-2">Phase 1</div>
+            <h3 class="text-base font-bold text-white mb-2">Multi-Channel Intake</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Applicants apply through WhatsApp or simple web forms with zero resume barriers.
+            </p>
+          </div>
+
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-cyan-400 font-bold mb-2">Phase 2</div>
+            <h3 class="text-base font-bold text-white mb-2">Autonomous Screening</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Agent evaluates location availability, language fluency, and prior brand activation experience.
+            </p>
+          </div>
+
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-amber-400 font-bold mb-2">Phase 3</div>
+            <h3 class="text-base font-bold text-white mb-2">Scoring & Reasoning</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Provides structured candidate scores with written rationale for every applicant.
+            </p>
+          </div>
+
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-xs mono uppercase text-purple-400 font-bold mb-2">Phase 4</div>
+            <h3 class="text-base font-bold text-white mb-2">Auto-Scheduling</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Books interview slots and sends WhatsApp reminders. Human HR only interviews verified finalists.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs sm:text-sm text-amber-200">
+          <strong>Outcome</strong>: Slashes candidate screening turnaround from days to minutes, preventing understaffed activation launches.
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 9: PROOF OF SPEED — LIVE CASE STUDY               -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-9" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-emerald-400 font-semibold mb-2">08 / PROOF OF SPEED</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          Enterprise Agility: Boardroom Request to Production in &lt;60 Mins
+        </h2>
+        <!-- Correction 4 Applied -->
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          A real-world demonstration of GRO10X turnaround speed from this morning's live boardroom deployment for a national financial institution.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          <div class="glass-card p-6 rounded-2xl border-l-4 border-l-cyan-400">
+            <div class="text-xs mono uppercase text-cyan-400 font-bold mb-2">The Engagement</div>
+            <h3 class="text-base font-bold text-white mb-2">High-Stakes Board Meeting</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Strategic digital presentation delivered for executive leadership and board directors of a major national financial institution.
+            </p>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl border-l-4 border-l-amber-400">
+            <div class="text-xs mono uppercase text-amber-400 font-bold mb-2">The Live Trigger</div>
+            <h3 class="text-base font-bold text-white mb-2">In-Meeting Priority Shift</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              During the live meeting, leadership requested immediate realignment of institutional shareholder priorities across presentation assets.
+            </p>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl border-l-4 border-l-emerald-400">
+            <div class="text-xs mono uppercase text-emerald-400 font-bold mb-2">The Delivery</div>
+            <h3 class="text-base font-bold text-white mb-2">Live Production Deployment</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Engineered, verified across mobile and desktop test suites, and deployed live to production in under 60 minutes while the meeting progressed.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs sm:text-sm text-emerald-200">
+          <strong>The Takeaway for Asiatic TMS</strong>: We do not operate with traditional IT bureaucracy or multi-week change request delays. We build with the speed high-volume trade operations require.
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 10: THE PILOT FRAMEWORK                           -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-10" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-cyan-400 font-semibold mb-2">09 / LOW RISK PILOT</div>
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          The 4-Week Operational Pilot
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          A focused, low-risk engagement designed to prove measurable speed and audit accuracy on a live operation before wider organizational rollout.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-2xl font-black text-emerald-400 heading-font mb-2">4 Weeks</div>
+            <h3 class="text-sm font-bold text-white mb-1">Fixed Duration</h3>
+            <p class="text-xs text-slate-300">Rapid deployment sprint with defined start, midpoint review, and final audit.</p>
+          </div>
+
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-2xl font-black text-cyan-400 heading-font mb-2">1 Operation</div>
+            <h3 class="text-sm font-bold text-white mb-1">Focused Scope</h3>
+            <p class="text-xs text-slate-300">Targeted at one brand campaign, one regional territory, or one specific friction point.</p>
+          </div>
+
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-2xl font-black text-amber-400 heading-font mb-2">1 Metric</div>
+            <h3 class="text-sm font-bold text-white mb-1">Clear Benchmark</h3>
+            <p class="text-xs text-slate-300">e.g., audit turnaround reduction, same-day report consolidation, or promoter fill rate.</p>
+          </div>
+
+          <div class="glass-card p-5 rounded-2xl border border-white/10">
+            <div class="text-2xl font-black text-purple-400 heading-font mb-2">Zero Risk</div>
+            <h3 class="text-sm font-bold text-white mb-1">Parallel Run</h3>
+            <p class="text-xs text-slate-300">Runs alongside existing TMS workflows without disrupting live client commitments.</p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-gray-300">
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400 text-base">🔒</span>
+            <span><strong>Enterprise Data Protection</strong>: Client and brand data is never used to train public models. Strict access control & encrypted audit logs.</span>
+          </div>
+          <div class="mono text-emerald-400 whitespace-nowrap text-[11px]">
+            Pricing follows discovery session
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- -->
+    <!-- SLIDE 11: THE ASK                                       -->
+    <!-- ------------------------------------------------------- -->
+    <section id="slide-11" class="slide">
+      <div class="max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
+        <div class="mono text-xs text-emerald-400 font-semibold mb-2">10 / NEXT STEPS</div>
+        <!-- Correction 5 Applied -->
+        <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+          The Ask: One Working Session
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-3xl mb-8 leading-relaxed">
+          We invite Asad Jashim and the Asiatic TMS operations leadership to sit together for an exploratory mapping session to identify the ideal pilot candidate.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          <div class="glass-card p-6 rounded-2xl border border-white/10">
+            <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-xs mb-3">1</div>
+            <h3 class="text-base font-bold text-white mb-2">Map Current Flow</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Walk through how photo audits, daily attendance, and territory reports move from field agents to supervisors today.
+            </p>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl border border-white/10">
+            <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-bold text-xs mb-3">2</div>
+            <h3 class="text-base font-bold text-white mb-2">Isolate Highest Friction</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Identify which ongoing brand activation or regional campaign loses the most supervisor man-hours to manual drag.
+            </p>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl border border-white/10">
+            <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-xs mb-3">3</div>
+            <h3 class="text-base font-bold text-white mb-2">Charter 4-Week Pilot</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Define the pilot boundary, baseline success metric, and technical integration points for immediate deployment.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/40 to-cyan-950/40 border border-emerald-500/30 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 class="text-lg font-bold text-white mb-1">Let's prove the speed on a live campaign.</h3>
+            <p class="text-xs sm:text-sm text-slate-300">Run one campaign side-by-side with GRO10X and let operational data validate the impact.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <a href="mailto:firoz@gro10x.ai" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs sm:text-sm transition shadow-lg shadow-emerald-500/20">
+              Schedule Working Session
+            </a>
+            <a href="/pitch/tms/copilot" target="_blank" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm border border-white/10 transition">
+              Open Co-Pilot
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM CONTROL BAR (Navigation Dock + Touch Scrubber)      -->
+  <!-- ========================================================= -->
+  <footer class="fixed bottom-0 left-0 right-0 z-50 h-14 md:h-16 px-4 md:px-8 flex items-center justify-between border-t border-white/10 bg-[#070B12]/90 backdrop-blur-md">
+    <!-- Prev Button -->
+    <button id="prevBtn" onclick="prevSlide()" class="px-3 md:px-4 py-1.5 md:py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs md:text-sm font-semibold text-gray-200 hover:text-white transition flex items-center gap-1.5 active:scale-95">
+      <span>←</span> <span class="hidden sm:inline">Previous</span>
+    </button>
+
+    <!-- Slide Indicators / Dots -->
+    <div id="dotContainer" class="flex items-center gap-1.5 md:gap-2">
+      <!-- 11 Dots dynamically generated/handled in JS -->
+    </div>
+
+    <!-- Next Button -->
+    <button id="nextBtn" onclick="nextSlide()" class="px-4 md:px-5 py-1.5 md:py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs md:text-sm font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95">
+      <span class="hidden sm:inline">Next</span> <span>→</span>
+    </button>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT: SLIDE ENGINE & KEYBOARD / TOUCH CONTROLS       -->
+  <!-- ========================================================= -->
+  <script>
+    const TOTAL_SLIDES = 11;
+    let currentSlide = 1;
+
+    const SLIDE_TITLES = [
+      "Executive Briefing",
+      "Market Reality (97% Field)",
+      "Where Operations Leak",
+      "About GRO10X",
+      "Vision AI Photo Audits",
+      "Field Reporting Teammate",
+      "Coverage & Stock Intelligence",
+      "Field Hiring Recruiter",
+      "Proof of Enterprise Speed",
+      "4-Week Operational Pilot",
+      "The Ask: Working Session"
+    ];
+
+    function updateSlideUI() {
+      // Hide all slides
+      for (let i = 1; i <= TOTAL_SLIDES; i++) {
+        const el = document.getElementById(`slide-${i}`);
+        if (el) el.classList.remove('active');
+      }
+
+      // Show current slide
+      const activeEl = document.getElementById(`slide-${currentSlide}`);
+      if (activeEl) {
+        activeEl.classList.add('active');
+        activeEl.scrollTop = 0;
+      }
+
+      // Update Header Badges
+      const badge = document.getElementById('slideCounterBadge');
+      if (badge) badge.textContent = `Slide ${currentSlide} of ${TOTAL_SLIDES}`;
+
+      const titleEl = document.getElementById('slideSectionTitle');
+      if (titleEl) titleEl.textContent = SLIDE_TITLES[currentSlide - 1] || "";
+
+      // Update Dots
+      const dots = document.querySelectorAll('.slide-dot');
+      dots.forEach((dot, idx) => {
+        if (idx + 1 === currentSlide) {
+          dot.className = "slide-dot w-6 md:w-8 h-1.5 md:h-2 rounded-full bg-emerald-400 transition-all duration-300";
+        } else {
+          dot.className = "slide-dot w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-white/20 hover:bg-white/40 cursor-pointer transition-all duration-300";
+        }
+      });
+
+      // Update Prev/Next button states
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      if (prevBtn) prevBtn.disabled = (currentSlide === 1);
+      if (nextBtn) nextBtn.disabled = (currentSlide === TOTAL_SLIDES);
+    }
+
+    function goToSlide(n) {
+      if (n < 1 || n > TOTAL_SLIDES) return;
+      currentSlide = n;
+      updateSlideUI();
+    }
+
+    function nextSlide() {
+      if (currentSlide < TOTAL_SLIDES) {
+        currentSlide++;
+        updateSlideUI();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlideUI();
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+
+      if (e.code === 'Space' || e.key === ' ' || e.key === 'ArrowRight' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'p' || e.key === 'P') {
+        if (!e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          window.print();
+        }
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(1);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(TOTAL_SLIDES);
+      }
+    });
+
+    // Touch Swipe Detection
+    let touchStartX = 0;
+    let touchEndX = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleGesture();
+    }, { passive: true });
+
+    function handleGesture() {
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 50) {
+        if (diff < 0) nextSlide();
+        else prevSlide();
+      }
+    }
+
+    // Initialize dots & state
+    document.addEventListener('DOMContentLoaded', () => {
+      const dotContainer = document.getElementById('dotContainer');
+      if (dotContainer) {
+        dotContainer.innerHTML = '';
+        for (let i = 1; i <= TOTAL_SLIDES; i++) {
+          const dot = document.createElement('div');
+          dot.className = (i === 1) 
+            ? "slide-dot w-6 md:w-8 h-1.5 md:h-2 rounded-full bg-emerald-400 transition-all duration-300"
+            : "slide-dot w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-white/20 hover:bg-white/40 cursor-pointer transition-all duration-300";
+          dot.onclick = () => goToSlide(i);
+          dotContainer.appendChild(dot);
+        }
+      }
+      updateSlideUI();
+    });
+  </script>
+</body>
+</html>
