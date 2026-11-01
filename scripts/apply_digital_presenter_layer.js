@@ -1,0 +1,445 @@
+const fs = require('fs');
+
+let originalHtml = fs.readFileSync('public/pitch/nhf/index.html', 'utf8');
+const isCRLF = originalHtml.includes('\r\n');
+const narrationData = JSON.parse(fs.readFileSync('public/pitch/nhf/assets/narration_data.json', 'utf8'));
+
+// 1. Prepare Slide 0 HTML
+const slide0Html = `    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- SLIDE 0: EXECUTIVE INTRODUCTION (DIGITAL PRESENTER LAYER) -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="slide-0" class="slide active flex-col justify-between overflow-hidden">
+      <!-- Background Ambient Accent (Strictly clipped) -->
+      <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-emerald-500/10 blur-3xl"></div>
+        <div class="absolute -bottom-40 -right-40 w-80 h-80 rounded-full bg-cyan-500/10 blur-3xl"></div>
+      </div>
+
+      <!-- Top Presentation Title Line (C2) -->
+      <div class="relative z-10 flex items-center justify-between">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold">
+          <span>🎙️</span> Digital Presenter Briefing
+        </div>
+        <div class="text-xs text-gray-400 mono">
+          National Housing Finance PLC — Board Presentation
+        </div>
+      </div>
+
+      <!-- Center Anchor: Presenter Credentials & Head-and-Shoulders Portrait (C2) -->
+      <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 my-auto items-center max-w-5xl mx-auto w-full">
+        <!-- Left: Executive Identity (Strictly Limited to C2 copy) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="space-y-1">
+            <span class="text-xs mono uppercase text-emerald-400 font-bold tracking-widest">Presenter</span>
+            <h1 class="heading-font text-5xl sm:text-6xl font-black text-white tracking-tight">
+              ZAYAN
+            </h1>
+            <p class="text-xl sm:text-2xl font-bold text-gray-300">
+              Chief of Staff & Virtual CTO, GRO10X
+            </p>
+          </div>
+
+          <div class="pt-4 border-t border-white/10">
+            <p class="heading-font text-lg text-emerald-300/90 font-medium tracking-wide">
+              National Housing Finance PLC — Board Presentation
+            </p>
+          </div>
+        </div>
+
+        <!-- Right: Head-and-Shoulders Portrait (Right Side - C2) -->
+        <div class="lg:col-span-5 flex justify-center lg:justify-end">
+          <div class="relative w-64 h-80 sm:w-72 sm:h-96 rounded-3xl overflow-hidden border-2 border-emerald-500/40 shadow-2xl shadow-emerald-500/20 bg-[#0E1626]">
+            <img src="/pitch/nhf/assets/presenter-portrait.jpg" alt="ZAYAN - Chief of Staff & Virtual CTO, GRO10X" class="w-full h-full object-cover object-top">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#070B12]/80 via-transparent to-transparent"></div>
+            <div class="absolute bottom-3 left-3 right-3 text-center">
+              <span class="inline-block px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-xs font-mono text-emerald-400 font-bold">
+                Virtual CTO · GRO10X
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Prompt -->
+      <div class="relative z-10 text-center text-xs text-gray-500 mono">
+        Press [Spacebar] or ▶ to begin audio narration
+      </div>
+    </section>
+
+`;
+
+// 2. Prepare Floating Audio HUD and Caption Band
+const audioAndCaptionWidgets = `  <!-- ========================================================= -->
+  <!-- FLOATING DIGITAL PRESENTER AUDIO HUD (Bottom-Right - C3)   -->
+  <!-- ========================================================= -->
+  <div id="audioHUD" class="no-print fixed bottom-16 right-4 sm:right-8 z-50 flex items-center gap-2.5 bg-[#0A101D]/95 backdrop-blur-md px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl border border-white/15 shadow-2xl shadow-black/80 max-w-[calc(100vw-2rem)]">
+    <div class="flex items-center gap-1.5 text-emerald-400 shrink-0">
+      <span class="text-xs">🎙️</span>
+      <span id="audioStatusBadge" class="text-[10px] mono uppercase font-bold text-gray-400">Audio</span>
+    </div>
+    
+    <!-- Play/Pause Toggle -->
+    <button id="audioPlayBtn" onclick="toggleCurrentAudio()" class="w-8 h-8 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-bold text-xs transition active:scale-95 shadow-md shadow-emerald-500/20" title="Play / Pause (Spacebar)">
+      <span id="audioPlayIcon">▶</span>
+    </button>
+    
+    <!-- Restart Button -->
+    <button id="audioRestartBtn" onclick="restartCurrentAudio()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white flex items-center justify-center text-xs transition active:scale-95" title="Restart Slide Narration">
+      ↺
+    </button>
+    
+    <!-- Scrub & Time Display -->
+    <div class="flex flex-col gap-1 w-24 sm:w-36">
+      <div class="flex justify-between text-[9px] mono text-gray-400">
+        <span id="audioTimeCurrent">00:00</span>
+        <span id="audioTimeTotal">00:00</span>
+      </div>
+      <div id="audioProgressTrack" onclick="seekAudio(event)" class="w-full h-1.5 bg-white/15 hover:bg-white/25 rounded-full overflow-hidden cursor-pointer transition">
+        <div id="audioProgressBar" class="h-full bg-emerald-400 rounded-full w-0 transition-all duration-75"></div>
+      </div>
+    </div>
+
+    <!-- Captions Toggle Button -->
+    <button id="captionToggleBtn" onclick="toggleCaptions()" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white text-[10px] font-bold mono border border-white/10 transition flex items-center gap-1" title="Toggle Captions (C)">
+      <span>CC</span> <span id="captionStatusChip" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+    </button>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- BOARDROOM CAPTIONS BAND (Bottom Center Margin - C3 & C4)    -->
+  <!-- ========================================================= -->
+  <div id="captionBand" class="no-print fixed bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-4xl w-[92%] pointer-events-none transition-all duration-200">
+    <div class="bg-black/90 backdrop-blur-md border border-white/15 px-6 py-2.5 rounded-2xl shadow-2xl text-center">
+      <p id="captionText" class="text-sm sm:text-base md:text-lg font-medium text-white leading-relaxed tracking-wide">
+        <!-- Synced Bengali sentence appears here -->
+      </p>
+    </div>
+  </div>
+`;
+
+// 3. Audio & Captions Javascript Engine
+const engineScript = `  <!-- ========================================================= -->
+  <!-- JAVASCRIPT SLIDE ENGINE, AUDIO PRESENTER & NATIVE EMI CALC -->
+  <!-- ========================================================= -->
+  <script>
+    const TOTAL_SLIDES = 12; // Slides 0 to 11
+    let currentSlide = 0;
+    let captionsEnabled = true;
+
+    // Narration Data Manifest (12 Slides)
+    const NARRATION_DATA = ${JSON.stringify(narrationData, null, 4)};
+
+    // Global Audio Instance
+    const slideAudio = new Audio();
+    slideAudio.preload = 'auto';
+
+    function initAudio() {
+      loadAudioForSlide(currentSlide);
+
+      slideAudio.addEventListener('timeupdate', onAudioTimeUpdate);
+      slideAudio.addEventListener('ended', onAudioEnded);
+      slideAudio.addEventListener('play', () => {
+        document.getElementById('audioPlayIcon').textContent = '⏸';
+        document.getElementById('audioStatusBadge').textContent = 'Live';
+        document.getElementById('audioStatusBadge').className = 'text-[10px] mono uppercase font-bold text-emerald-400';
+      });
+      slideAudio.addEventListener('pause', () => {
+        document.getElementById('audioPlayIcon').textContent = '▶';
+        document.getElementById('audioStatusBadge').textContent = 'Paused';
+        document.getElementById('audioStatusBadge').className = 'text-[10px] mono uppercase font-bold text-amber-400';
+      });
+    }
+
+    function loadAudioForSlide(slideIdx) {
+      slideAudio.pause();
+      const data = NARRATION_DATA[slideIdx];
+      if (data) {
+        if (window.location.protocol === 'file:') {
+          slideAudio.src = './assets/narration/' + data.filename;
+        } else {
+          slideAudio.src = data.audioFile;
+        }
+        slideAudio.currentTime = 0;
+        document.getElementById('audioTimeCurrent').textContent = '00:00';
+        document.getElementById('audioTimeTotal').textContent = formatSeconds(data.actualDuration);
+        document.getElementById('audioProgressBar').style.width = '0%';
+        document.getElementById('audioPlayIcon').textContent = '▶';
+        document.getElementById('audioStatusBadge').textContent = 'Ready';
+        document.getElementById('audioStatusBadge').className = 'text-[10px] mono uppercase font-bold text-gray-400';
+
+        // Preload first sentence into caption band
+        if (data.sentences && data.sentences.length > 0) {
+          updateCaptionText(data.sentences[0].sentence);
+        } else {
+          updateCaptionText('');
+        }
+      }
+    }
+
+    function toggleCurrentAudio() {
+      if (slideAudio.paused) {
+        slideAudio.play().catch(err => console.log('Audio playback prevented:', err));
+      } else {
+        slideAudio.pause(); // Pause holds position
+      }
+    }
+
+    function restartCurrentAudio() {
+      slideAudio.currentTime = 0;
+      slideAudio.play().catch(err => console.log('Audio restart prevented:', err));
+    }
+
+    function seekAudio(e) {
+      const track = document.getElementById('audioProgressTrack');
+      const rect = track.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, clickX / rect.width));
+      const dur = slideAudio.duration || (NARRATION_DATA[currentSlide] ? NARRATION_DATA[currentSlide].actualDuration : 0);
+      if (dur > 0) {
+        slideAudio.currentTime = pct * dur;
+      }
+    }
+
+    function onAudioTimeUpdate() {
+      const cur = slideAudio.currentTime;
+      const dur = slideAudio.duration || (NARRATION_DATA[currentSlide] ? NARRATION_DATA[currentSlide].actualDuration : 1);
+      
+      document.getElementById('audioTimeCurrent').textContent = formatSeconds(cur);
+      const pct = Math.min(100, (cur / dur) * 100);
+      document.getElementById('audioProgressBar').style.width = pct + '%';
+
+      // Update Synchronized Caption (C4: Sentence-by-sentence)
+      const data = NARRATION_DATA[currentSlide];
+      if (data && data.sentences) {
+        const active = data.sentences.find(s => cur >= s.start && cur <= s.end);
+        if (active) {
+          updateCaptionText(active.sentence);
+        }
+      }
+    }
+
+    function onAudioEnded() {
+      document.getElementById('audioPlayIcon').textContent = '▶';
+      document.getElementById('audioProgressBar').style.width = '100%';
+      document.getElementById('audioStatusBadge').textContent = 'Ended';
+      document.getElementById('audioStatusBadge').className = 'text-[10px] mono uppercase font-bold text-gray-400';
+    }
+
+    function updateCaptionText(text) {
+      const captionEl = document.getElementById('captionText');
+      if (captionEl) {
+        captionEl.textContent = text;
+      }
+    }
+
+    function toggleCaptions() {
+      captionsEnabled = !captionsEnabled;
+      const band = document.getElementById('captionBand');
+      const chip = document.getElementById('captionStatusChip');
+      if (captionsEnabled) {
+        band.classList.remove('hidden');
+        chip.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      } else {
+        band.classList.add('hidden');
+        chip.className = 'w-1.5 h-1.5 rounded-full bg-gray-500';
+      }
+    }
+
+    function formatSeconds(sec) {
+      if (!sec || isNaN(sec)) return '00:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    // Slide Dots Initialization (Slides 0 to 11)
+    function initNavigation() {
+      const dotsContainer = document.getElementById('slideDots');
+      dotsContainer.innerHTML = '';
+      for (let i = 0; i < TOTAL_SLIDES; i++) {
+        const dot = document.createElement('button');
+        dot.className = \`w-2 h-2 rounded-full transition-all duration-300 \${i === currentSlide ? 'bg-emerald-400 w-6' : 'bg-white/20 hover:bg-white/50'}\`;
+        dot.title = i === 0 ? 'Slide 0: Executive Introduction' : \`Slide \${i} of 11\`;
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+      }
+      updateUI();
+    }
+
+    function goToSlide(slideNum) {
+      if (slideNum < 0 || slideNum >= TOTAL_SLIDES) return;
+
+      const currentEl = document.getElementById(\`slide-\${currentSlide}\`);
+      if (currentEl) currentEl.classList.remove('active');
+
+      currentSlide = slideNum;
+
+      const newEl = document.getElementById(\`slide-\${currentSlide}\`);
+      if (newEl) newEl.classList.add('active');
+
+      // Advancing slide cleanly stops previous clip and stages new track (No autoplay)
+      loadAudioForSlide(currentSlide);
+      updateUI();
+    }
+
+    function nextSlide() {
+      if (currentSlide < TOTAL_SLIDES - 1) {
+        goToSlide(currentSlide + 1);
+      } else {
+        goToSlide(0);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        goToSlide(currentSlide - 1);
+      } else {
+        goToSlide(TOTAL_SLIDES - 1);
+      }
+    }
+
+    function updateUI() {
+      const counterEl = document.getElementById('slideCounter');
+      if (counterEl) {
+        if (currentSlide === 0) {
+          counterEl.textContent = 'Slide 0 of 11 · Executive Introduction';
+        } else {
+          counterEl.textContent = \`Slide \${currentSlide} of 11\`;
+        }
+      }
+
+      const dotsContainer = document.getElementById('slideDots');
+      if (dotsContainer) {
+        const dots = dotsContainer.children;
+        for (let i = 0; i < dots.length; i++) {
+          if (i === currentSlide) {
+            dots[i].className = 'w-6 h-2 rounded-full bg-emerald-400 transition-all duration-300';
+          } else {
+            dots[i].className = 'w-2 h-2 rounded-full bg-white/20 hover:bg-white/50 transition-all duration-300';
+          }
+        }
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log(\`Fullscreen error: \${err.message}\`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard Navigation & Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        toggleCurrentAudio(); // Spacebar = play/pause (Pause holds position)
+      } else if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'c' || e.key === 'C') {
+        e.preventDefault();
+        toggleCaptions(); // C = Toggle Captions
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'p' || e.key === 'P') {
+        if (!e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          window.print();
+        }
+      }
+    });
+
+    // Native EMI Calculation Engine (Replicating exact prototype formula and defaults)
+    function formatBDT(num) {
+      return 'BDT ' + Math.round(num).toLocaleString('en-IN');
+    }
+
+    function runDeckEMI() {
+      const loanEl = document.getElementById('deckRangeLoan');
+      const tenureEl = document.getElementById('deckRangeTenure');
+      const rateEl = document.getElementById('deckRangeRate');
+
+      if (!loanEl || !tenureEl || !rateEl) return;
+
+      const P = parseFloat(loanEl.value);
+      const tenureYears = parseFloat(tenureEl.value);
+      const annualRate = parseFloat(rateEl.value);
+
+      document.getElementById('deckValLoan').textContent = formatBDT(P);
+      document.getElementById('deckValTenure').textContent = tenureYears + ' Years';
+      document.getElementById('deckValRate').textContent = annualRate.toFixed(2) + '%';
+
+      const N = tenureYears * 12;
+      const R = annualRate / (12 * 100);
+
+      // EMI = P * R * (1+R)^N / ((1+R)^N - 1)
+      const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+      const totalPayment = emi * N;
+      const totalInterest = totalPayment - P;
+
+      document.getElementById('deckOutEMI').textContent = formatBDT(emi);
+      document.getElementById('deckOutPrincipal').textContent = formatBDT(P);
+      document.getElementById('deckOutInterest').textContent = formatBDT(totalInterest);
+      document.getElementById('deckOutTotal').textContent = formatBDT(totalPayment);
+    }
+
+    // Initial Engine Boot
+    document.addEventListener('DOMContentLoaded', () => {
+      initNavigation();
+      initAudio();
+      runDeckEMI();
+    });
+  </script>
+`;
+
+// Normalize originalHtml to LF for safe string operations
+const normalized = originalHtml.replace(/\r\n/g, '\n');
+
+// 1. Replace Slide 1 with Slide 0 + Slide 1
+const targetSlide1 = '<section id="slide-1" class="slide active flex-col justify-between">';
+const replacementSlide1 = slide0Html + '    <section id="slide-1" class="slide flex-col justify-between">';
+let patched = normalized.replace(targetSlide1, replacementSlide1);
+
+// 2. Global overflow-x hidden
+patched = patched.replace('html, body {', 'html, body {\n      overflow-x: hidden !important;\n      max-width: 100vw !important;');
+
+// 3. Header & Footer overflow safety
+patched = patched.replace('class="no-print relative z-30 flex items-center justify-between px-8 py-3.5', 'class="no-print relative z-30 flex items-center justify-between px-4 sm:px-8 py-3.5 overflow-hidden max-w-full');
+patched = patched.replace('class="no-print relative z-30 flex items-center justify-between px-8 py-3', 'class="no-print relative z-30 flex items-center justify-between px-4 sm:px-8 py-3 overflow-hidden max-w-full');
+
+// 4. Add widgets before </body>
+patched = patched.replace('</body>', audioAndCaptionWidgets + '\n</body>');
+
+// 5. Replace script block
+const scriptStartTarget = '  <script>\n    const TOTAL_SLIDES = 11;';
+const scriptStartIndex = patched.indexOf(scriptStartTarget);
+const scriptEndTarget = '  </script>\n</body>';
+const scriptEndIndex = patched.indexOf(scriptEndTarget) + '  </script>'.length;
+
+if (scriptStartIndex !== -1 && scriptEndIndex !== -1) {
+  const beforeScript = patched.slice(0, scriptStartIndex);
+  const afterScript = patched.slice(scriptEndIndex);
+  patched = beforeScript + engineScript + afterScript;
+} else {
+  console.error('Could not locate script block bounds in normalized text!');
+  process.exit(1);
+}
+
+// Convert back to CRLF if needed
+if (isCRLF) {
+  patched = patched.replace(/\n/g, '\r\n');
+}
+
+fs.writeFileSync('public/pitch/nhf/index.html', patched, 'utf8');
+console.log('Successfully re-patched public/pitch/nhf/index.html with Digital Presenter layer!');
