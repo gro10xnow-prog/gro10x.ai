@@ -269,6 +269,18 @@
       "dest": "/public/pitch/nhf/index.html"
     },
     {
+      "src": "/pitch/tms/copilot(.*)",
+      "dest": "/public/pitch/tms/copilot.html"
+    },
+    {
+      "src": "/pitch/tms/assets/(.*)",
+      "dest": "/public/pitch/tms/assets/$1"
+    },
+    {
+      "src": "/pitch/tms(/.*)?",
+      "dest": "/public/pitch/tms/index.html"
+    },
+    {
       "src": "/pitch(/.*)?",
       "dest": "/public/pitch/index.html"
     },
