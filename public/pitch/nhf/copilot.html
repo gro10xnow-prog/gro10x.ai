@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>National Housing Finance PLC — Presenter Co-Pilot HUD | GRO10X</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #070B12;
+      color: #E2E8F0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glow-green { box-shadow: 0 0 16px rgba(0, 135, 90, 0.4); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-28 select-none bg-[#070B12]">
+
+  <!-- ========================================================= -->
+  <!-- TOP STICKY CONTROLLER HUD                                 -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-50 bg-[#0A101D]/95 backdrop-blur-md border-b border-white/10 px-4 py-2.5 shadow-2xl">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      
+      <!-- Identity -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#00875A] to-[#00F0FF] flex items-center justify-center text-white font-black text-sm shadow-md">
+          N
+        </div>
+        <div>
+          <div class="text-[11px] font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+            PRESENTER CO-PILOT
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          </div>
+          <div class="text-[9px] text-gray-400 mono">National Housing Finance Boardroom HUD</div>
+        </div>
+      </div>
+
+      <!-- Live Presentation Pacing Timer (15:00 Total Allocation) -->
+      <div class="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
+        <div class="text-right">
+          <div class="text-[8px] text-gray-400 uppercase mono font-bold">Total Pacing</div>
+          <div id="timer-display" class="text-sm font-black mono text-emerald-400 leading-none">15:00</div>
+        </div>
+        <button id="timer-btn" onclick="toggleTimer()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition active:scale-90" title="Start/Pause Timer">
+          ▶
+        </button>
+        <button onclick="resetTimer()" class="w-6 h-7 text-[10px] text-gray-400 hover:text-white" title="Reset Timer">
+          ↺
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Quick Navigation Tabs -->
+    <div class="max-w-md mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-emerald-500 text-black transition shrink-0">
+        🎙️ Spoken Script (1–11)
+      </button>
+      <button onclick="switchTab('courtesies')" id="tab-btn-courtesies" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        🏛️ Opening & Ask
+      </button>
+      <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        ⚔️ 8 Battlecards
+      </button>
+      <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        💬 WhatsApp Follow-Up
+      </button>
+      <button onclick="switchTab('rehearsal')" id="tab-btn-rehearsal" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
+        ⏱️ Rehearsal Studio
+      </button>
+      <a href="/pitch/nhf" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-emerald-300 border border-emerald-500/30 transition shrink-0 flex items-center gap-1">
+        📺 TV Deck ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN CONTAINER                                            -->
+  <!-- ========================================================= -->
+  <main class="max-w-md mx-auto w-full px-4 pt-3 flex-1">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 1: SPOKEN SCRIPT (SLIDES 1 TO 11)                     -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-notes" class="tab-content space-y-3">
+      
+      <!-- Strategy Header -->
+      <div class="p-3 bg-gradient-to-r from-emerald-500/15 to-transparent rounded-2xl border border-emerald-500/30 mb-2">
+        <div class="text-[10px] uppercase font-mono font-bold text-emerald-400">Boardroom Presentation Architecture</div>
+        <div class="text-xs text-gray-200 mt-0.5 leading-relaxed">
+          Presenter script uses <strong class="text-white">Banglish structure</strong> (English for banking terms, Bangla for explanation and emphasis). Total target time: <strong class="text-emerald-300 mono">15:00 minutes</strong>.
+        </div>
+      </div>
+
+      <!-- Slide 1 Script -->
+      <details id="script-slide-1" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden" open>
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">01</span>
+            <span class="text-xs font-bold text-white">Title · Strategic Institutional Proposal</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.0 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Honorable Managing Director, distinguished Board members, and Senior Management of National Housing Finance — shobaike shashordho shubheccha. Aajke amra ekta strategic proposition niye apnader samne hajir hoyechi: National Housing-er 25-bochorer shunam ebong institutional trust ke modern digital age-e ekta high-yield growth engine-e transform kora."</p>
+          <p>"Ei transformation-er mul uddeshyo tin-ti: modern public web portal overhaul kora, unified omnichannel brand standards establish kora across LinkedIn, Facebook, and YouTube, ebong shobcheye shuru-te direct branch lead routing activate kora, jeno digital inquiries shorasori branch loan officers-der kache pouchay."</p>
+          <div class="p-2 rounded-lg bg-white/5 border border-white/5 text-[11px] text-gray-400 italic">
+            Visual Cue: Point to the Dhaka residential skyline anchor visual on the screen.
+          </div>
+        </div>
+      </details>
+
+      <!-- Slide 2 Script -->
+      <details id="script-slide-2" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">02</span>
+            <span class="text-xs font-bold text-white">National Housing Today · Market Positioning</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.5 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Board-er shobai jaanen, National Housing stands on rock-solid fundamentals — Bangladesh Bank FI-08 license, Dhaka Stock Exchange listing, ebong premier institutional shareholders jemon Sadharan Bima, National Life Insurance, ebong Reliance Insurance."</p>
+          <p>"Kintu strategic imperative hocche: aajker high-value home loan applicants ebong deposit clients branch-e ashar aagei digital research kore decision ney. Amader commercial banks ebong modern NBFIs-er shathe compete korte hole digital touchpoints modern kora mandatory."</p>
+          <p>"Ar ekhane amader strict policy hocche: Heritage Integrity. Amra National Housing-er corporate logo ba core brand heritage konobhabei touch korbo na. Amra shudhu brand perception ke elevate korbo premium financial color grading, bilingual clarity, ebong modern digital UI-er maddhome."</p>
+        </div>
+      </details>
+
+      <!-- Slide 3 Script -->
+      <details id="script-slide-3" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-black text-xs font-mono">03</span>
+            <span class="text-xs font-bold text-white">What We Propose · The Three Pillars</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.5 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Dossier-er Page 3-te amader 3-month pilot-er exact operational architecture deya ache. Pillar 1 hocche Corporate Website Overhaul — fast, mobile-first institutional portal jekhane thakbe real-time EMI loan calculator, dedicated Al-Ameen Islamic Finance section, ebong direct lead routing."</p>
+          <p>"Pillar 2 hocche Omnichannel Social Governance — LinkedIn-e corporate disclosures ebong thought leadership, Facebook-e retail home loan campaigns ebong customer queries, ebong YouTube-e high-definition financial educational explainers."</p>
+          <p>"Pillar 3 hocche Content Production — monthly 15+ curated creative assets jemon infographics, carousels, ebong video snippets, shobkisu strictly National Housing-er compliance review pass kore publish hobe."</p>
+        </div>
+      </details>
+
+      <!-- Slide 4 Script -->
+      <details id="script-slide-4" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-xs font-mono">04</span>
+            <span class="text-xs font-bold text-white">The Live Prototype · Board Preview Ready</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.5 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Amra kono theoretical pitch korchi na. Amader commitment proman korte GRO10X already ekta fully interactive working portal prototype live host koreche. Apnader screen-e je QR code-ti dekhchen, smartphone camera diye scan korlei live portal open hoye jabe."</p>
+          <p>"Ekhane apnara live test korte parben dynamic EMI calculator tenure up to 20 years, Millionaire Deposit Scheme journey to BDT 1 Crore, ebong Al-Ameen Islamic HPSM workflows. Sub-second load speed ebong instant bilingual English/Bangla switching already deployed."</p>
+          <p>"Ei prototype-ti completely secure private staging environment-e ache — kono internal banking infrastructure-er shathe connect kora hoyni, tai kono security ba compliance risk nei."</p>
+        </div>
+      </details>
+
+      <!-- Slide 5 Script -->
+      <details id="script-slide-5" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">05</span>
+            <span class="text-xs font-bold text-white">Interactive EMI Calculator · Live DOM</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.5 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Slide 5-e amra native interactive calculator component integrate korechi. Eta static chobi na — apnara live screen-e slider adjust kore dynamic monthly installment calculate korte parchen."</p>
+          <p>"Default figure-e amra dhorchi 45 Lakh Taka loan, 15-year tenure, ebong 10.50% interest rate, jar fole estimated monthly installment ashe BDT 49,832. Borrower shathe shathe principal, total interest payable, ebong total repayment dekhte paay."</p>
+          <p>"Slide caption-e amra clearly mention korechi: 'Illustrative — to be aligned to National Housing's official rate schedule.' Pilot approve holei Week 1-e apnader official interest rate matrix onujayi ei formula exact calibrate kora hobe."</p>
+        </div>
+      </details>
+
+      <!-- Slide 6 Script -->
+      <details id="script-slide-6" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-xs font-mono">06</span>
+            <span class="text-xs font-bold text-white">Retail Creative Portfolio · Page 5 Reused</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.0 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Dossier-er Page 5-e retail campaigns showcase kora hoyeche. Concept 1 hocche retail home loans: 70% property financing up to 20-year tenure, jekhane Hotline 16534 ebong online branch routing prominent."</p>
+          <p>"Concept 2 hocche wealth creation deposit scheme: 1-Crore wealth projection for salaried professionals and business owners, highlighting capital safety and compound returns."</p>
+          <p>"Protiti creative dual surface format-e banano — 16:9 widescreen banners for web and LinkedIn, ebong 1:1 square assets for Facebook mobile feeds."</p>
+        </div>
+      </details>
+
+      <!-- Slide 7 Script -->
+      <details id="script-slide-7" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-black text-xs font-mono">07</span>
+            <span class="text-xs font-bold text-white">Shariah & Heritage Portfolio · Page 6 Reused</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.0 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Page 6-e amra Al-Ameen Islamic Banking ebong 25-bochorer institutional heritage highlight korechi. Concept 3 hocche Riba-free HPSM home co-ownership ebong Mudaraba deposits — Shariah-conscious homeowners-der trust capture korar jonno dedicated visual styling."</p>
+          <p>"Concept 4 hocche National Housing-er 25-bochorer stability: Sadharan Bima, National Life Insurance, ebong Reliance Insurance-er backing ke emphasize kore corporate treasury ebong high-value institutional deposits attract kora."</p>
+          <p>"Shob Shariah copy ebong institutional disclosures National Housing-er Shariah Board ebong compliance team theke written approval niye finalize kora hobe."</p>
+        </div>
+      </details>
+
+      <!-- Slide 8 Script -->
+      <details id="script-slide-8" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">08</span>
+            <span class="text-xs font-bold text-white">Commercials · 3-Month Pilot Model</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">2.0 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Ebar ashi commercials-e — dossier-er Page 7-e exact figures clearly laid out ache. Amra kono open-ended retainer propose korchi na. Amader proposal hocche ekta structured, low-risk 3-Month Pilot."</p>
+          <p>"Fixed monthly budget hocche strictly BDT 50,000 per month — 3 month pilot-e total BDT 1,50,000. Er moddhe Pillar 1 (Platform & Systems Overhaul) hocche BDT 25,000/month, ebong Pillar 2 (Omnichannel Content & Governance) hocche BDT 25,000/month."</p>
+          <p>"Ebong amader confidence proman korte amra propose korchi Aligned Incentives: Performance Revenue-Share Model. System theke je verified lead generate hobe ebong branch theke successfully disburse ba deposit open hobe, shudhu tar upor ekta mutually agreed success fee thakbe, ja executive management-er shathe boshe define kora hobe."</p>
+        </div>
+      </details>
+
+      <!-- Slide 9 Script -->
+      <details id="script-slide-9" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-black text-xs font-mono">09</span>
+            <span class="text-xs font-bold text-white">Implementation Roadmap · From Sign-Off</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.5 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Dossier-er Page 8-er roadmap-ti running strictly FROM SIGN-OFF. Weeks 1–2-te brand guidelines, disclosures, ebong staging schema finalize hobe. Weeks 3–4-te live portal launch ebong official social channels rebrand kora hobe."</p>
+          <p>"Weeks 5–8-e retail loan content rollout ebong branch lead routing automated hobe. Ebong Weeks 9–12-e conversion optimization ebong formal Board Pilot Audit report present kora hobe."</p>
+          <p>"Puro implementation cholbe existing banking operations-e zero disruption rekhe. Management go-live sign korar aage kono public transition hobe na."</p>
+        </div>
+      </details>
+
+      <!-- Slide 10 Script -->
+      <details id="script-slide-10" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-black text-xs font-mono">10</span>
+            <span class="text-xs font-bold text-white">Institutional Risk Removal</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.5 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Board-er safety ebong governance-er jonno 4-ti points amra emphasize korte chai: First, amader preview prototype private cloud-e ache, demo forms ekhon kono live customer data capture kore na."</p>
+          <p>"Second, zero core banking integration — pilot shudhu public marketing layer-e kaaj kore, National Housing-er internal database-e kono access nei ebong dorkar o nei."</p>
+          <p>"Third, protita interest rate ebong disclosure National Housing-er official schedule-er shathe align thakbe. Ebong Fourth, protiti creative publish korar aage apnader compliance committee-r written approval mandatory."</p>
+        </div>
+      </details>
+
+      <!-- Slide 11 Script -->
+      <details id="script-slide-11" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden">
+        <summary class="px-4 py-3 flex items-center justify-between cursor-pointer group-open:border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs font-mono">11</span>
+            <span class="text-xs font-bold text-white">The Ask · Formal Board Decision</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] mono text-gray-400 px-1.5 py-0.5 rounded bg-black/40">1.0 min</span>
+            <span class="text-gray-400 group-open:rotate-180 transition text-xs">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 text-xs space-y-2.5 text-gray-300 leading-relaxed bg-black/20">
+          <p><strong class="text-emerald-400">Banglish Spoken Script:</strong></p>
+          <p>"Dossier-er Page 8-e amader formal dual sign-off structure ache. Board-er kache amader ask khub clear: amra 3-month pilot-er formal approval prarthona korchi at BDT 50,000 per month."</p>
+          <p>"Ba jodi Board technical evaluation further korte chan, tobe designate senior management officers-der shathe ei shoptaho-te ekta dated review step schedule kora hok. Amader prototype live, team ready — sign-off holei amra 48 hours-e mobilize korbo."</p>
+        </div>
+      </details>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 2: WORD-FOR-WORD COURTESIES & CLOSING ASK             -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-courtesies" class="tab-content hidden space-y-4">
+      
+      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500">
+        <div class="mono text-xs text-emerald-400 font-bold mb-1">WORD-FOR-WORD OPENING COURTESY</div>
+        <div class="text-xs text-gray-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
+          <p class="font-medium text-white italic">
+            "Honorable Managing Director, distinguished members of the Board, and Senior Management of National Housing Finance — thank you for welcoming us today. We are honored to present this strategic roadmap for National Housing's omnichannel brand transformation and digital growth."
+          </p>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-cyan-500">
+        <div class="mono text-xs text-cyan-400 font-bold mb-1">PRINTED DOSSIER REVIEW CALLOUT</div>
+        <div class="text-xs text-gray-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
+          <p class="font-medium text-white italic">
+            "We would like to formally thank the Board for taking the time to review the printed submission dossier placed before you."
+          </p>
+          <div class="p-2 rounded bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200">
+            <strong>[TO CONFIRM — Dilip Sir reference, only if he is in the room]:</strong><br>
+            "Special thanks to Dilip Sir for his orientation and guidance in aligning our proposal with National Housing's institutional priorities."
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-indigo-500">
+        <div class="mono text-xs text-indigo-400 font-bold mb-1">WORD-FOR-WORD CLOSING ASK</div>
+        <div class="text-xs text-gray-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
+          <p class="font-medium text-white italic">
+            "Our ask today is straightforward: we seek the Board's approval to initiate the 3-month pilot at BDT 50,000 per month, or alternatively, to establish a formal technical decision step with your designated management team this week. The prototype is live, our engineering team is ready, and we look forward to delivering measurable growth for National Housing Finance."
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 3: 8 SHOMVOB-FORMAT OBJECTION BATTLECARDS             -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-objections" class="tab-content hidden space-y-3">
+      
+      <div class="text-[10px] mono text-gray-400 mb-1 px-1">
+        8 Verified Board Objections · 1-Line Bangla Answer + English Supporting Points
+      </div>
+
+      <!-- Card 1 -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10">
+        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+          <span>⚔️</span> Objection 1: "Our rates differ from yours"
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+          "Ei shob figure illustrative — pilot shuru holei Week 1-e apnader official schedule onujayi exact rate lock kora hobe."
+        </div>
+        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
+          <p>• All figures in the prototype and deck are illustrative defaults.</p>
+          <p>• Rates will be strictly calibrated to National Housing's official published schedule during Week 1 setup.</p>
+          <p>• Zero rates go live without designated management sign-off.</p>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10">
+        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+          <span>⚔️</span> Objection 2: "Does the application form work today?"
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+          "Calculator live test kora jacche, ar form routing pilot-er Week 1–4 build; akhon kono customer data capture hocche na."
+        </div>
+        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
+          <p>• The financial calculator is 100% interactive and functional today.</p>
+          <p>• Form routing to branch loan officers is built in Weeks 1–4 of the pilot.</p>
+          <p>• Today's prototype is a private sandbox and collects zero customer data.</p>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10">
+        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+          <span>⚔️</span> Objection 3: "Where is the chatbot?"
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+          "Ei proposal-e kono chatbot nei — Board chaile future add-on hishebe consider kora jete pare, kintu pilot-e marketing layer-e focus."
+        </div>
+        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
+          <p>• Chatbots and AI conversational agents are not included in this proposal.</p>
+          <p>• Engagement is focused strictly on modern public web, social media, and branch lead capture.</p>
+          <p>• An automated assistant can be discussed as a future add-on only if the Board requests it.</p>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10">
+        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+          <span>⚔️</span> Objection 4: "What revenue share do you expect?"
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+          "Revenue share rate pilot terms shathe management-er shathe boshe mutually define kora hobe — amader BDT 50,000 fixed fee stands on its own."
+        </div>
+        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
+          <p>• Conversion fee is mutually defined with executive management prior to campaign rollout.</p>
+          <p>• Tied strictly to verified leads that successfully disburse as loans or term deposits.</p>
+          <p>• The fixed pilot fee of BDT 50,000/month covers all technical and creative deliverables independently.</p>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10">
+        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+          <span>⚔️</span> Objection 5: "Your dossier said October to December"
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+          "Dossier reference cycle chhilo — amader 3-month pilot calendar running FROM SIGN-OFF."
+        </div>
+        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
+          <p>• The October–December dates were an illustrative planning cycle in the written draft.</p>
+          <p>• The contractual 3-month pilot runs strictly from the date of formal sign-off.</p>
+          <p>• Full 12 weeks of execution guaranteed regardless of calendar start date.</p>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10">
+        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+          <span>⚔️</span> Objection 6: "Why GRO10X?"
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+          "Traditional agency shudhu static banner dey — amra working prototype agei baniye apnader haate tule diyechi, amader ke measured results diye judge korun."
+        </div>
+        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
+          <p>• Traditional ad agencies lack software engineering capability; pure tech firms lack creative discipline.</p>
+          <p>• The interactive prototype is already built and working in your hands before contract signing.</p>
+          <p>• Judge the pilot strictly on measurable branch lead flow and conversion ROI.</p>
+        </div>
+      </div>
+
+      <!-- Card 7 -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10">
+        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+          <span>⚔️</span> Objection 7: "Data security and core banking"
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+          "Pilot-e kono core banking integration nei, kono internal customer data migration nei, ar protita creative apnader compliance theke approve hobe."
+        </div>
+        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
+          <p>• Operates 100% on the public marketing layer with zero core banking access.</p>
+          <p>• Zero customer account records or banking credentials are migrated or stored.</p>
+          <p>• Full compliance with Bangladesh Bank IT guidelines and NBFI standards.</p>
+        </div>
+      </div>
+
+      <!-- Card 8 -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10">
+        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+          <span>⚔️</span> Objection 8: "The 'Guaranteed' creative line"
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+          "Dossier-er creative concept sample matro — live public publication-er age protita copy apnader legal & compliance team verify korbe."
+        </div>
+        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
+          <p>• Creative samples in the dossier are concept designs demonstrating visual grading.</p>
+          <p>• Final customer copy will strictly replace illustrative slogans with compliance-approved phrasing.</p>
+          <p>• Nothing goes live without formal sign-off from National Housing's legal committee.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 4: WHATSAPP FOLLOW-UP KIT (DRAFTS ONLY)               -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-whatsapp" class="tab-content hidden space-y-4">
+      
+      <div class="p-3 bg-amber-500/15 border border-amber-500/30 rounded-2xl text-xs text-amber-200">
+        <strong class="block mb-0.5">⚠️ DRAFTS ONLY:</strong>
+        Nothing is transmitted automatically. Copy text manually to WhatsApp for post-meeting follow-up.
+      </div>
+
+      <!-- Draft 1: Formal Board Thank You -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-white">Post-Meeting Executive Note</span>
+          <button onclick="copyToClipboard('wa-text-1')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-bold border border-emerald-500/40 hover:bg-emerald-500/30">
+            📋 Copy
+          </button>
+        </div>
+        <textarea id="wa-text-1" rows="9" class="w-full p-3 rounded-xl bg-black/50 border border-white/10 text-xs text-gray-200 mono select-all leading-relaxed" readonly>
+Dear Sir,
+
+Thank you for the opportunity to present GRO10X's strategic proposal to the Honorable Board of National Housing Finance PLC today.
+
+Here are the live review links from today's discussion:
+1. Strategic Board Presentation: https://gro10x-ai.vercel.app/pitch/nhf
+2. Live Interactive Portal Prototype: https://gro10x-ai.vercel.app/nhf/
+
+We look forward to initiating Week 1 brand harmonization and delivering measurable growth for National Housing Finance.
+
+Warm regards,
+Rafsan Ameen
+GRO10X AI Growth Agency
++880 1798-558479</textarea>
+      </div>
+
+      <!-- Draft 2: Technical Staging Link Pack -->
+      <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-white">Technical Staging Link Pack</span>
+          <button onclick="copyToClipboard('wa-text-2')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-bold border border-emerald-500/40 hover:bg-emerald-500/30">
+            📋 Copy
+          </button>
+        </div>
+        <textarea id="wa-text-2" rows="6" class="w-full p-3 rounded-xl bg-black/50 border border-white/10 text-xs text-gray-200 mono select-all leading-relaxed" readonly>
+National Housing Finance — Digital Transformation Access Links:
+• Strategic TV Deck (11 Slides): https://gro10x-ai.vercel.app/pitch/nhf
+• Interactive Portal Prototype: https://gro10x-ai.vercel.app/nhf/
+• Dossier Reference: GRO-NHF-2026-BD01 (3-Month Pilot Model)
+• Point of Contact: Rafsan Ameen (+880 1798-558479)</textarea>
+      </div>
+
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- TAB 5: REHEARSAL STUDIO                                   -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <section id="tab-rehearsal" class="tab-content hidden space-y-4">
+      
+      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500">
+        <div class="mono text-xs text-emerald-400 font-bold mb-1">REHEARSAL PACING SCHEDULE (15:00 TOTAL)</div>
+        <div class="text-xs text-gray-300 space-y-2 mt-3">
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 01 · Title & Proposal Intro</span>
+            <span class="mono text-emerald-400 font-bold">1:00 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 02 · National Housing Today</span>
+            <span class="mono text-emerald-400 font-bold">1:30 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 03 · The Three Pillars</span>
+            <span class="mono text-emerald-400 font-bold">1:30 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 04 · Live Prototype Preview</span>
+            <span class="mono text-emerald-400 font-bold">1:30 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 05 · Interactive EMI Calculator</span>
+            <span class="mono text-emerald-400 font-bold">1:30 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 06 · Retail Creative Portfolio</span>
+            <span class="mono text-emerald-400 font-bold">1:00 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 07 · Shariah & Heritage Portfolio</span>
+            <span class="mono text-emerald-400 font-bold">1:00 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 08 · Commercial Model & Pilot</span>
+            <span class="mono text-emerald-400 font-bold">2:00 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 09 · Implementation Roadmap</span>
+            <span class="mono text-emerald-400 font-bold">1:30 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 10 · Institutional Risk Removal</span>
+            <span class="mono text-emerald-400 font-bold">1:30 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-white/5">
+            <span>Slide 11 · The Ask & Sign-Off</span>
+            <span class="mono text-emerald-400 font-bold">1:00 min</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold">
+            <span>Total Pitch Time:</span>
+            <span class="mono text-sm">15:00 min</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- BOTTOM THUMB NAVIGATION CONTROLLER                        -->
+  <!-- ========================================================= -->
+  <footer class="fixed bottom-0 inset-x-0 bg-[#0A101D]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 z-50">
+    <div class="max-w-md mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Prev Button -->
+      <button onclick="prevSlideScript()" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-xs font-bold text-gray-300 transition flex items-center justify-center gap-1 active:scale-95">
+        <span>←</span> Prev Slide
+      </button>
+
+      <!-- Slide Indicator Pill -->
+      <div class="px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-center shrink-0">
+        <div id="thumb-slide-indicator" class="text-xs font-black mono text-emerald-400 leading-none">01 / 11</div>
+        <div class="text-[8px] text-gray-500 uppercase mono mt-0.5">Active</div>
+      </div>
+
+      <!-- Next Button -->
+      <button onclick="nextSlideScript()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition flex items-center justify-center gap-1 shadow-lg shadow-emerald-900/30 active:scale-95">
+        Next Slide <span>→</span>
+      </button>
+
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- CO-PILOT HUD JAVASCRIPT ENGINE                            -->
+  <!-- ========================================================= -->
+  <script>
+    let activeSlideIndex = 1;
+    const TOTAL_SLIDES = 11;
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('bg-emerald-500', 'text-black');
+        el.classList.add('bg-white/10', 'text-gray-300');
+      });
+
+      const targetTab = document.getElementById(`tab-${tabId}`);
+      const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (targetTab) targetTab.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.remove('bg-white/10', 'text-gray-300');
+        targetBtn.classList.add('bg-emerald-500', 'text-black');
+      }
+    }
+
+    // Thumb Navigation for Spoken Script
+    function updateActiveScript(slideNum) {
+      if (slideNum < 1 || slideNum > TOTAL_SLIDES) return;
+      activeSlideIndex = slideNum;
+
+      // Close all details in notes
+      for (let i = 1; i <= TOTAL_SLIDES; i++) {
+        const el = document.getElementById(`script-slide-${i}`);
+        if (el) {
+          if (i === activeSlideIndex) {
+            el.open = true;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            el.open = false;
+          }
+        }
+      }
+
+      const indicator = document.getElementById('thumb-slide-indicator');
+      if (indicator) {
+        indicator.textContent = `${String(activeSlideIndex).padStart(2, '0')} / ${String(TOTAL_SLIDES).padStart(2, '0')}`;
+      }
+    }
+
+    function nextSlideScript() {
+      if (activeSlideIndex < TOTAL_SLIDES) {
+        updateActiveScript(activeSlideIndex + 1);
+      } else {
+        updateActiveScript(1);
+      }
+    }
+
+    function prevSlideScript() {
+      if (activeSlideIndex > 1) {
+        updateActiveScript(activeSlideIndex - 1);
+      } else {
+        updateActiveScript(TOTAL_SLIDES);
+      }
+    }
+
+    // Stopwatch Pacing Timer (15:00 countdown)
+    let timerSeconds = 15 * 60;
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timer-btn');
+      if (isTimerRunning) {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        btn.textContent = '▶';
+        btn.classList.remove('bg-amber-500/30', 'text-amber-300');
+      } else {
+        isTimerRunning = true;
+        btn.textContent = '⏸';
+        btn.classList.add('bg-amber-500/30', 'text-amber-300');
+        timerInterval = setInterval(() => {
+          if (timerSeconds > 0) {
+            timerSeconds--;
+            document.getElementById('timer-display').textContent = formatTime(timerSeconds);
+            if (timerSeconds < 180) { // Under 3 mins
+              document.getElementById('timer-display').classList.remove('text-emerald-400');
+              document.getElementById('timer-display').classList.add('text-amber-400');
+            }
+          } else {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            btn.textContent = '▶';
+            document.getElementById('timer-display').classList.remove('text-amber-400');
+            document.getElementById('timer-display').classList.add('text-red-400');
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      timerSeconds = 15 * 60;
+      document.getElementById('timer-display').textContent = '15:00';
+      document.getElementById('timer-display').className = 'text-sm font-black mono text-emerald-400 leading-none';
+      const btn = document.getElementById('timer-btn');
+      btn.textContent = '▶';
+      btn.classList.remove('bg-amber-500/30', 'text-amber-300');
+    }
+
+    // Clipboard Copy Helper
+    function copyToClipboard(elementId) {
+      const copyText = document.getElementById(elementId);
+      copyText.select();
+      copyText.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(copyText.value).then(() => {
+        alert('Copied follow-up draft to clipboard.');
+      });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      updateActiveScript(1);
+    });
+  </script>
+</body>
+</html>

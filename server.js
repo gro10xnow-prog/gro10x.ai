@@ -603,6 +603,12 @@ app.get(['/pitch/ryze-dop', '/pitch/ryze-dop/'], (req, res) => {
 app.get(['/pitch/ryze-dop/copilot', '/pitch/ryze-dop/copilot.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pitch/ryze-dop/copilot.html'));
 });
+app.get(['/pitch/nhf', '/pitch/nhf/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/nhf/index.html'));
+});
+app.get(['/pitch/nhf/copilot', '/pitch/nhf/copilot.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pitch/nhf/copilot.html'));
+});
 app.use('/pitch', express.static(path.join(__dirname, 'public/pitch')));
 
 // Central Prototype Showroom & Staged Client Prototypes
