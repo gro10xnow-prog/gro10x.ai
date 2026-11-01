@@ -253,10 +253,10 @@
       </div>
     </section>
 
-    <section id="slide-1" class="slide flex-col justify-between">
+    <section id="slide-1" class="slide flex-col justify-center gap-8">
       <!-- Background Skyline Visual (Dhaka High-Rise Architecture, Zero Human Faces) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
-        <img src="/pitch/nhf/assets/dhaka_residential_skyline.jpg" alt="Dhaka Residential Architecture" class="w-full h-full object-cover opacity-25 filter brightness-90">
+        <img src="/pitch/nhf/assets/dhaka_residential_skyline.jpg" alt="Dhaka Residential Architecture" class="w-full h-full object-cover opacity-40 filter brightness-95">
         <div class="absolute inset-0 bg-gradient-to-t from-[#070B12] via-[#070B12]/80 to-transparent"></div>
         <div class="absolute inset-0 bg-gradient-to-r from-[#070B12] via-[#070B12]/60 to-transparent"></div>
       </div>
@@ -276,8 +276,18 @@
         </p>
       </div>
 
+      <!-- Balanced Accent Ribbon (Reusing Existing Slide Copy, Zero Void) -->
+      <div class="relative z-10 w-full flex items-center justify-between py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 mono backdrop-blur-sm">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>NATIONAL HOUSING FINANCE PLC · DSE: NHFIL</span>
+        </div>
+        <span class="hidden md:inline text-gray-400">25 YEARS OF INSTITUTIONAL STABILITY MEETING THE DIGITAL CONSUMER</span>
+        <span class="text-emerald-400 font-bold">3-MONTH PILOT FRAMEWORK</span>
+      </div>
+
       <!-- 3 Highlights Invariant Law -->
-      <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+      <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-5">
         <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500">
           <div class="mono text-xs text-emerald-400 font-bold mb-1">01 · PUBLIC PORTAL OVERHAUL</div>
           <div class="font-bold text-white text-base">Modern Institutional Web Portal</div>
@@ -396,13 +406,13 @@
           <div>
             <div class="flex items-center justify-between mb-3">
               <span class="mono text-xs font-bold text-emerald-400">PILLAR 1</span>
-              <span class="px-2 py-0.5 rounded text-[10px] mono bg-emerald-500/20 text-emerald-300 font-bold">FULL STACK</span>
+              <span class="px-2 py-0.5 rounded text-[10px] mono bg-emerald-500/20 text-emerald-300 font-bold">COMPLETE PLATFORM</span>
             </div>
             <h3 class="font-bold text-white text-lg">Corporate Website & Interactive Branch</h3>
             <div class="text-xs text-gray-300 mt-3 space-y-2 leading-relaxed">
               <div class="flex items-start gap-2">
                 <span class="text-emerald-400 font-bold">✓</span>
-                <span><strong>Modern Portal:</strong> Fast, mobile-first institutional portal built on Next.js 15 and Tailwind CSS.</span>
+                <span><strong>Modern Portal:</strong> Fast, mobile-first institutional portal built on modern, secure web technology.</span>
               </div>
               <div class="flex items-start gap-2">
                 <span class="text-emerald-400 font-bold">✓</span>
@@ -462,7 +472,7 @@
             <div class="text-xs text-gray-300 mt-3 space-y-2 leading-relaxed">
               <div class="flex items-start gap-2">
                 <span class="text-cyan-400 font-bold">✓</span>
-                <span><strong>15+ Curated Assets/Mo:</strong> High-impact infographics, carousel guides, video snippets, and announcements.</span>
+                <span><strong>20+ Curated Assets/Mo:</strong> High-impact infographics, carousel guides, video snippets, and announcements.</span>
               </div>
               <div class="flex items-start gap-2">
                 <span class="text-cyan-400 font-bold">✓</span>
@@ -688,15 +698,40 @@
         </p>
       </div>
 
-      <!-- Giant Visual Anchor: Dossier Page 5 Creative Assets Reused As-Is -->
+      <!-- Giant Visual Anchor: Native High-Resolution Retail Creative Portfolio -->
       <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto items-center">
-        <div class="lg:col-span-8 glass-card p-3 rounded-2xl border border-white/15 overflow-hidden shadow-2xl">
-          <div class="flex items-center justify-between px-3 py-1.5 bg-black/40 rounded-xl mb-2 text-[11px] mono text-gray-400">
-            <span>Dossier Page 5 · Retail Asset Plate (Reused As-Is)</span>
-            <span class="text-emerald-400 font-bold">16:9 Banner + 1:1 Social Feeds</span>
+        <div class="lg:col-span-8 flex flex-col gap-3">
+          <!-- 16:9 Landscape Banner -->
+          <div class="glass-card p-2 rounded-2xl border border-white/15 overflow-hidden shadow-2xl">
+            <div class="flex items-center justify-between px-3 py-1 bg-black/40 rounded-lg mb-1.5 text-[10px] mono text-gray-400">
+              <span>Website & LinkedIn Hero Banner (16:9 Landscape)</span>
+              <span class="text-emerald-400 font-bold">High-Yield Retail Campaign</span>
+            </div>
+            <div class="rounded-xl overflow-hidden border border-white/10 aspect-video max-h-[220px] bg-black">
+              <img src="/pitch/nhf/assets/nhf_retail_banner_16x9.png" alt="NHF Retail Home Loan Banner 16:9" class="w-full h-full object-cover">
+            </div>
           </div>
-          <div class="rounded-xl overflow-hidden border border-white/10 max-h-[350px] overflow-y-auto">
-            <img src="/pitch/nhf/assets/page-5.png" alt="Dossier Page 5 Retail Creative" class="w-full object-contain bg-slate-900">
+
+          <!-- Dual 1:1 Social Feed Cards -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="glass-card p-2 rounded-2xl border border-white/15 overflow-hidden shadow-xl">
+              <div class="flex items-center justify-between px-2 py-0.5 bg-black/40 rounded-lg mb-1 text-[10px] mono text-gray-400">
+                <span>Social Feed Card A (1:1)</span>
+                <span class="text-emerald-400 font-bold">Home Loan</span>
+              </div>
+              <div class="rounded-xl overflow-hidden border border-white/10 aspect-square max-h-[140px] bg-black">
+                <img src="/pitch/nhf/assets/nhf_retail_social_1x1_a.png" alt="NHF Retail Social Card A" class="w-full h-full object-cover">
+              </div>
+            </div>
+            <div class="glass-card p-2 rounded-2xl border border-white/15 overflow-hidden shadow-xl">
+              <div class="flex items-center justify-between px-2 py-0.5 bg-black/40 rounded-lg mb-1 text-[10px] mono text-gray-400">
+                <span>Social Feed Card B (1:1)</span>
+                <span class="text-emerald-400 font-bold">1 Crore Wealth</span>
+              </div>
+              <div class="rounded-xl overflow-hidden border border-white/10 aspect-square max-h-[140px] bg-black">
+                <img src="/pitch/nhf/assets/nhf_retail_social_1x1_b.png" alt="NHF Retail Social Card B" class="w-full h-full object-cover">
+              </div>
+            </div>
           </div>
         </div>
 
@@ -750,15 +785,40 @@
         </p>
       </div>
 
-      <!-- Giant Visual Anchor: Dossier Page 6 Shariah & Heritage Assets Reused As-Is -->
+      <!-- Giant Visual Anchor: Native High-Resolution Shariah & Heritage Creative Portfolio -->
       <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto items-center">
-        <div class="lg:col-span-8 glass-card p-3 rounded-2xl border border-white/15 overflow-hidden shadow-2xl">
-          <div class="flex items-center justify-between px-3 py-1.5 bg-black/40 rounded-xl mb-2 text-[11px] mono text-gray-400">
-            <span>Dossier Page 6 · Shariah & Heritage Asset Plate (Reused As-Is)</span>
-            <span class="text-teal-400 font-bold">Islamic HPSM + Institutional Trust</span>
+        <div class="lg:col-span-8 flex flex-col gap-3">
+          <!-- 16:9 Landscape Banner -->
+          <div class="glass-card p-2 rounded-2xl border border-white/15 overflow-hidden shadow-2xl">
+            <div class="flex items-center justify-between px-3 py-1 bg-black/40 rounded-lg mb-1.5 text-[10px] mono text-gray-400">
+              <span>Website & LinkedIn Hero Banner (16:9 Landscape)</span>
+              <span class="text-teal-400 font-bold">Al-Ameen Islamic Finance</span>
+            </div>
+            <div class="rounded-xl overflow-hidden border border-white/10 aspect-video max-h-[220px] bg-black">
+              <img src="/pitch/nhf/assets/nhf_shariah_banner_16x9.png" alt="NHF Al-Ameen Islamic Banner 16:9" class="w-full h-full object-cover">
+            </div>
           </div>
-          <div class="rounded-xl overflow-hidden border border-white/10 max-h-[350px] overflow-y-auto">
-            <img src="/pitch/nhf/assets/page-6.png" alt="Dossier Page 6 Shariah & Heritage Creative" class="w-full object-contain bg-slate-900">
+
+          <!-- Dual 1:1 Social Feed Cards -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="glass-card p-2 rounded-2xl border border-white/15 overflow-hidden shadow-xl">
+              <div class="flex items-center justify-between px-2 py-0.5 bg-black/40 rounded-lg mb-1 text-[10px] mono text-gray-400">
+                <span>Social Feed Card C (1:1)</span>
+                <span class="text-teal-400 font-bold">Shariah HPSM</span>
+              </div>
+              <div class="rounded-xl overflow-hidden border border-white/10 aspect-square max-h-[140px] bg-black">
+                <img src="/pitch/nhf/assets/nhf_shariah_social_1x1.png" alt="NHF Shariah Social Card" class="w-full h-full object-cover">
+              </div>
+            </div>
+            <div class="glass-card p-2 rounded-2xl border border-white/15 overflow-hidden shadow-xl">
+              <div class="flex items-center justify-between px-2 py-0.5 bg-black/40 rounded-lg mb-1 text-[10px] mono text-gray-400">
+                <span>Social Feed Card D (1:1)</span>
+                <span class="text-cyan-400 font-bold">25-Yr Heritage</span>
+              </div>
+              <div class="rounded-xl overflow-hidden border border-white/10 aspect-square max-h-[140px] bg-black">
+                <img src="/pitch/nhf/assets/nhf_heritage_social_1x1.png" alt="NHF Heritage Social Card" class="w-full h-full object-cover">
+              </div>
+            </div>
           </div>
         </div>
 
@@ -822,8 +882,8 @@
               <div class="heading-font text-xl font-bold text-white">3-Month Pilot Framework</div>
             </div>
             <div class="text-right">
-              <div class="heading-font text-2xl font-black text-emerald-400">BDT 50,000 / mo</div>
-              <div class="mono text-[11px] text-gray-400">BDT 1,50,000 Total (3 Months)</div>
+              <div class="heading-font text-3xl lg:text-4xl font-black text-emerald-400 tracking-tight">BDT 50,000 / mo</div>
+              <div class="mono text-xs lg:text-sm font-bold text-gray-300">BDT 1,50,000 Total (3 Months)</div>
             </div>
           </div>
 
@@ -833,15 +893,15 @@
                 <strong class="text-white block">Pillar 1: Platform & Systems Overhaul</strong>
                 <span class="text-gray-400 text-[11px]">Corporate website modernization, CMS, loan calculators, lead forms, hosting & security.</span>
               </div>
-              <div class="mono font-bold text-emerald-400 text-sm shrink-0 ml-4">BDT 25,000 / mo</div>
+              <div class="mono font-bold text-emerald-400 text-base lg:text-lg shrink-0 ml-4">BDT 25,000 / mo</div>
             </div>
 
             <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
               <div>
                 <strong class="text-white block">Pillar 2: Omnichannel Content & Management</strong>
-                <span class="text-gray-400 text-[11px]">Active management of LinkedIn, Facebook, YouTube + 15+ curated creative assets/month.</span>
+                <span class="text-gray-400 text-[11px]">Active management of LinkedIn, Facebook, YouTube + 20+ curated creative assets/month.</span>
               </div>
-              <div class="mono font-bold text-teal-400 text-sm shrink-0 ml-4">BDT 25,000 / mo</div>
+              <div class="mono font-bold text-teal-400 text-base lg:text-lg shrink-0 ml-4">BDT 25,000 / mo</div>
             </div>
           </div>
         </div>
@@ -911,7 +971,7 @@
           <div class="mono text-xs font-bold text-teal-400 mb-1">WEEKS 3–4 (FROM SIGN-OFF)</div>
           <h3 class="font-bold text-white text-sm">Public Portal Live Launch</h3>
           <div class="text-xs text-gray-300 mt-2 space-y-1.5 leading-relaxed">
-            <p>• Seamless DNS migration to modern portal.</p>
+            <p>• Seamless transition to the modern portal with zero downtime.</p>
             <p>• Configure SSL certificates and edge CDN.</p>
             <p>• Rebrand LinkedIn, Facebook, and YouTube channels.</p>
           </div>
@@ -1055,23 +1115,23 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Client Approval Box -->
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <div class="text-[10px] mono uppercase text-emerald-400 font-bold mb-2">APPROVED FOR & ON BEHALF OF:</div>
-              <div class="font-bold text-white text-sm">Managing Director / Authorized Signatory</div>
-              <div class="text-xs text-gray-300 mt-1">National Housing Finance Limited (NHFL)</div>
-              <div class="mt-8 pt-3 border-t border-dashed border-white/20 flex justify-between text-[11px] text-gray-400">
+            <div class="p-5 rounded-xl bg-white/5 border border-white/10">
+              <div class="text-xs mono uppercase text-emerald-400 font-bold mb-2.5">APPROVED FOR & ON BEHALF OF:</div>
+              <div class="font-bold text-white text-base lg:text-lg">Managing Director / Authorized Signatory</div>
+              <div class="text-sm text-gray-200 mt-1">National Housing Finance Limited (NHFL)</div>
+              <div class="mt-8 pt-3 border-t border-dashed border-white/20 flex justify-between text-xs text-gray-300">
                 <span>Date: ________________________</span>
                 <span>Seal / Signature</span>
               </div>
             </div>
 
             <!-- Agency Submission Box -->
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <div class="text-[10px] mono uppercase text-cyan-400 font-bold mb-2">SUBMITTED & PRESENTED BY:</div>
-              <div class="font-bold text-white text-sm">Business Development Lead</div>
-              <div class="text-xs text-gray-300 mt-1">GRO10X AI Growth Agency & Advisory</div>
-              <div class="text-xs text-gray-400 mt-1 mono">Rafsan Ameen · corporate@gro10x.ai</div>
-              <div class="mt-4 pt-3 border-t border-dashed border-white/20 text-[11px] text-emerald-400 font-mono">
+            <div class="p-5 rounded-xl bg-white/5 border border-white/10">
+              <div class="text-xs mono uppercase text-cyan-400 font-bold mb-2.5">SUBMITTED & PRESENTED BY:</div>
+              <div class="font-bold text-white text-base lg:text-lg">Business Development Lead</div>
+              <div class="text-sm text-gray-200 mt-1">GRO10X AI Growth Agency & Advisory</div>
+              <div class="text-sm text-gray-300 mt-1 mono">Rafsan Ameen · corporate@gro10x.ai</div>
+              <div class="mt-4 pt-3 border-t border-dashed border-white/20 text-xs lg:text-sm text-emerald-300 font-mono font-bold">
                 Direct Contact: +880 1798-558479
               </div>
             </div>
@@ -2294,7 +2354,7 @@
   <!-- ========================================================= -->
   <div id="captionBand" class="no-print fixed bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-4xl w-[92%] pointer-events-none transition-all duration-200">
     <div class="bg-black/90 backdrop-blur-md border border-white/15 px-6 py-2.5 rounded-2xl shadow-2xl text-center">
-      <p id="captionText" class="bangla-caption text-sm sm:text-base md:text-lg font-medium text-white leading-relaxed">
+      <p id="captionText" class="bangla-caption text-base sm:text-xl md:text-2xl font-medium text-white leading-relaxed">
         <!-- Synced Bengali sentence appears here -->
       </p>
     </div>
