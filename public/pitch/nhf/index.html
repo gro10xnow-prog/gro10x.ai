@@ -480,7 +480,7 @@
         </div>
         <div class="p-3 rounded-xl bg-white/5 border border-white/10">
           <strong class="text-white block mb-0.5">High Performance & Security:</strong>
-          <span class="text-gray-300">Sub-second mobile loading with 99+ Google Lighthouse, full SSL encryption, and strict data isolation.</span>
+          <span class="text-gray-300">Sub-second mobile load speed with 99+ Google Lighthouse score. Full SSL encryption and regulatory data isolation.</span>
         </div>
         <div class="p-3 rounded-xl bg-white/5 border border-white/10">
           <strong class="text-white block mb-0.5">Bilingual Readiness:</strong>
@@ -555,7 +555,7 @@
               <div>
                 <div class="text-[11px] mono uppercase text-gray-400 font-bold mb-1">Estimated Monthly Installment (EMI)</div>
                 <div id="deckOutEMI" class="heading-font text-3xl font-black text-emerald-400 tracking-tight glow-green">
-                  BDT 49,832
+                  BDT 49,743
                 </div>
                 <div class="text-[11px] text-gray-400 mt-1">Per Month</div>
               </div>
@@ -567,11 +567,11 @@
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-400">Total Interest Payable:</span>
-                  <span id="deckOutInterest" class="mono font-bold text-amber-400">BDT 44,69,760</span>
+                  <span id="deckOutInterest" class="mono font-bold text-amber-400">BDT 44,53,731</span>
                 </div>
                 <div class="flex justify-between pt-2 border-t border-white/5 font-bold">
                   <span class="text-gray-300">Total Amount Payable:</span>
-                  <span id="deckOutTotal" class="mono text-white">BDT 89,69,760</span>
+                  <span id="deckOutTotal" class="mono text-white">BDT 89,53,731</span>
                 </div>
               </div>
             </div>
@@ -582,7 +582,7 @@
             <span class="italic text-amber-300/90 font-medium">
               ⓘ Illustrative — to be aligned to National Housing's official rate schedule.
             </span>
-            <span class="mono text-gray-500">Native DOM Engine · No Prototype Form Access</span>
+            <span class="mono text-gray-500">Live inside this presentation — the full portal opens from the QR code.</span>
           </div>
         </div>
 
@@ -1208,13 +1208,12 @@
       const N = tenureYears * 12;
       const R = annualRate / (12 * 100);
 
-      // Standard Amortization Formula: EMI = P * R * (1+R)^N / ((1+R)^N - 1)
+      // EMI = P * R * (1+R)^N / ((1+R)^N - 1)
       const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
-      const roundedEmi = Math.round(emi);
-      const totalPayment = roundedEmi * N;
+      const totalPayment = emi * N;
       const totalInterest = totalPayment - P;
 
-      document.getElementById('deckOutEMI').textContent = formatBDT(roundedEmi);
+      document.getElementById('deckOutEMI').textContent = formatBDT(emi);
       document.getElementById('deckOutPrincipal').textContent = formatBDT(P);
       document.getElementById('deckOutInterest').textContent = formatBDT(totalInterest);
       document.getElementById('deckOutTotal').textContent = formatBDT(totalPayment);

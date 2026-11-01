@@ -29,60 +29,57 @@
     .glow-green { box-shadow: 0 0 16px rgba(0, 135, 90, 0.4); }
   </style>
 </head>
-<body class="min-h-screen flex flex-col pb-28 select-none bg-[#070B12]">
+<body class="min-h-screen flex flex-col pb-24 select-none bg-[#070B12]">
 
   <!-- ========================================================= -->
-  <!-- TOP STICKY CONTROLLER HUD                                 -->
+  <!-- TOP STICKY CONTROLLER HUD (COMPACT SINGLE SLIM BAR)       -->
   <!-- ========================================================= -->
-  <header class="sticky top-0 z-50 bg-[#0A101D]/95 backdrop-blur-md border-b border-white/10 px-4 py-2.5 shadow-2xl">
-    <div class="max-w-md mx-auto flex items-center justify-between">
+  <header class="sticky top-0 z-50 bg-[#0A101D]/95 backdrop-blur-md border-b border-white/10 px-3.5 py-2 shadow-2xl">
+    <div class="max-w-md mx-auto flex items-center justify-between gap-2">
       
-      <!-- Identity -->
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#00875A] to-[#00F0FF] flex items-center justify-center text-white font-black text-sm shadow-md">
-          N
+      <!-- Left: Active Slide Info & Compact Subtitle (D1 & D5) -->
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
+          <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[11px] shrink-0 font-black">
+            Slide <span id="header-slide-num">1</span> of 11
+          </span>
+          <span id="header-slide-title" class="truncate text-gray-200">Title & Proposal</span>
         </div>
-        <div>
-          <div class="text-[11px] font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-            PRESENTER CO-PILOT
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          </div>
-          <div class="text-[9px] text-gray-400 mono">National Housing Finance Boardroom HUD</div>
-        </div>
+        <div class="text-[9px] text-gray-400 mono mt-0.5 truncate">National Housing Finance · Boardroom HUD</div>
       </div>
 
-      <!-- Live Presentation Pacing Timer (15:00 Total Allocation) -->
-      <div class="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
+      <!-- Right: Pacing Chip (Remaining Time with Color States) (D1) -->
+      <div class="flex items-center gap-1.5 bg-black/60 px-2 py-1 rounded-xl border border-white/10 shrink-0">
         <div class="text-right">
-          <div class="text-[8px] text-gray-400 uppercase mono font-bold">Total Pacing</div>
-          <div id="timer-display" class="text-sm font-black mono text-emerald-400 leading-none">15:00</div>
+          <div id="timer-display" class="text-xs font-black mono text-emerald-400 leading-none">15:00</div>
+          <div class="text-[8px] text-gray-500 mono mt-0.5">15:00 total</div>
         </div>
-        <button id="timer-btn" onclick="toggleTimer()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition active:scale-90" title="Start/Pause Timer">
+        <button id="timer-btn" onclick="toggleTimer()" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px] transition active:scale-90" title="Start/Pause Timer">
           ▶
         </button>
-        <button onclick="resetTimer()" class="w-6 h-7 text-[10px] text-gray-400 hover:text-white" title="Reset Timer">
+        <button onclick="resetTimer()" class="w-5 h-6 text-[9px] text-gray-400 hover:text-white" title="Reset Timer">
           ↺
         </button>
       </div>
 
     </div>
 
-    <!-- Quick Navigation Tabs -->
+    <!-- Quick Navigation Tabs (Every Tab Labeled with Words - D2) -->
     <div class="max-w-md mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-      <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-emerald-500 text-black transition shrink-0">
-        🎙️ Spoken Script (1–11)
+      <button onclick="switchTab('notes')" id="tab-btn-notes" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-emerald-500 text-black transition shrink-0 flex items-center gap-1">
+        🎙️ Notes
       </button>
-      <button onclick="switchTab('courtesies')" id="tab-btn-courtesies" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
-        🏛️ Opening & Ask
+      <button onclick="switchTab('courtesies')" id="tab-btn-courtesies" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0 flex items-center gap-1">
+        🏛️ Courtesies
       </button>
-      <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
-        ⚔️ 8 Battlecards
+      <button onclick="switchTab('objections')" id="tab-btn-objections" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0 flex items-center gap-1">
+        ⚔️ Objections
       </button>
-      <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
-        💬 WhatsApp Follow-Up
+      <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0 flex items-center gap-1">
+        💬 WhatsApp Kit
       </button>
-      <button onclick="switchTab('rehearsal')" id="tab-btn-rehearsal" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0">
-        ⏱️ Rehearsal Studio
+      <button onclick="switchTab('rehearsal')" id="tab-btn-rehearsal" class="tab-btn text-xs font-bold px-3 py-1 rounded-full bg-white/10 text-gray-300 hover:text-white transition shrink-0 flex items-center gap-1">
+        ⏱️ Rehearsal
       </button>
       <a href="/pitch/nhf" target="_blank" class="text-xs font-bold px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-emerald-300 border border-emerald-500/30 transition shrink-0 flex items-center gap-1">
         📺 TV Deck ↗
@@ -91,22 +88,14 @@
   </header>
 
   <!-- ========================================================= -->
-  <!-- MAIN CONTAINER                                            -->
+  <!-- MAIN CONTAINER (Spoken Script starts high - D5)           -->
   <!-- ========================================================= -->
-  <main class="max-w-md mx-auto w-full px-4 pt-3 flex-1">
+  <main class="max-w-md mx-auto w-full px-4 pt-2 flex-1">
 
     <!-- ───────────────────────────────────────────────────────── -->
     <!-- TAB 1: SPOKEN SCRIPT (SLIDES 1 TO 11)                     -->
     <!-- ───────────────────────────────────────────────────────── -->
-    <section id="tab-notes" class="tab-content space-y-3">
-      
-      <!-- Strategy Header -->
-      <div class="p-3 bg-gradient-to-r from-emerald-500/15 to-transparent rounded-2xl border border-emerald-500/30 mb-2">
-        <div class="text-[10px] uppercase font-mono font-bold text-emerald-400">Boardroom Presentation Architecture</div>
-        <div class="text-xs text-gray-200 mt-0.5 leading-relaxed">
-          Presenter script uses <strong class="text-white">Banglish structure</strong> (English for banking terms, Bangla for explanation and emphasis). Total target time: <strong class="text-emerald-300 mono">15:00 minutes</strong>.
-        </div>
-      </div>
+    <section id="tab-notes" class="tab-content space-y-2.5">
 
       <!-- Slide 1 Script -->
       <details id="script-slide-1" class="group bg-[#0E1626] border border-white/10 rounded-2xl overflow-hidden" open>
@@ -334,9 +323,9 @@
     <!-- ───────────────────────────────────────────────────────── -->
     <!-- TAB 2: WORD-FOR-WORD COURTESIES & CLOSING ASK             -->
     <!-- ───────────────────────────────────────────────────────── -->
-    <section id="tab-courtesies" class="tab-content hidden space-y-4">
+    <section id="tab-courtesies" class="tab-content hidden space-y-3">
       
-      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500">
+      <div class="glass-card p-4 rounded-2xl border-l-4 border-l-emerald-500">
         <div class="mono text-xs text-emerald-400 font-bold mb-1">WORD-FOR-WORD OPENING COURTESY</div>
         <div class="text-xs text-gray-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
           <p class="font-medium text-white italic">
@@ -345,20 +334,20 @@
         </div>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-cyan-500">
+      <div class="glass-card p-4 rounded-2xl border-l-4 border-l-cyan-500">
         <div class="mono text-xs text-cyan-400 font-bold mb-1">PRINTED DOSSIER REVIEW CALLOUT</div>
         <div class="text-xs text-gray-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
           <p class="font-medium text-white italic">
             "We would like to formally thank the Board for taking the time to review the printed submission dossier placed before you."
           </p>
-          <div class="p-2 rounded bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200">
+          <div class="p-2.5 rounded bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200">
             <strong>[TO CONFIRM — Dilip Sir reference, only if he is in the room]:</strong><br>
             "Our thanks to Dilip Sir for his kind reference in the submission of this proposal."
           </div>
         </div>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-indigo-500">
+      <div class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500">
         <div class="mono text-xs text-indigo-400 font-bold mb-1">WORD-FOR-WORD CLOSING ASK</div>
         <div class="text-xs text-gray-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
           <p class="font-medium text-white italic">
@@ -370,140 +359,190 @@
     </section>
 
     <!-- ───────────────────────────────────────────────────────── -->
-    <!-- TAB 3: 8 SHOMVOB-FORMAT OBJECTION BATTLECARDS             -->
+    <!-- TAB 3: 8 BATTLECARDS (Bangla Answer Largest - D4)         -->
     <!-- ───────────────────────────────────────────────────────── -->
     <section id="tab-objections" class="tab-content hidden space-y-3">
       
       <div class="text-[10px] mono text-gray-400 mb-1 px-1">
-        8 Verified Board Objections · 1-Line Bangla Answer + English Supporting Points
+        8 Verified Board Objections · Bangla punchline primary · Supporting points collapsed beneath (tap to view)
       </div>
 
       <!-- Card 1 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10">
-        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10">
+        <div class="text-[11px] mono font-bold text-red-400/90 mb-1.5 flex items-center gap-1.5">
           <span>⚔️</span> Objection 1: "Our rates differ from yours"
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+        <!-- Largest text on card: Bangla answer (D4) -->
+        <div class="text-sm font-bold text-emerald-300 leading-snug p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
           "Ei shob figure illustrative — pilot shuru holei Week 1-e apnader official schedule onujayi exact rate lock kora hobe."
         </div>
-        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
-          <p>• All figures in the prototype and deck are illustrative defaults.</p>
-          <p>• Rates will be strictly calibrated to National Housing's official published schedule during Week 1 setup.</p>
-          <p>• Zero rates go live without designated management sign-off.</p>
-        </div>
+        <!-- English supporting points collapsed beneath (D4) -->
+        <details class="mt-2.5 group/card">
+          <summary class="text-[11px] mono text-gray-400 hover:text-white cursor-pointer py-0.5 flex items-center justify-between select-none">
+            <span>Supporting Points (English)</span>
+            <span class="group-open/card:rotate-180 transition text-[9px]">▼</span>
+          </summary>
+          <div class="text-[11px] text-gray-300 space-y-1 pt-1.5 pl-1.5 border-t border-white/5">
+            <p>• All figures in the prototype and deck are illustrative defaults.</p>
+            <p>• Rates will be strictly calibrated to National Housing's official published schedule during Week 1 setup.</p>
+            <p>• Zero rates go live without designated management sign-off.</p>
+          </div>
+        </details>
       </div>
 
       <!-- Card 2 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10">
-        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10">
+        <div class="text-[11px] mono font-bold text-red-400/90 mb-1.5 flex items-center gap-1.5">
           <span>⚔️</span> Objection 2: "Does the application form work today?"
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+        <div class="text-sm font-bold text-emerald-300 leading-snug p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
           "Calculator live test kora jacche, ar form routing pilot-er Week 1–4 build; akhon kono customer data capture hocche na."
         </div>
-        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
-          <p>• The financial calculator is 100% interactive and functional today.</p>
-          <p>• Form routing to branch loan officers is built in Weeks 1–4 of the pilot.</p>
-          <p>• Today's prototype is a private sandbox and collects zero customer data.</p>
-        </div>
+        <details class="mt-2.5 group/card">
+          <summary class="text-[11px] mono text-gray-400 hover:text-white cursor-pointer py-0.5 flex items-center justify-between select-none">
+            <span>Supporting Points (English)</span>
+            <span class="group-open/card:rotate-180 transition text-[9px]">▼</span>
+          </summary>
+          <div class="text-[11px] text-gray-300 space-y-1 pt-1.5 pl-1.5 border-t border-white/5">
+            <p>• The financial calculator is 100% interactive and functional today.</p>
+            <p>• Form routing to branch loan officers is built in Weeks 1–4 of the pilot.</p>
+            <p>• Today's prototype is a private sandbox and collects zero customer data.</p>
+          </div>
+        </details>
       </div>
 
       <!-- Card 3 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10">
-        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10">
+        <div class="text-[11px] mono font-bold text-red-400/90 mb-1.5 flex items-center gap-1.5">
           <span>⚔️</span> Objection 3: "Where is the chatbot?"
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+        <div class="text-sm font-bold text-emerald-300 leading-snug p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
           "Ei proposal-e kono chatbot nei — Board chaile future add-on hishebe consider kora jete pare, kintu pilot-e marketing layer-e focus."
         </div>
-        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
-          <p>• Chatbots and AI conversational agents are not included in this proposal.</p>
-          <p>• Engagement is focused strictly on modern public web, social media, and branch lead capture.</p>
-          <p>• An automated assistant can be discussed as a future add-on only if the Board requests it.</p>
-        </div>
+        <details class="mt-2.5 group/card">
+          <summary class="text-[11px] mono text-gray-400 hover:text-white cursor-pointer py-0.5 flex items-center justify-between select-none">
+            <span>Supporting Points (English)</span>
+            <span class="group-open/card:rotate-180 transition text-[9px]">▼</span>
+          </summary>
+          <div class="text-[11px] text-gray-300 space-y-1 pt-1.5 pl-1.5 border-t border-white/5">
+            <p>• Chatbots and AI conversational agents are not included in this proposal.</p>
+            <p>• Engagement is focused strictly on modern public web, social media, and branch lead capture.</p>
+            <p>• An automated assistant can be discussed as a future add-on only if the Board requests it.</p>
+          </div>
+        </details>
       </div>
 
       <!-- Card 4 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10">
-        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10">
+        <div class="text-[11px] mono font-bold text-red-400/90 mb-1.5 flex items-center gap-1.5">
           <span>⚔️</span> Objection 4: "What revenue share do you expect?"
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+        <div class="text-sm font-bold text-emerald-300 leading-snug p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
           "Revenue share rate pilot terms shathe management-er shathe boshe mutually define kora hobe — amader BDT 50,000 fixed fee stands on its own."
         </div>
-        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
-          <p>• Conversion fee is mutually defined with executive management prior to campaign rollout.</p>
-          <p>• Tied strictly to verified leads that successfully disburse as loans or term deposits.</p>
-          <p>• The fixed pilot fee of BDT 50,000/month covers all technical and creative deliverables independently.</p>
-        </div>
+        <details class="mt-2.5 group/card">
+          <summary class="text-[11px] mono text-gray-400 hover:text-white cursor-pointer py-0.5 flex items-center justify-between select-none">
+            <span>Supporting Points (English)</span>
+            <span class="group-open/card:rotate-180 transition text-[9px]">▼</span>
+          </summary>
+          <div class="text-[11px] text-gray-300 space-y-1 pt-1.5 pl-1.5 border-t border-white/5">
+            <p>• Conversion fee is mutually defined with executive management prior to campaign rollout.</p>
+            <p>• Tied strictly to verified leads that successfully disburse as loans or term deposits.</p>
+            <p>• The fixed pilot fee of BDT 50,000/month covers all technical and creative deliverables independently.</p>
+          </div>
+        </details>
       </div>
 
       <!-- Card 5 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10">
-        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10">
+        <div class="text-[11px] mono font-bold text-red-400/90 mb-1.5 flex items-center gap-1.5">
           <span>⚔️</span> Objection 5: "Your dossier said October to December"
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+        <div class="text-sm font-bold text-emerald-300 leading-snug p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
           "Dossier reference cycle chhilo — amader 3-month pilot calendar running FROM SIGN-OFF."
         </div>
-        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
-          <p>• The October–December dates were an illustrative planning cycle in the written draft.</p>
-          <p>• The contractual 3-month pilot runs strictly from the date of formal sign-off.</p>
-          <p>• Full 12 weeks of execution guaranteed regardless of calendar start date.</p>
-        </div>
+        <details class="mt-2.5 group/card">
+          <summary class="text-[11px] mono text-gray-400 hover:text-white cursor-pointer py-0.5 flex items-center justify-between select-none">
+            <span>Supporting Points (English)</span>
+            <span class="group-open/card:rotate-180 transition text-[9px]">▼</span>
+          </summary>
+          <div class="text-[11px] text-gray-300 space-y-1 pt-1.5 pl-1.5 border-t border-white/5">
+            <p>• The October–December dates were an illustrative planning cycle in the written draft.</p>
+            <p>• The contractual 3-month pilot runs strictly from the date of formal sign-off.</p>
+            <p>• Full 12 weeks of execution guaranteed regardless of calendar start date.</p>
+          </div>
+        </details>
       </div>
 
       <!-- Card 6 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10">
-        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10">
+        <div class="text-[11px] mono font-bold text-red-400/90 mb-1.5 flex items-center gap-1.5">
           <span>⚔️</span> Objection 6: "Why GRO10X?"
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+        <div class="text-sm font-bold text-emerald-300 leading-snug p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
           "Traditional agency shudhu static banner dey — amra working prototype agei baniye apnader haate tule diyechi, amader ke measured results diye judge korun."
         </div>
-        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
-          <p>• Traditional ad agencies lack software engineering capability; pure tech firms lack creative discipline.</p>
-          <p>• The interactive prototype is already built and working in your hands before contract signing.</p>
-          <p>• Judge the pilot strictly on measurable branch lead flow and conversion ROI.</p>
-        </div>
+        <details class="mt-2.5 group/card">
+          <summary class="text-[11px] mono text-gray-400 hover:text-white cursor-pointer py-0.5 flex items-center justify-between select-none">
+            <span>Supporting Points (English)</span>
+            <span class="group-open/card:rotate-180 transition text-[9px]">▼</span>
+          </summary>
+          <div class="text-[11px] text-gray-300 space-y-1 pt-1.5 pl-1.5 border-t border-white/5">
+            <p>• Traditional ad agencies lack software engineering capability; pure tech firms lack creative discipline.</p>
+            <p>• The interactive prototype is already built and working in your hands before contract signing.</p>
+            <p>• Judge the pilot strictly on measurable branch lead flow and conversion ROI.</p>
+          </div>
+        </details>
       </div>
 
       <!-- Card 7 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10">
-        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10">
+        <div class="text-[11px] mono font-bold text-red-400/90 mb-1.5 flex items-center gap-1.5">
           <span>⚔️</span> Objection 7: "Data security and core banking"
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+        <div class="text-sm font-bold text-emerald-300 leading-snug p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
           "Pilot-e kono core banking integration nei, kono internal customer data migration nei, ar protita creative apnader compliance theke approve hobe."
         </div>
-        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
-          <p>• Operates 100% on the public marketing layer with zero core banking access.</p>
-          <p>• Zero customer account records or banking credentials are migrated or stored.</p>
-          <p>• Full compliance with Bangladesh Bank IT guidelines and NBFI standards.</p>
-        </div>
+        <details class="mt-2.5 group/card">
+          <summary class="text-[11px] mono text-gray-400 hover:text-white cursor-pointer py-0.5 flex items-center justify-between select-none">
+            <span>Supporting Points (English)</span>
+            <span class="group-open/card:rotate-180 transition text-[9px]">▼</span>
+          </summary>
+          <div class="text-[11px] text-gray-300 space-y-1 pt-1.5 pl-1.5 border-t border-white/5">
+            <p>• Operates 100% on the public marketing layer with zero core banking access.</p>
+            <p>• Zero customer account records or banking credentials are migrated or stored.</p>
+            <p>• Full compliance with Bangladesh Bank IT guidelines and NBFI standards.</p>
+          </div>
+        </details>
       </div>
 
       <!-- Card 8 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10">
-        <div class="text-xs font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10">
+        <div class="text-[11px] mono font-bold text-red-400/90 mb-1.5 flex items-center gap-1.5">
           <span>⚔️</span> Objection 8: "The 'Guaranteed' creative line"
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 font-medium mb-2">
+        <div class="text-sm font-bold text-emerald-300 leading-snug p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
           "Dossier-er creative concept sample matro — live public publication-er age protita copy apnader legal & compliance team verify korbe."
         </div>
-        <div class="text-[11px] text-gray-300 space-y-1 pl-1">
-          <p>• Creative samples in the dossier are concept designs demonstrating visual grading.</p>
-          <p>• Final customer copy will strictly replace illustrative slogans with compliance-approved phrasing.</p>
-          <p>• Nothing goes live without formal sign-off from National Housing's legal committee.</p>
-        </div>
+        <details class="mt-2.5 group/card">
+          <summary class="text-[11px] mono text-gray-400 hover:text-white cursor-pointer py-0.5 flex items-center justify-between select-none">
+            <span>Supporting Points (English)</span>
+            <span class="group-open/card:rotate-180 transition text-[9px]">▼</span>
+          </summary>
+          <div class="text-[11px] text-gray-300 space-y-1 pt-1.5 pl-1.5 border-t border-white/5">
+            <p>• Creative samples in the dossier are concept designs demonstrating visual grading.</p>
+            <p>• Final customer copy will strictly replace illustrative slogans with compliance-approved phrasing.</p>
+            <p>• Nothing goes live without formal sign-off from National Housing's legal committee.</p>
+          </div>
+        </details>
       </div>
 
     </section>
 
     <!-- ───────────────────────────────────────────────────────── -->
-    <!-- TAB 4: WHATSAPP FOLLOW-UP KIT (DRAFTS ONLY)               -->
+    <!-- TAB 4: WHATSAPP FOLLOW-UP KIT (DRAFTS ONLY - D2)          -->
     <!-- ───────────────────────────────────────────────────────── -->
-    <section id="tab-whatsapp" class="tab-content hidden space-y-4">
+    <section id="tab-whatsapp" class="tab-content hidden space-y-3">
       
       <div class="p-3 bg-amber-500/15 border border-amber-500/30 rounded-2xl text-xs text-amber-200">
         <strong class="block mb-0.5">⚠️ DRAFTS ONLY:</strong>
@@ -511,14 +550,14 @@
       </div>
 
       <!-- Draft 1: Formal Board Thank You -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10 space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-white">Post-Meeting Executive Note</span>
           <button onclick="copyToClipboard('wa-text-1')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-bold border border-emerald-500/40 hover:bg-emerald-500/30">
             📋 Copy
           </button>
         </div>
-        <textarea id="wa-text-1" rows="9" class="w-full p-3 rounded-xl bg-black/50 border border-white/10 text-xs text-gray-200 mono select-all leading-relaxed" readonly>
+        <textarea id="wa-text-1" rows="8" class="w-full p-2.5 rounded-xl bg-black/50 border border-white/10 text-xs text-gray-200 mono select-all leading-relaxed" readonly>
 Dear Sir,
 
 Thank you for the opportunity to present GRO10X's strategic proposal to the Honorable Board of National Housing Finance PLC today.
@@ -536,14 +575,14 @@ GRO10X AI Growth Agency
       </div>
 
       <!-- Draft 2: Technical Staging Link Pack -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+      <div class="glass-card p-3.5 rounded-2xl border border-white/10 space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-white">Technical Staging Link Pack</span>
           <button onclick="copyToClipboard('wa-text-2')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-bold border border-emerald-500/40 hover:bg-emerald-500/30">
             📋 Copy
           </button>
         </div>
-        <textarea id="wa-text-2" rows="6" class="w-full p-3 rounded-xl bg-black/50 border border-white/10 text-xs text-gray-200 mono select-all leading-relaxed" readonly>
+        <textarea id="wa-text-2" rows="6" class="w-full p-2.5 rounded-xl bg-black/50 border border-white/10 text-xs text-gray-200 mono select-all leading-relaxed" readonly>
 National Housing Finance — Digital Transformation Access Links:
 • Strategic TV Deck (11 Slides): https://gro10x-ai.vercel.app/pitch/nhf
 • Interactive Portal Prototype: https://gro10x-ai.vercel.app/nhf/
@@ -556,11 +595,11 @@ National Housing Finance — Digital Transformation Access Links:
     <!-- ───────────────────────────────────────────────────────── -->
     <!-- TAB 5: REHEARSAL STUDIO                                   -->
     <!-- ───────────────────────────────────────────────────────── -->
-    <section id="tab-rehearsal" class="tab-content hidden space-y-4">
+    <section id="tab-rehearsal" class="tab-content hidden space-y-3">
       
-      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500">
+      <div class="glass-card p-4 rounded-2xl border-l-4 border-l-emerald-500">
         <div class="mono text-xs text-emerald-400 font-bold mb-1">REHEARSAL PACING SCHEDULE (15:00 TOTAL)</div>
-        <div class="text-xs text-gray-300 space-y-2 mt-3">
+        <div class="text-xs text-gray-300 space-y-1.5 mt-2.5">
           <div class="flex justify-between items-center p-2 rounded bg-white/5">
             <span>Slide 01 · Title & Proposal Intro</span>
             <span class="mono text-emerald-400 font-bold">1:00 min</span>
@@ -617,24 +656,24 @@ National Housing Finance — Digital Transformation Access Links:
   </main>
 
   <!-- ========================================================= -->
-  <!-- BOTTOM THUMB NAVIGATION CONTROLLER                        -->
+  <!-- BOTTOM THUMB-ZONE NAVIGATION CONTROLLER (D3)              -->
   <!-- ========================================================= -->
-  <footer class="fixed bottom-0 inset-x-0 bg-[#0A101D]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 z-50">
+  <footer class="fixed bottom-0 inset-x-0 bg-[#0A101D]/95 backdrop-blur-md border-t border-white/10 px-4 py-2.5 z-50">
     <div class="max-w-md mx-auto flex items-center justify-between gap-3">
       
-      <!-- Prev Button -->
-      <button onclick="prevSlideScript()" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-xs font-bold text-gray-300 transition flex items-center justify-center gap-1 active:scale-95">
+      <!-- Large Tap Target Prev Button (D3) -->
+      <button onclick="prevSlideScript()" class="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-1.5 min-h-[48px] border border-white/10">
         <span>←</span> Prev Slide
       </button>
 
       <!-- Slide Indicator Pill -->
-      <div class="px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-center shrink-0">
+      <div class="px-3.5 py-1.5 rounded-xl bg-black/60 border border-white/10 text-center shrink-0 min-w-[72px]">
         <div id="thumb-slide-indicator" class="text-xs font-black mono text-emerald-400 leading-none">01 / 11</div>
-        <div class="text-[8px] text-gray-500 uppercase mono mt-0.5">Active</div>
+        <div class="text-[8px] text-gray-400 uppercase mono mt-0.5">Active</div>
       </div>
 
-      <!-- Next Button -->
-      <button onclick="nextSlideScript()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition flex items-center justify-center gap-1 shadow-lg shadow-emerald-900/30 active:scale-95">
+      <!-- Large Tap Target Next Button (D3) -->
+      <button onclick="nextSlideScript()" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-xs font-bold text-white transition flex items-center justify-center gap-1.5 min-h-[48px] shadow-lg shadow-emerald-900/40">
         Next Slide <span>→</span>
       </button>
 
@@ -647,6 +686,20 @@ National Housing Finance — Digital Transformation Access Links:
   <script>
     let activeSlideIndex = 1;
     const TOTAL_SLIDES = 11;
+
+    const SLIDE_TITLES = [
+      "Title & Proposal",
+      "National Housing Today",
+      "The Three Pillars",
+      "Live Prototype Preview",
+      "Interactive EMI Calculator",
+      "Retail Creative Portfolio",
+      "Shariah & Heritage Portfolio",
+      "Commercial Model & Pilot",
+      "Implementation Roadmap",
+      "Institutional Risk Removal",
+      "The Ask & Sign-Off"
+    ];
 
     // Tab Switching
     function switchTab(tabId) {
@@ -665,12 +718,18 @@ National Housing Finance — Digital Transformation Access Links:
       }
     }
 
-    // Thumb Navigation for Spoken Script
+    // Thumb Navigation for Spoken Script & Sticky Header Sync (D1 & D3)
     function updateActiveScript(slideNum) {
       if (slideNum < 1 || slideNum > TOTAL_SLIDES) return;
       activeSlideIndex = slideNum;
 
-      // Close all details in notes
+      // Update Sticky Header details (D1)
+      const hdrNum = document.getElementById('header-slide-num');
+      const hdrTitle = document.getElementById('header-slide-title');
+      if (hdrNum) hdrNum.textContent = activeSlideIndex;
+      if (hdrTitle) hdrTitle.textContent = SLIDE_TITLES[activeSlideIndex - 1];
+
+      // Close all details in notes except active
       for (let i = 1; i <= TOTAL_SLIDES; i++) {
         const el = document.getElementById(`script-slide-${i}`);
         if (el) {
@@ -731,7 +790,7 @@ National Housing Finance — Digital Transformation Access Links:
           if (timerSeconds > 0) {
             timerSeconds--;
             document.getElementById('timer-display').textContent = formatTime(timerSeconds);
-            if (timerSeconds < 180) { // Under 3 mins
+            if (timerSeconds < 180) { // Under 3 mins -> amber
               document.getElementById('timer-display').classList.remove('text-emerald-400');
               document.getElementById('timer-display').classList.add('text-amber-400');
             }
@@ -751,7 +810,7 @@ National Housing Finance — Digital Transformation Access Links:
       isTimerRunning = false;
       timerSeconds = 15 * 60;
       document.getElementById('timer-display').textContent = '15:00';
-      document.getElementById('timer-display').className = 'text-sm font-black mono text-emerald-400 leading-none';
+      document.getElementById('timer-display').className = 'text-xs font-black mono text-emerald-400 leading-none';
       const btn = document.getElementById('timer-btn');
       btn.textContent = '▶';
       btn.classList.remove('bg-amber-500/30', 'text-amber-300');
