@@ -51,11 +51,7 @@ const slide0Html = `    <!-- ─────────────────
           <div class="relative w-64 h-80 sm:w-72 sm:h-96 rounded-3xl overflow-hidden border-2 border-emerald-500/40 shadow-2xl shadow-emerald-500/20 bg-[#0E1626]">
             <img src="/pitch/nhf/assets/presenter-portrait.jpg" alt="ZAYAN - Chief of Staff & Virtual CTO, GRO10X" class="w-full h-full object-cover object-top">
             <div class="absolute inset-0 bg-gradient-to-t from-[#070B12]/80 via-transparent to-transparent"></div>
-            <div class="absolute bottom-3 left-3 right-3 text-center">
-              <span class="inline-block px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-xs font-mono text-emerald-400 font-bold">
-                Virtual CTO · GRO10X
-              </span>
-            </div>
+            
           </div>
         </div>
       </div>
