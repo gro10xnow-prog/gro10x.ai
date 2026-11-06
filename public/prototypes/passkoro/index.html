@@ -218,7 +218,7 @@
             <div class="badge-tag badge-upcoming" style="width:max-content; margin-bottom:6px;">SCALED DEMO FORMAT</div>
             <h3 class="title-hero" style="font-size:18px;">12-Minute Scaled Mock Test</h3>
             <p class="text-muted-sm" style="margin-top:4px; line-height:1.45;">
-              This is a fast 10-question scaled demonstration of the real DVSA exam (which is 50 questions in 57 minutes with a 43 pass mark). Pass mark here is <strong>9 / 10</strong> (85%+ standard).
+              This is a fast 10-question scaled demonstration of the real DVSA exam (which is 50 questions in 57 minutes with a 43 pass mark or 86%). Pass mark here is <strong>9 / 10</strong> on this scaled demo.
             </p>
             <button class="btn-primary-action" id="btn-start-mock-now" style="margin-top:12px;">Start 12-Min Mock Exam →</button>
           </div>
@@ -257,7 +257,7 @@
           <div class="card-surface" id="mock-results-card" style="display:none; text-align:center;">
             <div id="mock-result-badge" class="badge-tag badge-live" style="font-size:12px; padding:4px 14px; margin:0 auto 10px;">PASS</div>
             <h3 class="title-hero" id="mock-result-score" style="font-size:26px; color:var(--emerald);">Score: 9 / 10</h3>
-            <p class="text-muted-sm" id="mock-result-sub" style="margin-top:4px;">Congratulations! You achieved the 85%+ pass threshold.</p>
+            <p class="text-muted-sm" id="mock-result-sub" style="margin-top:4px;">Congratulations! You achieved the 9 / 10 pass mark on this scaled demo.</p>
 
             <!-- Topic Breakdown -->
             <div style="text-align:left; margin:16px 0; background:var(--bg-surface-elevated); padding:12px; border-radius:8px;">
@@ -437,7 +437,7 @@
           <div class="kpi-tile">
             <span class="kpi-val">74%</span>
             <span class="kpi-label">Average Readiness</span>
-            <span class="kpi-subtag">5 on track · 3 at risk</span>
+            <span class="kpi-subtag">2 EXAM READY · 1 ON TRACK · 2 NEEDS PRACTICE · 1 IMPROVING · 2 AT RISK</span>
           </div>
           <div class="kpi-tile" style="border-color:var(--border-emerald); background:rgba(0,223,137,0.04);">
             <span class="kpi-val emerald">£2,400</span>
@@ -591,6 +591,29 @@
       </div>
 
       <button class="btn-secondary-action" id="btn-close-visa-samples">Back to Course List</button>
+    </div>
+  </div>
+
+  <!-- Modal 5: Mock Review in Bangla (F4d) -->
+  <div class="modal-overlay" id="modal-mock-review">
+    <div class="modal-sheet">
+      <div class="modal-close-row">
+        <div>
+          <h4 class="title-hero" style="font-size:16px;">📝 Mock Exam Review in বাংলা</h4>
+          <span class="badge-tag badge-live" id="mock-review-score-badge">Score: 9 / 10</span>
+        </div>
+        <button class="btn-icon-close" id="btn-close-mock-review">✕</button>
+      </div>
+
+      <p class="text-muted-sm">
+        Review all 10 questions from your mock exam with your answers and full Bangla explanations.
+      </p>
+
+      <div id="mock-review-questions-container" style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <button class="btn-secondary-action" id="btn-dismiss-mock-review">Close Review</button>
     </div>
   </div>
 

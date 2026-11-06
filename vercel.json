@@ -365,6 +365,10 @@
       "dest": "/public/superleague/index.html"
     },
     {
+      "src": "/prototypes/passkoro/audio/(.*)",
+      "dest": "/public/prototypes/passkoro/audio/$1"
+    },
+    {
       "src": "/prototypes/passkoro/data/(.*)",
       "dest": "/public/prototypes/passkoro/data/$1"
     },

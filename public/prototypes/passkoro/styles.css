@@ -313,36 +313,29 @@ html, body {
   color: #fff;
 }
 
-/* Quick Navigation Pills for Student */
+/* Quick Navigation Pills for Student (Multi-Row Wrapping, Zero Sideways Rail) */
 .student-subnav-strip {
   display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.student-subnav-strip::-webkit-scrollbar {
-  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
 }
 
 .subnav-pill-btn {
-  white-space: nowrap;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-sub);
-  padding: 8px 14px;
+  padding: 7px 11px;
   border-radius: var(--radius-full);
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.2s ease;
-  min-height: 38px;
+  min-height: 36px;
   flex-shrink: 0;
 }
 
@@ -418,25 +411,19 @@ html, body {
   color: var(--emerald);
 }
 
-/* Theory Practice & Topic Filter Strip */
+/* Theory Practice & Topic Filter Strip (Multi-Row Wrapping, Zero Sideways Rail) */
 .topic-filter-pills {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-
-.topic-filter-pills::-webkit-scrollbar {
-  display: none;
+  width: 100%;
 }
 
 .topic-pill {
-  white-space: nowrap;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-sub);
-  padding: 6px 12px;
+  padding: 6px 11px;
   border-radius: var(--radius-full);
   font-size: 11.5px;
   font-weight: 600;

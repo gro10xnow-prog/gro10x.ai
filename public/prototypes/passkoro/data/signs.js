@@ -97,7 +97,7 @@ export const ROAD_SIGNS = [
     nameEn: "No Overtaking",
     nameBn: "ওভারটেকিং নিষেধ (No Overtaking)",
     tipBn: "লাল গাড়ি ওভারটেক করছে মানে এই রাস্তায় কাউকে ওভারটেক করা যাবে না।",
-    svg: `<svg viewBox="0 0 100 100" class="sign-svg"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#D32F2F" stroke-width="10"/><rect x="25" y="42" width="22" height="26" rx="4" fill="#D32F2F"/><rect x="53" y="42" width="22" height="26" rx="4" fill="#000"/></svg>`
+    svg: `<svg viewBox="0 0 100 100" class="sign-svg"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#D32F2F" stroke-width="10"/><rect x="25" y="44" width="22" height="24" rx="4" fill="#000"/><rect x="53" y="44" width="22" height="24" rx="4" fill="#D32F2F"/><rect x="28" y="40" width="16" height="5" rx="2" fill="#000"/><rect x="56" y="40" width="16" height="5" rx="2" fill="#D32F2F"/></svg>`
   },
   {
     id: "sign-13",

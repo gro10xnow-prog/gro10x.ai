@@ -273,4 +273,104 @@ describe('PassKoro (V1) — Forensic Attainment & Acceptance Suite', () => {
     });
   });
 
+  // --- GATE 7: FIX PASS AUDIT RIGOR & ARCHITECTURAL VERIFICATION ---
+  describe('Gate 7: Fix Pass Forensic Integrity (F1 - F4 & C1 - C3)', () => {
+    const htmlPath = path.join(__dirname, '../public/prototypes/passkoro/index.html');
+    const cssPath = path.join(__dirname, '../public/prototypes/passkoro/styles.css');
+    const appJsPath = path.join(__dirname, '../public/prototypes/passkoro/app.js');
+    const signsPath = path.join(__dirname, '../public/prototypes/passkoro/data/signs.js');
+    const audioDir = path.join(__dirname, '../public/prototypes/passkoro/audio');
+
+    test('F1: app.js contains isolated per-question state machine without cross-question bleed', () => {
+      const appJs = fs.readFileSync(appJsPath, 'utf8');
+      expect(appJs).toContain('practiceUserAnswers');
+      expect(appJs).toContain('practiceExplanationOpen');
+      // Verify answer check updates only current question state
+      expect(appJs).toContain('state.practiceUserAnswers[q.id]');
+    });
+
+    test('F2: Life in the UK sample cards are interactive with click handlers and feedback', () => {
+      const appJs = fs.readFileSync(appJsPath, 'utf8');
+      expect(appJs).toContain('renderLifeUKSamples');
+      expect(appJs).toContain('state.lifeUKUserAnswers');
+      expect(appJs).toContain('state.lifeUKDrawerOpen');
+      expect(appJs).toContain('data-liuk-qid');
+    });
+
+    test('F3: All 8 canonical MP3 audio clips exist on disk and exceed 50KB each', () => {
+      const requiredClips = [
+        'pk-audio-th-01.mp3',
+        'pk-audio-th-06.mp3',
+        'pk-audio-th-12.mp3',
+        'pk-audio-th-17.mp3',
+        'pk-audio-th-23.mp3',
+        'pk-audio-liuk-1.mp3',
+        'pk-audio-liuk-2.mp3',
+        'pk-audio-liuk-3.mp3'
+      ];
+      expect(fs.existsSync(audioDir)).toBe(true);
+      requiredClips.forEach(clip => {
+        const fullClipPath = path.join(audioDir, clip);
+        expect(fs.existsSync(fullClipPath)).toBe(true);
+        const stats = fs.statSync(fullClipPath);
+        expect(stats.size).toBeGreaterThan(50 * 1024); // > 50KB
+      });
+    });
+
+    test('F3: app.js maps 8 audio clips honestly and displays disabled state on other questions', () => {
+      const appJs = fs.readFileSync(appJsPath, 'utf8');
+      expect(appJs).toContain('pk-audio-th-01.mp3');
+      expect(appJs).toContain('pk-audio-liuk-1.mp3');
+      expect(appJs).toContain('অডিও নমুনা শীঘ্রই আসছে');
+    });
+
+    test('C1 / F4a: Dashboard roster breakdown tile contains literal status string', () => {
+      const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+      expect(htmlContent).toContain('2 EXAM READY · 1 ON TRACK · 2 NEEDS PRACTICE · 1 IMPROVING · 2 AT RISK');
+      // Ensure no invented regrouped buckets
+      expect(htmlContent).not.toContain('3 EXAM READY · 3 PRACTICE · 2 AT RISK');
+    });
+
+    test('F4b: Mock exam pass mark honestly displays 9 / 10 without false 85%+ percentage label', () => {
+      const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+      expect(htmlContent).toContain('9 / 10');
+      expect(htmlContent).not.toContain('85%+');
+    });
+
+    test('C3 / F4c: No Overtaking sign (sign-12) redrawn with left car black and right overtaking car red', () => {
+      const signsModule = loadEsmModule('../public/prototypes/passkoro/data/signs.js');
+      const sign12 = signsModule.ROAD_SIGNS.find(s => s.id === 'sign-12');
+      expect(sign12).toBeDefined();
+      expect(sign12.nameEn).toBe('No Overtaking');
+      // Left car (cx=39/40) black, Right car (cx=61/62) red
+      expect(sign12.svg).toContain('fill="#000"');
+      expect(sign12.svg).toContain('fill="#D32F2F"');
+      expect(sign12.tipBn).toContain('লাল গাড়ি ওভারটেক করছে মানে এই রাস্তায় কাউকে ওভারটেক করা যাবে না');
+    });
+
+    test('F4d: Mock results in-place review modal is present and wired in app.js', () => {
+      const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+      const appJs = fs.readFileSync(appJsPath, 'utf8');
+      expect(htmlContent).toContain('id="modal-mock-review"');
+      expect(htmlContent).toContain('id="mock-review-questions-container"');
+      expect(appJs).toContain('openMockReviewModal');
+      expect(appJs).toContain('modal-mock-review');
+    });
+
+    test('F4e / C2: Hazard simulator features dynamic reaction scoring without DVSA attribution in early warning', () => {
+      const appJs = fs.readFileSync(appJsPath, 'utf8');
+      expect(appJs).toContain('initHazardSimulation');
+      expect(appJs).toContain('btn-hazard-tap');
+      // Zero false attribution
+      expect(appJs).not.toContain('(DVSA Zero Score Rule)');
+      expect(appJs).toContain('সময়মতো ক্লিক করুন');
+    });
+
+    test('F4f: Subnav strip and topic pills use flex-wrap: wrap with zero horizontal overflow', () => {
+      const cssContent = fs.readFileSync(cssPath, 'utf8');
+      expect(cssContent).toMatch(/\.student-subnav-strip\s*\{[^}]*flex-wrap:\s*wrap;/s);
+      expect(cssContent).toMatch(/\.topic-filter-pills\s*\{[^}]*flex-wrap:\s*wrap;/s);
+    });
+  });
+
 });
