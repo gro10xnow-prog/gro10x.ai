@@ -630,6 +630,12 @@ app.get(['/superleague', '/superleague/', '/prototypes/superleague', '/prototype
 });
 app.use('/superleague', express.static(path.join(__dirname, 'public/superleague')));
 
+// PassKoro — UK Driving Theory, Life in UK & Visa English (Bilingual Diaspora OS)
+app.get(['/prototypes/passkoro', '/prototypes/passkoro/', '/passkoro', '/passkoro/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/passkoro/index.html'));
+});
+app.use('/passkoro', express.static(path.join(__dirname, 'public/prototypes/passkoro')));
+
 // MExSA Futsal Premier League Auction & Tournament OS Prototype
 app.get(['/prototypes/mexsa-futsal', '/prototypes/mexsa-futsal/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/mexsa-futsal/index.html'));

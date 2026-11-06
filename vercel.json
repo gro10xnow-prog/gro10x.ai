@@ -365,6 +365,26 @@
       "dest": "/public/superleague/index.html"
     },
     {
+      "src": "/prototypes/passkoro/data/(.*)",
+      "dest": "/public/prototypes/passkoro/data/$1"
+    },
+    {
+      "src": "/prototypes/passkoro/styles.css",
+      "dest": "/public/prototypes/passkoro/styles.css"
+    },
+    {
+      "src": "/prototypes/passkoro/app.js",
+      "dest": "/public/prototypes/passkoro/app.js"
+    },
+    {
+      "src": "/prototypes/passkoro/?$",
+      "dest": "/public/prototypes/passkoro/index.html"
+    },
+    {
+      "src": "/prototypes/passkoro/index(.*)",
+      "dest": "/public/prototypes/passkoro/index.html"
+    },
+    {
       "src": "/prototypes/mexsa-futsal(/.*)?",
       "dest": "/public/prototypes/mexsa-futsal/index.html"
     },
