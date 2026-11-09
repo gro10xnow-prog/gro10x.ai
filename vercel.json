@@ -393,8 +393,16 @@
       "dest": "/public/prototypes/mexsa-futsal/index.html"
     },
     {
+      "src": "/prototypes/cfc(/.*)?",
+      "dest": "/public/prototypes/cfc/index.html"
+    },
+    {
+      "src": "/campus-futsal-champ(/.*)?",
+      "dest": "/public/prototypes/cfc/index.html"
+    },
+    {
       "src": "/prototypes/campus-cup(/.*)?",
-      "dest": "/public/prototypes/campus-cup/index.html"
+      "dest": "/public/prototypes/cfc/index.html"
     },
     {
       "src": "/prototypes/madman-3d(/.*)?",

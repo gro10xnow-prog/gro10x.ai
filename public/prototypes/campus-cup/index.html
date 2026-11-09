@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>CAMPUS CUP 2026 — Inter-University Football OS & Mini-Cup Penalty Shootout</title>
-  <meta name="description" content="Official Technology Partner Fan Hub & Tournament OS for Bangladesh Inter-University Football Tournament. Swipe-to-score Mini-Cup penalty shootout, live aggregate campus leaderboard, and verified player rosters.">
+  <title>Campus Futsal Champ — Season 2 | Official Tournament OS & Fan Hub</title>
+  <meta name="description" content="Campus Futsal Champ Season 2 (CFC S2) — 36 University Teams, 51 Matches, 6 Days, BDT 4,50,000 Prize Pool. Official Tournament OS, Team Registration, Fan Predictor & Mini-Cup Shootout.">
 
-  <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
+  <!-- Favicon with Geometric Crown -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23FBCD5D%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14%22/></svg>">
 
   <!-- Google Fonts: Space Grotesk, Outfit, Inter, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,12 +22,15 @@
       theme: {
         extend: {
           colors: {
-            stadiumDark: '#070B12',
-            pitchGreen: '#00DF89',
-            pitchDark: '#0A2E1E',
-            floodlightCyan: '#00F0FF',
-            goldTrophy: '#FFB800',
-            cardBg: '#0E1624'
+            cfcDark: '#120A2A',
+            cfcDeep: '#1E0E42',
+            cfcCard: '#190F38',
+            cfcElevated: '#241452',
+            electricViolet: '#9354E9',
+            violetGlow: '#A855F7',
+            trophyGold: '#FBCD5D',
+            goldDark: '#D4A017',
+            cfcBorder: 'rgba(147, 84, 233, 0.25)'
           },
           fontFamily: {
             heading: ['Space Grotesk', 'Outfit', 'sans-serif'],
@@ -42,42 +45,54 @@
 
   <style>
     :root {
-      --pitch-green: #00DF89;
-      --stadium-dark: #070B12;
-      --card-glass: rgba(14, 22, 36, 0.85);
-      --border-subtle: rgba(255, 255, 255, 0.1);
+      --cfc-dark: #120A2A;
+      --cfc-deep: #1E0E42;
+      --cfc-card: #190F38;
+      --electric-violet: #9354E9;
+      --trophy-gold: #FBCD5D;
+      --cfc-border: rgba(147, 84, 233, 0.25);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    body {
-      background-color: var(--stadium-dark);
+    html, body {
+      background: radial-gradient(circle at 50% 0%, #2A125E 0%, #120A2A 60%, #0A0518 100%);
       color: #F8FAFC;
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
       touch-action: manipulation;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Glassmorphism Classes */
-    .glass-card {
-      background: var(--card-glass);
+    /* Glassmorphism & Purple Cards */
+    .cfc-card {
+      background: rgba(25, 15, 56, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--cfc-border);
     }
 
-    .glass-card-glow {
-      background: var(--card-glass);
+    .cfc-card-glow {
+      background: rgba(30, 14, 66, 0.9);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(0, 223, 137, 0.35);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 223, 137, 0.15);
+      border: 1px solid rgba(147, 84, 233, 0.45);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(147, 84, 233, 0.2);
     }
 
-    /* Stadium Floodlight Ambient Flare */
-    .stadium-flare {
-      background: radial-gradient(circle at 50% -20%, rgba(0, 223, 137, 0.22) 0%, rgba(0, 240, 255, 0.1) 40%, transparent 70%);
+    .cfc-card-gold {
+      background: rgba(32, 18, 70, 0.9);
+      border: 1px solid rgba(251, 205, 93, 0.35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(251, 205, 93, 0.15);
+    }
+
+    /* Ambient Spotlight */
+    .cfc-spotlight {
+      background: radial-gradient(circle at 50% -15%, rgba(147, 84, 233, 0.25) 0%, rgba(251, 205, 93, 0.12) 40%, transparent 70%);
     }
 
     /* Canvas Touch Area */
@@ -89,210 +104,1122 @@
     }
 
     /* Gradient Typography */
-    .text-gradient-pitch {
-      background: linear-gradient(135deg, #FFFFFF 15%, #00DF89 75%, #00F0FF 100%);
+    .text-gradient-violet {
+      background: linear-gradient(135deg, #FFFFFF 20%, #9354E9 70%, #A855F7 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .text-gradient-gold {
-      background: linear-gradient(135deg, #FFFFFF 20%, #FFB800 70%, #FF8C00 100%);
+      background: linear-gradient(135deg, #FFFFFF 20%, #FBCD5D 70%, #E6B800 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    /* LED Ticker Animation */
-    @keyframes tickerScroll {
+    /* Ticker Continuous Marquee */
+    @keyframes cfcTicker {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
+
     .animate-ticker {
       display: inline-flex;
       white-space: nowrap;
-      animation: tickerScroll 25s linear infinite;
+      animation: cfcTicker 40s linear infinite;
+    }
+    .animate-ticker:hover {
+      animation-play-state: paused;
+    }
+
+    /* No Sideways Scroll - Pill Flex Wrap */
+    .pill-wrap-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Custom scrollbar for desktop modal */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #120A2A;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #9354E9;
+      border-radius: 4px;
     }
   </style>
 </head>
-<body class="bg-[#070B12] min-h-screen text-gray-100 flex flex-col selection:bg-[#00DF89] selection:text-black">
+<body class="min-h-screen flex flex-col relative selection:bg-[#9354E9] selection:text-white">
+
+  <!-- Ambient Flare -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 cfc-spotlight pointer-events-none z-0"></div>
 
   <!-- ========================================================================= -->
-  <!-- 1. STADIUM FLOODLIGHT & AMBIENT HEADER                                    -->
+  <!-- 1. TOP STICKY BAR: CFC IDENTITY & VARSITY BADGE                           -->
   <!-- ========================================================================= -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 stadium-flare pointer-events-none z-0"></div>
-
-  <!-- Top Sticky Bar -->
-  <header class="sticky top-0 z-50 bg-[#070B12]/90 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3 flex justify-between items-center transition-all">
-    <div class="flex items-center gap-3">
-      <!-- Tournament Badge -->
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00DF89] to-[#00F0FF] flex items-center justify-center text-xl shadow-[0_0_15px_rgba(0,223,137,0.4)]">
-        ⚽
-      </div>
-      <div>
-        <div class="font-heading font-black text-base tracking-tight flex items-center gap-2">
-          <span>CAMPUS CUP 2026</span>
-          <span class="text-[10px] font-mono font-bold uppercase tracking-wider bg-[#00DF89]/15 text-[#00DF89] px-2 py-0.5 rounded border border-[#00DF89]/30">Live Derby OS</span>
+  <header class="sticky top-0 z-50 bg-[#120A2A]/90 backdrop-blur-xl border-b border-[#9354E9]/20 px-3 sm:px-6 py-2.5 flex justify-between items-center transition-all w-full max-w-full overflow-hidden">
+    <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+      <!-- Minimal Geometric Line Crown Motif -->
+      <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-[#9354E9] to-[#FBCD5D] p-0.5 flex items-center justify-center shadow-[0_0_15px_rgba(147,84,233,0.4)] flex-shrink-0">
+        <div class="w-full h-full bg-[#120A2A] rounded-[10px] flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBCD5D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+          </svg>
         </div>
-        <div class="text-[10px] text-gray-400 font-mono tracking-wide hidden sm:block">
-          Official Inter-University Tournament Technology Partner // GRO10X
+      </div>
+      <div class="min-w-0">
+        <div class="font-heading font-black text-xs sm:text-base tracking-tight flex items-center gap-1.5 sm:gap-2 truncate">
+          <span class="text-white truncate">CAMPUS FUTSAL CHAMP</span>
+          <span class="text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider bg-[#FBCD5D]/15 text-[#FBCD5D] px-1.5 py-0.5 rounded border border-[#FBCD5D]/30 flex-shrink-0">S2</span>
+        </div>
+        <div class="text-[10px] text-gray-400 font-mono tracking-wide hidden sm:block truncate">
+          Small Court, Big Dreams · Bigger Stage, Bolder Dreams · Play. Compete. Win.
         </div>
       </div>
     </div>
 
-    <!-- Active Varsity Allegiance & Audio Toggle -->
-    <div class="flex items-center gap-2 sm:gap-3">
-      <!-- Active Varsity Pill (Trigger modal) -->
-      <button onclick="openVarsityPicker()" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/15 hover:border-[#00DF89]/50 transition text-xs font-mono font-bold">
-        <span id="headerVarsityBadge" class="w-2.5 h-2.5 rounded-full bg-[#00DF89]"></span>
-        <span id="headerVarsityName">NSU (North South)</span>
-        <span class="text-gray-400 text-[10px]">▼</span>
+    <!-- Active Varsity Pill & Audio Toggle -->
+    <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+      <button onclick="openVarsityPicker()" class="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/5 border border-white/15 hover:border-[#9354E9]/50 transition text-[11px] sm:text-xs font-mono font-bold max-w-[110px] sm:max-w-none">
+        <span id="headerVarsityBadge" class="w-2 h-2 rounded-full bg-[#9354E9] flex-shrink-0"></span>
+        <span id="headerVarsityName" class="truncate">DIU</span>
+        <span class="text-gray-400 text-[9px] flex-shrink-0">▼</span>
       </button>
 
-      <!-- Audio Toggle -->
-      <button id="btnAudioToggle" onclick="toggleAudio()" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm hover:bg-white/10 transition" title="Sound Effects Toggle">
+      <!-- Audio Mute/Unmute -->
+      <button id="btnAudioToggle" onclick="toggleAudio()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs sm:text-sm hover:bg-white/10 transition" title="Toggle Synthesizer Sound FX">
         🔊
       </button>
 
-      <!-- Proposal CTA -->
-      <a href="/p/campus-cup" class="hidden md:inline-flex px-3.5 py-1.5 rounded-lg text-xs font-bold text-black bg-gradient-to-r from-[#00DF89] to-[#00F0FF] hover:opacity-90 transition shadow-[0_0_15px_rgba(0,223,137,0.3)] items-center gap-1.5">
-        <span>🤝</span> Partner Tech Proposal
-      </a>
+      <!-- Centrepiece Quick Action (Desktop/Tablet) -->
+      <button onclick="switchTab('registration')" class="hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-bold text-black bg-gradient-to-r from-[#FBCD5D] to-[#9354E9] hover:opacity-90 transition shadow-[0_0_15px_rgba(251,205,93,0.3)] items-center gap-1">
+        <span>📝</span> <span>Register Team</span>
+      </button>
     </div>
   </header>
 
   <!-- ========================================================================= -->
-  <!-- 2. SPONSOR & DERBY MATCH TICKER STRIP                                     -->
+  <!-- 2. CFC LIVE TICKER STRIP                                                  -->
   <!-- ========================================================================= -->
-  <div class="bg-[#05080E] border-b border-white/5 py-2 px-4 overflow-hidden relative z-10 font-mono text-xs">
+  <div class="bg-[#0A0518] border-b border-[#9354E9]/20 py-2 px-3 overflow-hidden relative z-10 font-mono text-[11px] sm:text-xs">
     <div class="flex items-center">
-      <div class="flex-shrink-0 bg-[#00DF89]/20 text-[#00DF89] font-bold px-2.5 py-0.5 rounded mr-3 uppercase tracking-wider text-[10px]">
-        ⚡ LIVE DERBY TICKER
+      <div class="flex-shrink-0 bg-[#9354E9]/20 text-[#FBCD5D] font-bold px-2 py-0.5 rounded mr-2.5 uppercase tracking-wider text-[10px] flex items-center gap-1">
+        <span>⚡</span> CFC TICKER
       </div>
       <div class="overflow-hidden flex-1 relative">
         <div class="animate-ticker text-gray-300 gap-8">
-          <span>🏆 MARQUEE DERBY: <strong>NSU 2 - 1 BRAC</strong> (72' Min — Red Card BRAC)</span>
-          <span class="text-gray-500">•</span>
-          <span>⚽ NEXT DERBY: <strong>DU vs BUET</strong> (Kickoff @ 5:00 PM BST • Floodlit Main Stadium)</span>
-          <span class="text-gray-500">•</span>
-          <span>🔥 PENALTY SHOOTOUT TALLY: <strong>114,840 TOTAL GOALS</strong> SCORED NATIONWIDE</span>
-          <span class="text-gray-500">•</span>
-          <span>🛡️ OFFICIAL SPONSORS: <strong>BANGLALINK 4G • bKash • MOJO COLA • GRO10X TECH</strong></span>
-          <span class="text-gray-500">•</span>
-          <!-- Duplicate for seamless infinite loop -->
-          <span>🏆 MARQUEE DERBY: <strong>NSU 2 - 1 BRAC</strong> (72' Min — Red Card BRAC)</span>
-          <span class="text-gray-500">•</span>
-          <span>⚽ NEXT DERBY: <strong>DU vs BUET</strong> (Kickoff @ 5:00 PM BST • Floodlit Main Stadium)</span>
-          <span class="text-gray-500">•</span>
-          <span>🔥 PENALTY SHOOTOUT TALLY: <strong>114,840 TOTAL GOALS</strong> SCORED NATIONWIDE</span>
-          <span class="text-gray-500">•</span>
-          <span>🛡️ OFFICIAL SPONSORS: <strong>BANGLALINK 4G • bKash • MOJO COLA • GRO10X TECH</strong></span>
+          <span>👑 <strong>CFC SEASON 2:</strong> 36 Teams · 51 Matches · 6 Days · 12 Groups · Dec 2026 – Jan 2027 Window</span>
+          <span class="text-[#9354E9]">•</span>
+          <span>🏆 <strong>BDT 4,50,000 PRIZE POOL:</strong> Champion ৳2,00,000 · Runner-Up ৳1,50,000 · Man of Match ৳1,000/match</span>
+          <span class="text-[#9354E9]">•</span>
+          <span>📈 <strong>SEASON 1 PROOF:</strong> 24 Campuses · 778K+ Page Views (100% Organic) · 5,045 Followers · 45.3K Reel Views <em class="text-[10px] text-gray-400 font-normal">[INSIGHTS DATA — as reported by the page's own insights]</em></span>
+          <span class="text-[#9354E9]">•</span>
+          <span>🏟️ <strong>PROPOSED VENUES:</strong> Mirpur Indoor Stadium · Courtside ("Season 1 home") · Bashundhara Futsal Stadium</span>
+          <span class="text-[#9354E9]">•</span>
+          <span>🤝 <strong>PARTNER ENQUIRIES:</strong> 01300-226959 · CAMPUSFUTSALCHAMP.COM</span>
+          <span class="text-[#9354E9]">•</span>
+          <!-- Duplicate Loop -->
+          <span>👑 <strong>CFC SEASON 2:</strong> 36 Teams · 51 Matches · 6 Days · 12 Groups · Dec 2026 – Jan 2027 Window</span>
+          <span class="text-[#9354E9]">•</span>
+          <span>🏆 <strong>BDT 4,50,000 PRIZE POOL:</strong> Champion ৳2,00,000 · Runner-Up ৳1,50,000 · Man of Match ৳1,000/match</span>
+          <span class="text-[#9354E9]">•</span>
+          <span>📈 <strong>SEASON 1 PROOF:</strong> 24 Campuses · 778K+ Page Views (100% Organic) · 5,045 Followers · 45.3K Reel Views <em class="text-[10px] text-gray-400 font-normal">[INSIGHTS DATA — as reported by the page's own insights]</em></span>
+          <span class="text-[#9354E9]">•</span>
+          <span>🏟️ <strong>PROPOSED VENUES:</strong> Mirpur Indoor Stadium · Courtside ("Season 1 home") · Bashundhara Futsal Stadium</span>
+          <span class="text-[#9354E9]">•</span>
+          <span>🤝 <strong>PARTNER ENQUIRIES:</strong> 01300-226959 · CAMPUSFUTSALCHAMP.COM</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 3. TOP NAVIGATION TABS (GAME & TOURNAMENT MODULES)                         -->
+  <!-- 3. NAVIGATION BAR (NO HORIZONTAL CHIP SCROLLING — FLEX WRAP)              -->
   <!-- ========================================================================= -->
-  <nav class="sticky top-[53px] z-40 bg-[#070B12]/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-2">
-    <div class="max-w-6xl mx-auto flex items-center justify-start sm:justify-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
-      <button onclick="switchTab('shootout')" id="tabBtn-shootout" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition flex items-center gap-2 bg-[#00DF89] text-black shadow-md flex-shrink-0">
-        <span>⚽</span> Mini-Cup Shootout
+  <nav class="sticky top-[53px] z-40 bg-[#120A2A]/95 backdrop-blur-md border-b border-[#9354E9]/20 px-3 sm:px-6 py-2">
+    <div class="max-w-6xl mx-auto pill-wrap-container justify-center">
+      <button onclick="switchTab('hero')" id="tabBtn-hero" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 bg-[#9354E9] text-white shadow-md">
+        <span>👑</span> Overview
       </button>
-      <button onclick="switchTab('leaderboard')" id="tabBtn-leaderboard" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 flex-shrink-0">
-        <span>🏆</span> Campus Battle
+      <button onclick="switchTab('registration')" id="tabBtn-registration" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-[#FBCD5D]/40">
+        <span>📝</span> Team Registration <span class="text-[10px] bg-[#FBCD5D]/20 text-[#FBCD5D] px-1 py-0.2 rounded font-mono">DEMO</span>
       </button>
-      <button onclick="switchTab('matchcenter')" id="tabBtn-matchcenter" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 flex-shrink-0">
-        <span>⚡</span> Live Match Center
+      <button onclick="switchTab('format')" id="tabBtn-format" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5">
+        <span>📋</span> Format & Rhythm
       </button>
-      <button onclick="switchTab('brackets')" id="tabBtn-brackets" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 flex-shrink-0">
-        <span>📊</span> Brackets & Tables
+      <button onclick="switchTab('standings')" id="tabBtn-standings" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5">
+        <span>📊</span> 12 Groups
       </button>
-      <button onclick="switchTab('roster')" id="tabBtn-roster" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 flex-shrink-0">
-        <span>🪪</span> Verified Player Pass
+      <button onclick="switchTab('brackets')" id="tabBtn-brackets" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5">
+        <span>🏆</span> Knockout Tree
       </button>
-      <button onclick="switchTab('sponsors')" id="tabBtn-sponsors" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 flex-shrink-0">
-        <span>🎁</span> Fan Predictor & Deals
+      <button onclick="switchTab('matchcenter')" id="tabBtn-matchcenter" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5">
+        <span>⚡</span> Match Centre
+      </button>
+      <button onclick="switchTab('predictor')" id="tabBtn-predictor" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5">
+        <span>🎯</span> Fan Predictor
+      </button>
+      <button onclick="switchTab('shootout')" id="tabBtn-shootout" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5">
+        <span>⚽</span> Shootout Game
+      </button>
+      <button onclick="switchTab('roster')" id="tabBtn-roster" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5">
+        <span>🪪</span> Player Pass
+      </button>
+      <button onclick="switchTab('partners')" id="tabBtn-partners" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white hover:bg-white/5">
+        <span>🤝</span> Partners Ladder
       </button>
     </div>
   </nav>
 
   <!-- ========================================================================= -->
-  <!-- 4. MAIN CONTENT CONTAINER                                                 -->
+  <!-- 4. MAIN CONTENT CONTAINER (10 REQUIRED SURFACES)                          -->
   <!-- ========================================================================= -->
-  <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 relative z-10">
+  <main class="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-6 relative z-10">
 
     <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <!-- TAB 1: MINI-CUP PENALTY SHOOTOUT (GOOGLE 2022 VIRAL INSPIRATION)       -->
+    <!-- SURFACE 1: HERO & SEASON 1 PROOF                                        -->
     <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <section id="tab-shootout" class="tab-content block">
+    <section id="tab-hero" class="tab-content space-y-6">
       
-      <!-- Mini-Cup Arena Header -->
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-        <div>
-          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#00DF89]/10 border border-[#00DF89]/30 text-[#00DF89] text-[11px] font-mono font-bold uppercase">
-            <span>⚽</span> Google 2022 Mini-Cup Easter Egg Adapted
+      <!-- Hero Banner -->
+      <div class="cfc-card-glow rounded-3xl p-6 sm:p-10 relative overflow-hidden">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBCD5D]/15 border border-[#FBCD5D]/30 text-[#FBCD5D] text-xs font-mono font-bold uppercase tracking-wider mb-3">
+            <span>👑</span> CAMPUS FUTSAL CHAMP // SEASON 2
           </div>
-          <h1 class="font-heading font-black text-2xl sm:text-3xl text-white mt-1">
-            Campus Penalty Shootout // <span id="arenaVarsityTitle" class="text-gradient-pitch">NSU Kicking</span>
+          <h1 class="font-heading font-black text-3xl sm:text-5xl text-white tracking-tight leading-tight">
+            Small Court, <span class="text-gradient-gold">Big Dreams.</span><br>
+            Bigger Stage, <span class="text-gradient-violet">Bolder Dreams.</span>
           </h1>
+          <p class="text-gray-300 text-sm sm:text-base mt-3 leading-relaxed">
+            Bangladesh’s premier inter-university futsal championship returns for Season 2. 36 university squads, 51 high-octane small-court matches, and BDT 4,50,000 in championship prize purse.
+          </p>
+
+          <!-- Core Tournament Locked Telemetry Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+            <div class="bg-black/40 border border-white/10 rounded-2xl p-3 text-center">
+              <div class="font-heading font-black text-2xl sm:text-3xl text-white">36</div>
+              <div class="text-[11px] font-mono text-[#FBCD5D] font-bold uppercase">Varsity Teams</div>
+            </div>
+            <div class="bg-black/40 border border-white/10 rounded-2xl p-3 text-center">
+              <div class="font-heading font-black text-2xl sm:text-3xl text-[#9354E9]">51</div>
+              <div class="text-[11px] font-mono text-gray-400 font-bold uppercase">Total Matches</div>
+            </div>
+            <div class="bg-black/40 border border-white/10 rounded-2xl p-3 text-center">
+              <div class="font-heading font-black text-2xl sm:text-3xl text-white">6</div>
+              <div class="text-[11px] font-mono text-[#FBCD5D] font-bold uppercase">Intense Days</div>
+            </div>
+            <div class="bg-black/40 border border-white/10 rounded-2xl p-3 text-center">
+              <div class="font-heading font-black text-xl sm:text-2xl text-[#FBCD5D]">৳4.5L</div>
+              <div class="text-[11px] font-mono text-gray-400 font-bold uppercase">Prize Purse</div>
+            </div>
+          </div>
+
+          <!-- CTAs -->
+          <div class="flex flex-wrap gap-3 mt-6">
+            <button onclick="switchTab('registration')" class="px-5 py-2.5 rounded-xl font-heading font-black text-sm text-black bg-gradient-to-r from-[#FBCD5D] to-[#9354E9] hover:opacity-90 transition shadow-lg flex items-center gap-2">
+              <span>📝</span> Register Your Campus Team (Demo)
+            </button>
+            <button onclick="switchTab('shootout')" class="px-5 py-2.5 rounded-xl font-heading font-bold text-sm text-white bg-white/10 hover:bg-white/15 border border-white/20 transition flex items-center gap-2">
+              <span>⚽</span> Play Mini-Cup Shootout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Season 1 Proof Metrics (With Mandatory Insights Data Label) -->
+      <div class="cfc-card rounded-2xl p-5 sm:p-6 border border-[#9354E9]/30">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <div>
+            <h2 class="font-heading font-black text-lg sm:text-xl text-white flex items-center gap-2">
+              <span>📈</span> Season 1 Proven Ground Reality
+            </h2>
+            <p class="text-xs text-gray-400 font-mono mt-0.5">
+              Organic engagement generated across 24 campuses during the inaugural tournament
+            </p>
+          </div>
+          <!-- MANDATORY LABEL -->
+          <div class="bg-[#9354E9]/20 border border-[#9354E9]/40 text-[#FBCD5D] text-[10px] font-mono px-2.5 py-1 rounded-full uppercase tracking-wider font-bold">
+            INSIGHTS DATA — as reported by the page's own insights
+          </div>
         </div>
 
-        <!-- Live In-Game Telemetry Bar -->
-        <div class="flex items-center gap-3 bg-[#0A101D] px-4 py-2 rounded-2xl border border-white/10 font-mono text-xs">
-          <!-- Streak -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="p-3.5 rounded-xl bg-black/30 border border-white/5">
+            <div class="text-[11px] font-mono text-gray-400 uppercase">Season 1 Reach</div>
+            <div class="font-heading font-black text-2xl sm:text-3xl text-[#FBCD5D] mt-1">778K+</div>
+            <div class="text-[10px] font-mono text-gray-400 mt-1">100% Organic Page Views</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/30 border border-white/5">
+            <div class="text-[11px] font-mono text-gray-400 uppercase">Campuses Engaged</div>
+            <div class="font-heading font-black text-2xl sm:text-3xl text-white mt-1">24</div>
+            <div class="text-[10px] font-mono text-gray-400 mt-1">Universities Competed</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/30 border border-white/5">
+            <div class="text-[11px] font-mono text-gray-400 uppercase">Page Community</div>
+            <div class="font-heading font-black text-2xl sm:text-3xl text-[#9354E9] mt-1">5,045</div>
+            <div class="text-[10px] font-mono text-gray-400 mt-1">Dedicated Followers</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/30 border border-white/5">
+            <div class="text-[11px] font-mono text-gray-400 uppercase">Anthem Reel Views</div>
+            <div class="font-heading font-black text-2xl sm:text-3xl text-white mt-1">45.3K</div>
+            <div class="text-[10px] font-mono text-gray-400 mt-1">S1 Final: DIU 1 - 0 BUP</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Proposed Venues & Window Notice -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="cfc-card rounded-2xl p-5 border border-white/10">
+          <div class="flex items-center gap-2 text-xs font-mono text-[#FBCD5D] font-bold uppercase mb-2">
+            <span>📅</span> TOURNAMENT WINDOW
+          </div>
+          <h3 class="font-heading font-black text-lg text-white">Dec 2026 – Jan 2027 Window</h3>
+          <p class="text-xs text-gray-400 mt-1 leading-relaxed">
+            Structured across 6 consecutive competition days (Day 1 through Day 6) under small-court indoor futsal regulations.
+          </p>
+        </div>
+
+        <div class="cfc-card rounded-2xl p-5 border border-white/10">
+          <div class="flex items-center gap-2 text-xs font-mono text-[#9354E9] font-bold uppercase mb-2">
+            <span>🏟️</span> PROPOSED VENUES (UNDER EVALUATION)
+          </div>
+          <div class="space-y-1.5 text-xs text-gray-300 font-mono">
+            <div class="flex items-center gap-2">
+              <span class="text-[#FBCD5D]">●</span> <strong>Mirpur Indoor Stadium</strong> <span class="text-[10px] text-gray-500">[PROPOSED]</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#FBCD5D]">●</span> <strong>Courtside ("Season 1 home")</strong> <span class="text-[10px] text-gray-500">[PROPOSED]</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#FBCD5D]">●</span> <strong>Bashundhara Futsal Stadium</strong> <span class="text-[10px] text-gray-500">[PROPOSED]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SURFACE 5: TEAM REGISTRATION (THE CENTREPIECE DEMO FLOW)                 -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="tab-registration" class="tab-content hidden space-y-6">
+      
+      <!-- Centrepiece Banner -->
+      <div class="cfc-card-gold rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#FBCD5D]/20 text-[#FBCD5D] text-[11px] font-mono font-bold uppercase">
+              <span>📝</span> INTERACTIVE CENTREPIECE
+            </div>
+            <h2 class="font-heading font-black text-2xl sm:text-3xl text-white mt-1">
+              Official Team Registration Portal
+            </h2>
+          </div>
+          <div class="text-[11px] font-mono bg-black/60 border border-[#FBCD5D]/40 text-[#FBCD5D] px-3 py-1 rounded-full">
+            Prototype — demo registration
+          </div>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-300">
+          Demonstrating the full university team ingress workflow: institutional authentication, squad roster submission, management contact verification, and digital pass generation.
+        </p>
+
+        <!-- Multi-Step Progress Tracker -->
+        <div class="grid grid-cols-4 gap-2 mt-6 font-mono text-[11px]">
+          <div id="stepTab-1" class="p-2.5 rounded-xl bg-[#9354E9] text-white font-bold text-center border border-[#9354E9] transition">
+            1. University
+          </div>
+          <div id="stepTab-2" class="p-2.5 rounded-xl bg-black/40 text-gray-400 font-bold text-center border border-white/10 transition">
+            2. Squad List
+          </div>
+          <div id="stepTab-3" class="p-2.5 rounded-xl bg-black/40 text-gray-400 font-bold text-center border border-white/10 transition">
+            3. Management
+          </div>
+          <div id="stepTab-4" class="p-2.5 rounded-xl bg-black/40 text-gray-400 font-bold text-center border border-white/10 transition">
+            4. Confirmation
+          </div>
+        </div>
+      </div>
+
+      <!-- Registration Form Interactive Body -->
+      <div class="cfc-card rounded-2xl p-6 border border-[#9354E9]/30">
+
+        <!-- STEP 1: UNIVERSITY & TEAM INFO -->
+        <div id="regStep-1" class="space-y-4">
+          <h3 class="font-heading font-bold text-lg text-white flex items-center gap-2">
+            <span>🏛️</span> Step 1: University & Team Identification
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-mono text-gray-300 mb-1">University / Campus *</label>
+              <select id="regUniversity" class="w-full bg-[#120A2A] border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#9354E9]">
+                <option value="Daffodil International University (DIU)">Daffodil International University (DIU) — Defending Champion</option>
+                <option value="Bangladesh University of Professionals (BUP)">Bangladesh University of Professionals (BUP) — S1 Finalist</option>
+                <option value="North South University (NSU)">North South University (NSU)</option>
+                <option value="BRAC University (BRAC)">BRAC University (BRAC)</option>
+                <option value="University of Dhaka (DU)">University of Dhaka (DU)</option>
+                <option value="BUET">Bangladesh University of Engineering and Technology (BUET)</option>
+                <option value="AIUB">American International University-Bangladesh (AIUB)</option>
+                <option value="Independent University, Bangladesh (IUB)">Independent University, Bangladesh (IUB)</option>
+                <option value="United International University (UIU)">United International University (UIU)</option>
+                <option value="Islamic University of Technology (IUT)">Islamic University of Technology (IUT)</option>
+                <option value="Jahangirnagar University (JU)">Jahangirnagar University (JU)</option>
+                <option value="Other Recognized University">Other Recognized University (Enter Below)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-gray-300 mb-1">Official Team Name *</label>
+              <input type="text" id="regTeamName" value="Daffodil Thunder FC" placeholder="e.g. Daffodil Thunder FC" class="w-full bg-[#120A2A] border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#9354E9]">
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-gray-300 mb-1">Primary Kit Colour *</label>
+              <input type="text" id="regPrimaryKit" value="Royal Purple & Gold" placeholder="e.g. Navy Blue" class="w-full bg-[#120A2A] border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#9354E9]">
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-gray-300 mb-1">Secondary / Away Kit *</label>
+              <input type="text" id="regAwayKit" value="All White" placeholder="e.g. White" class="w-full bg-[#120A2A] border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#9354E9]">
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-black/40 border border-[#FBCD5D]/30 flex items-start gap-3 mt-4">
+            <input type="checkbox" id="regAuthCheck" checked class="mt-1 h-4 w-4 rounded border-gray-300 text-[#9354E9] focus:ring-[#9354E9]">
+            <label for="regAuthCheck" class="text-xs text-gray-300 leading-relaxed cursor-pointer">
+              <strong>Official Varsity Endorsement Toggle:</strong> I confirm our squad has formal approval from our University Sports Club, Student Affairs, or Physical Education Department to represent the campus in Campus Futsal Champ Season 2.
+            </label>
+          </div>
+
+          <div class="flex justify-end pt-3">
+            <button onclick="goToRegStep(2)" class="px-5 py-2.5 rounded-xl font-heading font-black text-sm text-black bg-[#FBCD5D] hover:bg-[#E6B800] transition flex items-center gap-2">
+              Next: Build Squad List <span>→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: SQUAD BUILDER (DEMO FORM - NO HARD 10-PLAYER CAP STATED AS RULE) -->
+        <div id="regStep-2" class="space-y-4 hidden">
+          <div class="flex justify-between items-center">
+            <h3 class="font-heading font-bold text-lg text-white flex items-center gap-2">
+              <span>👥</span> Step 2: Squad Roster Submission
+            </h3>
+            <span class="text-[11px] font-mono text-gray-400">Demo Roster Input</span>
+          </div>
+          <p class="text-xs text-gray-400">
+            Enter team leadership and player names with institutional Student IDs for matchday digital pass accreditation.
+          </p>
+
+          <div class="space-y-3" id="squadListContainer">
+            <!-- Captain -->
+            <div class="grid grid-cols-12 gap-2 p-3 rounded-xl bg-black/30 border border-[#FBCD5D]/40 items-center">
+              <div class="col-span-12 sm:col-span-3 text-xs font-mono font-bold text-[#FBCD5D] flex items-center gap-1.5">
+                <span>©️</span> Captain (Outfield)
+              </div>
+              <div class="col-span-6 sm:col-span-5">
+                <input type="text" id="squadCapName" value="Tanvir Ahmed (C)" placeholder="Full Name" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              </div>
+              <div class="col-span-6 sm:col-span-4">
+                <input type="text" id="squadCapId" value="DIU-211-15-4921" placeholder="Student ID" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              </div>
+            </div>
+
+            <!-- Goalkeeper -->
+            <div class="grid grid-cols-12 gap-2 p-3 rounded-xl bg-black/30 border border-[#9354E9]/40 items-center">
+              <div class="col-span-12 sm:col-span-3 text-xs font-mono font-bold text-[#9354E9] flex items-center gap-1.5">
+                <span>🧤</span> Goalkeeper (GK)
+              </div>
+              <div class="col-span-6 sm:col-span-5">
+                <input type="text" id="squadGkName" value="Shakib Al Hasan" placeholder="Full Name" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              </div>
+              <div class="col-span-6 sm:col-span-4">
+                <input type="text" id="squadGkId" value="DIU-222-15-8812" placeholder="Student ID" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              </div>
+            </div>
+
+            <!-- Outfield Players List -->
+            <div id="dynamicPlayersList" class="space-y-2">
+              <div class="grid grid-cols-12 gap-2 p-2.5 rounded-xl bg-black/20 border border-white/10 items-center">
+                <div class="col-span-12 sm:col-span-3 text-xs font-mono text-gray-400">Player 3 (Pivot)</div>
+                <div class="col-span-6 sm:col-span-5">
+                  <input type="text" value="Rafsan Amin" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                </div>
+                <div class="col-span-6 sm:col-span-4">
+                  <input type="text" value="DIU-203-15-9931" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-2 p-2.5 rounded-xl bg-black/20 border border-white/10 items-center">
+                <div class="col-span-12 sm:col-span-3 text-xs font-mono text-gray-400">Player 4 (Ala/Winger)</div>
+                <div class="col-span-6 sm:col-span-5">
+                  <input type="text" value="Mahmudul Hasan" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                </div>
+                <div class="col-span-6 sm:col-span-4">
+                  <input type="text" value="DIU-213-15-7740" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-2 p-2.5 rounded-xl bg-black/20 border border-white/10 items-center">
+                <div class="col-span-12 sm:col-span-3 text-xs font-mono text-gray-400">Player 5 (Fixo/Defender)</div>
+                <div class="col-span-6 sm:col-span-5">
+                  <input type="text" value="Zubair Rahman" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                </div>
+                <div class="col-span-6 sm:col-span-4">
+                  <input type="text" value="DIU-211-15-1284" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-2 p-2.5 rounded-xl bg-black/20 border border-white/10 items-center">
+                <div class="col-span-12 sm:col-span-3 text-xs font-mono text-gray-400">Player 6 (Reserve GK)</div>
+                <div class="col-span-6 sm:col-span-5">
+                  <input type="text" value="Naimur Rahman" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                </div>
+                <div class="col-span-6 sm:col-span-4">
+                  <input type="text" value="DIU-221-15-3341" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                </div>
+              </div>
+            </div>
+
+            <!-- Add Player Button -->
+            <button onclick="addDemoPlayerRow()" class="text-xs font-mono text-[#FBCD5D] hover:underline flex items-center gap-1 pt-1">
+              <span>➕</span> Add Additional Squad Member
+            </button>
+          </div>
+
+          <div class="flex justify-between items-center pt-3 border-t border-white/10">
+            <button onclick="goToRegStep(1)" class="px-4 py-2 rounded-xl text-xs font-mono text-gray-400 hover:text-white transition">
+              ← Back to Step 1
+            </button>
+            <button onclick="goToRegStep(3)" class="px-5 py-2.5 rounded-xl font-heading font-black text-sm text-white bg-[#9354E9] hover:bg-[#A855F7] transition flex items-center gap-2">
+              Next: Management Contact <span>→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: MANAGEMENT & INGRESS -->
+        <div id="regStep-3" class="space-y-4 hidden">
+          <h3 class="font-heading font-bold text-lg text-white flex items-center gap-2">
+            <span>📞</span> Step 3: Team Management & Dispatch Ingress
+          </h3>
+          <p class="text-xs text-gray-400">
+            Tournament committee operational contact for match schedule alerts, jersey color resolution, and emergency notices.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-mono text-gray-300 mb-1">Team Manager / Sports Officer Name *</label>
+              <input type="text" id="regManagerName" value="Kazi Mehedi Hasan" placeholder="Full Name" class="w-full bg-[#120A2A] border border-white/20 rounded-xl px-3 py-2 text-sm text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-gray-300 mb-1">Primary WhatsApp Mobile *</label>
+              <input type="text" id="regManagerPhone" value="01711-002233" placeholder="017XX-XXXXXX" class="w-full bg-[#120A2A] border border-white/20 rounded-xl px-3 py-2 text-sm text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-gray-300 mb-1">Official Varsity / Club Email *</label>
+              <input type="email" id="regManagerEmail" value="futsal.club@daffodilvarsity.edu.bd" placeholder="email@university.edu.bd" class="w-full bg-[#120A2A] border border-white/20 rounded-xl px-3 py-2 text-sm text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-gray-300 mb-1">Coach / Faculty Advisor (Optional)</label>
+              <input type="text" id="regCoachName" value="Md. Farhad Hossain (Sports Officer)" placeholder="Full Name" class="w-full bg-[#120A2A] border border-white/20 rounded-xl px-3 py-2 text-sm text-white">
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center pt-3 border-t border-white/10">
+            <button onclick="goToRegStep(2)" class="px-4 py-2 rounded-xl text-xs font-mono text-gray-400 hover:text-white transition">
+              ← Back to Squad List
+            </button>
+            <button onclick="submitDemoRegistration()" class="px-6 py-2.5 rounded-xl font-heading font-black text-sm text-black bg-gradient-to-r from-[#FBCD5D] to-[#9354E9] hover:opacity-90 transition shadow-lg flex items-center gap-2">
+              <span>🚀</span> Submit Registration (Generate Pass)
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 4: CONFIRMATION & DIGITAL PASS GENERATION -->
+        <div id="regStep-4" class="space-y-6 hidden text-center py-4">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FBCD5D] to-[#9354E9] flex items-center justify-center text-3xl shadow-xl mx-auto mb-2">
+            🏆
+          </div>
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBCD5D]/20 text-[#FBCD5D] text-xs font-mono font-bold uppercase mb-2">
+              PROTOTYPE — DEMO REGISTRATION CONFIRMED
+            </div>
+            <h3 class="font-heading font-black text-2xl sm:text-3xl text-white">
+              Registration Recorded Successfully!
+            </h3>
+            <p class="text-xs text-gray-400 font-mono mt-1">
+              Accreditation Docket Reference: <strong id="confRefId" class="text-[#FBCD5D]">CFC2-REG-8492</strong>
+            </p>
+          </div>
+
+          <!-- Generated Team Card -->
+          <div class="max-w-md mx-auto text-left p-5 rounded-2xl bg-black/50 border border-[#9354E9]/40 space-y-3 font-mono text-xs">
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+              <span class="text-gray-400">Campus:</span>
+              <strong id="confUniversity" class="text-white">Daffodil International University</strong>
+            </div>
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+              <span class="text-gray-400">Team:</span>
+              <strong id="confTeam" class="text-[#FBCD5D]">Daffodil Thunder FC</strong>
+            </div>
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+              <span class="text-gray-400">Status:</span>
+              <span class="text-[#FBCD5D] bg-[#FBCD5D]/15 px-2 py-0.5 rounded font-bold">PENDING VARSITY AUTHENTICATION (DEMO)</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-400">Match Centre Access:</span>
+              <span class="text-[#9354E9] font-bold">Digital Player Passes Pending Verification</span>
+            </div>
+          </div>
+
+          <div class="flex justify-center gap-3 pt-2">
+            <button onclick="goToRegStep(1)" class="px-4 py-2 rounded-xl text-xs font-mono text-gray-400 hover:text-white transition">
+              ← Submit Another Demo
+            </button>
+            <button onclick="switchTab('format')" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs text-black bg-[#FBCD5D] hover:bg-[#E6B800] transition">
+              Explore Format & 12 Groups →
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SURFACE 2: FORMAT & DAY 1–6 RHYTHM + BDT 4.5L PRIZE PURSE               -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="tab-format" class="tab-content hidden space-y-6">
+      
+      <!-- Tournament Structure Overview -->
+      <div class="cfc-card-glow rounded-3xl p-6 sm:p-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <div>
+            <div class="text-xs font-mono text-[#FBCD5D] uppercase tracking-wider font-bold">
+              OFFICIAL TOURNAMENT BLUEPRINT
+            </div>
+            <h2 class="font-heading font-black text-2xl sm:text-3xl text-white mt-1">
+              36 Teams · 51 Matches · 6 Competition Days
+            </h2>
+          </div>
+          <div class="text-xs font-mono bg-[#9354E9]/20 text-[#FBCD5D] px-3 py-1 rounded-full border border-[#9354E9]/30">
+            Futsal Small-Court Regulation
+          </div>
+        </div>
+
+        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-3xl">
+          The competition features 36 university squads divided into 12 groups of 3 teams each. Each team plays 2 group-stage matches. Progression: 12 group champions + 4 best runners-up advance to the 16-team single-elimination knockout phase.
+        </p>
+
+        <!-- Stage Breakdown Flow -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 font-mono text-xs">
+          <div class="p-3.5 rounded-xl bg-black/40 border border-white/10">
+            <div class="text-[#FBCD5D] font-bold">STAGE 1: GROUPS</div>
+            <div class="text-white text-sm font-black mt-1">36 Matches</div>
+            <div class="text-gray-400 text-[10px] mt-0.5">12 Groups × 3 Matches</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/40 border border-white/10">
+            <div class="text-[#9354E9] font-bold">STAGE 2: ROUND OF 16</div>
+            <div class="text-white text-sm font-black mt-1">8 Matches</div>
+            <div class="text-gray-400 text-[10px] mt-0.5">12 Champs + 4 Runners-Up</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/40 border border-white/10">
+            <div class="text-white font-bold">STAGE 3: QUARTERS & SEMIS</div>
+            <div class="text-white text-sm font-black mt-1">6 Matches</div>
+            <div class="text-gray-400 text-[10px] mt-0.5">4 QF + 2 Semi-Finals</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/40 border border-[#FBCD5D]/40">
+            <div class="text-[#FBCD5D] font-bold">STAGE 4: GRAND FINAL</div>
+            <div class="text-[#FBCD5D] text-sm font-black mt-1">1 Match</div>
+            <div class="text-gray-400 text-[10px] mt-0.5">Championship Crown (51 Total)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 1 to Day 6 Match Rhythm (No Invented Calendar Dates) -->
+      <div class="cfc-card rounded-2xl p-6 border border-[#9354E9]/30 space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-heading font-black text-lg text-white flex items-center gap-2">
+            <span>🗓️</span> 6-Day Tournament Rhythm
+          </h3>
+          <span class="text-[11px] font-mono text-[#FBCD5D] bg-[#FBCD5D]/10 px-2 py-0.5 rounded">NO CALENDAR DATES INVENTED</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
+          <div class="p-4 rounded-xl bg-black/30 border border-white/10">
+            <div class="text-[#FBCD5D] font-bold">DAY 1: OPENING CLASHES</div>
+            <div class="text-white text-sm font-black mt-1">Groups A, B, C, D</div>
+            <div class="text-gray-400 text-[11px] mt-2">12 Fixtures · Morning & Afternoon Sessions</div>
+            <div class="text-[10px] text-gray-500 mt-1">Sample Fixture: DIU vs NSU <span class="text-[#FBCD5D]">[SAMPLE]</span></div>
+          </div>
+          <div class="p-4 rounded-xl bg-black/30 border border-white/10">
+            <div class="text-[#FBCD5D] font-bold">DAY 2: MID-STAGE GROUPS</div>
+            <div class="text-white text-sm font-black mt-1">Groups E, F, G, H</div>
+            <div class="text-gray-400 text-[11px] mt-2">12 Fixtures · High-Intensity Group Stage</div>
+            <div class="text-[10px] text-gray-500 mt-1">Sample Fixture: DU vs BUET <span class="text-[#FBCD5D]">[SAMPLE]</span></div>
+          </div>
+          <div class="p-4 rounded-xl bg-black/30 border border-white/10">
+            <div class="text-[#FBCD5D] font-bold">DAY 3: GROUP FINALES</div>
+            <div class="text-white text-sm font-black mt-1">Groups I, J, K, L</div>
+            <div class="text-gray-400 text-[11px] mt-2">12 Fixtures · Best Runners-Up Deciders</div>
+            <div class="text-[10px] text-gray-500 mt-1">Sample Fixture: BUP vs BRAC <span class="text-[#FBCD5D]">[SAMPLE]</span></div>
+          </div>
+          <div class="p-4 rounded-xl bg-black/30 border border-white/10">
+            <div class="text-[#9354E9] font-bold">DAY 4: ROUND OF 16</div>
+            <div class="text-white text-sm font-black mt-1">8 Knockout Matches</div>
+            <div class="text-gray-400 text-[11px] mt-2">Single Elimination Begins · 10+10 min</div>
+            <div class="text-[10px] text-gray-500 mt-1">Match 37 to Match 44 <span class="text-[#FBCD5D]">[SAMPLE]</span></div>
+          </div>
+          <div class="p-4 rounded-xl bg-black/30 border border-white/10">
+            <div class="text-[#9354E9] font-bold">DAY 5: QUARTER-FINALS</div>
+            <div class="text-white text-sm font-black mt-1">4 Knockout Matches</div>
+            <div class="text-gray-400 text-[11px] mt-2">Elite 8 Campus Battle · 10+10 min</div>
+            <div class="text-[10px] text-gray-500 mt-1">Match 45 to Match 48 <span class="text-[#FBCD5D]">[SAMPLE]</span></div>
+          </div>
+          <div class="p-4 rounded-xl bg-black/30 border border-[#FBCD5D]/40">
+            <div class="text-[#FBCD5D] font-bold">DAY 6: SEMIS & GRAND FINAL</div>
+            <div class="text-white text-sm font-black mt-1">3 Championship Matches</div>
+            <div class="text-gray-400 text-[11px] mt-2">SF (12+12m) & Grand Final (15+15m)</div>
+            <div class="text-[10px] text-gray-500 mt-1">Trophy Presentation & Awards <span class="text-[#FBCD5D]">[SAMPLE]</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C1: BDT 4,50,000 PRIZE PURSE ITEM LINES (VERBATIM - NO COMPUTED GAP) -->
+      <div class="cfc-card-gold rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <div>
+            <div class="text-xs font-mono text-[#FBCD5D] uppercase tracking-wider font-bold">
+              OFFICIAL COMMERCIAL LEDGER
+            </div>
+            <h3 class="font-heading font-black text-2xl text-white">
+              BDT 4,50,000 Championship Prize Pool
+            </h3>
+          </div>
+          <div class="text-xs font-mono bg-black/40 border border-[#FBCD5D]/40 text-[#FBCD5D] px-3 py-1 rounded-full font-bold">
+            Locked Purse Total: ৳4,50,000
+          </div>
+        </div>
+
+        <!-- Verbatim Item Lines per C1 Directive -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 font-mono text-xs">
+          <div class="p-3.5 rounded-xl bg-black/50 border border-[#FBCD5D]/50 flex justify-between items-center">
+            <span class="text-gray-300">Champion:</span>
+            <strong class="text-lg text-[#FBCD5D]">৳2,00,000</strong>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/50 border border-white/20 flex justify-between items-center">
+            <span class="text-gray-300">Runner-Up:</span>
+            <strong class="text-lg text-white">৳1,50,000</strong>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/50 border border-white/20 flex justify-between items-center">
+            <span class="text-gray-300">Man of the Match:</span>
+            <strong class="text-base text-[#9354E9]">৳1,00,0/match</strong>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/50 border border-white/20 flex justify-between items-center">
+            <span class="text-gray-300">Semi-Final:</span>
+            <strong class="text-base text-white">৳5,000</strong>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/50 border border-white/20 flex justify-between items-center">
+            <span class="text-gray-300">Man of the Final:</span>
+            <strong class="text-base text-[#FBCD5D]">৳10,000</strong>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/50 border border-white/20 flex justify-between items-center">
+            <span class="text-gray-300">Special awards:</span>
+            <strong class="text-base text-white">৳5,000 each</strong>
+          </div>
+        </div>
+        <p class="text-[11px] font-mono text-gray-400 mt-3 text-center sm:text-left">
+          * Item lines stated verbatim from approved tournament proposal and sponsor deck v2.1.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SURFACE 3: 12-GROUP STANDINGS (SAMPLE DATA LABELLED SAMPLE)             -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="tab-standings" class="tab-content hidden space-y-6">
+      
+      <div class="cfc-card rounded-2xl p-6 border border-[#9354E9]/30">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9354E9]/20 text-[#FBCD5D] text-[10px] font-mono font-bold uppercase">
+              <span>📊</span> OFFICIAL STAGE 1 ENGINE
+            </div>
+            <h2 class="font-heading font-black text-xl sm:text-2xl text-white mt-1">
+              12 Futsal Groups (36 Teams)
+            </h2>
+          </div>
+          <span class="text-xs font-mono bg-black/40 border border-[#FBCD5D]/40 text-[#FBCD5D] px-2.5 py-1 rounded">
+            SAMPLE DATA
+          </span>
+        </div>
+
+        <!-- Group Selector Pills (Wrapped to Prevent Sideways Scroll) -->
+        <div class="pill-wrap-container mb-4" id="groupPillRow">
+          <!-- Dynamically populated Group A to L buttons -->
+        </div>
+
+        <!-- Active Group Table -->
+        <div class="overflow-x-auto rounded-xl border border-white/10">
+          <table class="w-full text-left font-mono text-xs">
+            <thead class="bg-black/60 text-gray-400 border-b border-white/10 uppercase text-[10px]">
+              <tr>
+                <th class="py-2.5 px-3">#</th>
+                <th class="py-2.5 px-3">Team / University</th>
+                <th class="py-2.5 px-2 text-center">P</th>
+                <th class="py-2.5 px-2 text-center">W</th>
+                <th class="py-2.5 px-2 text-center">D</th>
+                <th class="py-2.5 px-2 text-center">L</th>
+                <th class="py-2.5 px-2 text-center">GD</th>
+                <th class="py-2.5 px-3 text-center text-[#FBCD5D]">Pts</th>
+              </tr>
+            </thead>
+            <tbody id="groupTableBody" class="divide-y divide-white/5">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+        <p class="text-[11px] font-mono text-gray-500 mt-2">
+          * 1st place in each group + top 4 best-performing 2nd place squads across all 12 groups advance to Round of 16.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SURFACE 4: KNOCKOUT TREE (R16 -> QF -> SF -> GRAND FINAL)               -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="tab-brackets" class="tab-content hidden space-y-6">
+      
+      <div class="cfc-card-glow rounded-3xl p-6 sm:p-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
+          <div>
+            <div class="text-xs font-mono text-[#FBCD5D] font-bold uppercase">CHAMPIONSHIP BRACKET</div>
+            <h2 class="font-heading font-black text-2xl sm:text-3xl text-white mt-1">
+              Knockout Stage (16 Teams)
+            </h2>
+          </div>
+          <span class="text-xs font-mono bg-black/40 border border-[#FBCD5D]/40 text-[#FBCD5D] px-2.5 py-1 rounded">
+            SAMPLE BRACKET
+          </span>
+        </div>
+
+        <!-- Responsive Knockout Tree Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 font-mono text-xs">
+          
+          <!-- Round of 16 Column -->
+          <div class="space-y-3">
+            <div class="text-[11px] font-bold text-[#9354E9] uppercase border-b border-white/10 pb-1 flex justify-between">
+              <span>Round of 16</span> <span class="text-gray-500">8 Matches</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
+              <div class="text-[10px] text-gray-500">MATCH 37 [SAMPLE]</div>
+              <div class="flex justify-between font-bold text-white"><span>DIU (Winner A)</span> <span>3</span></div>
+              <div class="flex justify-between text-gray-400"><span>IUT (Best 2nd)</span> <span>1</span></div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
+              <div class="text-[10px] text-gray-500">MATCH 38 [SAMPLE]</div>
+              <div class="flex justify-between font-bold text-white"><span>NSU (Winner B)</span> <span>2</span></div>
+              <div class="flex justify-between text-gray-400"><span>UIU (Winner C)</span> <span>0</span></div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
+              <div class="text-[10px] text-gray-500">MATCH 39 [SAMPLE]</div>
+              <div class="flex justify-between font-bold text-white"><span>BUP (Winner D)</span> <span>4</span></div>
+              <div class="flex justify-between text-gray-400"><span>AIUB (Winner E)</span> <span>2</span></div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
+              <div class="text-[10px] text-gray-500">MATCH 40 [SAMPLE]</div>
+              <div class="flex justify-between font-bold text-white"><span>DU (Winner F)</span> <span>1</span></div>
+              <div class="flex justify-between text-gray-400"><span>BUET (Winner G)</span> <span>0</span></div>
+            </div>
+          </div>
+
+          <!-- Quarter-Finals Column -->
+          <div class="space-y-3">
+            <div class="text-[11px] font-bold text-[#FBCD5D] uppercase border-b border-white/10 pb-1 flex justify-between">
+              <span>Quarter-Finals</span> <span class="text-gray-500">4 Matches</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
+              <div class="text-[10px] text-gray-500">MATCH 45 [SAMPLE]</div>
+              <div class="flex justify-between font-bold text-white"><span>DIU</span> <span>2</span></div>
+              <div class="flex justify-between text-gray-400"><span>NSU</span> <span>1</span></div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
+              <div class="text-[10px] text-gray-500">MATCH 46 [SAMPLE]</div>
+              <div class="flex justify-between font-bold text-white"><span>BUP</span> <span>3</span></div>
+              <div class="flex justify-between text-gray-400"><span>DU</span> <span>1</span></div>
+            </div>
+          </div>
+
+          <!-- Semi-Finals Column -->
+          <div class="space-y-3">
+            <div class="text-[11px] font-bold text-[#9354E9] uppercase border-b border-white/10 pb-1 flex justify-between">
+              <span>Semi-Finals</span> <span class="text-gray-500">2 Matches</span>
+            </div>
+            <div class="p-3 rounded-xl bg-black/50 border border-[#9354E9]/50 space-y-1">
+              <div class="text-[10px] text-gray-500">MATCH 49 [SAMPLE]</div>
+              <div class="flex justify-between font-bold text-white"><span>DIU</span> <span>2</span></div>
+              <div class="flex justify-between text-gray-400"><span>BRAC</span> <span>1</span></div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/50 border border-[#9354E9]/50 space-y-1">
+              <div class="text-[10px] text-gray-500">MATCH 50 [SAMPLE]</div>
+              <div class="flex justify-between font-bold text-white"><span>BUP</span> <span>1(4)</span></div>
+              <div class="flex justify-between text-gray-400"><span>JU</span> <span>1(3)</span></div>
+            </div>
+          </div>
+
+          <!-- Grand Final Column -->
+          <div class="space-y-3">
+            <div class="text-[11px] font-bold text-[#FBCD5D] uppercase border-b border-white/10 pb-1 flex justify-between">
+              <span>Grand Final</span> <span class="text-[#FBCD5D]">Match 51</span>
+            </div>
+            <div class="p-4 rounded-xl bg-gradient-to-b from-[#241452] to-[#120A2A] border border-[#FBCD5D] space-y-2 shadow-xl">
+              <div class="text-[10px] font-bold text-[#FBCD5D] flex items-center justify-between">
+                <span>🏆 CHAMPIONSHIP MATCH</span> <span>15+15m</span>
+              </div>
+              <div class="flex justify-between font-black text-sm text-white"><span>DIU</span> <span class="text-[#FBCD5D]">CHAMPION</span></div>
+              <div class="flex justify-between text-xs text-gray-300"><span>BUP</span> <span>RUNNER-UP</span></div>
+              <div class="pt-2 border-t border-white/10 text-[10px] text-gray-400">
+                Purse: ৳2,00,000 Winner Take
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SURFACE 6: LIVE MATCH CENTRE (FUTSAL REGULATION FORMAT)                 -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="tab-matchcenter" class="tab-content hidden space-y-6">
+      
+      <div class="cfc-card-glow rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+            <span class="text-xs font-mono font-bold text-red-400 uppercase tracking-wider">MARQUEE MATCH SIMULATION</span>
+          </div>
+          <!-- C4: Locked Match Durations -->
+          <div class="text-xs font-mono text-gray-400 bg-black/40 px-3 py-1 rounded-full border border-white/10">
+            Futsal Durations: Group 7+7 · R16/QF 10+10 · SF 12+12 · Final 15+15 min
+          </div>
+        </div>
+
+        <!-- Scoreboard Display -->
+        <div class="grid grid-cols-12 items-center text-center py-4">
+          <!-- Home Team -->
+          <div class="col-span-5 flex flex-col items-center">
+            <div class="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-[#9354E9]/20 border border-[#9354E9] flex items-center justify-center text-2xl sm:text-3xl mb-2">
+              🦅
+            </div>
+            <h3 class="font-heading font-black text-base sm:text-xl text-white">DIU (Daffodil)</h3>
+            <p class="font-mono text-[11px] text-[#FBCD5D]">S1 Champions</p>
+            <div class="text-[11px] font-mono text-gray-400 mt-2">
+              <div>⚽ Tanvir 11'</div>
+              <div>⚽ Rafsan 18'</div>
+            </div>
+          </div>
+
+          <!-- Score -->
+          <div class="col-span-2 flex flex-col items-center">
+            <div class="font-heading font-black text-3xl sm:text-5xl text-white tracking-tight">
+              2 - 1
+            </div>
+            <span class="text-[10px] font-mono text-[#FBCD5D] bg-[#FBCD5D]/10 px-2 py-0.5 rounded mt-1 font-bold">2nd Half [SAMPLE]</span>
+          </div>
+
+          <!-- Away Team -->
+          <div class="col-span-5 flex flex-col items-center">
+            <div class="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl sm:text-3xl mb-2">
+              🛡️
+            </div>
+            <h3 class="font-heading font-black text-base sm:text-xl text-white">BUP (Professionals)</h3>
+            <p class="font-mono text-[11px] text-gray-400">S1 Finalists</p>
+            <div class="text-[11px] font-mono text-gray-400 mt-2">
+              <div>⚽ Shakib 14'</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demo Stream Frames Notice -->
+        <div class="mt-4 pt-4 border-t border-white/10">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono text-gray-300 font-bold uppercase">⚡ Multi-Camera Live Feeds</span>
+            <span class="text-[10px] font-mono bg-white/10 text-gray-400 px-2 py-0.5 rounded">DEMO STREAM / SAMPLE BROADCAST</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+            <div class="aspect-video bg-black/60 rounded-xl border border-white/10 flex flex-col items-center justify-center p-4 text-center">
+              <span class="text-2xl mb-1">📹</span>
+              <span class="text-white font-bold">Main Court Cam 1 (Tactical High)</span>
+              <span class="text-[10px] text-gray-500 mt-0.5">[DEMO FRAME — Production Ready]</span>
+            </div>
+            <div class="aspect-video bg-black/60 rounded-xl border border-white/10 flex flex-col items-center justify-center p-4 text-center">
+              <span class="text-2xl mb-1">📹</span>
+              <span class="text-white font-bold">Goal-Line Precision Cam (Futsal D)</span>
+              <span class="text-[10px] text-gray-500 mt-0.5">[DEMO FRAME — Production Ready]</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SURFACE 7: SPECTATOR PREDICTOR (NO BRAND COUPONS - PRIZE & HAMPER)      -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="tab-predictor" class="tab-content hidden space-y-6">
+      
+      <div class="cfc-card-gold rounded-3xl p-6 sm:p-8">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#FBCD5D]/20 text-[#FBCD5D] text-xs font-mono font-bold uppercase mb-2">
+            <span>🎯</span> SPECTATOR PREDICTOR ARENA
+          </div>
+          <h2 class="font-heading font-black text-2xl sm:text-3xl text-white">
+            Predict & Win Championship Rewards
+          </h2>
+          <!-- Locked Spectator Reward per Directive -->
+          <p class="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+            University futsal fans predict match winners throughout Day 1–6. <strong class="text-[#FBCD5D]">Top predictor wins prize money + official gift hamper on the final day!</strong>
+          </p>
+        </div>
+
+        <!-- Prediction Voting Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 font-mono text-xs">
+          
+          <div class="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+            <div class="flex justify-between items-center text-[10px] text-gray-400">
+              <span>DAY 1 · MARQUEE OPENER [SAMPLE]</span>
+              <span class="text-[#FBCD5D] font-bold">VOTING OPEN</span>
+            </div>
+            <div class="flex justify-between items-center font-heading font-bold text-sm text-white">
+              <span>DIU (Daffodil)</span>
+              <span class="text-xs font-mono text-gray-400">vs</span>
+              <span>NSU (North South)</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="castDemoVote('pred-1', 'DIU')" class="p-2 rounded-lg bg-white/5 hover:bg-[#9354E9]/30 border border-white/10 hover:border-[#9354E9] text-center transition">
+                <div class="text-white font-bold">DIU</div>
+                <div class="text-[10px] text-gray-400">58%</div>
+              </button>
+              <button onclick="castDemoVote('pred-1', 'DRAW')" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-center transition">
+                <div class="text-white font-bold">DRAW</div>
+                <div class="text-[10px] text-gray-400">14%</div>
+              </button>
+              <button onclick="castDemoVote('pred-1', 'NSU')" class="p-2 rounded-lg bg-white/5 hover:bg-[#9354E9]/30 border border-white/10 hover:border-[#9354E9] text-center transition">
+                <div class="text-white font-bold">NSU</div>
+                <div class="text-[10px] text-gray-400">28%</div>
+              </button>
+            </div>
+            <div id="vote-notice-pred-1" class="text-[11px] text-[#FBCD5D] hidden text-center">
+              ✓ Prediction locked for DIU! Points tallied on final day.
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+            <div class="flex justify-between items-center text-[10px] text-gray-400">
+              <span>DAY 2 · DHAKA DERBY [SAMPLE]</span>
+              <span class="text-[#FBCD5D] font-bold">VOTING OPEN</span>
+            </div>
+            <div class="flex justify-between items-center font-heading font-bold text-sm text-white">
+              <span>DU (Dhaka Univ)</span>
+              <span class="text-xs font-mono text-gray-400">vs</span>
+              <span>BUET (Engineers)</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="castDemoVote('pred-2', 'DU')" class="p-2 rounded-lg bg-white/5 hover:bg-[#9354E9]/30 border border-white/10 hover:border-[#9354E9] text-center transition">
+                <div class="text-white font-bold">DU</div>
+                <div class="text-[10px] text-gray-400">45%</div>
+              </button>
+              <button onclick="castDemoVote('pred-2', 'DRAW')" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-center transition">
+                <div class="text-white font-bold">DRAW</div>
+                <div class="text-[10px] text-gray-400">20%</div>
+              </button>
+              <button onclick="castDemoVote('pred-2', 'BUET')" class="p-2 rounded-lg bg-white/5 hover:bg-[#9354E9]/30 border border-white/10 hover:border-[#9354E9] text-center transition">
+                <div class="text-white font-bold">BUET</div>
+                <div class="text-[10px] text-gray-400">35%</div>
+              </button>
+            </div>
+            <div id="vote-notice-pred-2" class="text-[11px] text-[#FBCD5D] hidden text-center">
+              ✓ Prediction locked for DU! Points tallied on final day.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <!-- SURFACE 8: MINI-CUP PENALTY SHOOTOUT (FUTSAL SMALL COURT ADAPTED)       -->
+    <!-- ─────────────────────────────────────────────────────────────────────── -->
+    <section id="tab-shootout" class="tab-content hidden space-y-4">
+      
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-2">
+        <div>
+          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#9354E9]/20 border border-[#9354E9]/40 text-[#FBCD5D] text-[11px] font-mono font-bold uppercase">
+            <span>⚽</span> Mini-Cup Penalty Shootout // Small Court Arena
+          </div>
+          <h2 class="font-heading font-black text-2xl sm:text-3xl text-white mt-1">
+            Futsal Shootout // <span id="arenaVarsityTitle" class="text-gradient-gold">DIU Kicking</span>
+          </h2>
+        </div>
+
+        <!-- Telemetry HUD -->
+        <div class="flex items-center gap-3 bg-black/60 px-4 py-2 rounded-2xl border border-white/10 font-mono text-xs">
           <div class="flex items-center gap-1.5">
             <span class="text-gray-400">Score:</span>
-            <span id="hudScore" class="font-bold text-xl text-[#00DF89]">0</span>
+            <span id="hudScore" class="font-bold text-xl text-[#FBCD5D]">0</span>
           </div>
           <div class="h-4 w-px bg-white/10"></div>
-          <!-- Consecutive Streak -->
           <div class="flex items-center gap-1.5">
             <span class="text-gray-400">Streak:</span>
-            <span id="hudStreak" class="font-bold text-[#FFB800]">0🔥</span>
+            <span id="hudStreak" class="font-bold text-[#9354E9]">0🔥</span>
           </div>
           <div class="h-4 w-px bg-white/10"></div>
-          <!-- Lives Remaining (3 Strikes) -->
           <div class="flex items-center gap-1.5">
             <span id="hudLives" class="flex gap-1 text-base">⚽⚽⚽</span>
           </div>
         </div>
       </div>
 
-      <!-- Shootout Game Canvas Stage -->
-      <div class="relative w-full max-w-2xl mx-auto rounded-3xl overflow-hidden glass-card-glow border border-white/20 shadow-2xl bg-gradient-to-b from-[#06121E] via-[#0A2619] to-[#041209]">
+      <!-- Shootout Canvas Stage -->
+      <div class="relative w-full max-w-2xl mx-auto rounded-3xl overflow-hidden cfc-card-glow border border-[#9354E9]/40 shadow-2xl bg-gradient-to-b from-[#1E0E42] via-[#120A2A] to-[#0A0518]">
         
-        <!-- Overhead Pitch LED Ad Board -->
-        <div class="absolute top-0 left-0 right-0 z-20 bg-black/60 border-b border-white/10 px-4 py-1.5 flex justify-between items-center text-[11px] font-mono text-gray-300">
+        <!-- Overhead LED Board -->
+        <div class="absolute top-0 left-0 right-0 z-20 bg-black/70 border-b border-white/10 px-4 py-1.5 flex justify-between items-center text-[11px] font-mono text-gray-300">
           <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-[#00DF89] animate-ping"></span>
+            <span class="w-2 h-2 rounded-full bg-[#FBCD5D] animate-ping"></span>
             <span>GOALKEEPER: <strong id="hudGKLevel" class="text-white">ROOKIE AI</strong></span>
           </div>
-          <div class="text-[#00F0FF] font-bold tracking-wider">
-            BANGLALINK 4G ARENA
+          <div class="text-[#FBCD5D] font-bold tracking-wider">
+            CFC SEASON 2 ARENA
           </div>
         </div>
 
-        <!-- HTML5 Canvas -->
-        <canvas id="shootoutCanvas" width="600" height="700" class="w-full h-auto max-h-[72vh] block"></canvas>
+        <!-- Canvas -->
+        <canvas id="shootoutCanvas" width="600" height="700" class="w-full h-auto max-h-[70vh] block"></canvas>
 
-        <!-- Dynamic Game Overlay Banner (GOAL! / SAVED! / GAME OVER) -->
+        <!-- Dynamic Game Overlay Banner -->
         <div id="gameNoticeOverlay" class="absolute inset-0 z-30 pointer-events-none flex flex-col items-center justify-center opacity-0 transition-opacity duration-200">
           <div id="gameNoticeText" class="font-heading font-black text-5xl sm:text-6xl text-white tracking-tight drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] scale-90 transition-transform">
             GOAL!
           </div>
-          <div id="gameNoticeSub" class="font-mono text-xs sm:text-sm text-[#00DF89] bg-black/70 px-4 py-1 rounded-full mt-2 font-bold uppercase tracking-widest border border-white/20">
-            +1 FOR NSU
+          <div id="gameNoticeSub" class="font-mono text-xs sm:text-sm text-[#FBCD5D] bg-black/80 px-4 py-1 rounded-full mt-2 font-bold uppercase tracking-widest border border-white/20">
+            +1 FOR VARSITY
           </div>
         </div>
 
-        <!-- Mobile Touch Swipe Hint Pill (Shown at startup) -->
-        <div id="swipeHintBox" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none bg-black/75 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-xs font-mono text-gray-300 flex items-center gap-2 transition-opacity">
-          <span>👆</span> <strong>Swipe or flick thumb upward</strong> to curve past keeper!
+        <!-- Swipe Hint Pill -->
+        <div id="swipeHintBox" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-xs font-mono text-gray-300 flex items-center gap-2 transition-opacity">
+          <span>👆</span> <strong>Swipe or flick thumb upward</strong> into the futsal net!
         </div>
 
         <!-- Game Over Modal Window -->
-        <div id="gameOverModal" class="absolute inset-0 z-40 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center hidden">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FFB800] to-[#FF8C00] flex items-center justify-center text-3xl shadow-xl mb-3">
+        <div id="gameOverModal" class="absolute inset-0 z-40 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center hidden">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FBCD5D] to-[#9354E9] flex items-center justify-center text-3xl shadow-xl mb-3">
             🏆
           </div>
           <h2 class="font-heading font-black text-3xl sm:text-4xl text-white">Full-Time Shootout!</h2>
@@ -301,528 +1228,567 @@
           <div class="grid grid-cols-2 gap-4 w-full max-w-xs my-6 p-4 rounded-2xl bg-white/5 border border-white/10 font-mono">
             <div>
               <div class="text-[11px] text-gray-400 uppercase">Goals Scored</div>
-              <div id="finalScoreVal" class="font-heading font-black text-3xl text-[#00DF89]">0</div>
+              <div id="finalScoreVal" class="font-heading font-black text-3xl text-[#FBCD5D]">0</div>
             </div>
             <div>
               <div class="text-[11px] text-gray-400 uppercase">Best Streak</div>
-              <div id="finalStreakVal" class="font-heading font-black text-3xl text-[#FFB800]">0🔥</div>
+              <div id="finalStreakVal" class="font-heading font-black text-3xl text-[#9354E9]">0🔥</div>
             </div>
           </div>
 
-          <div class="text-xs font-mono text-gray-300 mb-6 bg-[#00DF89]/10 border border-[#00DF89]/30 px-3 py-1.5 rounded-lg">
-            ⚡ Added <strong id="modalGoalsAdded" class="text-[#00DF89]">0 goals</strong> to <span id="modalVarsityName">NSU's</span> National Total!
-          </div>
-
-          <div class="flex flex-col gap-2.5 w-full max-w-xs">
-            <button onclick="restartShootout()" class="w-full py-3 rounded-xl font-heading font-black text-sm text-black bg-[#00DF89] hover:bg-[#00DF89]/90 transition shadow-[0_0_20px_rgba(0,223,137,0.4)] flex items-center justify-center gap-2">
-              <span>⚽</span> Kick Again
+          <div class="flex gap-3">
+            <button onclick="resetShootoutGame()" class="px-6 py-2.5 rounded-xl font-heading font-black text-sm text-black bg-[#FBCD5D] hover:bg-[#E6B800] transition">
+              Play Again
             </button>
-            <button onclick="generateStoryShareCard()" class="w-full py-2.5 rounded-xl font-heading font-bold text-xs text-white bg-white/10 hover:bg-white/15 border border-white/15 transition flex items-center justify-center gap-2">
-              <span>📲</span> Download 9:16 Story Card
-            </button>
-            <button onclick="switchTab('leaderboard')" class="text-xs font-mono text-gray-400 hover:text-white pt-1">
-              View Campus Battle Standings →
+            <button onclick="generateStoryShareCard()" class="px-5 py-2.5 rounded-xl font-heading font-bold text-sm text-white bg-white/10 hover:bg-white/20 border border-white/20 transition">
+              Share 9:16 Story
             </button>
           </div>
         </div>
+
       </div>
 
-      <!-- Quick University Selector Strip Below Pitch -->
-      <div class="max-w-2xl mx-auto mt-4 p-3 rounded-2xl glass-card flex items-center justify-between gap-2 overflow-x-auto">
-        <span class="text-xs font-mono text-gray-400 flex-shrink-0">Kicking For:</span>
-        <div id="quickVarsityRow" class="flex gap-2 flex-nowrap overflow-x-auto no-scrollbar">
-          <!-- Rendered dynamically -->
-        </div>
-      </div>
+      <!-- Offscreen 9:16 Story Canvas -->
+      <canvas id="storyShareCanvas" width="1080" height="1920" class="hidden"></canvas>
 
     </section>
 
     <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <!-- TAB 2: LIVE CAMPUS BATTLE AGGREGATE LEADERBOARD                        -->
+    <!-- SURFACE 9: PLAYER PASS & INTEGRITY (STUDENT-ID/QR ONLY) -->
     <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <section id="tab-leaderboard" class="tab-content hidden">
-      <div class="max-w-3xl mx-auto">
-        
-        <div class="text-center mb-8">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFB800]/10 border border-[#FFB800]/30 text-[#FFB800] text-xs font-mono font-bold uppercase mb-2">
-            🏆 The Battle of the Campuses
-          </div>
-          <h2 class="font-heading font-black text-3xl sm:text-4xl text-white">
-            Real-Time Campus Scoreboard
-          </h2>
-          <p class="font-body text-sm text-gray-400 mt-2 max-w-lg mx-auto">
-            Every penalty scored in the Mini-Cup adds directly to your university's national tally. Rally your students on WhatsApp and Facebook!
-          </p>
-        </div>
-
-        <!-- Leaderboard Table Card -->
-        <div class="glass-card-glow rounded-3xl p-5 sm:p-8">
-          <div class="flex justify-between items-center pb-4 border-b border-white/10 text-xs font-mono text-gray-400">
-            <span>CAMPUS / UNIVERSITY</span>
-            <div class="flex gap-8">
-              <span>CONTRIBUTORS</span>
-              <span>TOTAL GOALS</span>
+    <section id="tab-roster" class="tab-content hidden space-y-6">
+      
+      <div class="cfc-card rounded-2xl p-6 border border-[#9354E9]/30">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9354E9]/20 text-[#FBCD5D] text-[10px] font-mono font-bold uppercase">
+              <span>🪪</span> INTEGRITY & VERIFICATION ARCHITECTURE
             </div>
-          </div>
-
-          <div id="campusLeaderboardList" class="divide-y divide-white/5">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-
-        <!-- Social Viral CTA -->
-        <div class="mt-8 p-6 rounded-3xl bg-gradient-to-r from-[#0E1B2E] via-[#0A2619] to-[#0E1B2E] border border-white/15 text-center">
-          <h3 class="font-heading font-bold text-xl text-white mb-2">Rally Your University Batch!</h3>
-          <p class="text-xs sm:text-sm text-gray-300 max-w-md mx-auto mb-4 font-body">
-            Share the shootout link on your department and batch groups to push your varsity to #1 on the leaderboard.
-          </p>
-          <button onclick="copyTournamentLink()" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs text-black bg-[#00DF89] hover:bg-[#00DF89]/90 transition shadow-lg inline-flex items-center gap-2">
-            <span>📋</span> Copy Shootout Link
-          </button>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <!-- TAB 3: LIVE TOURNAMENT MATCH CENTER                                     -->
-    <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <section id="tab-matchcenter" class="tab-content hidden">
-      <div class="max-w-4xl mx-auto space-y-6">
-        
-        <!-- Headline Live Derby Showcase -->
-        <div class="glass-card-glow rounded-3xl p-6 sm:p-8 relative overflow-hidden">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-              <span class="text-xs font-mono font-bold text-red-400 uppercase tracking-wider">LIVE MARQUEE DERBY • 72'</span>
-            </div>
-            <div class="text-xs font-mono text-gray-400">
-              Bashundhara Sports Arena // Floodlit Pitch 1
-            </div>
-          </div>
-
-          <!-- Scoreboard Display -->
-          <div class="grid grid-cols-12 items-center text-center py-4">
-            <!-- Home Team -->
-            <div class="col-span-5 flex flex-col items-center">
-              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#002D62] border-2 border-white/20 flex items-center justify-center text-3xl sm:text-4xl shadow-xl mb-2">
-                🦅
-              </div>
-              <h3 class="font-heading font-black text-lg sm:text-2xl text-white">NORTH SOUTH (NSU)</h3>
-              <p class="font-mono text-xs text-gray-400">The Earthquakes</p>
-              <div class="text-[11px] font-mono text-gray-400 mt-2">
-                <div>⚽ Tanvir '24</div>
-                <div>⚽ Rafsan '58</div>
-              </div>
-            </div>
-
-            <!-- Score -->
-            <div class="col-span-2 flex flex-col items-center">
-              <div class="font-heading font-black text-4xl sm:text-6xl text-white tracking-tight">
-                2 - 1
-              </div>
-              <span class="text-xs font-mono text-[#00DF89] bg-[#00DF89]/10 px-2 py-0.5 rounded mt-1 font-bold">2nd Half</span>
-            </div>
-
-            <!-- Away Team -->
-            <div class="col-span-5 flex flex-col items-center">
-              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#D32F2F] border-2 border-white/20 flex items-center justify-center text-3xl sm:text-4xl shadow-xl mb-2">
-                🛡️
-              </div>
-              <h3 class="font-heading font-black text-lg sm:text-2xl text-white">BRAC UNIVERSITY</h3>
-              <p class="font-mono text-xs text-gray-400">The Knights</p>
-              <div class="text-[11px] font-mono text-gray-400 mt-2">
-                <div>⚽ Shakib '41</div>
-                <div class="text-red-400">🟥 Alif '67</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Live Event Timeline -->
-          <div class="mt-6 pt-6 border-t border-white/10 font-mono text-xs text-gray-300 space-y-2">
-            <div class="flex items-center gap-3">
-              <span class="text-[#00DF89] font-bold">67' MIN</span>
-              <span>🟥 <strong>RED CARD (BRAC)</strong>: Second yellow for dangerous tackle outside the penalty box.</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="text-[#00DF89] font-bold">58' MIN</span>
-              <span>⚽ <strong>GOAL (NSU)</strong>: Rafsan curling strike into top right corner after one-two pass!</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Upcoming Marquee Fixtures -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          <div class="glass-card rounded-2xl p-5 border border-white/10 hover:border-white/20 transition">
-            <div class="flex justify-between items-center text-xs font-mono text-gray-400 mb-3">
-              <span>TODAY • 5:00 PM BST</span>
-              <span class="text-[#FFB800] font-bold">GROUP A CLASH</span>
-            </div>
-            <div class="flex justify-between items-center font-heading font-black text-lg">
-              <span>🏛️ DU (Dhaka Univ)</span>
-              <span class="text-sm font-mono text-gray-400">vs</span>
-              <span>⚡ BUET</span>
-            </div>
-            <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs font-mono text-gray-400">
-              <span>Countdown: <strong>01h 12m</strong></span>
-              <button onclick="switchTab('shootout')" class="text-[#00DF89] hover:underline font-bold">Play Shootout →</button>
-            </div>
-          </div>
-
-          <div class="glass-card rounded-2xl p-5 border border-white/10 hover:border-white/20 transition">
-            <div class="flex justify-between items-center text-xs font-mono text-gray-400 mb-3">
-              <span>TODAY • 7:00 PM BST</span>
-              <span class="text-[#00F0FF] font-bold">NIGHT DERBY</span>
-            </div>
-            <div class="flex justify-between items-center font-heading font-black text-lg">
-              <span>⚙️ IUT (Gazipur)</span>
-              <span class="text-sm font-mono text-gray-400">vs</span>
-              <span>🎓 AIUB</span>
-            </div>
-            <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs font-mono text-gray-400">
-              <span>Countdown: <strong>03h 12m</strong></span>
-              <button onclick="switchTab('shootout')" class="text-[#00DF89] hover:underline font-bold">Play Shootout →</button>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <!-- TAB 4: GROUP STANDINGS & TOURNAMENT BRACKETS                            -->
-    <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <section id="tab-brackets" class="tab-content hidden">
-      <div class="max-w-4xl mx-auto space-y-8">
-        
-        <div>
-          <h2 class="font-heading font-black text-2xl text-white mb-4">Official Group Standings</h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Group A -->
-            <div class="glass-card rounded-2xl p-5">
-              <h3 class="font-heading font-bold text-base text-[#00DF89] mb-3 flex items-center justify-between">
-                <span>GROUP A</span>
-                <span class="text-xs font-mono text-gray-400">Top 2 Qualify</span>
-              </h3>
-              <table class="w-full text-left font-mono text-xs">
-                <thead>
-                  <tr class="text-gray-400 border-b border-white/10 pb-2">
-                    <th class="py-2">TEAM</th>
-                    <th>P</th>
-                    <th>W</th>
-                    <th>GD</th>
-                    <th>PTS</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-white/5 text-gray-300">
-                  <tr class="font-bold text-white"><td class="py-2.5">1. 🦅 NSU</td><td>3</td><td>2</td><td>+4</td><td class="text-[#00DF89]">7</td></tr>
-                  <tr><td class="py-2.5">2. 🛡️ BRAC</td><td>3</td><td>2</td><td>+2</td><td class="text-[#00DF89]">6</td></tr>
-                  <tr><td class="py-2.5">3. 🌲 JU</td><td>3</td><td>1</td><td>0</td><td>3</td></tr>
-                  <tr><td class="py-2.5">4. 🔷 UIU</td><td>3</td><td>0</td><td>-6</td><td>1</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Group B -->
-            <div class="glass-card rounded-2xl p-5">
-              <h3 class="font-heading font-bold text-base text-[#00F0FF] mb-3 flex items-center justify-between">
-                <span>GROUP B</span>
-                <span class="text-xs font-mono text-gray-400">Top 2 Qualify</span>
-              </h3>
-              <table class="w-full text-left font-mono text-xs">
-                <thead>
-                  <tr class="text-gray-400 border-b border-white/10 pb-2">
-                    <th class="py-2">TEAM</th>
-                    <th>P</th>
-                    <th>W</th>
-                    <th>GD</th>
-                    <th>PTS</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-white/5 text-gray-300">
-                  <tr class="font-bold text-white"><td class="py-2.5">1. 🏛️ DU</td><td>3</td><td>2</td><td>+5</td><td class="text-[#00F0FF]">7</td></tr>
-                  <tr><td class="py-2.5">2. ⚡ BUET</td><td>3</td><td>2</td><td>+3</td><td class="text-[#00F0FF]">6</td></tr>
-                  <tr><td class="py-2.5">3. ⚙️ IUT</td><td>3</td><td>1</td><td>-1</td><td>3</td></tr>
-                  <tr><td class="py-2.5">4. 🎓 AIUB</td><td>3</td><td>0</td><td>-7</td><td>0</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Knockout Bracket Tree -->
-        <div class="glass-card-glow rounded-3xl p-6 sm:p-8">
-          <h2 class="font-heading font-black text-2xl text-white mb-2">Championship Knockout Tree</h2>
-          <p class="font-mono text-xs text-gray-400 mb-6">Semi-Finals & Grand Final at Army Stadium (Floodlit)</p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center font-heading">
-            <!-- Semi Final 1 -->
-            <div class="space-y-3">
-              <div class="text-xs font-mono text-[#00DF89] font-bold">SEMI-FINAL 1</div>
-              <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-sm">
-                <div class="flex justify-between font-bold"><span>🦅 NSU</span> <span class="text-[#00DF89]">—</span></div>
-                <div class="flex justify-between text-gray-400 mt-1"><span>⚡ BUET</span> <span>—</span></div>
-              </div>
-            </div>
-
-            <!-- Grand Final Trophy -->
-            <div class="text-center p-4 rounded-2xl bg-gradient-to-b from-[#FFB800]/20 to-transparent border border-[#FFB800]/30">
-              <div class="text-3xl mb-1">🏆</div>
-              <div class="text-xs font-mono font-bold text-[#FFB800] uppercase">GRAND FINAL</div>
-              <div class="text-xs text-gray-300 mt-1">Nov 14, 2026 • 7:30 PM</div>
-              <div class="text-[11px] font-mono text-gray-400 mt-2">৳5,00,000 Champions Purse</div>
-            </div>
-
-            <!-- Semi Final 2 -->
-            <div class="space-y-3">
-              <div class="text-xs font-mono text-[#00F0FF] font-bold">SEMI-FINAL 2</div>
-              <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-sm">
-                <div class="flex justify-between font-bold"><span>🏛️ DU</span> <span class="text-[#00F0FF]">—</span></div>
-                <div class="flex justify-between text-gray-400 mt-1"><span>🛡️ BRAC</span> <span>—</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <!-- TAB 5: VERIFIED DIGITAL PLAYER PASS (ANTI-RINGER GOVERNANCE)             -->
-    <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <section id="tab-roster" class="tab-content hidden">
-      <div class="max-w-4xl mx-auto space-y-6">
-        
-        <div class="glass-card-glow rounded-3xl p-6 sm:p-8">
-          <div class="max-w-2xl">
-            <span class="px-2.5 py-1 rounded bg-[#00DF89]/10 text-[#00DF89] border border-[#00DF89]/30 text-xs font-mono font-bold uppercase">
-              ANTI-RINGER INTEGRITY GOVERNANCE
-            </span>
-            <h2 class="font-heading font-black text-2xl sm:text-3xl text-white mt-3 mb-2">
-              Verified Digital Player Pass Engine
+            <h2 class="font-heading font-black text-xl sm:text-2xl text-white mt-1">
+              Verified Digital Player Pass
             </h2>
-            <p class="font-body text-xs sm:text-sm text-gray-300 leading-relaxed">
-              In Bangladeshi university football, tournament disputes almost always erupt over "hired outsiders / fake student ringers." GRO10X integrates verified student ID scans, institutional verification, and cryptographic NFC check-in tokens to guarantee 100% genuine varsity squads.
-            </p>
           </div>
+          <!-- C3: Generic Tournament Technology Platform -->
+          <span class="text-xs font-mono bg-black/40 border border-white/10 text-gray-300 px-3 py-1 rounded-full">
+            Official Tournament Technology Platform
+          </span>
         </div>
+
+        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed mb-6">
+          To maintain 100% tournament integrity and prevent non-student ringers, every squad member is accredited via verified institutional Student ID matching and encrypted matchday QR access passes.
+        </p>
 
         <!-- Sample Verified Player Pass Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 font-mono text-xs">
           
-          <!-- Player 1 -->
-          <div class="glass-card rounded-2xl p-4 border border-white/10 relative overflow-hidden">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#002D62] to-[#0A192F] flex items-center justify-center text-2xl border border-white/20">
-                👤
-              </div>
+          <div class="p-4 rounded-2xl bg-black/40 border border-[#FBCD5D]/40 space-y-3">
+            <div class="flex justify-between items-start">
               <div>
-                <h4 class="font-heading font-bold text-base text-white">Tanvir Ahmed</h4>
-                <div class="text-[11px] font-mono text-[#00DF89] font-bold">NSU • FORWARD #10</div>
+                <span class="text-[10px] bg-[#FBCD5D]/20 text-[#FBCD5D] px-2 py-0.5 rounded font-bold">VERIFIED SQUAD</span>
+                <div class="font-heading font-bold text-sm text-white mt-1">Tanvir Ahmed</div>
+                <div class="text-[11px] text-gray-400">Captain · Pivot</div>
+              </div>
+              <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg">
+                ⚽
               </div>
             </div>
-            <div class="space-y-1 text-xs font-mono text-gray-400 bg-white/5 p-2.5 rounded-lg border border-white/5">
-              <div class="flex justify-between"><span>Student ID:</span> <strong class="text-white">2021-3-60-044</strong></div>
-              <div class="flex justify-between"><span>Department:</span> <span>CSE, 9th Term</span></div>
-              <div class="flex justify-between"><span>Status:</span> <span class="text-[#00DF89] font-bold">✓ VERIFIED STUDENT</span></div>
+            <div class="pt-2 border-t border-white/10 space-y-1 text-[11px]">
+              <div class="flex justify-between"><span class="text-gray-400">Campus:</span> <span class="text-white">DIU</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Student ID:</span> <span class="text-[#FBCD5D]">DIU-211-15-4921</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Verification:</span> <span class="text-emerald-400 font-bold">QR Verified ✓</span></div>
             </div>
           </div>
 
-          <!-- Player 2 -->
-          <div class="glass-card rounded-2xl p-4 border border-white/10 relative overflow-hidden">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#990000] to-[#4A0000] flex items-center justify-center text-2xl border border-white/20">
-                👤
-              </div>
+          <div class="p-4 rounded-2xl bg-black/40 border border-white/20 space-y-3">
+            <div class="flex justify-between items-start">
               <div>
-                <h4 class="font-heading font-bold text-base text-white">Shakib Al-Hasan</h4>
-                <div class="text-[11px] font-mono text-[#FFB800] font-bold">DU • MIDFIELD #07</div>
+                <span class="text-[10px] bg-[#9354E9]/20 text-[#9354E9] px-2 py-0.5 rounded font-bold">VERIFIED SQUAD</span>
+                <div class="font-heading font-bold text-sm text-white mt-1">Shakib Al Hasan</div>
+                <div class="text-[11px] text-gray-400">Goalkeeper</div>
+              </div>
+              <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg">
+                🧤
               </div>
             </div>
-            <div class="space-y-1 text-xs font-mono text-gray-400 bg-white/5 p-2.5 rounded-lg border border-white/5">
-              <div class="flex justify-between"><span>Student ID:</span> <strong class="text-white">DU-IBA-18902</strong></div>
-              <div class="flex justify-between"><span>Department:</span> <span>IBA, 27th Batch</span></div>
-              <div class="flex justify-between"><span>Status:</span> <span class="text-[#00DF89] font-bold">✓ VERIFIED STUDENT</span></div>
+            <div class="pt-2 border-t border-white/10 space-y-1 text-[11px]">
+              <div class="flex justify-between"><span class="text-gray-400">Campus:</span> <span class="text-white">DIU</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Student ID:</span> <span class="text-[#FBCD5D]">DIU-222-15-8812</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Verification:</span> <span class="text-emerald-400 font-bold">QR Verified ✓</span></div>
             </div>
           </div>
 
-          <!-- Player 3 -->
-          <div class="glass-card rounded-2xl p-4 border border-white/10 relative overflow-hidden">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0A192F] to-[#040C18] flex items-center justify-center text-2xl border border-white/20">
-                👤
-              </div>
+          <div class="p-4 rounded-2xl bg-black/40 border border-white/20 space-y-3">
+            <div class="flex justify-between items-start">
               <div>
-                <h4 class="font-heading font-bold text-base text-white">Faheem Rahman</h4>
-                <div class="text-[11px] font-mono text-[#00F0FF] font-bold">BUET • DEFENDER #04</div>
+                <span class="text-[10px] bg-[#9354E9]/20 text-[#9354E9] px-2 py-0.5 rounded font-bold">VERIFIED SQUAD</span>
+                <div class="font-heading font-bold text-sm text-white mt-1">Farhan Kabir</div>
+                <div class="text-[11px] text-gray-400">Winger / Ala</div>
+              </div>
+              <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg">
+                🏃
               </div>
             </div>
-            <div class="space-y-1 text-xs font-mono text-gray-400 bg-white/5 p-2.5 rounded-lg border border-white/5">
-              <div class="flex justify-between"><span>Student ID:</span> <strong class="text-white">BUET-EEE-190412</strong></div>
-              <div class="flex justify-between"><span>Department:</span> <span>EEE, Level 4</span></div>
-              <div class="flex justify-between"><span>Status:</span> <span class="text-[#00DF89] font-bold">✓ VERIFIED STUDENT</span></div>
+            <div class="pt-2 border-t border-white/10 space-y-1 text-[11px]">
+              <div class="flex justify-between"><span class="text-gray-400">Campus:</span> <span class="text-white">NSU</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Student ID:</span> <span class="text-[#FBCD5D]">NSU-203-12-7711</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Verification:</span> <span class="text-emerald-400 font-bold">QR Verified ✓</span></div>
             </div>
           </div>
 
         </div>
-
       </div>
+
     </section>
 
     <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <!-- TAB 6: SPONSOR MONETIZATION & FAN MATCH PREDICTOR                       -->
+    <!-- SURFACE 10: PARTNERS SECTION (SPONSOR DECK "PARTNER DOOR" MIRROR)       -->
     <!-- ─────────────────────────────────────────────────────────────────────── -->
-    <section id="tab-sponsors" class="tab-content hidden">
-      <div class="max-w-3xl mx-auto space-y-6">
-        
-        <div class="text-center mb-6">
-          <span class="text-xs font-mono font-bold uppercase text-[#00DF89] tracking-wider">Tournament Commercialization</span>
-          <h2 class="font-heading font-black text-3xl text-white mt-1">Official Fan Match Predictor</h2>
-          <p class="font-body text-xs sm:text-sm text-gray-400 mt-1">
-            Pick today's derby winner to unlock instant sponsor discount vouchers on bKash, Mojo, and Banglalink!
+    <section id="tab-partners" class="tab-content hidden space-y-6">
+      
+      <div class="cfc-card-glow rounded-3xl p-6 sm:p-8">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#FBCD5D]/20 text-[#FBCD5D] text-xs font-mono font-bold uppercase mb-2">
+            <span>🤝</span> SPONSORSHIP ARCHITECTURE
+          </div>
+          <h2 class="font-heading font-black text-2xl sm:text-3xl text-white">
+            The Partner Door — Season 2 Commercial Ladder
+          </h2>
+          <p class="text-xs sm:text-sm text-gray-300 mt-2">
+            Official tier asking rates (+VAT) mirroring the Season 2 Sponsor Pitch Deck. Every category is open for primary brand association.
           </p>
         </div>
 
-        <div class="glass-card-glow rounded-3xl p-6 sm:p-8">
-          <div class="text-center mb-6">
-            <span class="text-xs font-mono text-gray-400">TODAY'S 5:00 PM DERBY</span>
-            <div class="font-heading font-black text-2xl text-white mt-1">
-              🏛️ Dhaka University (DU) vs ⚡ BUET
+        <!-- Sponsor Ladder Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 font-mono text-xs">
+          
+          <!-- Title Sponsor -->
+          <div class="p-5 rounded-2xl bg-black/50 border-2 border-[#FBCD5D] space-y-2 relative overflow-hidden">
+            <div class="flex justify-between items-center">
+              <span class="text-[#FBCD5D] font-bold text-sm uppercase">1. TITLE SPONSOR</span>
+              <span class="text-lg font-black text-[#FBCD5D]">৳25,00,000</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Highest echelon brand naming across tournament trophy, arena LED perimeter, broadcast watermarks, and kits.
+            </p>
+            <div class="p-3 rounded-xl bg-white/5 border border-dashed border-[#FBCD5D]/60 text-center text-gray-300 font-bold">
+              [ YOUR BRAND HERE ]
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-3 mb-6">
-            <button onclick="submitPrediction('DU')" class="predict-btn p-4 rounded-2xl bg-white/5 hover:bg-[#00DF89]/20 border border-white/10 hover:border-[#00DF89] transition text-center font-heading font-bold text-sm">
-              <div>🏛️ DU Wins</div>
-              <div class="text-[11px] font-mono text-gray-400 mt-1">54% Votes</div>
-            </button>
-            <button onclick="submitPrediction('DRAW')" class="predict-btn p-4 rounded-2xl bg-white/5 hover:bg-[#FFB800]/20 border border-white/10 hover:border-[#FFB800] transition text-center font-heading font-bold text-sm">
-              <div>🤝 Draw</div>
-              <div class="text-[11px] font-mono text-gray-400 mt-1">18% Votes</div>
-            </button>
-            <button onclick="submitPrediction('BUET')" class="predict-btn p-4 rounded-2xl bg-white/5 hover:bg-[#00F0FF]/20 border border-white/10 hover:border-[#00F0FF] transition text-center font-heading font-bold text-sm">
-              <div>⚡ BUET Wins</div>
-              <div class="text-[11px] font-mono text-gray-400 mt-1">28% Votes</div>
-            </button>
+          <!-- Powered By -->
+          <div class="p-5 rounded-2xl bg-black/50 border border-[#9354E9] space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-[#9354E9] font-bold text-sm uppercase">2. POWERED BY SPONSOR</span>
+              <span class="text-lg font-black text-white">৳20,00,000</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Secondary title integration across digital fan predictors, match centre graphics, and official anthem clips.
+            </p>
+            <div class="p-3 rounded-xl bg-white/5 border border-dashed border-white/20 text-center text-gray-300 font-bold">
+              [ YOUR BRAND HERE ]
+            </div>
           </div>
 
-          <div id="predictionResultBox" class="hidden p-4 rounded-xl bg-[#00DF89]/10 border border-[#00DF89]/30 text-center font-mono text-xs">
-            <span class="text-[#00DF89] font-bold">🎉 PREDICTION LOCKED!</span>
-            <p class="text-gray-300 mt-1">You unlocked a 20% discount coupon: <strong class="text-white">CAMPUSCUP20</strong> for Mojo & Banglalink.</p>
+          <!-- In Association With -->
+          <div class="p-5 rounded-2xl bg-black/50 border border-white/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-white font-bold text-sm uppercase">3. IN ASSOCIATION WITH</span>
+              <span class="text-lg font-black text-white">৳15,00,000</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Stage 2 & Knockout bracket branding, spectator voting integration, and press conference backdrops.
+            </p>
+            <div class="p-3 rounded-xl bg-white/5 border border-dashed border-white/20 text-center text-gray-300 font-bold">
+              [ YOUR BRAND HERE ]
+            </div>
           </div>
+
+          <!-- Co-Sponsor -->
+          <div class="p-5 rounded-2xl bg-black/50 border border-white/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-white font-bold text-sm uppercase">4. CO-SPONSOR</span>
+              <span class="text-lg font-black text-white">৳11,00,000</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              On-court signage, university campus activation booths, and digital player-of-the-match awards.
+            </p>
+            <div class="p-3 rounded-xl bg-white/5 border border-dashed border-white/20 text-center text-gray-300 font-bold">
+              [ YOUR BRAND HERE ]
+            </div>
+          </div>
+
+          <!-- Official Partners (From 8 Lakh) -->
+          <div class="p-5 rounded-2xl bg-black/50 border border-white/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-white font-bold text-sm uppercase">5. OFFICIAL PARTNERS</span>
+              <span class="text-lg font-black text-white">FROM ৳8,00,000</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Category-exclusive partnership tiers (Hydration, Footwear, Ball Partner, Health Partner).
+            </p>
+            <div class="p-3 rounded-xl bg-white/5 border border-dashed border-white/20 text-center text-gray-300 font-bold">
+              [ YOUR BRAND HERE ]
+            </div>
+          </div>
+
+          <!-- Anti-Tobacco Partner -->
+          <div class="p-5 rounded-2xl bg-black/50 border border-white/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-emerald-400 font-bold text-sm uppercase">6. ANTI-TOBACCO PARTNER</span>
+              <span class="text-sm font-bold text-gray-400">SPECIAL CATEGORY</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Youth health, smoke-free sports lifestyle campaigning, and dedicated fair-play award sponsorship.
+            </p>
+            <div class="p-3 rounded-xl bg-white/5 border border-dashed border-white/20 text-center text-gray-300 font-bold">
+              [ YOUR BRAND HERE ]
+            </div>
+          </div>
+
+          <!-- Streaming Partner -->
+          <div class="p-5 rounded-2xl bg-black/50 border border-white/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-cyan-400 font-bold text-sm uppercase">7. STREAMING PARTNER</span>
+              <span class="text-sm font-bold text-gray-400">BROADCAST CATEGORY</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Digital live broadcast exclusivity, OTT mobile streaming, and viral social match highlights integration.
+            </p>
+            <div class="p-3 rounded-xl bg-white/5 border border-dashed border-white/20 text-center text-gray-300 font-bold">
+              [ YOUR BRAND HERE ]
+            </div>
+          </div>
+
+          <!-- Technology Partner (C3: FILLED IN EXACTLY ONCE ON THE WHOLE PAGE) -->
+          <div class="p-5 rounded-2xl bg-[#1E0E42] border-2 border-[#9354E9] space-y-2 shadow-lg">
+            <div class="flex justify-between items-center">
+              <span class="text-[#FBCD5D] font-bold text-sm uppercase">8. TECHNOLOGY PARTNER</span>
+              <span class="text-xs font-mono bg-[#9354E9]/30 text-white px-2 py-0.5 rounded font-bold">OFFICIAL</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              Tournament OS, team registration architecture, digital player pass verification, and spectator interactive platform.
+            </p>
+            <div class="p-3 rounded-xl bg-[#120A2A] border border-[#9354E9] text-center font-heading font-black text-white text-base tracking-wider">
+              GRO10X
+            </div>
+          </div>
+
         </div>
 
-        <!-- Perimeter Sponsor Board Showcase -->
-        <div class="glass-card rounded-2xl p-6 border border-white/10">
-          <div class="text-xs font-mono text-gray-400 uppercase mb-4">Official Tournament Partners</div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center font-heading font-bold text-sm text-gray-300">
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">📶 Banglalink 4G</div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">💳 bKash Pay</div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">🥤 Mojo Cola</div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">⚡ GRO10X OS</div>
+        <!-- Enquiries Block (Verbatim per Directive) -->
+        <div class="mt-8 pt-6 border-t border-white/10 text-center font-mono space-y-1">
+          <div class="text-xs text-gray-400 uppercase tracking-widest font-bold">
+            PARTNERSHIP ENQUIRIES · 01300-226959 · CAMPUSFUTSALCHAMP.COM
+          </div>
+          <div class="text-[10px] text-gray-500">
+            All tier pricing is subject to standard government VAT (+VAT).
           </div>
         </div>
 
       </div>
+
     </section>
 
   </main>
 
   <!-- ========================================================================= -->
-  <!-- 5. VARSITY AFFILIATION MODAL PICKER                                       -->
+  <!-- 5. FOOTER & ENQUIRIES NOTICE                                              -->
   <!-- ========================================================================= -->
-  <div id="varsityModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="glass-card-glow rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[85vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h3 class="font-heading font-black text-2xl text-white">Choose Your University</h3>
-          <p class="font-mono text-xs text-gray-400">All shootout goals will add to your campus tally</p>
-        </div>
-        <button onclick="closeVarsityPicker()" class="text-gray-400 hover:text-white text-xl">✕</button>
-      </div>
-
-      <div id="varsityGridList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 my-4">
-        <!-- Rendered dynamically -->
-      </div>
+  <footer class="mt-12 border-t border-[#9354E9]/20 bg-[#0A0518] py-8 px-4 text-center text-xs font-mono text-gray-400 space-y-2">
+    <div class="flex items-center justify-center gap-2 text-white font-heading font-black text-sm">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBCD5D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+      </svg>
+      <span>CAMPUS FUTSAL CHAMPIONSHIP // SEASON 2</span>
     </div>
-  </div>
-
-  <!-- Offscreen 9:16 Canvas for Viral Story Generation -->
-  <canvas id="storyShareCanvas" width="1080" height="1920" style="display:none;"></canvas>
-
-  <!-- ========================================================================= -->
-  <!-- 6. FOOTER & CONGLOMERATE LEGAL SPEC                                       -->
-  <!-- ========================================================================= -->
-  <footer class="border-t border-white/10 py-8 px-4 sm:px-8 bg-[#040609] text-gray-500 font-mono text-xs relative z-10 mt-12">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-      <div class="flex items-center gap-2.5">
-        <span class="w-6 h-6 rounded bg-[#00DF89] text-black font-black flex items-center justify-center text-xs font-heading">
-          ⚽
-        </span>
-        <span>CAMPUS CUP 2026 // GRO10X TOURNAMENT OPERATING SYSTEM</span>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <a href="/p/campus-cup" class="text-[#00DF89] hover:underline font-bold">Technology Proposal (/p/campus-cup)</a>
-        <a href="/prototypes" class="hover:text-white transition">Prototype Showroom</a>
-      </div>
-
-      <div class="text-gray-600 text-[11px]">
-        HTML5 Touch Canvas • Web Audio API Synthesizer • Anti-Ringer Player Ledger
-      </div>
+    <div class="text-gray-500">
+      PARTNERSHIP ENQUIRIES · 01300-226959 · CAMPUSFUTSALCHAMP.COM
+    </div>
+    <div class="text-[10px] text-gray-600 pt-2">
+      Prototype Technology Demonstration · Campus Futsal Champ Season 2 (Dec 2026 – Jan 2027 Window)
     </div>
   </footer>
 
   <!-- ========================================================================= -->
-  <!-- 7. COMPLETE SHOOTOUT PHYSICS & TOURNAMENT ENGINE SCRIPT                   -->
+  <!-- 6. VARSITY PICKER MODAL                                                   -->
+  <!-- ========================================================================= -->
+  <div id="varsityModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="cfc-card-glow max-w-md w-full rounded-3xl p-6 border border-[#9354E9]/50 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-heading font-black text-lg text-white">Select Your University</h3>
+        <button onclick="closeVarsityPicker()" class="text-gray-400 hover:text-white text-lg">✕</button>
+      </div>
+      <p class="text-xs font-mono text-gray-300">
+        Choose your campus allegiance to customize the live shootout arena and matchday telemetry:
+      </p>
+      <div class="grid grid-cols-2 gap-2 font-mono text-xs" id="varsityOptionsGrid">
+        <!-- Dynamically injected -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 7. APPLICATION LOGIC, ENGINES & SYNTHESIZER SCRIPT                        -->
   <!-- ========================================================================= -->
   <script>
-    // ── 1. University Definitions & Initial Leaderboard ─────────────────────
-    const UNIVERSITIES = [
-      { id: 'nsu', name: 'North South University', short: 'NSU', badge: '🦅', color: '#002D62', baseGoals: 18420, baseContributors: 1420 },
-      { id: 'du', name: 'Dhaka University', short: 'DU', badge: '🏛️', color: '#990000', baseGoals: 17980, baseContributors: 1390 },
-      { id: 'buet', name: 'BUET', short: 'BUET', badge: '⚡', color: '#0A192F', baseGoals: 15200, baseContributors: 1180 },
-      { id: 'brac', name: 'BRAC University', short: 'BRAC', badge: '🛡️', color: '#D32F2F', baseGoals: 14890, baseContributors: 1140 },
-      { id: 'iut', name: 'Islamic Univ of Tech', short: 'IUT', badge: '⚙️', color: '#006633', baseGoals: 12340, baseContributors: 950 },
-      { id: 'aiub', name: 'AIUB', short: 'AIUB', badge: '🎓', color: '#0056B3', baseGoals: 11850, baseContributors: 910 },
-      { id: 'ju', name: 'Jahangirnagar Univ', short: 'JU', badge: '🌲', color: '#1B4D3E', baseGoals: 9720, baseContributors: 740 },
-      { id: 'uiu', name: 'United International Univ', short: 'UIU', badge: '🔷', color: '#E65100', baseGoals: 8430, baseContributors: 650 },
-      { id: 'bup', name: 'BUP', short: 'BUP', badge: '🎖️', color: '#3D4C2B', baseGoals: 7910, baseContributors: 610 }
+    // ── Varsity Allegiance Data Model ──────────────────────────────────────────
+    const VARSITY_LIST = [
+      { id: 'diu', name: 'DIU (Daffodil)', color: '#9354E9', mascot: 'S1 Champion 🏆' },
+      { id: 'bup', name: 'BUP (Professionals)', color: '#00A86B', mascot: 'S1 Finalist 🛡️' },
+      { id: 'nsu', name: 'NSU (North South)', color: '#002D62', mascot: 'Earthquakes 🦅' },
+      { id: 'du', name: 'DU (Dhaka Univ)', color: '#800020', mascot: 'Heritage 🏛️' },
+      { id: 'buet', name: 'BUET (Engineers)', color: '#B22222', mascot: 'Titans ⚡' },
+      { id: 'brac', name: 'BRAC University', color: '#D32F2F', mascot: 'Knights 🛡️' },
+      { id: 'aiub', name: 'AIUB', color: '#0047AB', mascot: 'Gladiators 🎓' },
+      { id: 'iut', name: 'IUT (Gazipur)', color: '#2E8B57', mascot: 'Mechanics ⚙️' },
+      { id: 'iub', name: 'IUB (Independent)', color: '#FF8C00', mascot: 'Hawks 🦅' },
+      { id: 'uiu', name: 'UIU (United)', color: '#FF4500', mascot: 'Warriors 🔥' },
+      { id: 'ju', name: 'JU (Jahangirnagar)', color: '#4B0082', mascot: 'Green Tigers 🐅' }
     ];
 
-    // Read or initialize campus aggregate scores from localStorage
-    function getStoredCampusScores() {
-      const stored = localStorage.getItem('campus_cup_scores_v1');
-      if (stored) {
-        try { return JSON.parse(stored); } catch(e) {}
-      }
-      const initial = {};
-      UNIVERSITIES.forEach(u => {
-        initial[u.id] = { goals: u.baseGoals, contributors: u.baseContributors };
+    let currentVarsity = VARSITY_LIST[0]; // DIU default
+
+    // ── 12-Group Standings Data (Sample Data Labelled Sample) ───────────────────
+    const GROUPS_DATA = {
+      'A': [
+        { name: 'DIU (Daffodil)', p: 2, w: 2, d: 0, l: 0, gd: '+5', pts: 6 },
+        { name: 'IUT (Gazipur)', p: 2, w: 1, d: 0, l: 1, gd: '+1', pts: 3 },
+        { name: 'UIU (United)', p: 2, w: 0, d: 0, l: 2, gd: '-6', pts: 0 }
+      ],
+      'B': [
+        { name: 'NSU (North South)', p: 2, w: 2, d: 0, l: 0, gd: '+4', pts: 6 },
+        { name: 'BRAC University', p: 2, w: 1, d: 0, l: 1, gd: '0', pts: 3 },
+        { name: 'AIUB', p: 2, w: 0, d: 0, l: 2, gd: '-4', pts: 0 }
+      ],
+      'C': [
+        { name: 'DU (Dhaka Univ)', p: 2, w: 1, d: 1, l: 0, gd: '+2', pts: 4 },
+        { name: 'BUET (Engineers)', p: 2, w: 1, d: 0, l: 1, gd: '0', pts: 3 },
+        { name: 'IUB (Independent)', p: 2, w: 0, d: 1, l: 1, gd: '-2', pts: 1 }
+      ],
+      'D': [
+        { name: 'BUP (Professionals)', p: 2, w: 2, d: 0, l: 0, gd: '+6', pts: 6 },
+        { name: 'Jahangirnagar (JU)', p: 2, w: 1, d: 0, l: 1, gd: '+1', pts: 3 },
+        { name: 'East West (EWU)', p: 2, w: 0, d: 0, l: 2, gd: '-7', pts: 0 }
+      ],
+      'E': [
+        { name: 'Aust Futsal', p: 2, w: 1, d: 1, l: 0, gd: '+3', pts: 4 },
+        { name: 'Gono Bishwabidyalay', p: 2, w: 1, d: 0, l: 1, gd: '-1', pts: 3 },
+        { name: 'State University', p: 2, w: 0, d: 1, l: 1, gd: '-2', pts: 1 }
+      ],
+      'F': [
+        { name: 'UAP Lions', p: 2, w: 2, d: 0, l: 0, gd: '+3', pts: 6 },
+        { name: 'Stamford Sharks', p: 2, w: 1, d: 0, l: 1, gd: '0', pts: 3 },
+        { name: 'Southeast Varsity', p: 2, w: 0, d: 0, l: 2, gd: '-3', pts: 0 }
+      ],
+      'G': [
+        { name: 'Green University', p: 2, w: 2, d: 0, l: 0, gd: '+4', pts: 6 },
+        { name: 'Primeasia FC', p: 2, w: 1, d: 0, l: 1, gd: '0', pts: 3 },
+        { name: 'Canadian Univ BD', p: 2, w: 0, d: 0, l: 2, gd: '-4', pts: 0 }
+      ],
+      'H': [
+        { name: 'City University', p: 2, w: 1, d: 1, l: 0, gd: '+2', pts: 4 },
+        { name: 'Manarat FC', p: 2, w: 1, d: 0, l: 1, gd: '-1', pts: 3 },
+        { name: 'Eastern University', p: 2, w: 0, d: 1, l: 1, gd: '-1', pts: 1 }
+      ],
+      'I': [
+        { name: 'Uttara Varsity', p: 2, w: 2, d: 0, l: 0, gd: '+5', pts: 6 },
+        { name: 'Dhaka Commerce', p: 2, w: 1, d: 0, l: 1, gd: '0', pts: 3 },
+        { name: 'Northern University', p: 2, w: 0, d: 0, l: 2, gd: '-5', pts: 0 }
+      ],
+      'J': [
+        { name: 'World University', p: 2, w: 1, d: 1, l: 0, gd: '+1', pts: 4 },
+        { name: 'Sonargaon FC', p: 2, w: 1, d: 0, l: 1, gd: '0', pts: 3 },
+        { name: 'Presidency Varsity', p: 2, w: 0, d: 1, l: 1, gd: '-1', pts: 1 }
+      ],
+      'K': [
+        { name: 'Shanto-Mariam', p: 2, w: 2, d: 0, l: 0, gd: '+3', pts: 6 },
+        { name: 'Fareast FC', p: 2, w: 1, d: 0, l: 1, gd: '0', pts: 3 },
+        { name: 'Victoria University', p: 2, w: 0, d: 0, l: 2, gd: '-3', pts: 0 }
+      ],
+      'L': [
+        { name: 'BGMEA Institute', p: 2, w: 1, d: 1, l: 0, gd: '+2', pts: 4 },
+        { name: 'ASA University', p: 2, w: 1, d: 0, l: 1, gd: '0', pts: 3 },
+        { name: 'European Univ BD', p: 2, w: 0, d: 1, l: 1, gd: '-2', pts: 1 }
+      ]
+    };
+
+    let activeGroup = 'A';
+
+    // ── Tab Switching Navigation ───────────────────────────────────────────────
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(section => {
+        section.classList.add('hidden');
       });
-      localStorage.setItem('campus_cup_scores_v1', JSON.stringify(initial));
-      return initial;
+      const target = document.getElementById('tab-' + tabId);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[#9354E9]', 'text-white', 'shadow-md');
+        btn.classList.add('text-gray-400');
+      });
+
+      const activeBtn = document.getElementById('tabBtn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-[#9354E9]', 'text-white', 'shadow-md');
+        activeBtn.classList.remove('text-gray-400');
+      }
+
+      // Scroll viewport back to top smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // If switching to shootout, ensure canvas is centered
+      if (tabId === 'shootout' && !gameActive) {
+        resetShootoutGame();
+      }
     }
 
-    let campusScores = getStoredCampusScores();
-    let selectedVarsityId = localStorage.getItem('campus_cup_active_varsity') || 'nsu';
-
-    function getSelectedVarsity() {
-      return UNIVERSITIES.find(u => u.id === selectedVarsityId) || UNIVERSITIES[0];
+    // ── Varsity Picker Modal ───────────────────────────────────────────────────
+    function openVarsityPicker() {
+      const grid = document.getElementById('varsityOptionsGrid');
+      grid.innerHTML = VARSITY_LIST.map(v => `
+        <button onclick="selectVarsity('${v.id}')" class="p-2.5 rounded-xl bg-white/5 hover:bg-[#9354E9]/30 border border-white/10 hover:border-[#9354E9] flex items-center justify-between text-left transition ${v.id === currentVarsity.id ? 'border-[#FBCD5D] bg-[#FBCD5D]/10' : ''}">
+          <div>
+            <div class="font-bold text-white text-xs">${v.name}</div>
+            <div class="text-[10px] text-gray-400">${v.mascot}</div>
+          </div>
+          <span class="w-2.5 h-2.5 rounded-full" style="background:${v.color}"></span>
+        </button>
+      `).join('');
+      document.getElementById('varsityModal').classList.remove('hidden');
     }
 
-    // ── 2. Web Audio API Procedural Synthesizer ─────────────────────────────
+    function closeVarsityPicker() {
+      document.getElementById('varsityModal').classList.add('hidden');
+    }
+
+    function selectVarsity(id) {
+      const found = VARSITY_LIST.find(v => v.id === id);
+      if (found) {
+        currentVarsity = found;
+        document.getElementById('headerVarsityName').textContent = found.name;
+        document.getElementById('headerVarsityBadge').style.backgroundColor = found.color;
+        document.getElementById('arenaVarsityTitle').textContent = found.name + ' Kicking';
+      }
+      closeVarsityPicker();
+    }
+
+    // ── 12-Group Standings Engine ──────────────────────────────────────────────
+    function renderGroupPills() {
+      const container = document.getElementById('groupPillRow');
+      const groups = Object.keys(GROUPS_DATA);
+      container.innerHTML = groups.map(g => `
+        <button onclick="renderGroupTable('${g}')" id="grpBtn-${g}" class="px-3 py-1 rounded-lg text-xs font-mono font-bold transition ${g === activeGroup ? 'bg-[#FBCD5D] text-black shadow' : 'bg-black/40 text-gray-400 hover:text-white border border-white/10'}">
+          Group ${g}
+        </button>
+      `).join('');
+      renderGroupTable(activeGroup);
+    }
+
+    function renderGroupTable(groupKey) {
+      activeGroup = groupKey;
+      document.querySelectorAll('#groupPillRow button').forEach(btn => {
+        btn.classList.remove('bg-[#FBCD5D]', 'text-black', 'shadow');
+        btn.classList.add('bg-black/40', 'text-gray-400');
+      });
+      const activeBtn = document.getElementById('grpBtn-' + groupKey);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-[#FBCD5D]', 'text-black', 'shadow');
+        activeBtn.classList.remove('bg-black/40', 'text-gray-400');
+      }
+
+      const rows = GROUPS_DATA[groupKey] || [];
+      const tbody = document.getElementById('groupTableBody');
+      tbody.innerHTML = rows.map((r, idx) => `
+        <tr class="hover:bg-white/5 transition">
+          <td class="py-2.5 px-3 font-bold ${idx === 0 ? 'text-[#FBCD5D]' : 'text-gray-400'}">${idx + 1}</td>
+          <td class="py-2.5 px-3 font-bold text-white flex items-center gap-1.5">
+            ${idx === 0 ? '👑' : ''} ${r.name}
+          </td>
+          <td class="py-2.5 px-2 text-center text-gray-300">${r.p}</td>
+          <td class="py-2.5 px-2 text-center text-gray-300">${r.w}</td>
+          <td class="py-2.5 px-2 text-center text-gray-300">${r.d}</td>
+          <td class="py-2.5 px-2 text-center text-gray-300">${r.l}</td>
+          <td class="py-2.5 px-2 text-center text-gray-400">${r.gd}</td>
+          <td class="py-2.5 px-3 text-center font-black text-sm text-[#FBCD5D]">${r.pts}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ── Registration Flow Controller (Multi-Step Demo) ────────────────────────
+    let currentRegStep = 1;
+
+    function goToRegStep(step) {
+      currentRegStep = step;
+      for (let s = 1; s <= 4; s++) {
+        const stepEl = document.getElementById('regStep-' + s);
+        const tabEl = document.getElementById('stepTab-' + s);
+        if (stepEl) {
+          stepEl.classList.toggle('hidden', s !== step);
+        }
+        if (tabEl) {
+          if (s === step) {
+            tabEl.className = 'p-2.5 rounded-xl bg-[#9354E9] text-white font-bold text-center border border-[#9354E9] transition';
+          } else if (s < step) {
+            tabEl.className = 'p-2.5 rounded-xl bg-black/60 text-[#FBCD5D] font-bold text-center border border-[#FBCD5D]/40 transition';
+          } else {
+            tabEl.className = 'p-2.5 rounded-xl bg-black/40 text-gray-400 font-bold text-center border border-white/10 transition';
+          }
+        }
+      }
+    }
+
+    function addDemoPlayerRow() {
+      const container = document.getElementById('dynamicPlayersList');
+      const count = container.children.length + 3;
+      const row = document.createElement('div');
+      row.className = 'grid grid-cols-12 gap-2 p-2.5 rounded-xl bg-black/20 border border-white/10 items-center';
+      row.innerHTML = `
+        <div class="col-span-12 sm:col-span-3 text-xs font-mono text-gray-400">Player ${count} (Outfield)</div>
+        <div class="col-span-6 sm:col-span-5">
+          <input type="text" placeholder="Full Name" value="Squad Member ${count}" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+        </div>
+        <div class="col-span-6 sm:col-span-4">
+          <input type="text" placeholder="Student ID" value="DIU-211-15-00${count}" class="w-full bg-[#120A2A] border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white">
+        </div>
+      `;
+      container.appendChild(row);
+    }
+
+    function submitDemoRegistration() {
+      const uni = document.getElementById('regUniversity').value;
+      const team = document.getElementById('regTeamName').value || 'Campus Futsal Squad';
+      const refId = 'CFC2-REG-' + Math.floor(1000 + Math.random() * 9000);
+
+      document.getElementById('confUniversity').textContent = uni;
+      document.getElementById('confTeam').textContent = team;
+      document.getElementById('confRefId').textContent = refId;
+
+      playGoalCheer();
+      goToRegStep(4);
+    }
+
+    // ── Spectator Voting Demo ──────────────────────────────────────────────────
+    function castDemoVote(predId, choice) {
+      const notice = document.getElementById('vote-notice-' + predId);
+      if (notice) {
+        notice.classList.remove('hidden');
+        notice.textContent = `✓ Prediction recorded for ${choice}! Points will tally into final day prize hamper standings.`;
+      }
+      playKickSound();
+    }
+
+    // ── Procedural Web Audio Synthesizer ───────────────────────────────────────
     let audioCtx = null;
     let isAudioEnabled = true;
 
     function getAudioContext() {
       if (!audioCtx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) audioCtx = new AudioContext();
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
       }
       if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume();
@@ -835,7 +1801,6 @@
       document.getElementById('btnAudioToggle').textContent = isAudioEnabled ? '🔊' : '🔇';
     }
 
-    // Sound: Kick Thump
     function playKickSound() {
       if (!isAudioEnabled) return;
       try {
@@ -844,8 +1809,8 @@
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(140, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 0.12);
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.12);
         gain.gain.setValueAtTime(0.7, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
         osc.connect(gain);
@@ -855,7 +1820,6 @@
       } catch(e) {}
     }
 
-    // Sound: Post / Crossbar Ring
     function playPostDing() {
       if (!isAudioEnabled) return;
       try {
@@ -875,18 +1839,17 @@
       } catch(e) {}
     }
 
-    // Sound: Goal Cheer
     function playGoalCheer() {
       if (!isAudioEnabled) return;
       try {
         const ctx = getAudioContext();
         if (!ctx) return;
-        // Whistle
+        // Ref Whistle
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(1800, ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(2200, ctx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(1900, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(2300, ctx.currentTime + 0.1);
         gain.gain.setValueAtTime(0.3, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
         osc.connect(gain);
@@ -894,7 +1857,7 @@
         osc.start();
         osc.stop(ctx.currentTime + 0.26);
 
-        // Noise Cheer (Crowd)
+        // Crowd Noise Synth
         const bufferSize = ctx.sampleRate * 0.7;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
@@ -905,7 +1868,7 @@
         noise.buffer = buffer;
         const filter = ctx.createBiquadFilter();
         filter.type = 'bandpass';
-        filter.frequency.value = 800;
+        filter.frequency.value = 850;
         filter.Q.value = 1.0;
         const noiseGain = ctx.createGain();
         noiseGain.gain.setValueAtTime(0.4, ctx.currentTime);
@@ -917,7 +1880,6 @@
       } catch(e) {}
     }
 
-    // Sound: Save / Miss Groan
     function playMissGroan() {
       if (!isAudioEnabled) return;
       try {
@@ -926,8 +1888,8 @@
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(160, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.4);
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(75, ctx.currentTime + 0.4);
         gain.gain.setValueAtTime(0.25, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
         osc.connect(gain);
@@ -937,7 +1899,7 @@
       } catch(e) {}
     }
 
-    // ── 3. Shootout Game Engine & Physics ─────────────────────────────────────
+    // ── Mini-Cup Futsal Shootout Game Engine & Physics ────────────────────────
     const canvas = document.getElementById('shootoutCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -947,757 +1909,438 @@
     let bestStreak = 0;
     let lives = 3;
 
-    // Ball state
-    const ball = {
+    // Small Court Futsal Goal Geometry
+    const goal = {
+      x: 100,
+      y: 110,
+      w: 400,
+      h: 220,
+      postWidth: 10
+    };
+
+    // Goalkeeper State
+    const gk = {
       x: 300,
-      y: 580,
-      z: 0, // 0 = at penalty spot, 100 = goal line
+      y: 280,
+      radius: 34,
+      targetX: 300,
+      speed: 3.5,
+      diveProgress: 0,
+      isDiving: false,
+      aiTier: 'ROOKIE AI'
+    };
+
+    // Futsal Low-Bounce Ball State
+    const ball = {
+      startX: 300,
+      startY: 590,
+      x: 300,
+      y: 590,
+      radius: 20,
+      scale: 1.0,
       vx: 0,
       vy: 0,
-      vz: 0,
-      curl: 0,
-      radius: 26,
-      inFlight: false,
-      settled: false,
+      curve: 0,
+      isKicked: false,
       rotation: 0
     };
 
-    // Goalkeeper state
-    const keeper = {
-      x: 300,
-      y: 270,
-      targetX: 300,
-      targetY: 270,
-      diveVx: 0,
-      diveVy: 0,
-      width: 58,
-      height: 90,
-      diving: false,
-      armAngle: 0,
-      reactionDelay: 0.18, // seconds before diving
-      aiTier: 'Rookie'
-    };
+    // Touch Swipe Drag Tracking
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let isDragging = false;
 
-    // Goal Frame Geometry (canvas coordinates)
-    const goal = {
-      left: 110,
-      right: 490,
-      top: 150,
-      bottom: 330,
-      depthZ: 100
-    };
-
-    // Touch / Swipe Trajectory Tracking
-    let swipeStart = null;
-    let swipeTrajectory = [];
-    let isSwiping = false;
-
-    // Reset ball to penalty spot
     function resetBall() {
-      ball.x = canvas.width / 2;
-      ball.y = canvas.height * 0.84;
-      ball.z = 0;
+      ball.x = ball.startX;
+      ball.y = ball.startY;
+      ball.scale = 1.0;
       ball.vx = 0;
       ball.vy = 0;
-      ball.vz = 0;
-      ball.curl = 0;
-      ball.inFlight = false;
-      ball.settled = false;
+      ball.curve = 0;
+      ball.isKicked = false;
+      ball.rotation = 0;
 
-      // Keeper return to center
-      keeper.targetX = canvas.width / 2;
-      keeper.diving = false;
+      gk.x = 300;
+      gk.targetX = 300;
+      gk.isDiving = false;
+      gk.diveProgress = 0;
     }
 
-    // Touch & Mouse Handlers
-    function getCanvasCoords(e) {
+    function resetShootoutGame() {
+      score = 0;
+      streak = 0;
+      lives = 3;
+      gameActive = true;
+      document.getElementById('hudScore').textContent = '0';
+      document.getElementById('hudStreak').textContent = '0🔥';
+      document.getElementById('hudLives').textContent = '⚽⚽⚽';
+      document.getElementById('gameOverModal').classList.add('hidden');
+      document.getElementById('swipeHintBox').style.opacity = '1';
+      resetBall();
+    }
+
+    // Input Events
+    function handleTouchStart(e) {
+      if (!gameActive || ball.isKicked) return;
       const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
 
-      const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
-      const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
+      const canvasX = (clientX - rect.left) * scaleX;
+      const canvasY = (clientY - rect.top) * scaleY;
 
-      return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY
-      };
+      // Tap near ball
+      const dist = Math.hypot(canvasX - ball.x, canvasY - ball.y);
+      if (dist < 100) {
+        isDragging = true;
+        touchStartX = canvasX;
+        touchStartY = canvasY;
+        touchStartTime = Date.now();
+      }
     }
 
-    canvas.addEventListener('mousedown', (e) => {
-      if (!gameActive || ball.inFlight) return;
-      const p = getCanvasCoords(e);
-      // Ensure starting near ball
-      if (Math.hypot(p.x - ball.x, p.y - ball.y) < 90) {
-        isSwiping = true;
-        swipeStart = { ...p, time: performance.now() };
-        swipeTrajectory = [p];
+    function handleTouchEnd(e) {
+      if (!isDragging || ball.isKicked) return;
+      isDragging = false;
+
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      const canvasX = (clientX - rect.left) * scaleX;
+      const canvasY = (clientY - rect.top) * scaleY;
+
+      const dx = canvasX - touchStartX;
+      const dy = canvasY - touchStartY;
+      const dt = Math.max(Date.now() - touchStartTime, 40);
+
+      // Must swipe upward
+      if (dy < -40) {
+        document.getElementById('swipeHintBox').style.opacity = '0';
+        kickBall(dx, dy, dt);
       }
-    });
+    }
 
-    window.addEventListener('mousemove', (e) => {
-      if (!isSwiping) return;
-      const p = getCanvasCoords(e);
-      swipeTrajectory.push(p);
-      if (swipeTrajectory.length > 15) swipeTrajectory.shift();
-    });
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
+    canvas.addEventListener('mousedown', handleTouchStart);
+    canvas.addEventListener('mouseup', handleTouchEnd);
 
-    window.addEventListener('mouseup', (e) => {
-      if (!isSwiping) return;
-      isSwiping = false;
-      finalizeShot(getCanvasCoords(e));
-    });
+    function kickBall(dx, dy, dt) {
+      ball.isKicked = true;
+      const speed = Math.min(Math.hypot(dx, dy) / dt * 2.2, 28);
+      const angle = Math.atan2(dy, dx);
 
-    // Touch listeners
-    canvas.addEventListener('touchstart', (e) => {
-      if (!gameActive || ball.inFlight) return;
-      const p = getCanvasCoords(e);
-      if (Math.hypot(p.x - ball.x, p.y - ball.y) < 90) {
-        isSwiping = true;
-        swipeStart = { ...p, time: performance.now() };
-        swipeTrajectory = [p];
-        const hint = document.getElementById('swipeHintBox');
-        if (hint) hint.style.opacity = '0';
-      }
-    }, { passive: true });
-
-    window.addEventListener('touchmove', (e) => {
-      if (!isSwiping) return;
-      const p = getCanvasCoords(e);
-      swipeTrajectory.push(p);
-      if (swipeTrajectory.length > 15) swipeTrajectory.shift();
-    }, { passive: true });
-
-    window.addEventListener('touchend', (e) => {
-      if (!isSwiping) return;
-      isSwiping = false;
-      const lastPoint = swipeTrajectory[swipeTrajectory.length - 1] || swipeStart;
-      finalizeShot(lastPoint);
-    });
-
-    // Calculate ball velocity and curl from swipe gesture
-    function finalizeShot(endPoint) {
-      if (!swipeStart || swipeTrajectory.length < 2) return;
-      const duration = (performance.now() - swipeStart.time) / 1000;
-      if (duration > 0.6) return; // Too slow
-
-      const dx = endPoint.x - swipeStart.x;
-      const dy = endPoint.y - swipeStart.y;
-
-      // Must swipe upwards toward goal
-      if (dy > -30) return;
+      ball.vx = Math.cos(angle) * speed;
+      ball.vy = Math.sin(angle) * speed;
+      ball.curve = (dx / 120);
 
       playKickSound();
 
-      // Horizontal curve calculation
-      let midIndex = Math.floor(swipeTrajectory.length / 2);
-      let midPoint = swipeTrajectory[midIndex];
-      let expectedMidX = (swipeStart.x + endPoint.x) / 2;
-      let curveOffset = midPoint ? (midPoint.x - expectedMidX) : 0;
-
-      ball.inFlight = true;
-      ball.settled = false;
-
-      // Launch velocities
-      const speed = Math.min(Math.hypot(dx, dy) / duration, 1800);
-      const angle = Math.atan2(dy, dx);
-
-      ball.vx = Math.cos(angle) * (speed * 0.015);
-      ball.vy = Math.sin(angle) * (speed * 0.015);
-      ball.vz = 2.4; // 3D forward speed towards goal
-      ball.curl = curveOffset * 0.012;
-
-      // Trigger Goalkeeper AI Dive
-      triggerKeeperAI(endPoint.x, endPoint.y);
+      // Goalkeeper AI reactions
+      triggerGKReaction();
     }
 
-    // Goalkeeper AI Reaction
-    function triggerKeeperAI(aimX, aimY) {
-      keeper.diving = true;
-      // Keeper prediction with scaling difficulty based on streak
-      const errorMargin = Math.max(160 - streak * 18, 25);
-      const predictedX = aimX + (Math.random() - 0.5) * errorMargin;
-      const clampX = Math.max(goal.left + 30, Math.min(goal.right - 30, predictedX));
+    function triggerGKReaction() {
+      // AI accuracy scales with user streak
+      const errorMargin = Math.max(120 - streak * 15, 30);
+      const predictedGoalX = ball.startX + ball.vx * 18;
+      const jitter = (Math.random() - 0.5) * errorMargin;
 
-      // Reaction delay before moving
+      gk.targetX = Math.max(goal.x + 30, Math.min(goal.x + goal.w - 30, predictedGoalX + jitter));
+      gk.isDiving = true;
+
+      // Update AI tier badge
+      let tier = 'ROOKIE AI';
+      if (streak >= 5) tier = 'ELITE FUTSAL PRO 🧤';
+      else if (streak >= 2) tier = 'VARSITY STAR ⭐';
+      document.getElementById('hudGKLevel').textContent = tier;
+    }
+
+    function showGameNotice(title, sub, color) {
+      const overlay = document.getElementById('gameNoticeOverlay');
+      const text = document.getElementById('gameNoticeText');
+      const subText = document.getElementById('gameNoticeSub');
+
+      text.textContent = title;
+      text.style.color = color;
+      subText.textContent = sub;
+
+      overlay.style.opacity = '1';
       setTimeout(() => {
-        keeper.targetX = clampX;
-        keeper.targetY = Math.max(goal.top + 40, Math.min(goal.bottom - 40, aimY));
-      }, Math.max(120 - streak * 10, 40));
+        overlay.style.opacity = '0';
+      }, 900);
     }
 
-    // ── 4. Main Canvas Render & Physics Loop ──────────────────────────────────
+    // Main Canvas Render & Physics Loop
     function updatePhysics() {
-      if (!ball.inFlight || ball.settled) return;
+      if (!gameActive) return;
 
-      // Advance ball in 3D (z from 0 to 100)
-      ball.z += ball.vz;
-      ball.x += ball.vx + ball.curl * (ball.z / 100);
-      ball.y += ball.vy;
-      ball.rotation += 0.2;
-
-      // Fake gravity when nearing goal
-      ball.vy += 0.06;
-
-      // Check arrival at goal plane (z >= 100)
-      if (ball.z >= goal.depthZ) {
-        ball.z = goal.depthZ;
-        ball.settled = true;
-        resolveGoalOutcome();
+      // Goalkeeper glide
+      if (gk.isDiving) {
+        const diff = gk.targetX - gk.x;
+        gk.x += diff * 0.12;
       }
 
-      // Smooth Goalkeeper movement
-      keeper.x += (keeper.targetX - keeper.x) * 0.12;
-      keeper.y += (keeper.targetY - keeper.y) * 0.1;
+      // Ball in flight
+      if (ball.isKicked) {
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+        ball.vx += ball.curve * 0.15;
+        ball.scale = Math.max(0.48, ball.scale - 0.016);
+        ball.rotation += 0.2;
+
+        // Ball reached goal line
+        if (ball.y <= goal.y + goal.h * 0.55) {
+          evaluateShot();
+        }
+      }
     }
 
-    function resolveGoalOutcome() {
-      const bx = ball.x;
-      const by = ball.y;
+    function evaluateShot() {
+      ball.isKicked = false;
+      const hitX = ball.x;
+      const inNetX = hitX >= goal.x + 12 && hitX <= goal.x + goal.w - 12;
+      const inNetY = ball.y >= goal.y + 10 && ball.y <= goal.y + goal.h;
 
-      // 1. Check Crossbar / Posts
-      const hitLeftPost = Math.abs(bx - goal.left) < 18 && by >= goal.top && by <= goal.bottom;
-      const hitRightPost = Math.abs(bx - goal.right) < 18 && by >= goal.top && by <= goal.bottom;
-      const hitCrossbar = Math.abs(by - goal.top) < 18 && bx >= goal.left && bx <= goal.right;
+      // Check Keeper Save Collision
+      const gkDistance = Math.hypot(hitX - gk.x, ball.y - gk.y);
+      const isSaved = gkDistance < (gk.radius + ball.radius * ball.scale + 12);
 
-      if (hitLeftPost || hitRightPost || hitCrossbar) {
+      // Check Post Ding
+      const hitPost = (Math.abs(hitX - goal.x) < 14 || Math.abs(hitX - (goal.x + goal.w)) < 14) && inNetY;
+
+      if (hitPost) {
         playPostDing();
-        showBanner('WOODWORK!', 'Off the Crossbar / Post!', false);
+        showGameNotice('OFF THE POST!', 'RATTLED THE WOODWORK', '#FBCD5D');
         handleMiss();
-        return;
-      }
-
-      // 2. Check Goalkeeper Save
-      const distToKeeper = Math.hypot(bx - keeper.x, by - keeper.y);
-      const saveRadius = 62 + Math.min(streak * 3, 20);
-
-      if (distToKeeper < saveRadius) {
+      } else if (isSaved) {
         playMissGroan();
-        showBanner('SAVED!', 'Goalkeeper Parried the Strike!', false);
+        showGameNotice('SAVED!', 'KEEPER DIVES TO DENY', '#9354E9');
         handleMiss();
-        return;
-      }
+      } else if (inNetX && inNetY) {
+        // GOAL SCORED!
+        score++;
+        streak++;
+        if (streak > bestStreak) bestStreak = streak;
 
-      // 3. Check Inside Goal Net
-      const inNetX = bx > (goal.left + 15) && bx < (goal.right - 15);
-      const inNetY = by > (goal.top + 15) && by < goal.bottom;
-
-      if (inNetX && inNetY) {
+        document.getElementById('hudScore').textContent = score;
+        document.getElementById('hudStreak').textContent = streak + '🔥';
         playGoalCheer();
-        handleGoal();
+        showGameNotice('GOAL!', `+1 FOR ${currentVarsity.name.split(' ')[0]}`, '#FBCD5D');
+
+        setTimeout(resetBall, 1100);
       } else {
+        // Off Target
         playMissGroan();
-        showBanner('OFF TARGET!', 'Whistled Wide of the Goal!', false);
+        showGameNotice('OFF TARGET!', 'WIDE OF THE FUTSAL NET', '#94A3B8');
         handleMiss();
       }
-    }
-
-    function handleGoal() {
-      score++;
-      streak++;
-      if (streak > bestStreak) bestStreak = streak;
-
-      // Add to selected Varsity's total
-      const varsity = getSelectedVarsity();
-      if (campusScores[varsity.id]) {
-        campusScores[varsity.id].goals += 1;
-        localStorage.setItem('campus_cup_scores_v1', JSON.stringify(campusScores));
-      }
-
-      updateHUD();
-      showBanner('GOAL!!!', `+1 Goal for ${varsity.short}! (${streak} Streak 🔥)`, true);
-
-      // AI keeper gets smarter
-      if (score >= 10) keeper.aiTier = 'World Class';
-      else if (score >= 5) keeper.aiTier = 'Varsity Pro';
-      else keeper.aiTier = 'Rookie';
-
-      document.getElementById('hudGKLevel').textContent = keeper.aiTier.toUpperCase() + ' AI';
-
-      setTimeout(resetBall, 1300);
     }
 
     function handleMiss() {
       streak = 0;
       lives--;
-      updateHUD();
+      document.getElementById('hudStreak').textContent = '0🔥';
+      document.getElementById('hudLives').textContent = '⚽'.repeat(Math.max(lives, 0)) + '❌'.repeat(Math.max(3 - lives, 0));
 
       if (lives <= 0) {
-        setTimeout(showGameOver, 1200);
+        gameActive = false;
+        setTimeout(() => {
+          document.getElementById('finalScoreVal').textContent = score;
+          document.getElementById('finalStreakVal').textContent = bestStreak + '🔥';
+          document.getElementById('gameOverModal').classList.remove('hidden');
+        }, 800);
       } else {
-        setTimeout(resetBall, 1400);
+        setTimeout(resetBall, 1100);
       }
     }
 
-    function updateHUD() {
-      document.getElementById('hudScore').textContent = score;
-      document.getElementById('hudStreak').textContent = streak + '🔥';
-      
-      let livesIcons = '';
-      for (let i = 0; i < 3; i++) {
-        livesIcons += i < lives ? '⚽' : '❌';
-      }
-      document.getElementById('hudLives').textContent = livesIcons;
-    }
-
-    function showBanner(text, subtext, isGoal) {
-      const overlay = document.getElementById('gameNoticeOverlay');
-      const textElem = document.getElementById('gameNoticeText');
-      const subElem = document.getElementById('gameNoticeSub');
-
-      textElem.textContent = text;
-      textElem.className = `font-heading font-black text-5xl sm:text-6xl tracking-tight drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] scale-110 transition-transform ${isGoal ? 'text-[#00DF89]' : 'text-red-400'}`;
-      subElem.textContent = subtext;
-
-      overlay.style.opacity = '1';
-      setTimeout(() => {
-        overlay.style.opacity = '0';
-      }, 1000);
-    }
-
-    function showGameOver() {
-      gameActive = false;
-      const modal = document.getElementById('gameOverModal');
-      document.getElementById('finalScoreVal').textContent = score;
-      document.getElementById('finalStreakVal').textContent = bestStreak + '🔥';
-      document.getElementById('modalGoalsAdded').textContent = score;
-      document.getElementById('modalVarsityName').textContent = getSelectedVarsity().name;
-
-      modal.classList.remove('hidden');
-      renderLeaderboard();
-    }
-
-    function restartShootout() {
-      score = 0;
-      streak = 0;
-      lives = 3;
-      gameActive = true;
-      document.getElementById('gameOverModal').classList.add('hidden');
-      updateHUD();
-      resetBall();
-    }
-
-    // ── 5. Canvas Drawing Functions ──────────────────────────────────────────
-    function drawPitch() {
+    function drawStage() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Pitch grass gradient
-      const grassGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      grassGrad.addColorStop(0, '#062013');
-      grassGrad.addColorStop(0.5, '#0B331F');
-      grassGrad.addColorStop(1, '#082617');
-      ctx.fillStyle = grassGrad;
+      // Deep Purple / Violet Small Court Turf Ground
+      const turfGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      turfGrad.addColorStop(0, '#190A38');
+      turfGrad.addColorStop(0.4, '#15082E');
+      turfGrad.addColorStop(1, '#0C041C');
+      ctx.fillStyle = turfGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Floodlight Stadium Glow at top
-      const flare = ctx.createRadialGradient(canvas.width / 2, -20, 20, canvas.width / 2, 200, 450);
-      flare.addColorStop(0, 'rgba(0, 223, 137, 0.25)');
-      flare.addColorStop(0.5, 'rgba(0, 240, 255, 0.08)');
-      flare.addColorStop(1, 'transparent');
-      ctx.fillStyle = flare;
-      ctx.fillRect(0, 0, canvas.width, 350);
+      // Court Perspective Grid Lines
+      ctx.strokeStyle = 'rgba(147, 84, 233, 0.25)';
+      ctx.lineWidth = 2;
 
-      // LED Sponsor Boards behind the goal
-      ctx.fillStyle = '#0F1626';
-      ctx.fillRect(50, 115, canvas.width - 100, 28);
-      ctx.strokeStyle = '#00DF89';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(50, 115, canvas.width - 100, 28);
-
-      ctx.fillStyle = '#00DF89';
-      ctx.font = 'bold 11px JetBrains Mono';
-      ctx.textAlign = 'center';
-      ctx.fillText('⚽ BANGLALINK 4G • bKash • MOJO • GRO10X CAMPUS CUP 2026', canvas.width / 2, 133);
-
-      // Goal Net Mesh (Perspective)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 1;
-      // Vertical net lines
-      for (let x = goal.left; x <= goal.right; x += 18) {
-        ctx.beginPath();
-        ctx.moveTo(x, goal.top);
-        ctx.lineTo(x, goal.bottom);
-        ctx.stroke();
-      }
-      // Horizontal net lines
-      for (let y = goal.top; y <= goal.bottom; y += 16) {
-        ctx.beginPath();
-        ctx.moveTo(goal.left, y);
-        ctx.lineTo(goal.right, y);
-        ctx.stroke();
-      }
-
-      // Goal Frame (White Steel Posts)
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 10;
-      ctx.lineCap = 'round';
+      // Penalty Arc (Futsal D Area: 6m semicircle)
       ctx.beginPath();
-      // Left Post
-      ctx.moveTo(goal.left, goal.bottom);
-      ctx.lineTo(goal.left, goal.top);
-      // Crossbar
-      ctx.lineTo(goal.right, goal.top);
-      // Right Post
-      ctx.lineTo(goal.right, goal.bottom);
+      ctx.ellipse(300, goal.y + goal.h + 20, 220, 110, 0, 0, Math.PI);
       ctx.stroke();
 
-      // Penalty Box Grass Lines
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(70, 330, canvas.width - 140, 250);
-
-      // Penalty Arc / Spot
-      ctx.fillStyle = '#FFFFFF';
+      // Penalty Spot (6m mark)
+      ctx.fillStyle = '#FBCD5D';
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, 580, 5, 0, Math.PI * 2);
+      ctx.arc(300, 590, 4, 0, Math.PI * 2);
       ctx.fill();
 
-      // Swipe Aim Trail Guide (When swiping)
-      if (isSwiping && swipeTrajectory.length > 1) {
-        ctx.strokeStyle = 'rgba(0, 223, 137, 0.7)';
-        ctx.lineWidth = 4;
-        ctx.setLineDash([6, 6]);
+      // Futsal Goal Net Structure
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1;
+      // Net mesh grid
+      for (let x = goal.x; x <= goal.x + goal.w; x += 16) {
         ctx.beginPath();
-        ctx.moveTo(swipeTrajectory[0].x, swipeTrajectory[0].y);
-        for (let i = 1; i < swipeTrajectory.length; i++) {
-          ctx.lineTo(swipeTrajectory[i].x, swipeTrajectory[i].y);
-        }
+        ctx.moveTo(x, goal.y);
+        ctx.lineTo(x + (x - 300) * 0.15, goal.y + goal.h);
         ctx.stroke();
-        ctx.setLineDash([]);
       }
-    }
+      for (let y = goal.y; y <= goal.y + goal.h; y += 16) {
+        ctx.beginPath();
+        ctx.moveTo(goal.x, y);
+        ctx.lineTo(goal.x + goal.w, y);
+        ctx.stroke();
+      }
 
-    function drawGoalkeeper() {
-      ctx.save();
-      ctx.translate(keeper.x, keeper.y);
-
-      // Goalkeeper Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      // Goalposts & Crossbar (White with Gold Glow)
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.ellipse(0, 40, 30, 8, 0, 0, Math.PI * 2);
+      ctx.moveTo(goal.x, goal.y + goal.h);
+      ctx.lineTo(goal.x, goal.y);
+      ctx.lineTo(goal.x + goal.w, goal.y);
+      ctx.lineTo(goal.x + goal.w, goal.y + goal.h);
+      ctx.stroke();
+
+      // Draw Goalkeeper
+      ctx.save();
+      ctx.fillStyle = '#9354E9';
+      ctx.shadowColor = 'rgba(147, 84, 233, 0.6)';
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(gk.x, gk.y, gk.radius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Keeper Body (Athletic Jersey Yellow/Neon)
-      ctx.fillStyle = '#FFE600';
-      ctx.fillRect(-18, -25, 36, 42);
+      // Keeper Gloves & Details
+      ctx.fillStyle = '#FBCD5D';
+      ctx.beginPath();
+      ctx.arc(gk.x - gk.radius * 0.7, gk.y - 4, 10, 0, Math.PI * 2);
+      ctx.arc(gk.x + gk.radius * 0.7, gk.y - 4, 10, 0, Math.PI * 2);
+      ctx.fill();
 
-      // Jersey Number
-      ctx.fillStyle = '#000000';
+      ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 12px Space Grotesk';
       ctx.textAlign = 'center';
-      ctx.fillText('1', 0, 0);
-
-      // Head
-      ctx.fillStyle = '#E0A96D';
-      ctx.beginPath();
-      ctx.arc(0, -38, 14, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Goalkeeper Gloves
-      ctx.fillStyle = '#00DF89';
-      if (keeper.diving) {
-        // Outstretched Diving Arms
-        const diveDir = keeper.targetX > keeper.x ? 1 : -1;
-        ctx.fillRect(diveDir * 22, -35, 16, 16);
-        ctx.fillRect(diveDir * 32, -25, 16, 16);
-      } else {
-        // Ready stance arms
-        ctx.fillRect(-34, -20, 14, 14);
-        ctx.fillRect(20, -20, 14, 14);
-      }
-
-      // Shorts
-      ctx.fillStyle = '#1A1A1A';
-      ctx.fillRect(-16, 17, 32, 18);
-
-      // Legs / Cleats
-      ctx.fillStyle = '#E0A96D';
-      ctx.fillRect(-14, 35, 10, 16);
-      ctx.fillRect(4, 35, 10, 16);
-
+      ctx.fillText('GK', gk.x, gk.y + 4);
       ctx.restore();
-    }
 
-    function drawBall() {
+      // Draw Ball (Futsal Low-Bounce Pattern)
       ctx.save();
       ctx.translate(ball.x, ball.y);
       ctx.rotate(ball.rotation);
+      ctx.scale(ball.scale, ball.scale);
 
-      // Dynamic scale based on 3D depth (z from 0 to 100)
-      const scale = 1 - (ball.z / 100) * 0.45;
-      const currentRadius = ball.radius * scale;
-
-      // Ball Shadow
-      ctx.save();
-      ctx.rotate(-ball.rotation);
-      ctx.fillStyle = `rgba(0, 0, 0, ${0.4 * (1 - ball.z / 100)})`;
-      ctx.beginPath();
-      ctx.ellipse(0, currentRadius * 0.9, currentRadius * 0.9, currentRadius * 0.35, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      // Ball White Sphere
+      // Ball Base
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
+      ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Ball Soccer Hexagons Pattern
-      ctx.fillStyle = '#111827';
-      ctx.beginPath();
-      ctx.arc(0, 0, currentRadius * 0.35, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Outer mini patches
+      // Ball Futsal Pentagons (Electric Violet & Gold)
+      ctx.fillStyle = '#1E0E42';
       for (let i = 0; i < 5; i++) {
-        const ang = (i / 5) * Math.PI * 2;
+        const ang = (i * Math.PI * 2) / 5;
         ctx.beginPath();
-        ctx.arc(Math.cos(ang) * currentRadius * 0.65, Math.sin(ang) * currentRadius * 0.65, currentRadius * 0.18, 0, Math.PI * 2);
+        ctx.arc(Math.cos(ang) * 11, Math.sin(ang) * 11, 4.5, 0, Math.PI * 2);
         ctx.fill();
       }
-
-      // Ball specular shine
-      const shine = ctx.createRadialGradient(-currentRadius * 0.3, -currentRadius * 0.3, 2, 0, 0, currentRadius);
-      shine.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-      shine.addColorStop(0.6, 'transparent');
-      ctx.fillStyle = shine;
+      ctx.fillStyle = '#FBCD5D';
       ctx.beginPath();
-      ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
+      ctx.arc(0, 0, 5, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.restore();
     }
 
-    // Animation Loop
     function gameLoop() {
       updatePhysics();
-      drawPitch();
-      drawGoalkeeper();
-      drawBall();
+      drawStage();
       requestAnimationFrame(gameLoop);
     }
 
-    // ── 6. Leaderboard Rendering & Tab Navigation ────────────────────────────
-    function renderLeaderboard() {
-      const container = document.getElementById('campusLeaderboardList');
-      if (!container) return;
-
-      // Sort universities by goals descending
-      const sorted = [...UNIVERSITIES].sort((a, b) => {
-        const goalsA = campusScores[a.id]?.goals || 0;
-        const goalsB = campusScores[b.id]?.goals || 0;
-        return goalsB - goalsA;
-      });
-
-      const maxGoals = campusScores[sorted[0].id]?.goals || 1;
-
-      container.innerHTML = sorted.map((u, idx) => {
-        const data = campusScores[u.id] || { goals: 0, contributors: 0 };
-        const percent = Math.min(100, Math.round((data.goals / maxGoals) * 100));
-        const isSelected = u.id === selectedVarsityId;
-
-        return `
-          <div class="py-3 sm:py-4 flex flex-col gap-1.5 ${isSelected ? 'bg-[#00DF89]/10 px-3 rounded-xl border border-[#00DF89]/30' : ''}">
-            <div class="flex items-center justify-between text-xs sm:text-sm font-mono">
-              <div class="flex items-center gap-2.5">
-                <span class="w-6 font-bold ${idx === 0 ? 'text-[#FFB800]' : (idx === 1 ? 'text-gray-300' : (idx === 2 ? 'text-amber-600' : 'text-gray-500'))}">
-                  #${idx + 1}
-                </span>
-                <span class="text-lg">${u.badge}</span>
-                <span class="font-heading font-bold text-white">${u.name} (${u.short})</span>
-                ${isSelected ? '<span class="text-[10px] bg-[#00DF89] text-black px-1.5 py-0.2 rounded font-bold">YOUR VARSITY</span>' : ''}
-              </div>
-              <div class="flex items-center gap-6 text-right">
-                <span class="text-gray-400 hidden sm:inline">${data.contributors.toLocaleString()}</span>
-                <span class="font-heading font-black text-white text-sm sm:text-base">${data.goals.toLocaleString()}</span>
-              </div>
-            </div>
-            <!-- Progress Fill Bar -->
-            <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r from-[#00DF89] to-[#00F0FF] rounded-full transition-all duration-500" style="width: ${percent}%;"></div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderQuickVarsityRow() {
-      const row = document.getElementById('quickVarsityRow');
-      if (!row) return;
-
-      row.innerHTML = UNIVERSITIES.map(u => `
-        <button onclick="setVarsity('${u.id}')" class="px-3 py-1.5 rounded-xl font-heading font-bold text-xs flex items-center gap-1.5 flex-shrink-0 border transition ${u.id === selectedVarsityId ? 'bg-[#00DF89] text-black border-[#00DF89] shadow-md' : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30'}">
-          <span>${u.badge}</span>
-          <span>${u.short}</span>
-        </button>
-      `).join('');
-    }
-
-    function renderVarsityModalGrid() {
-      const grid = document.getElementById('varsityGridList');
-      if (!grid) return;
-
-      grid.innerHTML = UNIVERSITIES.map(u => `
-        <button onclick="setVarsity('${u.id}'); closeVarsityPicker();" class="p-3.5 rounded-2xl border text-left flex items-center gap-3 transition ${u.id === selectedVarsityId ? 'bg-[#00DF89]/20 border-[#00DF89] text-white' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'}">
-          <span class="text-2xl">${u.badge}</span>
-          <div>
-            <div class="font-heading font-bold text-sm text-white">${u.short}</div>
-            <div class="text-[11px] font-mono text-gray-400">${u.name}</div>
-          </div>
-        </button>
-      `).join('');
-    }
-
-    function setVarsity(id) {
-      selectedVarsityId = id;
-      localStorage.setItem('campus_cup_active_varsity', id);
-      const u = getSelectedVarsity();
-
-      document.getElementById('headerVarsityName').textContent = `${u.short} (${u.name.split(' ')[0]})`;
-      document.getElementById('headerVarsityBadge').style.backgroundColor = u.color;
-      document.getElementById('arenaVarsityTitle').textContent = `${u.short} Kicking`;
-
-      renderQuickVarsityRow();
-      renderLeaderboard();
-      renderVarsityModalGrid();
-    }
-
-    function openVarsityPicker() {
-      document.getElementById('varsityModal').classList.remove('hidden');
-    }
-
-    function closeVarsityPicker() {
-      document.getElementById('varsityModal').classList.add('hidden');
-    }
-
-    // Tab Switching
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(el => {
-        el.classList.remove('bg-[#00DF89]', 'text-black', 'shadow-md');
-        el.classList.add('text-gray-400');
-      });
-
-      const activeContent = document.getElementById('tab-' + tabId);
-      const activeBtn = document.getElementById('tabBtn-' + tabId);
-
-      if (activeContent) activeContent.classList.remove('hidden');
-      if (activeBtn) {
-        activeBtn.classList.remove('text-gray-400');
-        activeBtn.classList.add('bg-[#00DF89]', 'text-black', 'shadow-md');
-      }
-
-      if (tabId === 'leaderboard') renderLeaderboard();
-    }
-
-    // ── 7. Viral 9:16 Story Card Generator ──────────────────────────────────
+    // ── Viral 9:16 Story Card Generator ────────────────────────────────────────
     function generateStoryShareCard() {
-      const shareCanvas = document.getElementById('storyShareCanvas');
-      const sCtx = shareCanvas.getContext('2d');
-      const varsity = getSelectedVarsity();
+      const sc = document.getElementById('storyShareCanvas');
+      const sctx = sc.getContext('2d');
 
-      // 1. Background Gradient (Stadium Night Theme)
-      const bgGrad = sCtx.createLinearGradient(0, 0, 0, 1920);
-      bgGrad.addColorStop(0, '#06101E');
-      bgGrad.addColorStop(0.5, '#0A2A1A');
-      bgGrad.addColorStop(1, '#040A10');
-      sCtx.fillStyle = bgGrad;
-      sCtx.fillRect(0, 0, 1080, 1920);
+      // Gradient background
+      const bgGrad = sctx.createLinearGradient(0, 0, 0, 1920);
+      bgGrad.addColorStop(0, '#2A125E');
+      bgGrad.addColorStop(0.5, '#120A2A');
+      bgGrad.addColorStop(1, '#0A0518');
+      sctx.fillStyle = bgGrad;
+      sctx.fillRect(0, 0, 1080, 1920);
 
-      // 2. Floodlight Flare
-      const flare = sCtx.createRadialGradient(540, -100, 100, 540, 400, 800);
-      flare.addColorStop(0, 'rgba(0, 223, 137, 0.4)');
-      flare.addColorStop(1, 'transparent');
-      sCtx.fillStyle = flare;
-      sCtx.fillRect(0, 0, 1080, 800);
+      // Gold Crown Logo
+      sctx.fillStyle = '#FBCD5D';
+      sctx.font = '900 64px Outfit';
+      sctx.textAlign = 'center';
+      sctx.fillText('👑 CAMPUS FUTSAL CHAMP', 540, 240);
 
-      // 3. Header Branding
-      sCtx.fillStyle = '#00DF89';
-      sCtx.font = 'bold 36px JetBrains Mono';
-      sCtx.textAlign = 'center';
-      sCtx.fillText('⚽ CAMPUS CUP 2026 // MINI-CUP SHOOTOUT', 540, 220);
+      sctx.fillStyle = '#9354E9';
+      sctx.font = '700 36px JetBrains Mono';
+      sctx.fillText('SEASON 2 // OFFICIAL FAN HUB', 540, 310);
 
-      sCtx.fillStyle = '#FFFFFF';
-      sCtx.font = '900 82px Space Grotesk';
-      sCtx.fillText('I SCORED FOR MY VARSITY!', 540, 320);
+      // Score Plate
+      sctx.fillStyle = 'rgba(25, 15, 56, 0.9)';
+      sctx.strokeStyle = '#9354E9';
+      sctx.lineWidth = 4;
+      sctx.beginPath();
+      sctx.roundRect(140, 480, 800, 720, 40);
+      sctx.fill();
+      sctx.stroke();
 
-      // 4. Varsity Badge Shield
-      sCtx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-      sCtx.strokeStyle = '#00DF89';
-      sCtx.lineWidth = 4;
-      sCtx.beginPath();
-      sCtx.roundRect(240, 420, 600, 280, 40);
-      sCtx.fill();
-      sCtx.stroke();
+      sctx.fillStyle = '#FFFFFF';
+      sctx.font = '800 48px Space Grotesk';
+      sctx.fillText(currentVarsity.name.toUpperCase(), 540, 580);
 
-      sCtx.font = '100px Space Grotesk';
-      sCtx.fillText(varsity.badge, 540, 540);
-      sCtx.fillStyle = '#FFFFFF';
-      sCtx.font = 'bold 50px Space Grotesk';
-      sCtx.fillText(`${varsity.name} (${varsity.short})`, 540, 640);
+      sctx.fillStyle = '#FBCD5D';
+      sctx.font = '900 160px Outfit';
+      sctx.fillText(score.toString(), 540, 780);
 
-      // 5. Giant Score Stat Box
-      sCtx.fillStyle = 'rgba(0, 223, 137, 0.15)';
-      sCtx.strokeStyle = 'rgba(0, 223, 137, 0.4)';
-      sCtx.lineWidth = 4;
-      sCtx.beginPath();
-      sCtx.roundRect(140, 780, 800, 480, 50);
-      sCtx.fill();
-      sCtx.stroke();
+      sctx.fillStyle = '#94A3B8';
+      sctx.font = '700 32px JetBrains Mono';
+      sctx.fillText('PENALTY GOALS SCORED', 540, 850);
 
-      sCtx.fillStyle = '#A0AEC0';
-      sCtx.font = 'bold 36px JetBrains Mono';
-      sCtx.fillText('PENALTY GOALS SCORED', 540, 870);
+      sctx.fillStyle = '#9354E9';
+      sctx.font = '800 44px Space Grotesk';
+      sctx.fillText(`BEST STREAK: ${bestStreak} IN A ROW 🔥`, 540, 960);
 
-      sCtx.fillStyle = '#00DF89';
-      sCtx.font = '900 210px Outfit';
-      sCtx.fillText(score, 540, 1080);
+      sctx.fillStyle = '#FFFFFF';
+      sctx.font = '600 32px Inter';
+      sctx.fillText('Can your campus beat my streak?', 540, 1100);
 
-      sCtx.fillStyle = '#FFB800';
-      sCtx.font = 'bold 44px Space Grotesk';
-      sCtx.fillText(`BEST STREAK: ${bestStreak} IN A ROW 🔥`, 540, 1180);
+      // Footer Branding
+      sctx.fillStyle = '#FBCD5D';
+      sctx.font = '800 36px Space Grotesk';
+      sctx.fillText('PLAY AT: CAMPUSFUTSALCHAMP.COM', 540, 1680);
 
-      // 6. Call to Action & URL
-      sCtx.fillStyle = '#FFFFFF';
-      sCtx.font = 'bold 42px Space Grotesk';
-      sCtx.fillText('Can you beat my shootout record?', 540, 1420);
+      sctx.fillStyle = '#94A3B8';
+      sctx.font = '500 28px Inter';
+      sctx.fillText('Small Court, Big Dreams · Play. Compete. Win.', 540, 1740);
 
-      sCtx.fillStyle = '#00F0FF';
-      sCtx.font = 'bold 36px JetBrains Mono';
-      sCtx.fillText('PLAY LIVE AT: gro10x-ai.vercel.app/prototypes/campus-cup', 540, 1500);
-
-      // 7. Footer Powered By
-      sCtx.fillStyle = '#718096';
-      sCtx.font = '28px JetBrains Mono';
-      sCtx.fillText('GRO10X TOURNAMENT OS • ZERO-DOWNLOAD MOBILE WEB', 540, 1720);
-
-      // Trigger automatic file download
-      const link = document.createElement('a');
-      link.download = `CampusCup-${varsity.short}-${score}Goals.png`;
-      link.href = shareCanvas.toDataURL('image/png');
-      link.click();
+      const dataUrl = sc.toDataURL('image/png');
+      const w = window.open('');
+      w.document.write(`<img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:auto;">`);
     }
 
-    function copyTournamentLink() {
-      const url = 'https://gro10x-ai.vercel.app/prototypes/campus-cup/';
-      navigator.clipboard.writeText(url).then(() => {
-        alert('⚽ Copied Campus Cup tournament shootout link to clipboard!');
-      });
-    }
-
-    function submitPrediction(team) {
-      document.getElementById('predictionResultBox').classList.remove('hidden');
-    }
-
-    // ── 8. Boot Initialization ──────────────────────────────────────────────
-    window.addEventListener('DOMContentLoaded', () => {
-      setVarsity(selectedVarsityId);
-      renderLeaderboard();
-      renderQuickVarsityRow();
-      renderVarsityModalGrid();
-      updateHUD();
-      resetBall();
-      requestAnimationFrame(gameLoop);
+    // ── Initialize App State ──────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      renderGroupPills();
+      gameLoop();
     });
   </script>
 </body>

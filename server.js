@@ -641,9 +641,12 @@ app.get(['/prototypes/mexsa-futsal', '/prototypes/mexsa-futsal/'], (req, res) =>
   res.sendFile(path.join(__dirname, 'public/prototypes/mexsa-futsal/index.html'));
 });
 
-// Campus Cup Inter-University Football OS & Mini-Cup Penalty Shootout
+// Campus Futsal Champ Season 2 (CFC S2) — Primary Sponsor Link & Aliases
+app.get(['/prototypes/cfc', '/prototypes/cfc/', '/campus-futsal-champ', '/campus-futsal-champ/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/cfc/index.html'));
+});
 app.get(['/prototypes/campus-cup', '/prototypes/campus-cup/'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/prototypes/campus-cup/index.html'));
+  res.sendFile(path.join(__dirname, 'public/prototypes/cfc/index.html'));
 });
 
 // Madman 3D WebGL Interactive Proof-of-Concept Prototype
