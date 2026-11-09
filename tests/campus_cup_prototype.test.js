@@ -88,7 +88,8 @@ describe('Campus Futsal Champ (Season 2) — Forensic Verification Suite', () =>
       expect(content).toContain('Runner-Up:');
       expect(content).toContain('৳1,50,000');
       expect(content).toContain('Man of the Match:');
-      expect(content).toContain('৳1,00,0/match');
+      expect(content).toContain('৳1,000/match');
+      expect(content).not.toContain('৳1,00,0/match');
       expect(content).toContain('Semi-Final:');
       expect(content).toContain('৳5,000');
       expect(content).toContain('Man of the Final:');
@@ -102,7 +103,7 @@ describe('Campus Futsal Champ (Season 2) — Forensic Verification Suite', () =>
       expect(content).not.toContain('৳5,00,000'); // Old incorrect purse
     });
 
-    test('8. Day 1 to Day 6 competition rhythm with zero invented calendar dates', () => {
+    test('8. Day 1 to Day 6 competition rhythm with zero invented calendar dates and 7+7 min group durations', () => {
       expect(content).toContain('DAY 1');
       expect(content).toContain('DAY 2');
       expect(content).toContain('DAY 3');
@@ -110,6 +111,9 @@ describe('Campus Futsal Champ (Season 2) — Forensic Verification Suite', () =>
       expect(content).toContain('DAY 5');
       expect(content).toContain('DAY 6');
       expect(content).toContain('NO CALENDAR DATES INVENTED');
+      expect(content).toContain('Morning & Afternoon Sessions · 7+7 min');
+      expect(content).toContain('High-Intensity Group Stage · 7+7 min');
+      expect(content).toContain('Best Runners-Up Deciders · 7+7 min');
     });
 
     test('9. Season window Dec 2026 – Jan 2027 and proposed venues labelled PROPOSED', () => {
@@ -221,16 +225,22 @@ describe('Campus Futsal Champ (Season 2) — Forensic Verification Suite', () =>
       expect(content).not.toContain('voucher');
     });
 
-    test('20. C3: Surface 9 (Player Pass) does NOT mention GRO10X and does NOT mention biometric', () => {
+    test('20. C3: Surface 9 (Player Pass) does NOT mention GRO10X or biometric, and uses sanitized sample names', () => {
       // Find the player pass section
       const rosterSection = content.split('id="tab-roster"')[1].split('</section>')[0];
       expect(rosterSection).not.toContain('GRO10X');
       expect(rosterSection).not.toMatch(/biometric/i);
       expect(rosterSection).toContain('Student ID');
       expect(rosterSection).toContain('QR Verified');
+
+      // Sanitize check: No Shakib or Farhan anywhere in the file; Zubair Ahmed & Saimum Hossain present
+      expect(content).not.toMatch(/Shakib/i);
+      expect(content).not.toMatch(/Farhan Kabir/i);
+      expect(content).toContain('Zubair Ahmed');
+      expect(content).toContain('Saimum Hossain');
     });
 
-    test('21. Surface 10 (Partners): Ladder tiers with 7 [ YOUR BRAND HERE ] slots & verbatim enquiries block', () => {
+    test('21. Surface 10 (Partners): Ladder tiers with 7 [ YOUR BRAND HERE ] slots & linked enquiries block', () => {
       expect(content).toContain('1. TITLE SPONSOR');
       expect(content).toContain('৳25,00,000');
       expect(content).toContain('2. POWERED BY SPONSOR');
@@ -245,7 +255,9 @@ describe('Campus Futsal Champ (Season 2) — Forensic Verification Suite', () =>
       expect(content).toContain('7. STREAMING PARTNER');
       expect(content).toContain('8. TECHNOLOGY PARTNER');
       expect(content).toContain('[ YOUR BRAND HERE ]');
-      expect(content).toContain('PARTNERSHIP ENQUIRIES · 01300-226959 · CAMPUSFUTSALCHAMP.COM');
+      expect(content).toContain('PARTNERSHIP ENQUIRIES');
+      expect(content).toContain('href="tel:01300226959"');
+      expect(content).toContain('href="https://campusfutsalchamp.com"');
     });
 
     test('22. Procedural Web Audio API sound synthesizer functions are configured', () => {
