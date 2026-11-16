@@ -365,6 +365,26 @@
       "dest": "/public/superleague/index.html"
     },
     {
+      "src": "/prototypes/shomvob-academy/audio/(.*)",
+      "dest": "/public/prototypes/shomvob-academy/audio/$1"
+    },
+    {
+      "src": "/prototypes/shomvob-academy/styles.css",
+      "dest": "/public/prototypes/shomvob-academy/styles.css"
+    },
+    {
+      "src": "/prototypes/shomvob-academy/app.js",
+      "dest": "/public/prototypes/shomvob-academy/app.js"
+    },
+    {
+      "src": "/prototypes/shomvob-academy/?$",
+      "dest": "/public/prototypes/shomvob-academy/index.html"
+    },
+    {
+      "src": "/prototypes/shomvob-academy/index(.*)",
+      "dest": "/public/prototypes/shomvob-academy/index.html"
+    },
+    {
       "src": "/prototypes/passkoro/audio/(.*)",
       "dest": "/public/prototypes/passkoro/audio/$1"
     },
@@ -503,6 +523,18 @@
     {
       "src": "/workspace/(.*)",
       "dest": "/public/workspace/$1"
+    },
+    {
+      "src": "/preview/?$",
+      "dest": "/public/preview/index.html"
+    },
+    {
+      "src": "/preview/index(.*)",
+      "dest": "/public/preview/index.html"
+    },
+    {
+      "src": "/preview/(.*)",
+      "dest": "/public/preview/$1"
     },
     {
       "src": "/workspace",

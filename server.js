@@ -630,6 +630,12 @@ app.get(['/superleague', '/superleague/', '/prototypes/superleague', '/prototype
 });
 app.use('/superleague', express.static(path.join(__dirname, 'public/superleague')));
 
+// Shomvob Academy — Journey Experience Prototype v1 (Customer Service & Call Centre Job Ready)
+app.get(['/prototypes/shomvob-academy', '/prototypes/shomvob-academy/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/prototypes/shomvob-academy/index.html'));
+});
+app.use('/prototypes/shomvob-academy', express.static(path.join(__dirname, 'public/prototypes/shomvob-academy')));
+
 // PassKoro — UK Driving Theory, Life in UK & Visa English (Bilingual Diaspora OS)
 app.get(['/prototypes/passkoro', '/prototypes/passkoro/', '/passkoro', '/passkoro/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/prototypes/passkoro/index.html'));
@@ -719,6 +725,11 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
   }
 }));
+
+// Staging Preview for Homepage Build v1 (10XWeb Product Delivery)
+app.get(['/preview', '/preview/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/preview/index.html'));
+});
 
 // Explicit Multi-Portal Routes (Phase C Architecture)
 app.get('/', (req, res) => {
