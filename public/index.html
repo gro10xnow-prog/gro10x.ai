@@ -1,911 +1,1207 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GRO10X — AI-First Growth Agency & Multi-Engine Ecosystem</title>
-  <meta name="description" content="GRO10X helps businesses build smart AI apps, automate marketing, create synthetic media, and scale 10x faster through software engineering and data science.">
-  
-  <!-- OpenGraph & Social Media Metadata -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="GRO10X — AI-First Growth Agency & Multi-Engine Ecosystem">
-  <meta property="og:description" content="Grow 10x Smarter with AI software engineering, synthetic media automation, and operational data intelligence.">
-  <meta property="og:url" content="https://gro10x-ai.vercel.app">
-  <meta property="og:site_name" content="GRO10X">
-  <meta property="og:image" content="https://gro10x-ai.vercel.app/images/og-preview.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="GRO10X — AI-First Growth Agency">
-  <meta name="twitter:description" content="Building smart AI apps, automating marketing, and scaling revenue with 5 diversified AI growth engines.">
-  <meta name="twitter:image" content="https://gro10x-ai.vercel.app/images/og-preview.png">
-  <meta name="author" content="GRO10X">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="dark"/>
+<link rel="icon" href="data:,"/>
+<title>GRO10X Homepage — Design Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#070B12; --navy2:#0C1420; --navy3:#111C2E;
+  --white:#FFFFFF; --emerald:#00DF89; --cyan:#00F0FF;
+  --line:rgba(255,255,255,.14); --line-dark:rgba(7,11,18,.14);
+  --muted:#A8B3C2; --muted-dark:#4A5568;
+  --px:0; --py:0;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--navy);color:var(--white);font-family:Inter,system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+/* faint circuit/grid world continuing under the whole page */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,223,137,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(0,223,137,.028) 1px,transparent 1px);
+  background-size:56px 56px}
+body>*{position:relative;z-index:1}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;min-height:44px}
+h1,h2,h3{font-family:"Space Grotesk",sans-serif;line-height:.95;letter-spacing:-.02em;margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+@media(min-width:768px){.wrap{padding:0 32px}}
 
-  <!-- Favicons & App Icons -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="/images/logo-icon-192.png">
+/* topbar */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(7,11,18,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;height:68px}
+.logo{display:inline-flex;align-items:center;padding:6px 0}
+.logo img{display:block;height:30px;width:auto}
+@media(max-width:480px){.logo img{height:25px}}
+.nav{display:none;gap:28px;font-size:14px;font-weight:600;color:#D6DEE8}
+.nav a{padding:10px 0}
+.nav a:hover{color:var(--emerald)}
+.top-actions{display:flex;align-items:center;gap:10px}
+.portal-link{font-size:13px;font-weight:600;color:var(--muted);padding:10px 8px;display:none}
+@media(min-width:900px){.portal-link{display:inline-flex}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:14px;padding:0 20px;border-radius:6px;border:2px solid transparent;min-height:44px;white-space:nowrap;transition:transform .25s ease,background .25s ease,border-color .25s ease,color .25s ease,box-shadow .25s ease}
+.btn-emerald{background:var(--emerald);color:#04140C;border-color:var(--emerald)}
+.btn-emerald:hover{background:#22f0a1;transform:translateY(-2px)}
+.btn-outline{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+.btn-outline:hover{border-color:var(--emerald);color:var(--emerald);transform:translateY(-2px)}
+.btn-dark{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-dark:hover{background:#162033}
+.burger{width:44px;height:44px;display:grid;place-items:center;background:transparent;border:1px solid var(--line);border-radius:6px;color:#fff}
+@media(min-width:1024px){.nav{display:flex}.burger{display:none}}
+.mobile-nav{display:none;border-top:1px solid var(--line);padding:12px 20px 18px;background:var(--navy)}
+.mobile-nav.open{display:block}
+.mobile-nav a{display:block;padding:12px 4px;font-weight:600;border-bottom:1px solid var(--line)}
+.mobile-nav a:last-child{border-bottom:none}
 
-  <!-- Fonts & Stylesheets -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" href="/css/tokens.css" as="style">
-  <link rel="preload" href="/css/landing.css" as="style">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/landing.css">
+/* ============ HERO (merged hero concept) ============ */
+.hero{position:relative;height:calc(100dvh - 68px);display:flex;flex-direction:column;overflow:hidden;isolation:isolate;background:var(--navy)}
+.hero-grid-layer{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,223,137,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(0,223,137,.045) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:radial-gradient(ellipse 90% 80% at 60% 40%,black 30%,transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 80% at 60% 40%,black 30%,transparent 78%);
+  transform:translate(calc(var(--px) * -6px),calc(var(--py) * -6px))}
+.hero-circuit{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.5;width:100%;height:100%;
+  transform:translate(calc(var(--px) * -10px),calc(var(--py) * -10px))}
+#nodes{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero-topfade{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 55% 45% at 78% 42%,rgba(0,223,137,.10),transparent 65%),linear-gradient(180deg,rgba(7,11,18,.25),transparent 30%,transparent 78%,rgba(7,11,18,.65))}
+.hero-main{position:relative;z-index:3;flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);align-items:center;width:100%;max-width:1200px;margin:0 auto;padding:0 32px;gap:1rem}
+.hero-copy{max-width:46rem}
+.eyebrow{margin:0 0 1.15rem;font-size:.78rem;letter-spacing:.34em;font-weight:700;color:var(--emerald);text-transform:uppercase;display:flex;align-items:center;gap:.8rem;animation:rise .8s cubic-bezier(.22,.8,.3,1) .15s both}
+.eyebrow::before{content:"";width:2.4rem;height:1px;background:var(--emerald);flex:none}
+.hero h1{font-size:clamp(2.9rem,6.1vw,5.4rem);font-weight:700;line-height:1.02;letter-spacing:-.015em;max-width:none}
+.hero h1 .line{display:block;animation:rise .9s cubic-bezier(.22,.8,.3,1) both}
+.hero h1 .line:nth-child(1){animation-delay:.28s}
+.hero h1 .line:nth-child(2){animation-delay:.42s}
+.hero h1 .line:nth-child(3){animation-delay:.56s}
+.hero h1 .accent{color:var(--emerald)}
+.note-tag{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.05rem;background:rgba(0,240,255,.08);border:1px dashed rgba(0,240,255,.4);color:rgba(255,255,255,.75);font-size:.72rem;font-weight:500;letter-spacing:.04em;padding:.38rem .7rem;border-radius:999px;max-width:100%;animation:rise .8s cubic-bezier(.22,.8,.3,1) .72s both}
+.note-tag i{width:6px;height:6px;border-radius:50%;background:var(--cyan);flex:none;font-style:normal}
+.note-tag.on-light{color:#33505C}
+.hero-sub{margin:1.15rem 0 0;max-width:34rem;font-size:clamp(1rem,1.35vw,1.13rem);line-height:1.6;color:rgba(255,255,255,.68);animation:rise .8s cubic-bezier(.22,.8,.3,1) .84s both}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:.85rem;margin-top:1.7rem;animation:riseT .8s cubic-bezier(.22,.8,.3,1) .98s both}
+.hero-ctas .btn{padding:0 1.6rem;min-height:52px;font-size:.98rem}
+/* living prism */
+.hero-visual{position:relative;height:100%;min-height:0;display:flex;align-items:center;justify-content:center;animation:xin 1.3s cubic-bezier(.22,.8,.3,1) .35s both}
+.hero-glow{position:absolute;width:78%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(0,223,137,.30) 0%,rgba(0,223,137,.10) 45%,transparent 70%);filter:blur(28px);animation:pulse 6s ease-in-out infinite}
+.prism-wrap{position:relative;height:min(52dvh,92%);aspect-ratio:1;transform:translate(calc(var(--px) * 14px),calc(var(--py) * 14px))}
+.prism-float{width:100%;height:100%;animation:floaty 7s ease-in-out infinite;filter:drop-shadow(0 24px 48px rgba(0,223,137,.22))}
+.prism-float svg{width:100%;height:100%;display:block;overflow:visible}
+.glint{animation:glintmove 5.5s ease-in-out infinite}
+.scroll-cue{position:relative;z-index:6;display:flex;flex-direction:column;align-items:center;gap:.3rem;padding-bottom:.55rem;color:rgba(255,255,255,.5);font-size:.64rem;letter-spacing:.3em;font-weight:500;text-transform:uppercase;animation:riseT .8s ease 1.3s both}
+.scroll-cue svg{animation:cuebob 2.2s ease-in-out infinite}
+/* marquee (hero + divider language) */
+.marquee{position:relative;z-index:4;border-top:1px solid rgba(255,255,255,.12);overflow:hidden;flex:none;padding:.68rem 0;mask-image:linear-gradient(90deg,transparent,black 6%,black 94%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,black 6%,black 94%,transparent)}
+.marquee-track{display:flex;width:max-content;animation:scrollx 30s linear infinite}
+.marquee span{font-family:"Space Grotesk",sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.26em;color:rgba(255,255,255,.66);white-space:nowrap;padding-right:.9em;text-transform:uppercase}
+.marquee b{color:var(--emerald);font-weight:700;padding-right:.9em}
+.divider-marquee{border-bottom:1px solid rgba(255,255,255,.12);background:rgba(12,20,32,.55)}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes riseT{from{transform:translateY(20px)}to{transform:translateY(0)}}
+@keyframes xin{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-1.4deg)}50%{transform:translateY(-14px) rotate(1.4deg)}}
+@keyframes pulse{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
+@keyframes glintmove{0%{transform:translateX(-46%) skewX(-14deg);opacity:0}18%{opacity:.85}42%{transform:translateX(46%) skewX(-14deg);opacity:0}100%{transform:translateX(46%) skewX(-14deg);opacity:0}}
+@keyframes scrollx{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes cuebob{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(5px);opacity:1}}
+@media(max-width:700px){
+  .hero-main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;align-content:start;align-items:start;padding:0 20px;padding-top:.2rem;gap:0}
+  .hero-visual{order:-1;height:auto;justify-content:flex-end;padding-right:.4rem;margin-top:.6rem}
+  .prism-wrap{height:17.5dvh}
+  .hero-glow{width:105%}
+  .hero-topfade{background:radial-gradient(ellipse 70% 30% at 76% 16%,rgba(0,223,137,.08),transparent 65%),linear-gradient(180deg,rgba(7,11,18,.25),transparent 30%,transparent 78%,rgba(7,11,18,.65))}
+  .hero-copy{align-self:start;margin-top:.7rem}
+  .hero h1{font-size:clamp(2.3rem,11.2vw,3.1rem);line-height:1.05}
+  .eyebrow{letter-spacing:.26em;font-size:.7rem;margin-bottom:.8rem}
+  .hero-sub{margin-top:.9rem;font-size:.98rem;line-height:1.55}
+  .note-tag{margin-top:.8rem}
+  .hero-ctas{margin-top:1.25rem;gap:.7rem}
+  .hero-ctas .btn{flex:1 1 auto;padding:0 1.1rem;font-size:.92rem;min-height:50px}
+  .scroll-cue span{display:none}
+}
+@media(max-height:500px){.hero-visual{display:none}}
 
-  <!-- Structured Data (JSON-LD) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    "name": "GRO10X",
-    "description": "AI-First Growth Agency and Multi-Engine Ecosystem specializing in AI apps, workflow automation, and synthetic media.",
-    "url": "https://gro10x-ai.vercel.app",
-    "telephone": "+8801711019550",
-    "email": "gro10xnow@gmail.com",
-    "priceRange": "$$",
-    "areaServed": "Global"
-  }
-  </script>
+/* ============ DIGITAL WORKFORCE — SIX-SLIDE SECTION (one-screen, guided) ============ */
+.wf{padding:0;background:var(--navy);border-top:1px solid var(--line)}
+.wf .wrap{display:flex;flex-direction:column;min-height:calc(100dvh - 68px);padding-bottom:10px}
+.wf-chrome{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 14px;padding:10px 2px 8px;flex:none}
+.wf-counter{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:13px;letter-spacing:.12em;color:#fff;white-space:nowrap}
+.wf-counter b{color:var(--emerald);font-size:20px}
+.wf-viewport{overflow:hidden;border:2px solid var(--line);border-radius:12px;background:var(--navy2);outline:none;flex:1 1 auto;min-height:0;position:relative}
+.wf-viewport:focus-visible{border-color:var(--emerald);box-shadow:0 0 0 3px rgba(0,223,137,.25)}
+.wf-track{position:absolute;inset:0;display:flex;transition:transform .6s cubic-bezier(.22,.8,.3,1);will-change:transform}
+.wf-slide{flex:0 0 100%;min-width:0;height:100%;max-height:100%;display:flex;flex-direction:column;justify-content:flex-start;--pad-x:clamp(18px,4vw,52px);--pad-t:clamp(18px,3vh,32px);--calm:54%;--step-h:88px;padding:var(--pad-t) var(--pad-x) calc(var(--step-h) + 14px);position:relative;overflow:hidden}
+/* per-slide illustration layer — scene on the right, calm dark left is the text's home */
+.wf-art{position:absolute;top:0;left:0;right:0;bottom:var(--step-h);z-index:0;overflow:hidden;pointer-events:none;background:var(--navy2)}
+.wf-art img{width:100%;height:100%;object-fit:cover;object-position:right center;display:block;transform:scale(1.04)}
+.wf-slide.is-active .wf-art img{animation:wfZoom 16s ease-in-out infinite alternate}
+@keyframes wfZoom{from{transform:scale(1.04) translateX(0)}to{transform:scale(1.12) translateX(-1.2%)}}
+.wf-art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,11,18,.87) 0%,rgba(7,11,18,.68) 34%,rgba(7,11,18,.30) 58%,rgba(7,11,18,.05) 82%),linear-gradient(0deg,var(--navy2) 0%,rgba(12,20,32,.72) 9%,rgba(12,20,32,.28) 19%,rgba(12,20,32,0) 28%)}
+.wf-slide.is-active>.wf-art{animation:wfArtIn .7s ease both}
+@keyframes wfArtIn{from{opacity:0}to{opacity:1}}
+/* prism shimmer sweep on active panel */
+.wf-slide::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(0,223,137,.14) 48%,rgba(0,240,255,.10) 52%,transparent 62%);transform:translateX(-110%);opacity:0}
+.wf-slide.is-active::before{animation:wfSweep .85s cubic-bezier(.22,.8,.3,1) .08s both}
+@keyframes wfSweep{0%{transform:translateX(-110%);opacity:0}18%{opacity:1}100%{transform:translateX(110%);opacity:0}}
+/* directional content entrance */
+.wf-slide.is-active>*{animation:wfInNext .55s cubic-bezier(.22,.8,.3,1) both}
+.wf-slide.is-active>*:nth-child(1){animation-delay:.02s}.wf-slide.is-active>*:nth-child(2){animation-delay:.06s}.wf-slide.is-active>*:nth-child(3){animation-delay:.10s}.wf-slide.is-active>*:nth-child(4){animation-delay:.14s}.wf-slide.is-active>*:nth-child(5){animation-delay:.18s}.wf-slide.is-active>*:nth-child(6){animation-delay:.22s}.wf-slide.is-active>*:nth-child(7){animation-delay:.26s}
+.wf-viewport[data-dir="prev"] .wf-slide.is-active>*{animation-name:wfInPrev}
+@keyframes wfInNext{from{opacity:0;transform:translateX(26px) translateY(6px)}to{opacity:1;transform:none}}
+@keyframes wfInPrev{from{opacity:0;transform:translateX(-26px) translateY(6px)}to{opacity:1;transform:none}}
+.wf-eyebrow{font-size:11px;letter-spacing:.26em;font-weight:700;text-transform:uppercase;color:var(--emerald);display:flex;align-items:center;gap:.7rem;margin:0 0 10px;max-width:var(--calm);position:relative;z-index:1}
+.wf-eyebrow::before{content:"";width:2.2rem;height:1px;background:var(--emerald);flex:none}
+.wf-title{font-size:clamp(36px,6.2vw,68px);font-weight:700;position:relative;z-index:1;max-width:min(14ch,var(--calm));line-height:.98}
+.wf-title.small{font-size:clamp(28px,4.8vw,52px);max-width:min(18ch,var(--calm));line-height:1.02}
+.wf-title .accent{color:var(--emerald)}
+.wf-line{margin:10px 0 0;max-width:var(--calm);font-size:clamp(14.5px,1.4vw,17.5px);line-height:1.55;color:#D6DEE8;position:relative;z-index:1}
+.wf-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;position:relative;z-index:1;max-width:var(--calm)}
+.wf-chip{font-size:12.5px;font-weight:600;border:1px solid rgba(0,223,137,.45);color:#E6FFF3;padding:6px 11px;border-radius:999px;background:rgba(0,223,137,.06)}
+.wf-proof{margin-top:12px;font-size:13px;color:var(--muted);position:relative;z-index:1;display:flex;gap:10px;align-items:flex-start;max-width:var(--calm);line-height:1.5}
+.wf-proof svg{flex:none;margin-top:2px;color:var(--cyan)}
+.wf-proof strong{color:#fff;font-weight:600}
+.wf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;max-width:var(--calm);position:relative;z-index:1}
+.wf-stat{border-top:2px solid var(--emerald);padding-top:8px}
+.wf-stat strong{font-family:"Space Grotesk",sans-serif;font-size:clamp(22px,2.9vw,31px);display:block;line-height:1;color:#fff}
+.wf-stat span{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);line-height:1.3;display:block;margin-top:3px}
+.wf-process{margin-top:14px;font-size:12px;line-height:1.6;color:var(--muted);max-width:var(--calm);position:relative;z-index:1;border:1px dashed rgba(0,240,255,.35);border-radius:8px;padding:9px 12px;background:rgba(0,240,255,.04)}
+.wf-process strong{color:#fff;letter-spacing:.08em;text-transform:uppercase;font-size:11px}
+.wf-door{margin-top:14px;max-width:var(--calm);position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.wf-door .btn{transition:transform .22s ease,box-shadow .22s ease,background .22s ease}
+.wf-door .btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,223,137,.22)}
+.wf-door .btn:active{transform:translateY(0) scale(.98)}
+/* guided step-through footer — the hero control of each slide */
+.wf-step{position:absolute;left:0;right:0;bottom:0;height:var(--step-h);margin:0;padding:0 var(--pad-x);background:#060A11;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:nowrap;border-top:1px solid rgba(255,255,255,.14)}
+.wf-step-meta{font-family:"Space Grotesk",sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.wf-step-meta b{color:var(--emerald)}
+.wf-step-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;background:var(--emerald);color:#04140C;border:2px solid var(--emerald);font-weight:800;font-size:16px;line-height:1;height:52px;min-height:52px;padding:0 26px;border-radius:8px;box-shadow:0 8px 28px rgba(0,223,137,.28);transition:transform .22s ease,box-shadow .22s ease,background .22s ease}
+.wf-step-btn:hover{background:#22f0a1;transform:translateY(-2px);box-shadow:0 14px 32px rgba(0,223,137,.35)}
+.wf-step-btn:active{transform:scale(.98)}
+.wf-step-btn::after{content:"";position:absolute;top:0;bottom:0;width:46%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-16deg);animation:wfBtnGlint 3.2s ease-in-out infinite}
+@keyframes wfBtnGlint{0%,62%{left:-60%}86%,100%{left:120%}}
+.wf-step-btn .arr{font-size:20px;line-height:1}
+.wf-step-btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4);box-shadow:none}
+.wf-step-btn.ghost:hover{border-color:var(--emerald);color:var(--emerald);background:rgba(0,223,137,.06)}
+.wf-step-btn.ghost::after{display:none}
+.wf-slide-offer{background:linear-gradient(135deg,rgba(0,223,137,.14),rgba(0,240,255,.05) 55%,transparent)}
+.wf-slide-offer .btn{font-size:16px;min-height:56px;padding:0 30px}
+.wf-arrows{display:flex;gap:10px}
+.wf-arrow{width:44px;height:44px;min-height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:transparent;color:#fff;display:grid;place-items:center;transition:border-color .2s,color .2s,background .2s}
+.wf-arrow:hover{border-color:var(--emerald);color:var(--emerald)}
+.wf-arrow:disabled{opacity:.35;cursor:default}
+.wf-arrow:disabled:hover{border-color:rgba(255,255,255,.3);color:#fff}
+.wf-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.wf-dot{width:36px;height:44px;background:transparent;border:none;display:grid;place-items:center;padding:0}
+.wf-dot i{width:26px;height:4px;border-radius:99px;background:rgba(255,255,255,.25);display:block;transition:background .2s,width .2s}
+.wf-dot.active i{background:var(--emerald);width:36px}
+.wf-progress{height:3px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden;flex:none;margin:0 2px 10px}
+.wf-progress i{display:block;height:100%;background:var(--emerald);border-radius:99px;transition:width .5s cubic-bezier(.22,.8,.3,1)}
+@media(max-width:600px){
+  .wf .wrap{min-height:calc(100dvh - 68px)}
+  .wf-chrome{padding:8px 2px 6px;gap:2px 10px}
+  .wf-counter{font-size:11px}
+  .wf-counter b{font-size:16px}
+  .wf-dots{order:3;flex-basis:100%}
+  .wf-dot{width:30px;height:26px;min-height:26px}
+  .wf-dot i{width:18px}
+  .wf-dot.active i{width:28px}
+  .wf-slide{--pad-x:16px;--pad-t:16px;--calm:100%;--step-h:80px;padding:16px 16px calc(var(--step-h) + 12px)}
+  /* phone: illustration becomes a top band, all text below it on plain navy */
+  .wf-art{position:relative;inset:auto;flex:0 0 21%;min-height:104px;margin:calc(-1 * var(--pad-t)) calc(-1 * var(--pad-x)) 12px}
+  .wf-art img{object-position:68% center}
+  .wf-art::after{background:linear-gradient(180deg,rgba(12,20,32,0) 72%,var(--navy2) 100%)}
+  .wf-title{font-size:clamp(32px,9.5vw,44px)}
+  .wf-title.small{font-size:clamp(26px,7.8vw,36px)}
+  .wf-stats{gap:8px;margin-top:12px}
+  .wf-stat span{font-size:10px}
+  .wf-process{display:none}
+  .wf-step{padding:0 16px;gap:10px}
+  .wf-step-btn{flex:0 1 auto;justify-content:center;font-size:13.5px;height:44px;min-height:44px;padding:0 14px;white-space:nowrap}
+  .wf-step-meta{flex:1 1 auto;width:auto;text-align:left;font-size:10px;letter-spacing:.06em;line-height:1.4;white-space:normal}
+}
+@media(max-height:700px) and (min-width:601px){.wf-process{display:none}.wf-title{font-size:clamp(32px,5vw,52px)}}
+@media(prefers-reduced-motion:reduce){.wf-track{transition:none}.wf-slide.is-active>*{animation:wfFade .2s ease both}.wf-slide.is-active::before{animation:none;opacity:0}.wf-step-btn::after{animation:none;display:none}.wf-slide.is-active .wf-art img{animation:none}.wf-slide.is-active>.wf-art{animation:none}@keyframes wfFade{from{opacity:0}to{opacity:1}}}
+
+/* scroll reveals */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .4s cubic-bezier(.22,.8,.3,1),transform .4s cubic-bezier(.22,.8,.3,1)}
+.rv.in{opacity:1;transform:none}
+/* dock cards: transform-only reveal — their links are never opacity-gated */
+.rv.rvt{opacity:1}
+.rv.rvt.in{opacity:1}
+
+/* sections */
+.section{padding:64px 0;position:relative}
+@media(min-width:768px){.section{padding:88px 0}}
+.section-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:end;margin-bottom:32px}
+.section-head h2{font-size:clamp(36px,5.6vw,60px)}
+.section-head h2 em{font-style:normal;color:var(--emerald)}
+.section-head p{color:var(--muted);max-width:520px;margin:10px 0 0;font-size:16px}
+.section-head.light p{color:var(--muted-dark)}
+.kicker{font-size:11px;letter-spacing:.2em;font-weight:700;text-transform:uppercase;color:var(--emerald);margin-bottom:10px}
+.kicker-dark{color:#00875A}
+
+/* dock */
+.dock-grid{display:grid;gap:14px}
+@media(min-width:700px){.dock-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){.dock-grid{grid-template-columns:repeat(4,1fr)} .dock-wide{grid-column:span 4}}
+.dock-card{border:2px solid var(--line);background:var(--navy2);padding:22px;border-radius:8px;display:flex;flex-direction:column;gap:10px;min-height:180px;transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease}
+.dock-card h3{font-size:20px}
+.dock-card p{color:var(--muted);font-size:14px;margin:0;flex:1}
+.sim-badge{align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--emerald);border:1px solid rgba(0,223,137,.4);padding:5px 8px;border-radius:999px}
+.dock-link{font-weight:700;font-size:14px;color:#fff;display:inline-flex;gap:6px;align-items:center;padding:8px 0}
+.dock-link:hover{color:var(--emerald)}
+
+/* white sections */
+.white-sec{background:var(--white);color:var(--navy);
+  background-image:linear-gradient(rgba(7,11,18,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(7,11,18,.035) 1px,transparent 1px);background-size:56px 56px}
+.white-sec .section-head h2{color:var(--navy)}
+.white-sec .section-head h2 em{color:#00A86B}
+
+/* capabilities */
+.cap-grid{display:grid;gap:14px}
+@media(min-width:700px){.cap-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){.cap-grid{grid-template-columns:repeat(3,1fr)}}
+.cap-card{border:2px solid var(--navy);padding:24px;border-radius:8px;background:#fff;transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease}
+@media(min-width:1024px){.cap-card:first-child{grid-column:span 2;background:var(--navy);color:#fff}.cap-card:first-child p{color:#B9C4D3}}
+.cap-card h3{font-size:22px;margin-top:16px}
+.cap-card p{color:var(--muted-dark);font-size:15px;margin:8px 0 0}
+.icon-box{width:52px;height:52px;border:1.5px solid var(--emerald);border-radius:8px;display:grid;place-items:center;color:var(--emerald)}
+.icon-box svg{width:28px;height:28px}
+
+/* catalog */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.filter-btn{border:1.5px solid var(--line);background:transparent;color:#DDE6F0;padding:0 16px;border-radius:999px;font-weight:600;font-size:13px;min-height:40px}
+.filter-btn.active{background:var(--emerald);color:#04140C;border-color:var(--emerald)}
+.filter-btn span{opacity:.7;font-weight:500}
+.catalog-grid{display:grid;gap:12px}
+@media(min-width:700px){.catalog-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){.catalog-grid{grid-template-columns:repeat(3,1fr)}}
+.svc{border:1px solid var(--line);background:var(--navy2);padding:18px 18px 16px;border-radius:8px;transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease}
+.svc.hidden{display:none}
+.svc-top{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.svc h3{font-size:17px;font-family:Inter,sans-serif;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+.svc-cat{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);white-space:nowrap;padding-top:2px}
+.svc p{color:var(--muted);font-size:13.5px;margin:8px 0 0;line-height:1.55}
+.catalog-count{font-size:13px;color:var(--muted);margin-top:16px;font-weight:600}
+
+/* roadmap — connected path draws in stage by stage */
+.road{position:relative;display:grid;gap:14px}
+@media(min-width:900px){.road{grid-template-columns:repeat(4,1fr)} .road::before{content:"";position:absolute;left:0;right:0;top:28px;height:2px;background:linear-gradient(90deg,var(--emerald),rgba(0,223,137,.15));transform:scaleX(0);transform-origin:left center;transition:transform 1.6s cubic-bezier(.22,.8,.3,1) .2s}}
+.road.road-in::before{transform:scaleX(1)}
+.road-step{border:2px solid var(--line);background:var(--navy2);border-radius:8px;padding:22px;position:relative;transition:border-color .5s ease,box-shadow .5s ease}
+.road.road-in .road-step{border-color:rgba(0,223,137,.45)}
+.road.road-in .road-step:nth-child(1){transition-delay:.15s}
+.road.road-in .road-step:nth-child(2){transition-delay:.55s}
+.road.road-in .road-step:nth-child(3){transition-delay:.95s}
+.road.road-in .road-step:nth-child(4){transition-delay:1.35s;box-shadow:0 0 0 1px rgba(0,223,137,.25),0 10px 30px rgba(0,223,137,.08)}
+.step-num{width:56px;height:56px;border-radius:50%;background:var(--navy);border:2px solid var(--emerald);display:grid;place-items:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:20px;color:var(--emerald);position:relative;z-index:1}
+.road-step h3{font-size:19px;margin-top:16px}
+.road-step p{color:var(--muted);font-size:14px;margin:8px 0 0}
+.step-tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan)}
+
+/* pricing */
+.price-grid{display:grid;gap:14px}
+@media(min-width:900px){.price-grid{grid-template-columns:repeat(3,1fr)}}
+.price-card{border:2px solid var(--navy);border-radius:10px;padding:28px;background:#fff;display:flex;flex-direction:column;transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease}
+.price-card.featured{background:var(--navy);color:#fff;border-color:var(--navy)}
+.price-card.featured .price-sub,.price-card.featured li{color:#B9C4D3}
+.price-name{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#00875A}
+.price-card.featured .price-name{color:var(--emerald)}
+.price-amt{font-family:"Space Grotesk",sans-serif;font-size:44px;font-weight:700;line-height:1;margin-top:12px}
+.price-amt small{font-size:15px;font-family:Inter,sans-serif;font-weight:600;color:inherit;opacity:.7}
+.price-sub{color:var(--muted-dark);font-size:14px;margin-top:6px}
+.price-card ul{list-style:none;padding:0;margin:20px 0 24px;display:grid;gap:10px;font-size:14px;color:#2B3648}
+.price-card li{display:flex;gap:10px;align-items:start}
+.price-card li::before{content:"";width:18px;height:18px;flex:none;margin-top:2px;border-radius:50%;background:var(--emerald);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2307140C' stroke-width='3'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");background-size:12px;background-position:center;background-repeat:no-repeat}
+.price-card .btn{margin-top:auto;width:100%}
+
+/* estimator */
+.est-grid{display:grid;gap:20px}
+@media(min-width:900px){.est-grid{grid-template-columns:1.15fr .85fr}}
+.est-panel{border:2px solid var(--line);background:var(--navy2);border-radius:10px;padding:26px}
+.est-panel label{font-weight:700;font-size:14px;display:flex;justify-content:space-between;gap:12px}
+.est-panel label output{color:var(--emerald);font-family:"Space Grotesk",sans-serif;font-size:18px}
+input[type=range]{width:100%;accent-color:var(--emerald);height:36px}
+.range-hint{font-size:12px;color:var(--muted);margin-top:-4px}
+.est-result{background:var(--emerald);color:#04140C;border-radius:10px;padding:26px;display:flex;flex-direction:column;justify-content:center}
+.est-result .big{font-family:"Space Grotesk",sans-serif;font-size:clamp(36px,6vw,52px);font-weight:700;line-height:1}
+.est-result p{margin:8px 0 0;font-weight:600;font-size:14px;opacity:.85}
+.est-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.est-stat{border-top:2px solid rgba(4,20,12,.25);padding-top:10px}
+.est-stat strong{font-family:"Space Grotesk",sans-serif;font-size:22px;display:block;line-height:1}
+.est-stat span{font-size:12px;font-weight:600;opacity:.75;text-transform:uppercase;letter-spacing:.06em}
+
+/* testimonials */
+.testi-grid{display:grid;gap:14px}
+@media(min-width:900px){.testi-grid{grid-template-columns:repeat(3,1fr)}}
+.testi{border:2px solid var(--line);background:var(--navy2);border-radius:8px;padding:24px;transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease}
+.testi-mark{font-family:"Space Grotesk",sans-serif;font-size:36px;color:var(--emerald);line-height:1}
+.testi p{color:#D6DEE8;font-size:15px;margin:12px 0 18px}
+.testi-who{border-top:1px solid var(--line);padding-top:14px}
+.testi-who strong{display:block;font-size:15px}
+.testi-who span{font-size:13px;color:var(--muted)}
+
+/* card hover lift + emerald glow (desktop pointers) */
+@media(hover:hover) and (min-width:1024px){
+  .dock-card:hover,.cap-card:hover,.svc:hover,.price-card:hover,.testi:hover{transform:translateY(-4px);border-color:var(--emerald);box-shadow:0 14px 34px rgba(0,223,137,.13)}
+}
+
+/* faq */
+.faq-list{border-top:2px solid var(--navy)}
+.faq-item{border-bottom:2px solid var(--navy)}
+.faq-q{width:100%;background:none;border:none;text-align:left;display:flex;justify-content:space-between;gap:16px;align-items:center;padding:20px 4px;font-size:17px;font-weight:700;color:var(--navy);min-height:56px}
+.faq-q .chev{flex:none;width:32px;height:32px;border:2px solid var(--navy);border-radius:50%;display:grid;place-items:center;font-size:18px;line-height:1;transition:transform .2s}
+.faq-item.open .chev{transform:rotate(45deg);background:var(--emerald)}
+.faq-a{display:none;padding:0 4px 20px;color:var(--muted-dark);font-size:15px;max-width:760px}
+.faq-item.open .faq-a{display:block}
+
+/* contact */
+.contact-box{border:2px solid var(--emerald);border-radius:12px;padding:32px;background:linear-gradient(135deg,rgba(0,223,137,.10),transparent 55%)}
+@media(min-width:768px){.contact-box{padding:44px}}
+.contact-box h2{font-size:clamp(34px,6vw,58px);max-width:640px}
+.contact-box h2 em{font-style:normal;color:var(--emerald)}
+.contact-grid{display:grid;gap:20px;margin-top:28px}
+@media(min-width:768px){.contact-grid{grid-template-columns:1fr 1fr}}
+.contact-item{font-size:15px}
+.contact-item span{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--emerald);margin-bottom:4px}
+.contact-item a{font-weight:700;font-size:18px;text-decoration:underline;text-underline-offset:4px}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:36px 0 0;margin-top:0;position:relative;z-index:1}
+.foot-grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:start}
+.foot-links{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:14px;font-weight:600}
+.foot-links a{padding:8px 0;color:#C7D0DD}
+.foot-links a:hover{color:var(--emerald)}
+.foot-x{font-family:"Space Grotesk",sans-serif;font-size:72px;line-height:.8;color:transparent;-webkit-text-stroke:1px rgba(0,223,137,.25);font-weight:700;user-select:none}
+
+
+
+
+/* modal */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(4,8,14,.78);z-index:100;padding:20px;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:#fff;color:var(--navy);border-radius:12px;max-width:440px;width:100%;padding:28px;border:3px solid var(--emerald)}
+.modal h3{font-size:24px}
+.modal p{color:var(--muted-dark);font-size:14px}
+.modal .btn{width:100%;margin-top:8px}
+.toast{position:fixed;left:16px;right:16px;bottom:16px;z-index:120;background:var(--emerald);color:#04140C;font-weight:700;font-size:14px;padding:14px 16px;border-radius:8px;display:none;text-align:center}
+.toast.show{display:block}
+@media(min-width:700px){.toast{left:auto;right:24px;bottom:24px;max-width:380px;text-align:left}}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .eyebrow,.hero h1 .line,.note-tag,.hero-sub,.hero-ctas,.hero-visual,.scroll-cue{animation:none}
+  .prism-float,.hero-glow,.glint,.marquee-track,.scroll-cue svg{animation:none}
+  .glint{opacity:0}
+  .rv{opacity:1;transform:none;transition:none}
+  .road::before{transition:none;transform:scaleX(1)}
+  .btn,.dock-card,.cap-card,.svc,.price-card,.testi{transition:none}
+}
+</style>
+  <link rel="preload" as="image" href="/images/workforce/wf-slide-1.webp" fetchpriority="high">
 </head>
-<body class="pb-landing-body">
+<body>
 
-  <!-- TOP NAVBAR -->
-  <header class="pb-nav" id="topNav">
-    <div class="pb-nav-container">
-      <a href="/" class="pb-brand-logo">
-        <div class="pb-logo-badge">
-          <span>⚡</span>
-        </div>
-        <div class="pb-logo-text">
-          <span class="pb-brand-title">GRO10X</span>
-          <span class="pb-brand-sub">AI AGENCY</span>
-        </div>
-      </a>
-
-      <nav class="pb-nav-links" id="desktopNavLinks">
-        <a href="#capabilities" class="pb-nav-link">AI Capabilities</a>
-        <a href="#services" class="pb-nav-link">AI Services</a>
-        <a href="/ai-audit" class="pb-nav-link" style="color:#00df89; font-weight:700;">⚡ AI Audit</a>
-        <a href="#roadmap" class="pb-nav-link">Scaling Roadmap</a>
-        <a href="#pricing" class="pb-nav-link">Pricing</a>
-        <a href="#contact" class="pb-nav-link">Contact</a>
-      </nav>
-
-      <div class="pb-nav-actions">
-        <!-- Live Currency Switcher -->
-        <div class="currency-toggle-wrapper" title="Switch Currency (USD / BDT)">
-          <button type="button" class="curr-btn active" id="btnCurrUSD" onclick="setCurrency('USD')">🇺🇸 USD ($)</button>
-          <button type="button" class="curr-btn" id="btnCurrBDT" onclick="setCurrency('BDT')">🇧🇩 BDT (৳)</button>
-        </div>
-
-        <a href="/auth" class="pb-btn-portal" title="Client & Partner Login">
-          🔐 Client Portal
-        </a>
-        <button onclick="openLeadModal('AI Strategy Consultation')" class="pb-btn-primary">
-          🚀 Book AI Setup
-        </button>
-        <button class="pb-hamburger" id="mobileMenuBtn" aria-label="Toggle navigation menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a href="#top" class="logo" aria-label="GRO10X home"><img src="/images/gro10x-logo.png" alt="GRO10X"/></a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#workforce">Digital Workforce</a>
+      <a href="#capabilities">AI Capabilities</a>
+      <a href="#audit">AI Audit</a>
+      <a href="#roadmap">Scaling Roadmap</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="top-actions">
+      <a class="portal-link" href="#" data-sim="Client Portal">Client Portal</a>
+      <button class="btn btn-emerald" data-book="Book AI Setup">Book AI Setup</button>
+      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/></svg></button>
     </div>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" aria-label="Mobile">
+    <a href="#workforce">Digital Workforce</a>
+    <a href="#capabilities">AI Capabilities</a>
+    <a href="#audit">AI Audit</a>
+    <a href="#roadmap">Scaling Roadmap</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
+    <a href="#" data-sim="Client Portal">Client Portal</a>
+  </nav>
+</header>
 
-    <!-- Mobile Drawer Menu -->
-    <div class="pb-mobile-menu" id="mobileMenu">
-      <div class="pb-mobile-menu-inner">
-        <div style="display:flex; justify-content:center; margin-bottom:1rem;">
-          <div class="currency-toggle-wrapper">
-            <button type="button" class="curr-btn active" id="btnCurrUSDMobile" onclick="setCurrency('USD')">🇺🇸 USD ($)</button>
-            <button type="button" class="curr-btn" id="btnCurrBDTMobile" onclick="setCurrency('BDT')">🇧🇩 BDT (৳)</button>
-          </div>
-        </div>
-        <a href="#capabilities" class="pb-mobile-link" onclick="closeMobileMenu()">AI Capabilities</a>
-        <a href="#services" class="pb-mobile-link" onclick="closeMobileMenu()">AI Services</a>
-        <a href="/ai-audit" class="pb-mobile-link" style="color:#00df89; font-weight:700;" onclick="closeMobileMenu()">⚡ AI Readiness Audit</a>
-        <a href="#roadmap" class="pb-mobile-link" onclick="closeMobileMenu()">Scaling Roadmap</a>
-        <a href="#pricing" class="pb-mobile-link" onclick="closeMobileMenu()">Pricing & Retainers</a>
-        <a href="#contact" class="pb-mobile-link" onclick="closeMobileMenu()">Contact Us</a>
-        <div class="pb-mobile-actions">
-          <a href="/auth" class="pb-btn-portal" style="width:100%; text-align:center;">
-            🔐 Client Workspace Login
-          </a>
-          <button onclick="openLeadModal('AI Strategy Consultation'); closeMobileMenu();" class="pb-btn-primary" style="width:100%;">
-            🚀 Book AI Setup Now
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
+<main id="top">
+  <!-- HERO — merged from the approved Hero Concept -->
+  <section class="hero" id="hero">
+    <div class="hero-grid-layer" aria-hidden="true"></div>
+    <svg class="hero-circuit" aria-hidden="true" viewBox="0 0 1440 810" preserveAspectRatio="xMidYMid slice" fill="none">
+      <g stroke="#00DF89" stroke-width="1" opacity="0.35">
+        <path d="M-20 620 H300 L360 560 H620" />
+        <path d="M120 810 V540 L190 470 H430" />
+        <path d="M1440 180 H1150 L1090 240 H880" />
+        <path d="M1330 810 V470 L1260 400 H1030" />
+        <path d="M-20 150 H210 L280 220 H470" opacity=".6" />
+        <path d="M760 810 V640 L830 570 H1080" opacity=".6" />
+        <path d="M1440 560 H1230 L1170 620 H960" opacity=".55" />
+        <path d="M520 -20 V140 L590 210 H790" opacity=".5" />
+      </g>
+      <g fill="#00DF89">
+        <circle cx="300" cy="620" r="3" opacity=".7" /><circle cx="620" cy="560" r="2.4" opacity=".5" />
+        <circle cx="190" cy="470" r="3" opacity=".6" /><circle cx="430" cy="470" r="2.2" opacity=".45" />
+        <circle cx="1150" cy="180" r="3" opacity=".7" /><circle cx="880" cy="240" r="2.4" opacity=".5" />
+        <circle cx="1260" cy="400" r="2.6" opacity=".55" /><circle cx="280" cy="220" r="2.4" opacity=".5" />
+        <circle cx="830" cy="570" r="3" opacity=".6" /><circle cx="1170" cy="620" r="2.2" opacity=".45" />
+        <circle cx="590" cy="210" r="2.4" opacity=".45" />
+      </g>
+      <g fill="#00F0FF">
+        <circle cx="1030" cy="400" r="2" opacity=".55" />
+        <circle cx="470" cy="220" r="2" opacity=".5" />
+        <circle cx="1080" cy="570" r="2" opacity=".45" />
+      </g>
+    </svg>
+    <canvas id="nodes" aria-hidden="true"></canvas>
+    <div class="hero-topfade" aria-hidden="true"></div>
 
-  <!-- MAIN CONTENT -->
-  <main id="mainContent">
-
-    <!-- HERO SECTION -->
-    <section class="pb-hero-section" id="hero">
-      <div class="pb-hero-bg-glow"></div>
-      <div class="pb-hero-container">
-        
-        <div class="pb-hero-badge">
-          <span class="badge-dot"></span>
-          <span>MULTI-ENGINE AI GROWTH AGENCY</span>
-        </div>
-
-        <h1 class="pb-hero-title">
-          Grow <span class="pb-gradient-text">10x Smarter</span> With Custom AI Solutions
+    <div class="hero-main">
+      <div class="hero-copy">
+        <p class="eyebrow">AI-FIRST GROWTH AGENCY</p>
+        <h1>
+          <span class="line">GRO10X builds</span>
+          <span class="line"><span class="accent">AI workforces</span></span>
+          <span class="line">for businesses.</span>
         </h1>
-
-        <p class="pb-hero-subtitle">
-          We build smart AI apps, automate your marketing, and create high-converting visual workflows — helping your business scale faster with minimal overhead.
-        </p>
-
-        <div class="pb-hero-cta-row">
-          <button onclick="openLeadModal('AI Transactional Setup ($1,500)')" class="pb-btn-primary pb-btn-lg">
-            🚀 Book AI Setup (<span data-curr-usd="$1,500" data-curr-bdt="৳175,000">$1,500</span>)
-          </button>
-          <a href="/ai-audit" class="pb-btn-secondary pb-btn-lg" style="border-color: rgba(0, 223, 137, 0.45); background: rgba(0, 223, 137, 0.08); color: #00df89;">
-            📊 Free AI Diagnostic Audit
-          </a>
-          <a href="#capabilities" class="pb-btn-secondary pb-btn-lg">
-            ⚡ Explore Capabilities
-          </a>
-          <button onclick="openGroBot('General Inquiry')" class="pb-btn-ghost pb-btn-lg">
-            <span>Live AI Assistant</span>
-          </button>
-        </div>
-
-        <!-- Live Client Proof Metrics Bar -->
-        <div class="pb-metrics-strip">
-          <div class="pb-metric-item">
-            <span class="pb-metric-val pb-color-emerald">10x Faster</span>
-            <span class="pb-metric-label">Turnaround Velocity (48h Sprints)</span>
-          </div>
-          <div class="pb-metric-item">
-            <span class="pb-metric-val pb-color-cyan">65% Lower</span>
-            <span class="pb-metric-label">Operational Cost vs Legacy Agencies</span>
-          </div>
-          <div class="pb-metric-item">
-            <span class="pb-metric-val" style="color:#ffffff;">24 Enterprise</span>
-            <span class="pb-metric-label">AI Services & Custom Blueprints</span>
-          </div>
-          <div class="pb-metric-item">
-            <span class="pb-metric-val pb-color-emerald">99.4% Pass</span>
-            <span class="pb-metric-label">Deterministic QC SLA Accuracy</span>
-          </div>
-        
-        <!-- Glassmorphic Simulation Dock (Invariant 9 & 2026 Flagship Standard) -->
-        <div class="simulation-dock-wrapper" style="margin-top: 32px; width: 100%; max-width: 980px; margin-left: auto; margin-right: auto;">
-          <div style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(0, 223, 137, 0.3); border-radius: 16px; padding: 20px 24px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #00df89; box-shadow: 0 0 10px #00df89;"></span>
-                <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; color: #00df89; text-transform: uppercase;">⚡ Live Simulation Dock & Interactive Testbeds</span>
-              </div>
-              <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">Engine 2 & 4 Pre-Sales Showrooms</span>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;">
-              <a href="/pitch/" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px; text-decoration: none; display: flex; flex-direction: column; gap: 4px; transition: all 0.2s;" onmouseover="this.style.borderColor='#00df89'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'; this.style.transform='translateY(0)';">
-                <span style="font-size: 22px;">📺</span>
-                <strong style="color: #f8fafc; font-size: 13px;">PitchOS Suites</strong>
-                <span style="color: #94a3b8; font-size: 11px;">16:9 TV Sales Decks</span>
-              </a>
-              <a href="/prototypes/bahon/" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px; text-decoration: none; display: flex; flex-direction: column; gap: 4px; transition: all 0.2s;" onmouseover="this.style.borderColor='#00df89'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'; this.style.transform='translateY(0)';">
-                <span style="font-size: 22px;">🛺</span>
-                <strong style="color: #f8fafc; font-size: 13px;">Bahon Fleet OS</strong>
-                <span style="color: #94a3b8; font-size: 11px;">EV Telemetry & GIS</span>
-              </a>
-              <a href="/prototypes/sadman-garage/" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px; text-decoration: none; display: flex; flex-direction: column; gap: 4px; transition: all 0.2s;" onmouseover="this.style.borderColor='#00df89'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'; this.style.transform='translateY(0)';">
-                <span style="font-size: 22px;">🏎️</span>
-                <strong style="color: #f8fafc; font-size: 13px;">3D Dream Garage</strong>
-                <span style="color: #94a3b8; font-size: 11px;">WebGL Phygital Twin</span>
-              </a>
-              <a href="/prototypes/sahanabag-city" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px; text-decoration: none; display: flex; flex-direction: column; gap: 4px; transition: all 0.2s;" onmouseover="this.style.borderColor='#00df89'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'; this.style.transform='translateY(0)';">
-                <span style="font-size: 22px;">🗺️</span>
-                <strong style="color: #f8fafc; font-size: 13px;">Sahanabag GIS</strong>
-                <span style="color: #94a3b8; font-size: 11px;">Township Digital Twin</span>
-              </a>
-              <a href="/prototypes" style="background: rgba(0, 223, 137, 0.1); border: 1px solid rgba(0, 223, 137, 0.35); border-radius: 10px; padding: 14px; text-decoration: none; display: flex; flex-direction: column; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(0, 223, 137, 0.2)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(0, 223, 137, 0.1)'; this.style.transform='translateY(0)';">
-                <span style="font-size: 22px;">🔮</span>
-                <strong style="color: #00df89; font-size: 13px;">Full Showroom</strong>
-                <span style="color: #94a3b8; font-size: 11px;">12+ Live Prototypes</span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SECTION 1: 5 CORE AI CAPABILITY SUITES -->
-    <section class="pb-section" id="capabilities">
-      <div class="pb-container">
-        
-        <div class="pb-section-header">
-          <span class="pb-pill-tag">ENTERPRISE CAPABILITIES</span>
-          <h2 class="pb-section-title">The 5 Core AI Product & Solution Suites</h2>
-          <p class="pb-section-desc">
-            We combine modular software engineering, custom generative workflows, and dedicated sprint squads to automate and scale your business operations.
-          </p>
-        </div>
-
-        <div class="pb-engines-grid">
-          
-          <!-- Suite 1 -->
-          <div class="pb-engine-card pb-engine-highlight">
-            <div class="pb-engine-top">
-              <span class="pb-engine-icon">💻</span>
-              <span class="pb-engine-share">LIVE SOFTWARE TOOLS</span>
-            </div>
-            <h3>Proprietary Micro-SaaS Software</h3>
-            <p>
-              Turnkey AI workflow web apps, prompt optimization engines, and code automation tools ready for instant deployment by growth teams.
-            </p>
-            <ul class="pb-engine-features">
-              <li>✓ Instant AI generation tools & API connectors</li>
-              <li>✓ Automated prompt & workflow optimization</li>
-              <li>✓ Enterprise single-sign-on & team workspaces</li>
-            </ul>
-          </div>
-
-          <!-- Suite 2 -->
-          <div class="pb-engine-card">
-            <div class="pb-engine-top">
-              <span class="pb-engine-icon">⚡</span>
-              <span class="pb-engine-share">ON-DEMAND TALENT</span>
-            </div>
-            <h3>High-Velocity AI Sprint Squads</h3>
-            <p>
-              Deploy dedicated AI engineers, ComfyUI specialists, and prompt architects to build custom models and tools in rapid 48-hour turnarounds.
-            </p>
-            <ul class="pb-engine-features">
-              <li>✓ Custom ComfyUI & LoRA model fine-tuning</li>
-              <li>✓ Enterprise AI pipeline architecture & integration</li>
-              <li>✓ Zero long-term staffing overhead or lock-in</li>
-            </ul>
-          </div>
-
-          <!-- Suite 3 -->
-          <div class="pb-engine-card">
-            <div class="pb-engine-top">
-              <span class="pb-engine-icon">📦</span>
-              <span class="pb-engine-share">DIGITAL ASSET LIBRARIES</span>
-            </div>
-            <h3>Curated Generative Asset Bundles</h3>
-            <p>
-              Production-ready AI prompt packages, synthetic media bundles, e-books, and modular design systems for immediate commercial deployment.
-            </p>
-            <ul class="pb-engine-features">
-              <li>✓ Verified commercial licensing & master IP</li>
-              <li>✓ Photorealistic visual & marketing templates</li>
-              <li>✓ Instant digital download & continuous updates</li>
-            </ul>
-          </div>
-
-          <!-- Suite 4 -->
-          <div class="pb-engine-card">
-            <div class="pb-engine-top">
-              <span class="pb-engine-icon">🤝</span>
-              <span class="pb-engine-share">EMBEDDED PARTNERSHIP</span>
-            </div>
-            <h3>Full-Funnel Growth Retainers</h3>
-            <p>
-              Continuous monthly partnerships providing dedicated engineering, weekly creative iterations, and proactive AI pipeline optimization.
-            </p>
-            <ul class="pb-engine-features">
-              <li>✓ Dedicated AI specialists (<span data-curr-usd="$500 / mo" data-curr-bdt="৳60,000 / mo">$500 / mo</span> & <span data-curr-usd="$1,500 / mo" data-curr-bdt="৳175,000 / mo">$1,500 / mo</span> tiers)</li>
-              <li>✓ Weekly marketing creatives, Reels & sprint loops</li>
-              <li>✓ Strict 24/7 priority engineering SLA</li>
-            </ul>
-          </div>
-
-          <!-- Suite 5 -->
-          <div class="pb-engine-card">
-            <div class="pb-engine-top">
-              <span class="pb-engine-icon">🎬</span>
-              <span class="pb-engine-share">SCALE MEDIA & SOCIAL</span>
-            </div>
-            <h3>Autonomous Multi-Format Media</h3>
-            <p>
-              High-throughput AI video workflows generating photorealistic talking avatars, localized commercial cutdowns, and organic video syndication.
-            </p>
-            <ul class="pb-engine-features">
-              <li>✓ Automated script-to-video production pipelines</li>
-              <li>✓ Multi-lingual AI voice synthesis & lip-sync</li>
-              <li>✓ Organic channel scaling with zero studio overhead</li>
-            </ul>
-          </div>
-
+        <p class="hero-sub">Digital teammates, AI systems and content engines — designed, built and run for companies that intend to grow 10x.</p>
+        <div class="hero-ctas">
+          <button class="btn btn-emerald" data-book="Book AI Setup">Book AI Setup</button>
+          <button class="btn btn-outline" data-book="Free AI Diagnostic Audit">Free AI Diagnostic Audit</button>
         </div>
       </div>
-    </section>
 
-    <!-- SECTION 2: 7-VERTICAL SERVICE CATALOG MATRIX -->
-    <section class="pb-section pb-section-dark" id="services">
-      <div class="pb-container">
-        
-        <div class="pb-section-header">
-          <span class="pb-pill-tag">WHAT WE DO</span>
-          <h2 class="pb-section-title">Comprehensive AI Service Catalog</h2>
-          <p class="pb-section-desc">
-            Explore our 7 specialized AI verticals. Select any category below to view specific deliverables.
-          </p>
-        </div>
-
-        <!-- Category Filter Tabs -->
-        <div class="pb-category-tabs" id="serviceCategoryTabs">
-          <button class="cat-tab-btn active" onclick="filterServices('all')">🌟 All Services</button>
-          <button class="cat-tab-btn" onclick="filterServices('mobile-web')">📱 Mobile & Web Apps</button>
-          <button class="cat-tab-btn" onclick="filterServices('ai-artists')">🎨 AI Artists & Design</button>
-          <button class="cat-tab-btn" onclick="filterServices('business-ai')">💼 AI for Businesses</button>
-          <button class="cat-tab-btn" onclick="filterServices('data')">📊 Data & Analytics</button>
-          <button class="cat-tab-btn" onclick="filterServices('video')">🎬 AI Video</button>
-          <button class="cat-tab-btn" onclick="filterServices('audio')">🎙️ AI Audio</button>
-          <button class="cat-tab-btn" onclick="filterServices('content')">✍️ AI Content</button>
-        </div>
-
-        <!-- Dynamic Services Grid -->
-        <div class="pb-services-grid" id="servicesGrid">
-          <!-- Rendered dynamically by landing.js -->
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SECTION 3: 4-STAGE ENTERPRISE TRANSFORMATION ROADMAP -->
-    <section class="pb-section" id="roadmap">
-      <div class="pb-container">
-        
-        <div class="pb-section-header">
-          <span class="pb-pill-tag">CLIENT SUCCESS LIFECYCLE</span>
-          <h2 class="pb-section-title">4-Stage Enterprise AI Transformation Roadmap</h2>
-          <p class="pb-section-desc">
-            A battle-tested execution plan engineered to eliminate agency bottlenecks, deliver fast ROI, and compound business growth.
-          </p>
-        </div>
-
-        <!-- Timeline Grid -->
-        <div class="pb-roadmap-grid">
-          
-          <div class="pb-roadmap-step">
-            <div class="step-badge">Stage 1</div>
-            <h3>Audit & Blueprint</h3>
-            <p>48-hour operational audit to pinpoint high-ROI automation targets, model requirements, and custom pipeline architecture.</p>
-          </div>
-
-          <div class="pb-roadmap-step">
-            <div class="step-badge">Stage 2</div>
-            <h3>Custom Pipeline Setup</h3>
-            <p>Build and fine-tune proprietary ComfyUI nodes, custom AI agents, and secure data pipelines integrated into your tech stack.</p>
-          </div>
-
-          <div class="pb-roadmap-step">
-            <div class="step-badge">Stage 3</div>
-            <h3>Autonomous Deployment</h3>
-            <p>Deploy automated creative production workflows, train internal team members, and connect interactive review portals.</p>
-          </div>
-
-          <div class="pb-roadmap-step">
-            <div class="step-badge">Stage 4</div>
-            <h3>Scale & Compound</h3>
-            <p>Continuous 10x iteration, weekly performance asset dispatch, and multi-channel syndication with dedicated SLA support.</p>
-          </div>
-
-        </div>
-
-        <!-- Client Advantage & Efficiency Comparison Box -->
-        <div class="pb-financial-card">
-          <div class="pb-fin-left">
-            <div class="pb-margin-circle" style="border-color:#00df89; box-shadow:0 0 20px rgba(0,223,137,0.3);">
-              <span class="margin-percent">65%</span>
-              <span class="margin-label">Cost Savings</span>
-            </div>
-            <div class="pb-fin-summary">
-              <h3>Lean, Fast & Highly Scalable</h3>
-              <p>
-                By deploying automated workflows and custom software components from day one, we eliminate traditional agency markups and multi-week turnaround delays.
-              </p>
-              <div class="pb-fin-numbers">
-                <div>
-                  <span class="num-label">Turnaround SLA</span>
-                  <span class="num-val pb-color-emerald">48 Hours</span>
-                </div>
-                <div>
-                  <span class="num-label">Deployment Mode</span>
-                  <span class="num-val pb-color-cyan">Cloud & API</span>
-                </div>
-                <div>
-                  <span class="num-label">QC Accuracy</span>
-                  <span class="num-val" style="color:#ffffff;">99.4% Pass</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pb-fin-right">
-            <h4>GRO10X vs Traditional Agency</h4>
-            <div class="pb-cost-row">
-              <span>⏱️ Production Turnaround</span>
-              <strong class="pb-color-emerald">48h (vs 14-21 Days)</strong>
-            </div>
-            <div class="pb-cost-row">
-              <span>💬 Creative Review Loops</span>
-              <strong class="pb-color-cyan">Real-time Portal (vs Days)</strong>
-            </div>
-            <div class="pb-cost-row">
-              <span>💰 Monthly Retainer Overhead</span>
-              <strong class="pb-color-emerald">From $500/mo (vs $5k+)</strong>
-            </div>
-            <div class="pb-cost-row">
-              <span>🌍 Multi-lingual Localization</span>
-              <strong class="pb-color-cyan">Instant AI Voice (vs Weeks)</strong>
-            </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-glow"></div>
+        <div class="prism-wrap">
+          <div class="prism-float">
+            <svg viewBox="0 0 400 400">
+              <defs>
+                <clipPath id="xclip">
+                  <path d="M50 20 L140 20 L200 105 L260 20 L350 20 L240 200 L350 380 L260 380 L200 295 L140 380 L50 380 L160 200 Z" />
+                </clipPath>
+                <linearGradient id="glintgrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#FFFFFF" stop-opacity="0" />
+                  <stop offset=".5" stop-color="#FFFFFF" stop-opacity=".55" />
+                  <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <g stroke="#070B12" stroke-width="2" stroke-linejoin="round">
+                <polygon points="50,20 140,20 200,200" fill="#00C97C" />
+                <polygon points="140,20 200,105 200,200" fill="#2BFFab" />
+                <polygon points="200,105 260,20 200,200" fill="#00DF89" />
+                <polygon points="260,20 350,20 200,200" fill="#00B873" />
+                <polygon points="350,20 240,200 200,200" fill="#00F0A0" />
+                <polygon points="240,200 350,380 200,200" fill="#00C97C" />
+                <polygon points="350,380 260,380 200,200" fill="#009E63" />
+                <polygon points="260,380 200,295 200,200" fill="#00DF89" />
+                <polygon points="200,295 140,380 200,200" fill="#00B873" />
+                <polygon points="140,380 50,380 200,200" fill="#2BFFAB" />
+                <polygon points="50,380 160,200 200,200" fill="#00DF89" />
+                <polygon points="160,200 50,20 200,200" fill="#00A86B" />
+              </g>
+              <g fill="none" stroke="#070B12" stroke-width="7" stroke-linecap="square" opacity=".85">
+                <polyline points="118,84 168,150 118,216" transform="translate(14,50)" />
+                <polyline points="282,84 232,150 282,216" transform="translate(-14,50)" />
+              </g>
+              <g clip-path="url(#xclip)">
+                <rect class="glint" x="60" y="-40" width="110" height="480" fill="url(#glintgrad)" />
+                <rect x="0" y="0" width="400" height="400" fill="#00F0FF" opacity="0.03" />
+              </g>
+              <path d="M50 20 L140 20 L200 105 L260 20 L350 20 L240 200 L350 380 L260 380 L200 295 L140 380 L50 380 L160 200 Z"
+                    fill="none" stroke="#070B12" stroke-width="3" stroke-linejoin="round" />
+            </svg>
           </div>
         </div>
-
-      </div>
-    </section>
-
-    <!-- SECTION 4: STANDARD PRICING MAP -->
-    <section class="pb-section pb-section-dark" id="pricing">
-      <div class="pb-container">
-        
-        <div class="pb-section-header">
-          <span class="pb-pill-tag">TRANSPARENT PRICING</span>
-          <h2 class="pb-section-title">Standard Pricing & Engagement Plans</h2>
-          <p class="pb-section-desc">
-            Straightforward pricing with zero hidden fees. Switch between USD ($) and BDT (৳) anytime.
-          </p>
-        </div>
-
-        <div class="pb-pricing-grid">
-          
-          <!-- Plan 1: Transactional Setup -->
-          <div class="pb-pricing-card">
-            <div class="pb-plan-tier">ONE-TIME SETUP</div>
-            <h3 class="pb-plan-title">Transactional Setup</h3>
-            <div class="pb-plan-price">
-              <span class="price-val" data-curr-usd="$1,500" data-curr-bdt="৳175,000">$1,500</span>
-              <span class="price-cycle">/ one-time</span>
-            </div>
-            <p class="pb-plan-desc">
-              Fast deployment for businesses needing instant AI chatbots, ComfyUI visual setups, or API connections.
-            </p>
-            <ul class="pb-plan-list">
-              <li>✓ Custom Chatbot & Agent Setup</li>
-              <li>✓ Bespoke ComfyUI / Image Pipeline</li>
-              <li>✓ API & CRM Software Integrations</li>
-              <li>✓ Complete System Handoff & Training</li>
-              <li>✓ 14-Day Post-Launch Support</li>
-            </ul>
-            <button onclick="openLeadModal('Transactional Setup ($1,500 / ৳175,000)')" class="pb-btn-secondary" style="width:100%;">
-              Book One-Time Setup
-            </button>
-          </div>
-
-          <!-- Plan 2: Growth Retainer (Featured) -->
-          <div class="pb-pricing-card pb-pricing-featured">
-            <div class="featured-badge">MOST POPULAR</div>
-            <div class="pb-plan-tier">MONTHLY PARTNERSHIP</div>
-            <h3 class="pb-plan-title">Growth Retainer</h3>
-            <div class="pb-plan-price">
-              <span class="price-val" data-curr-usd="$500" data-curr-bdt="৳60,000">$500</span>
-              <span class="price-cycle">/ month</span>
-            </div>
-            <p class="pb-plan-desc">
-              Continuous AI design output, workflow updates, and automated social marketing loops for growing brands.
-            </p>
-            <ul class="pb-plan-list">
-              <li>✓ Weekly AI Visual Designs & Marketing Ads</li>
-              <li>✓ Ongoing AI Workflow & Agent Fine-Tuning</li>
-              <li>✓ Social Media Loops & Automated Publishing</li>
-              <li>✓ Dedicated AI Engineer & Rapid SLA</li>
-              <li>✓ Monthly Growth & Analytics Review</li>
-            </ul>
-            <button onclick="openLeadModal('Growth Retainer ($500/mo / ৳60,000/mo)')" class="pb-btn-primary" style="width:100%;">
-              Start Monthly Retainer
-            </button>
-          </div>
-
-          <!-- Plan 3: Micro-SaaS Access -->
-          <div class="pb-pricing-card">
-            <div class="pb-plan-tier">SOFTWARE ACCESS</div>
-            <h3 class="pb-plan-title">Micro-SaaS Access</h3>
-            <div class="pb-plan-price">
-              <span class="price-val" data-curr-usd="$49" data-curr-bdt="৳5,800">$49</span>
-              <span class="price-cycle">/ month</span>
-            </div>
-            <p class="pb-plan-desc">
-              Instant online access to our internal programmatic visual generators and code tools bundled for creators.
-            </p>
-            <ul class="pb-plan-list">
-              <li>✓ Cloud AI Image & Avatar Generator</li>
-              <li>✓ Prompt Optimizer & Writing Tools</li>
-              <li>✓ High-Speed Web Scrapers & APIs</li>
-              <li>✓ Community Access & Video Guides</li>
-              <li>✓ Monthly Tool Upgrades</li>
-            </ul>
-            <button onclick="openLeadModal('Micro-SaaS Tool Access')" class="pb-btn-secondary" style="width:100%;">
-              Join Software Waitlist
-            </button>
-          </div>
-
-        </div>
-
-      </div>
-    <!-- SECTION 4.5: INTERACTIVE AI ROI & SAVINGS CALCULATOR -->
-    <section class="pb-section pb-section-dark" id="calculator">
-      <div class="pb-container">
-        
-        <div class="pb-section-header">
-          <span class="pb-pill-tag">INTERACTIVE ESTIMATOR</span>
-          <h2 class="pb-section-title">Calculate Your AI Cost Savings & Speedup</h2>
-          <p class="pb-section-desc">
-            Estimate how much time and money GRO10X's automated software, synthetic media, and agent pipelines can save your business.
-          </p>
-        </div>
-
-        <div class="pb-calculator-card" style="background:var(--surface-1, #0f172a); border:1px solid rgba(0,223,137,0.25); border-radius:24px; padding:2.5rem; max-width:960px; margin:0 auto; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
-          
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:2.5rem; align-items:center;">
-            
-            <!-- Sliders Column -->
-            <div>
-              <!-- Slider 1: Monthly Creative & Engineering Budget -->
-              <div style="margin-bottom:1.75rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-                  <label for="calcSpendSlider" style="font-weight:700; font-size:0.92rem; color:#fff;">Current Monthly Spend (Agency/Payroll):</label>
-                  <span id="calcSpendDisplay" style="font-weight:900; font-size:1.15rem; color:var(--brand-primary, #00df89);">$3,000 / mo</span>
-                </div>
-                <input type="range" id="calcSpendSlider" name="calcSpend" aria-label="Current Monthly Spend" min="500" max="15000" step="250" value="3000" style="width:100%; accent-color:var(--brand-primary, #00df89); cursor:pointer;" oninput="updateRoiCalc()">
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">
-                  <span>$500</span>
-                  <span>$5,000</span>
-                  <span>$15,000+</span>
-                </div>
-              </div>
-
-              <!-- Slider 2: Monthly Asset / Feature Output Volume -->
-              <div style="margin-bottom:1.5rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-                  <label for="calcVolumeSlider" style="font-weight:700; font-size:0.92rem; color:#fff;">Monthly Asset & Code Deliverable Volume:</label>
-                  <span id="calcVolumeDisplay" style="font-weight:900; font-size:1.15rem; color:var(--cyan-brand, #06b6d4);">20 Deliverables</span>
-                </div>
-                <input type="range" id="calcVolumeSlider" name="calcVolume" aria-label="Monthly Asset and Code Deliverable Volume" min="5" max="100" step="5" value="20" style="width:100%; accent-color:var(--cyan-brand, #06b6d4); cursor:pointer;" oninput="updateRoiCalc()">
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">
-                  <span>5 items</span>
-                  <span>50 items</span>
-                  <span>100+ items</span>
-                </div>
-              </div>
-
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:0.85rem; font-size:0.82rem; color:var(--text-secondary);">
-                💡 <em>Based on live benchmarks: GRO10X automated pipelines reduce delivery turnaround from 14 days down to 48 hours.</em>
-              </div>
-            </div>
-
-            <!-- ROI Output Display Column -->
-            <div style="background:linear-gradient(145deg, rgba(0,223,137,0.1), rgba(6,182,212,0.05)); border:1px solid rgba(0,223,137,0.3); border-radius:18px; padding:1.75rem; text-align:center;">
-              <span class="badge" style="background:rgba(0,223,137,0.2); color:#00df89; font-size:0.78rem; font-weight:800; padding:0.3rem 0.8rem; border-radius:999px;">PROJECTED IMPACT</span>
-              
-              <div style="margin:1.25rem 0 0.5rem;">
-                <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Estimated Monthly Savings</div>
-                <div id="calcSavingsDisplay" style="font-size:2.4rem; font-weight:900; color:var(--brand-primary, #00df89); font-family:var(--font-heading); margin-top:0.2rem;">$1,950 / mo</div>
-                <div id="calcSavingsSub" style="font-size:0.78rem; color:var(--cyan-brand, #06b6d4); font-weight:700;">(৳2.28 Lakh / month in local savings)</div>
-              </div>
-
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.25rem 0; border-top:1px dashed rgba(255,255,255,0.1); padding-top:1rem;">
-                <div>
-                  <div style="font-size:0.75rem; color:var(--text-muted);">Hours Saved / Mo</div>
-                  <div id="calcHoursDisplay" style="font-size:1.3rem; font-weight:900; color:#fff; margin-top:0.2rem;">85 hrs</div>
-                </div>
-                <div>
-                  <div style="font-size:0.75rem; color:var(--text-muted);">Execution Speedup</div>
-                  <div id="calcSpeedDisplay" style="font-size:1.3rem; font-weight:900; color:var(--cyan-brand, #06b6d4); margin-top:0.2rem;">8.5x Faster</div>
-                </div>
-              </div>
-
-              <a href="#contact" class="pb-btn-primary" style="width:100%; display:block; text-decoration:none; padding:0.75rem; font-size:0.95rem;" onclick="prefillAuditFromCalc()">
-                🎯 Claim Your Free Strategy Audit →
-              </a>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SECTION: VERIFIED CLIENT TESTIMONIALS SHOWCASE -->
-    <section class="pb-section" id="testimonials" style="background: rgba(15,23,42,0.4); border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06);">
-      <div class="pb-container">
-        
-        <div class="pb-section-header">
-          <span class="pb-pill-tag">VERIFIED SOCIAL PROOF</span>
-          <h2 class="pb-section-title">Endorsed by Enterprise Leaders & Founders</h2>
-          <p class="pb-section-desc">
-            Direct post-acceptance reviews and Net Promoter Scores (NPS) harvested following verified sprint milestone sign-offs.
-          </p>
-        </div>
-
-        <div id="indexTestimonialsGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; margin-top:2.5rem;">
-          <!-- Loaded dynamically via /api/reviews/testimonials/showcase -->
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SECTION 5: AI STRATEGY AUDIT & INTAKE -->
-    <section class="pb-section" id="contact">
-      <div class="pb-container">
-        
-        <div class="pb-contact-wrapper">
-          
-          <div class="pb-contact-info">
-            <span class="pb-pill-tag">LET'S GROW SMARTER</span>
-            <h2 class="pb-section-title">Ready to 10x Your Business with AI?</h2>
-            <p style="color:var(--text-secondary); margin-bottom:1.5rem;">
-              Connect directly with our engineering team to audit your software and creative pipelines. We'll identify the highest-impact AI automation opportunities for your company.
-            </p>
-
-            <div class="pb-contact-strip">
-              <div class="contact-item">
-                <span class="item-icon">📧</span>
-                <div>
-                  <strong>Direct Email:</strong>
-                  <a href="mailto:gro10xnow@gmail.com">gro10xnow@gmail.com</a>
-                </div>
-              </div>
-
-              <div class="contact-item">
-                <span class="item-icon">📱</span>
-                <div>
-                  <strong>Phone / WhatsApp:</strong>
-                  <a href="https://wa.me/8801711019550" target="_blank">+880 1711-019550</a>
-                </div>
-              </div>
-
-              <div class="contact-item">
-                <span class="item-icon">🌐</span>
-                <div>
-                  <strong>Official Domain:</strong>
-                  <span>gro10x.ai</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Lead Intake Form -->
-          <div class="pb-contact-form-card">
-            <h3 style="margin-top:0; font-size:1.3rem;">Request an AI Strategy Audit</h3>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem;">
-              Fill in your details below and we'll prepare a custom AI implementation proposal within 24 hours.
-            </p>
-
-            <form id="landingLeadForm" onsubmit="submitLandingLead(event)">
-              <div class="pb-form-group">
-                <label for="leadName">Your Name *</label>
-                <input type="text" id="leadName" name="leadName" autocomplete="name" class="pb-input" placeholder="e.g. Zahin Khandaker" required>
-              </div>
-
-              <div class="pb-form-row">
-                <div class="pb-form-group">
-                  <label for="leadEmail">Business Email *</label>
-                  <input type="email" id="leadEmail" name="leadEmail" autocomplete="email" class="pb-input" placeholder="name@company.com" required>
-                </div>
-                <div class="pb-form-group">
-                  <label for="leadPhone">WhatsApp / Phone *</label>
-                  <input type="tel" id="leadPhone" name="leadPhone" autocomplete="tel" class="pb-input" placeholder="+8801711019550" required>
-                </div>
-              </div>
-
-              <div class="pb-form-group">
-                <label for="leadService">Service Interest</label>
-                <select id="leadService" name="leadService" class="pb-input">
-                  <option value="Transactional Setup">🚀 One-Time AI Setup ($1,500 / ৳175k)</option>
-                  <option value="Growth Retainer">⭐ Monthly Growth Retainer ($500/mo / ৳60k)</option>
-                  <option value="AI Mobile / Web Development">📱 AI Mobile & Web App Development</option>
-                  <option value="AI Artists & ComfyUI">🎨 AI Art & ComfyUI Workflow Creation</option>
-                  <option value="AI Video / Audio">🎬 AI Video Avatars & Voice Synthesis</option>
-                  <option value="Data & Analytics">📊 Data Science & Dashboards</option>
-                  <option value="Custom Enterprise">🏢 Custom Enterprise Scope</option>
-                </select>
-              </div>
-
-              <div class="pb-form-group">
-                <label for="leadNotes">Tell Us About Your Project</label>
-                <textarea id="leadNotes" name="leadNotes" class="pb-input" rows="3" placeholder="Briefly describe what you'd like to build or automate..."></textarea>
-              </div>
-
-              <button type="submit" id="btnSubmitLead" class="pb-btn-primary" style="width:100%; padding:0.85rem; font-size:1rem;">
-                🚀 Submit Strategy Request →
-              </button>
-
-              <div id="leadFormFeedback" style="display:none; margin-top:1rem; padding:0.75rem; border-radius:10px; font-size:0.88rem; text-align:center;"></div>
-            </form>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SECTION 6: FAQ ACCORDION -->
-    <section class="pb-section pb-section-dark" id="faq">
-      <div class="pb-container" style="max-width:860px;">
-        
-        <div class="pb-section-header">
-          <span class="pb-pill-tag">FREQUENTLY ASKED QUESTIONS</span>
-          <h2 class="pb-section-title">Common Questions & Answers</h2>
-        </div>
-
-        <div class="pb-faq-list">
-          
-          <div class="pb-faq-item">
-            <button class="pb-faq-question" onclick="toggleFAQ(this)">
-              <span>What AI models and technology stacks do you work with?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="pb-faq-answer">
-              <p>We work with state-of-the-art foundation models including Claude 3.5 Sonnet, GPT-4o, Gemini 1.5/3.0, Midjourney v6, ComfyUI/Flux for image generation, ElevenLabs for voice synthesis, and modern full-stack frameworks (Next.js, Node.js, Python, PostgreSQL, and Supabase).</p>
-            </div>
-          </div>
-
-          <div class="pb-faq-item">
-            <button class="pb-faq-question" onclick="toggleFAQ(this)">
-              <span>How fast is the turnaround for the $1,500 Transactional Setup?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="pb-faq-answer">
-              <p>Our standard setup packages (such as a custom chatbot, ComfyUI visual generation pipeline, or API connection) are typically deployed and handed over within <strong>5 to 10 business days</strong>, including full training and video documentation.</p>
-            </div>
-          </div>
-
-          <div class="pb-faq-item">
-            <button class="pb-faq-question" onclick="toggleFAQ(this)">
-              <span>Do you work with international clients outside Bangladesh?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="pb-faq-answer">
-              <p>Yes! We work with clients across the US, UK, Europe, UAE, and Asia. We accept payments in USD via Stripe, Wise, Upwork Escrow, and direct bank wire, as well as BDT for local clients via bank transfer and bKash.</p>
-            </div>
-          </div>
-
-          <div class="pb-faq-item">
-            <button class="pb-faq-question" onclick="toggleFAQ(this)">
-              <span>What is included in the $500 / month Growth Retainer?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="pb-faq-answer">
-              <p>The Growth Retainer provides ongoing dedicated AI engineering hours every week: creating marketing creatives, updating chatbot prompts, tuning AI workflows, automating social loops, and providing priority technical support.</p>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="pb-footer">
-    <div class="pb-footer-container">
-      
-      <div class="pb-footer-brand">
-        <a href="/" class="pb-brand-logo">
-          <div class="pb-logo-badge">⚡</div>
-          <span class="pb-brand-title">GRO10X</span>
-        </a>
-        <p style="color:var(--text-muted); font-size:0.88rem; margin:0.75rem 0 1.25rem;">
-          Architecting next-generation digital growth systems through software engineering, data science, and synthetic media automation.
-        </p>
-        <p class="pb-copy-note">© 2026 GRO10X AI Agency. All rights reserved.</p>
-      </div>
-
-      <div class="pb-footer-col">
-        <h3>Core Verticals</h3>
-        <a href="#services" onclick="filterServices('mobile-web')">AI Mobile Apps</a>
-        <a href="#services" onclick="filterServices('ai-artists')">ComfyUI & AI Art</a>
-        <a href="#services" onclick="filterServices('video')">AI Video Avatars</a>
-        <a href="#services" onclick="filterServices('business-ai')">Business AI Strategy</a>
-        <a href="#services" onclick="filterServices('data')">Data & Analytics</a>
-      </div>
-
-      <div class="pb-footer-col">
-        <h3>Ecosystem</h3>
-        <a href="#capabilities">AI Capabilities</a>
-        <a href="#roadmap">Scaling Roadmap</a>
-        <a href="#pricing">Plans & Pricing</a>
-        <a href="/investors.html" style="color:var(--brand-primary); font-weight:700;">💼 Investor Relations</a>
-        <a href="/auth">Client & Team Portal</a>
-        <a href="javascript:void(0)" onclick="openGroBot('Footer Support')">Live AI Chat</a>
-      </div>
-
-      <div class="pb-footer-col">
-        <h3>Connect</h3>
-        <span>📧 gro10xnow@gmail.com</span>
-        <span>📱 +880 1711-019550</span>
-        <span>🌐 gro10x.ai</span>
-        <span>📍 Dhaka, Bangladesh & Global Remote</span>
-      </div>
-
-    </div>
-  </footer>
-
-  <!-- SCROLL TO TOP BUTTON -->
-  <button id="scrollTopBtn" class="pb-scroll-top" aria-label="Scroll back to top" onclick="scrollToTop()">
-    ↑
-  </button>
-
-  <!-- POPUP STRATEGY AUDIT MODAL -->
-  <div id="leadModalOverlay" class="pb-modal-overlay" style="display:none;" onclick="handleLeadModalOverlayClick(event)">
-    <div class="pb-modal-card" onclick="event.stopPropagation()">
-      <button class="pb-modal-close" onclick="closeLeadModal()" aria-label="Close modal">✕</button>
-      <div id="leadModalContent">
-        <h3 id="leadModalTitle" style="margin-top:0; font-size:1.3rem;">Book Your AI Setup</h3>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem;">
-          Connect directly with GRO10X engineering to audit and automate your workflows.
-        </p>
-        <form id="modalLeadForm" onsubmit="submitModalLead(event)">
-          <input type="hidden" id="modalServiceType" name="modalServiceType" value="General Setup">
-          <div class="pb-form-group">
-            <label for="modalLeadName">Your Name *</label>
-            <input type="text" id="modalLeadName" name="modalLeadName" autocomplete="name" class="pb-input" placeholder="Your Full Name" required>
-          </div>
-          <div class="pb-form-group">
-            <label for="modalLeadEmail">Email Address *</label>
-            <input type="email" id="modalLeadEmail" name="modalLeadEmail" autocomplete="email" class="pb-input" placeholder="name@company.com" required>
-          </div>
-          <div class="pb-form-group">
-            <label for="modalLeadPhone">WhatsApp / Phone *</label>
-            <input type="tel" id="modalLeadPhone" name="modalLeadPhone" autocomplete="tel" class="pb-input" placeholder="+8801711019550" required>
-          </div>
-          <div class="pb-form-group">
-            <label for="modalLeadNotes">Project Details / Requirements</label>
-            <textarea id="modalLeadNotes" name="modalLeadNotes" class="pb-input" rows="3" placeholder="Tell us what you want to build or automate..."></textarea>
-          </div>
-          <button type="submit" class="pb-btn-primary" style="width:100%; padding:0.8rem;">
-            🚀 Confirm Consultation Request
-          </button>
-          <div id="modalLeadFeedback" style="display:none; margin-top:0.75rem; text-align:center; font-size:0.85rem;" role="status"></div>
-        </form>
       </div>
     </div>
-  </div>
 
-  <!-- SERVICE DETAIL POPUP MODAL -->
-  <div id="serviceDetailModal" class="pb-modal-overlay" style="display:none;" onclick="handleServiceDetailOverlayClick(event)">
-    <div class="pb-modal-card" onclick="event.stopPropagation()">
-      <button class="pb-modal-close" onclick="closeServiceDetailModal()" aria-label="Close modal">✕</button>
-      <div id="serviceDetailModalBody">
-        <!-- Rendered dynamically by landing.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- STICKY MOBILE BOTTOM CTA BAR -->
-  <div id="mobileBottomCtaBar" class="pb-mobile-bottom-bar">
-    <a href="#contact" class="pb-mobile-cta-btn primary" onclick="prefillAuditFromCalc()">
-      ⚡ Book Free AI Audit
+    <a class="scroll-cue" href="#workforce" aria-label="Scroll to the Digital Workforce section">
+      <span>Scroll</span>
+      <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M2 2 L8 8 L14 2" stroke="#00DF89" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a>
-    <a href="https://wa.me/8801711019550?text=Hi%20GRO10X!%20I'd%20like%20to%20request%20an%20AI%20Strategy%20Audit." target="_blank" class="pb-mobile-cta-btn whatsapp">
-      💬 WhatsApp
-    </a>
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track" data-marquee>
+        <span>Digital Teammates</span><b>•</b><span>AI Systems</span><b>•</b><span>Content Engines</span><b>•</b><span>Data &amp; Analytics</span><b>•</b><span>AI Video</span><b>•</b><span>Automation</span><b>•</b>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIGITAL WORKFORCE — SIX SLIDES -->
+  <section class="wf" id="workforce" aria-label="The Digital Workforce in six slides">
+    <div class="wrap">
+      <div class="wf-chrome">
+        <div class="wf-counter" aria-live="polite">STEP <b id="wfCurrent">1</b> / 6</div>
+        <div class="wf-dots" id="wfDots" role="tablist" aria-label="Choose a slide"></div>
+        <div class="wf-arrows">
+          <button class="wf-arrow" id="wfPrev" aria-label="Previous slide"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <button class="wf-arrow" id="wfNext" aria-label="Next slide"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+      <div class="wf-progress" aria-hidden="true"><i id="wfProgressBar" style="width:16.66%"></i></div>
+
+      <div class="wf-viewport" id="wfViewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Digital Workforce slides — use left and right arrow keys, the arrows, dots or swipe to move">
+        <div class="wf-track" id="wfTrack">
+
+          <article class="wf-slide" aria-label="Slide 1 of 6: Digital Workforce introduction">
+            <div class="wf-art" aria-hidden="true"><img src="/images/workforce/wf-slide-1.webp" fetchpriority="high" loading="eager" alt="" fetchpriority="high"></div>
+            <p class="wf-eyebrow">Pillar 01 — Digital Workforce</p>
+            <h3 class="wf-title">One workforce. <span class="accent">Four functions.</span></h3>
+            <p class="wf-line">Named AI specialists, organised into four functions, deployed on real projects — planned, built and audited across the world&rsquo;s best models before anything reaches you.</p>
+            <div class="wf-stats">
+              <div class="wf-stat"><strong>15</strong><span>Specialists on the roster</span></div>
+              <div class="wf-stat"><strong>10</strong><span>Deployed now</span></div>
+              <div class="wf-stat"><strong>4</strong><span>Functions</span></div>
+            </div>
+            <p class="wf-process"><strong>How the work flows</strong><br>Design — Muse Spark &middot; Planning — Gemini Argon &middot; Drafting — Gemini Hydrogen &middot; Working — Gemini Flash &middot; Claude Sonnet &middot; Claude Opus &middot; QA — Gemini Flash + Muse AI</p>
+            <div class="wf-door"><button class="btn btn-outline" data-door="The Digital Workforce landing" data-door-line="The tabbed hub that holds all four functions — every specialist, capability and project in the workforce, cross-linked both ways.">Know the Workforce &rarr;</button></div>
+            <div class="wf-step"><span class="wf-step-meta">Step <b>1</b> of 6 — Start here</span><button class="wf-step-btn" data-step-next>Next — 10X DEV <span class="arr" aria-hidden="true">→</span></button></div>
+          </article>
+
+          <article class="wf-slide" aria-label="Slide 2 of 6: 10X DEV">
+            <div class="wf-art" aria-hidden="true"><img src="/images/workforce/wf-slide-2.webp" loading="lazy" alt="" loading="lazy" decoding="async"></div>
+            <p class="wf-eyebrow">Function 01 — Engineering</p>
+            <h3 class="wf-title">10X <span class="accent">DEV</span></h3>
+            <p class="wf-line">We design, build and ship software — platforms, products and systems that run businesses.</p>
+            <div class="wf-chips"><span class="wf-chip">Motion Websites</span><span class="wf-chip">Web Platforms &amp; Dashboards</span><span class="wf-chip">Games &amp; 3D Interactive</span></div>
+            <p class="wf-proof"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V10M10 19V5M16 19v-8M2 19h20"/></svg><span><strong>On the bench now:</strong> GRO10X Public Pages &middot; Bahon Fleet OS &middot; Super League.</span></p>
+            <div class="wf-door"><button class="btn btn-outline" data-door="10X DEV — Engineering Function" data-door-line="The engineering function&rsquo;s own pages: its team, its projects and every capability — Motion Websites, platforms, games and Data10X, the API service for data.">Know More — 10X DEV &rarr;</button></div>
+            <div class="wf-step"><span class="wf-step-meta">Step <b>2</b> of 6 — Engineering</span><button class="wf-step-btn" data-step-next>Next — 10XM <span class="arr" aria-hidden="true">→</span></button></div>
+          </article>
+
+          <article class="wf-slide" aria-label="Slide 3 of 6: 10XM">
+            <div class="wf-art" aria-hidden="true"><img src="/images/workforce/wf-slide-3.webp" loading="lazy" alt="" loading="lazy" decoding="async"></div>
+            <p class="wf-eyebrow">Function 02 — Media</p>
+            <h3 class="wf-title">10X<span class="accent">M</span></h3>
+            <p class="wf-line">Films, pitches and content systems that make people stop, watch and remember.</p>
+            <div class="wf-chips"><span class="wf-chip">Pitch Systems</span><span class="wf-chip">Explainer Films</span><span class="wf-chip">Sponsor &amp; Brand Films</span></div>
+            <p class="wf-proof"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><span><strong>On the bench now:</strong> CFC Sponsor Film &middot; PassKoro Explainer &middot; NHF Pitch Pack.</span></p>
+            <div class="wf-door"><button class="btn btn-outline" data-door="10XM — Media Function" data-door-line="The media function&rsquo;s own pages: nine capabilities from films to AI audio and content, its team, and the work on its bench.">Know More — 10XM &rarr;</button></div>
+            <div class="wf-step"><span class="wf-step-meta">Step <b>3</b> of 6 — Media</span><button class="wf-step-btn" data-step-next>Next — 10XD <span class="arr" aria-hidden="true">→</span></button></div>
+          </article>
+
+          <article class="wf-slide" aria-label="Slide 4 of 6: 10XD">
+            <div class="wf-art" aria-hidden="true"><img src="/images/workforce/wf-slide-4.webp" loading="lazy" alt="" loading="lazy" decoding="async"></div>
+            <p class="wf-eyebrow">Function 03 — Design</p>
+            <h3 class="wf-title">10X<span class="accent">D</span></h3>
+            <p class="wf-line">Identity, interfaces and imagery — how everything we make looks, feels and is recognised.</p>
+            <div class="wf-chips"><span class="wf-chip">Brand Identity</span><span class="wf-chip">UI/UX &amp; Product Design</span><span class="wf-chip">AI Art &amp; Imagery</span></div>
+            <p class="wf-proof"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg><span><strong>On the bench now:</strong> GRO10X Brand System &middot; Rishka Design Language &middot; Goli Fighter Roster.</span></p>
+            <div class="wf-door"><button class="btn btn-outline" data-door="10XD — Design Function" data-door-line="The design function&rsquo;s own pages: brand identity, interfaces, design systems and AI art — led by one accountable eye.">Know More — 10XD &rarr;</button></div>
+            <div class="wf-step"><span class="wf-step-meta">Step <b>4</b> of 6 — Design</span><button class="wf-step-btn" data-step-next>Next — 10XBIZ <span class="arr" aria-hidden="true">→</span></button></div>
+          </article>
+
+          <article class="wf-slide" aria-label="Slide 5 of 6: 10XBIZ">
+            <div class="wf-art" aria-hidden="true"><img src="/images/workforce/wf-slide-5.webp" loading="lazy" alt="" loading="lazy" decoding="async"></div>
+            <p class="wf-eyebrow">Function 04 — Business &amp; Analytics</p>
+            <h3 class="wf-title">10X<span class="accent">BIZ</span></h3>
+            <p class="wf-line">Research, data, deals and capability — the work that decides what gets built, and whether it worked.</p>
+            <div class="wf-chips"><span class="wf-chip">Research &amp; Intelligence</span><span class="wf-chip">Data &amp; Analytics</span><span class="wf-chip">Capability Development &amp; Training</span></div>
+            <p class="wf-proof"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span><strong>On the bench now:</strong> Shomvob Academy &middot; NHF Proposal &middot; Rishka Market Research.</span></p>
+            <div class="wf-door"><button class="btn btn-outline" data-door="10XBIZ — Business &amp; Analytics Function" data-door-line="The thinking function&rsquo;s own pages: research, data, proposals, training and audits — and the specialists behind them.">Know More — 10XBIZ &rarr;</button></div>
+            <div class="wf-step"><span class="wf-step-meta">Step <b>5</b> of 6 — Business &amp; Analytics</span><button class="wf-step-btn" data-step-next>Next — Deploy yours <span class="arr" aria-hidden="true">→</span></button></div>
+          </article>
+
+          <article class="wf-slide wf-slide-offer" aria-label="Slide 6 of 6: Deploy your own digital workforce">
+            <div class="wf-art" aria-hidden="true"><img src="/images/workforce/wf-slide-6.webp" loading="lazy" alt="" loading="lazy" decoding="async"></div>
+            <p class="wf-eyebrow">Deploy Your Own</p>
+            <h3 class="wf-title small">Want us to deploy and manage <span class="accent">your digital workforce?</span></h3>
+            <p class="wf-line">Your own workforce, deployed on your projects and managed end-to-end — every delivery audited before it reaches you. One conversation starts it.</p>
+            <div class="wf-door"><button class="btn btn-emerald" data-book="Talk to Zayan — Deployment Scoping">Talk to Zayan &rarr;</button></div>
+            <div class="wf-step"><span class="wf-step-meta">Step <b>6</b> of 6 — You&rsquo;ve seen it all</span><button class="wf-step-btn ghost" data-step-continue>Continue <span class="arr" aria-hidden="true">↓</span></button></div>
+          </article>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SIMULATION DOCK -->
+  <section class="section" style="padding-top:56px" id="showroom">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div>
+          <div class="kicker">Live Simulation Dock</div>
+          <h2>See the <em>systems</em>,<br>not just the slides.</h2>
+        </div>
+        <p>Working simulations of real GRO10X builds. Explore the look and flow — mechanics that need a live engine stay on the production stack.</p>
+      </div>
+      <div class="dock-grid">
+        <article class="dock-card rv rvt">
+          <span class="sim-badge">Simulation</span>
+          <h3>PitchOS Suites</h3>
+          <p>Proposal and pitch generation suite — brief in, board-ready deck out.</p>
+          <a class="dock-link" href="#" data-sim="PitchOS Suites simulation">Open simulation →</a>
+        </article>
+        <article class="dock-card rv rvt">
+          <span class="sim-badge">Simulation</span>
+          <h3>Bahon Fleet OS</h3>
+          <p>Fleet operations dashboard — vehicles, drivers and routes in one view.</p>
+          <a class="dock-link" href="#" data-sim="Bahon Fleet OS simulation">Open simulation →</a>
+        </article>
+        <article class="dock-card rv rvt">
+          <span class="sim-badge">Simulation</span>
+          <h3>3D Dream Garage</h3>
+          <p>Interactive 3D garage configurator for dream-car visualisation.</p>
+          <a class="dock-link" href="#" data-sim="3D Dream Garage simulation">Open simulation →</a>
+        </article>
+        <article class="dock-card rv rvt">
+          <span class="sim-badge">Simulation</span>
+          <h3>Sahanabag GIS Township</h3>
+          <p>GIS township planning view — plots, zones and infrastructure layers.</p>
+          <a class="dock-link" href="#" data-sim="Sahanabag GIS Township simulation">Open simulation →</a>
+        </article>
+        <article class="dock-card dock-wide rv rvt" style="min-height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between">
+          <div>
+            <h3 style="font-size:22px">Full Showroom</h3>
+            <p style="margin-top:4px">Every public prototype in one place, restyled to the GRO10X design system. Client decks have moved to client-only links.</p>
+          </div>
+          <button class="btn btn-outline" data-sim="Prototype Showroom">Browse the Showroom</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES -->
+  <section class="white-sec section" id="capabilities">
+    <div class="wrap">
+      <div class="section-head light rv">
+        <div>
+          <div class="kicker kicker-dark">Enterprise Capabilities</div>
+          <h2>Five suites.<br>One <em>growth system</em>.</h2>
+        </div>
+        <p>The core platforms GRO10X deploys inside client businesses — each one a working system, not a slide.</p>
+      </div>
+      <div class="cap-grid">
+        <article class="cap-card rv">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 9l3 2-3 2M13 13h4"/></svg></div>
+          <h3>PitchOS Suites</h3>
+          <p>End-to-end pitch and proposal production — research, narrative, design and delivery in a single pipeline, so every bid goes out faster and sharper.</p>
+        </article>
+        <article class="cap-card rv">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.4 3.8-5 7-5s5.8 1.6 7 5M18.5 4.5l1 1M19.5 4.5h-2"/></svg></div>
+          <h3>Sales Trainer</h3>
+          <p>AI coaching for sales teams — call practice, objection handling and feedback loops that lift conversion without adding headcount.</p>
+        </article>
+        <article class="cap-card rv">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V10M10 19V5M16 19v-8M22 19H2M16 5l4-2M20 3v3h-3"/></svg></div>
+          <h3>Growth OS</h3>
+          <p>The operating layer for growth — campaigns, content and analytics wired into one dashboard your team actually opens every morning.</p>
+        </article>
+        <article class="cap-card rv">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div>
+          <h3>Client Portal</h3>
+          <p>A private home for every engagement — deliverables, approvals and progress, visible to the client at any hour.</p>
+        </article>
+        <article class="cap-card rv">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="17" r="2.5"/><circle cx="18" cy="17" r="2.5"/><path d="M8.5 17h7M6 14.5L8 8h7l2.5 6.5M10 8V5h5v3"/></svg></div>
+          <h3>Bahon Fleet OS</h3>
+          <p>Fleet command for operators — live vehicle status, driver assignment and route history in a single operational picture.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee divider-marquee" aria-hidden="true">
+    <div class="marquee-track" data-marquee>
+      <span>Digital Teammates</span><b>•</b><span>AI Systems</span><b>•</b><span>Content Engines</span><b>•</b><span>Data &amp; Analytics</span><b>•</b><span>AI Video</span><b>•</b><span>Automation</span><b>•</b>
+    </div>
   </div>
 
-  <!-- Scripts -->
-  <script src="/js/landing.js" defer></script>
-  <script src="/js/chat-widget.js" defer></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js').catch(() => {});
-      });
+  <!-- ROADMAP -->
+  <section class="section" id="roadmap" style="padding-top:56px">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div>
+          <div class="kicker">Scaling Roadmap</div>
+          <h2>From audit<br>to <em>autonomous</em>.</h2>
+        </div>
+        <p id="audit">Every engagement follows the same four stages — so you always know what happens next, and what it unlocks.</p>
+      </div>
+      <div class="road" id="road">
+        <article class="road-step rv"><div class="step-num">01</div><div class="step-tag" style="margin-top:14px">Stage One</div><h3>Audit &amp; Blueprint</h3><p>We map your workflows, find the highest-value automation points, and hand you a costed blueprint before anything is built.</p></article>
+        <article class="road-step rv"><div class="step-num">02</div><div class="step-tag" style="margin-top:14px">Stage Two</div><h3>Custom Pipeline Setup</h3><p>Your AI pipelines, agents and integrations are built and connected to the tools your team already uses.</p></article>
+        <article class="road-step rv"><div class="step-num">03</div><div class="step-tag" style="margin-top:14px">Stage Three</div><h3>Autonomous Deployment</h3><p>Systems go live with your team trained on them — running daily work with human approval where it matters.</p></article>
+        <article class="road-step rv"><div class="step-num">04</div><div class="step-tag" style="margin-top:14px">Stage Four</div><h3>Scale &amp; Compound</h3><p>We measure, tune and extend. Each new automation builds on the last, so the gains compound quarter after quarter.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="white-sec section" id="pricing">
+    <div class="wrap">
+      <div class="section-head light rv">
+        <div>
+          <div class="kicker kicker-dark">Pricing</div>
+          <h2>Clear <em>pricing</em>.<br>No surprises.</h2>
+        </div>
+        <div>
+          <p>Three ways to work with GRO10X — start with a build, stay for the compounding.</p>
+          <span class="note-tag on-light" style="margin-top:12px;animation:none">Designer note — Pricing under review in the products session</span>
+        </div>
+      </div>
+      <div class="price-grid">
+        <article class="price-card rv">
+          <div class="price-name">Transactional Setup</div>
+          <div class="price-amt">$1,500 <small>one-time</small></div>
+          <p class="price-sub">Your first custom AI system, built and deployed.</p>
+          <ul><li>AI Diagnostic Audit included</li><li>One custom pipeline or agent build</li><li>Team onboarding &amp; handover</li><li>30 days of post-launch support</li></ul>
+          <button class="btn btn-dark" data-book="Transactional Setup — $1,500">Start with Setup</button>
+        </article>
+        <article class="price-card featured rv">
+          <div class="price-name">Growth Retainer</div>
+          <div class="price-amt">$500 <small>/ month</small></div>
+          <p class="price-sub">Continuous building, tuning and new automations.</p>
+          <ul><li>New automation every month</li><li>Performance tuning &amp; reporting</li><li>Priority support channel</li><li>Quarterly growth review</li></ul>
+          <button class="btn btn-emerald" data-book="Growth Retainer — $500/mo">Book the Retainer</button>
+        </article>
+        <article class="price-card rv">
+          <div class="price-name">Micro-SaaS Access</div>
+          <div class="price-amt">$49 <small>/ month</small></div>
+          <p class="price-sub">Self-serve access to GRO10X micro-tools.</p>
+          <ul><li>Full micro-tool library</li><li>New tools as they ship</li><li>Community support</li><li>Cancel anytime</li></ul>
+          <button class="btn btn-dark" data-book="Micro-SaaS Access — $49/mo">Get Access</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTIMATOR -->
+  <section class="section" id="estimator">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div>
+          <div class="kicker">Interactive Estimator</div>
+          <h2>What could <em>AI</em><br>give back to you?</h2>
+        </div>
+        <p>A quick estimator — drag the sliders and watch the numbers move. Final figures always come from a proper audit.</p>
+      </div>
+      <div class="est-grid">
+        <div class="est-panel rv">
+          <div style="margin-bottom:26px">
+            <label for="teamSize">Team size <output id="teamOut">12 people</output></label>
+            <input type="range" id="teamSize" min="2" max="100" value="12" step="1">
+            <p class="range-hint">People doing repeatable, automatable work today.</p>
+          </div>
+          <div style="margin-bottom:26px">
+            <label for="hoursSaved">Hours saved per person / week <output id="hoursOut">6 hrs</output></label>
+            <input type="range" id="hoursSaved" min="1" max="20" value="6" step="1">
+            <p class="range-hint">Reporting, follow-ups, data entry, content drafts, scheduling.</p>
+          </div>
+          <div>
+            <label for="hourRate">Average hourly cost (USD) <output id="rateOut">$12</output></label>
+            <input type="range" id="hourRate" min="5" max="60" value="12" step="1">
+            <p class="range-hint">Fully-loaded cost per hour for that work in your market.</p>
+          </div>
+        </div>
+        <div class="est-result rv" id="estResult" aria-live="polite">
+          <span style="font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase">Estimated monthly saving</span>
+          <div class="big" id="estSaving">$3,744</div>
+          <p id="estLine">Based on 12 people saving 6 hours a week each.</p>
+          <div class="est-stats">
+            <div class="est-stat"><strong id="estHours">312 hrs</strong><span>Hours back / month</span></div>
+            <div class="est-stat"><strong id="estYear">$44,928</strong><span>Projected / year</span></div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:14px">Estimator only — simulated calculation performed in this page. Your audit produces the real, workflow-by-workflow numbers.</p>
+    </div>
+  </section>
+
+  <div class="marquee divider-marquee" aria-hidden="true">
+    <div class="marquee-track" data-marquee>
+      <span>Digital Teammates</span><b>•</b><span>AI Systems</span><b>•</b><span>Content Engines</span><b>•</b><span>Data &amp; Analytics</span><b>•</b><span>AI Video</span><b>•</b><span>Automation</span><b>•</b>
+    </div>
+  </div>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" style="padding-top:56px">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div>
+          <div class="kicker">Client Partners</div>
+          <h2>Teams already<br><em>growing</em> with us.</h2>
+        </div>
+        <p>Engagements across food &amp; hospitality, digital services and fintech in Bangladesh.</p>
+      </div>
+      <div class="testi-grid">
+        <article class="testi rv"><div class="testi-mark">“</div><p>“GRO10X's squads keep our content and campaigns moving across every outlet — brief in the morning, live by evening.”</p><div class="testi-who"><strong>Chillox Bangladesh</strong><span>Food &amp; hospitality group</span></div></article>
+        <article class="testi rv"><div class="testi-mark">“</div><p>“They slot into our delivery like an in-house team. Every piece arrives audited — we just ship it.”</p><div class="testi-who"><strong>Purplebot Digital Limited</strong><span>Digital services company</span></div></article>
+        <article class="testi rv"><div class="testi-mark">“</div><p>“Systems that satisfy our compliance board and still ship fast. The delivery audit trail is what won the room.”</p><div class="testi-who"><strong>Apex Fintech Bangladesh</strong><span>Fintech company</span></div></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="white-sec section" id="faq">
+    <div class="wrap">
+      <div class="section-head light rv">
+        <div>
+          <div class="kicker kicker-dark">FAQ</div>
+          <h2>Questions,<br>answered <em>plainly</em>.</h2>
+        </div>
+      </div>
+      <div class="faq-list rv" id="faqList">
+        <div class="faq-item"><button class="faq-q" aria-expanded="false">What does GRO10X actually build?<span class="chev">+</span></button><div class="faq-a">Custom AI systems for businesses: digital teammates and agents, automated workflows and pipelines, client portals, dashboards, and content and media production systems — built around how your team already works.</div></div>
+        <div class="faq-item"><button class="faq-q" aria-expanded="false">How does an engagement start?<span class="chev">+</span></button><div class="faq-a">With a Free AI Diagnostic Audit. We look at your workflows, identify the highest-value automation opportunities, and give you a costed blueprint. You decide from there — no obligation to build.</div></div>
+        <div class="faq-item"><button class="faq-q" aria-expanded="false">How does pricing work?<span class="chev">+</span></button><div class="faq-a">A one-time setup fee for your first build, an optional monthly retainer for continuous improvement, and self-serve micro-SaaS access for individual tools. Full figures are in the Pricing section above.</div></div>
+        <div class="faq-item"><button class="faq-q" aria-expanded="false">How long does a typical build take?<span class="chev">+</span></button><div class="faq-a">It depends on scope — a single pipeline is faster than a full operating system. Your audit blueprint includes a staged timeline before you commit to anything, so expectations are set in writing first.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section" id="contact">
+    <div class="wrap">
+      <div class="contact-box rv">
+        <div class="kicker">Start Here</div>
+        <h2>Ready to <em>10x</em> Your Business with AI?</h2>
+        <p style="color:#C7D0DD;max-width:560px;margin-top:14px">Book an AI Setup or start with the free diagnostic audit. One conversation is enough to see your blueprint.</p>
+        <div class="hero-ctas" style="margin-top:22px;animation:none">
+          <button class="btn btn-emerald" data-book="Book AI Setup">Book AI Setup</button>
+          <button class="btn btn-outline" data-book="Free AI Diagnostic Audit">Free AI Diagnostic Audit</button>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-item"><span>Email</span><a href="mailto:gro10xnow@gmail.com">gro10xnow@gmail.com</a></div>
+          <div class="contact-item"><span>Phone / WhatsApp</span><a href="tel:+8801711019550">+880 1711-019550</a></div>
+          <div class="contact-item"><span>Studio</span><strong style="font-size:18px">Dhaka, Bangladesh</strong></div>
+          <div class="contact-item"><span>Product</span><a href="#" data-sim="Agent 10X">Agent 10X — Digital Teammates</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a href="#top" class="logo"><img src="/images/gro10x-logo.png" alt="GRO10X"/></a>
+        <p style="color:var(--muted);font-size:13px;max-width:300px;margin-top:10px">AI-first growth agency. Custom AI solutions from Dhaka, for businesses everywhere.</p>
+      </div>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="#" data-sim="Agent 10X">Agent 10X</a>
+        <a href="#showroom">Prototype Showroom</a>
+        <a href="#" data-sim="Investor Relations">Investor Relations</a>
+        <a href="#" data-sim="Client Portal">Client Portal</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="foot-x" aria-hidden="true">X</div>
+    </div>
+    <p style="color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:28px;padding:16px 0 20px">© 2026 GRO10X. Homepage design prototype — structure and copy mirror the live site; design language per Brand Identity Guidelines 2025.</p>
+  </div>
+  
+</footer>
+
+<!-- door destination card -->
+<div class="modal-backdrop" id="doorBackdrop" role="dialog" aria-modal="true" aria-labelledby="doorTitle">
+  <div class="modal">
+    <div class="kicker kicker-dark">Where this door leads</div>
+    <h3 id="doorTitle">Destination</h3>
+    <p id="doorBody"></p>
+    <p style="font-size:13px">In this prototype the door is representative — the destination already exists as its own built design, and the two wire together in the live build.</p>
+    <button class="btn btn-dark" id="doorClose">Back to the slides</button>
+  </div>
+</div>
+
+<!-- modal -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <h3 id="modalTitle">Book AI Setup</h3>
+    <p id="modalBody">This is a design prototype — in the live site this opens the booking flow. Nothing is submitted from this page.</p>
+    <p style="font-size:13px">To reach the team today: <a href="mailto:gro10xnow@gmail.com" style="font-weight:700;text-decoration:underline">gro10xnow@gmail.com</a> · <a href="tel:+8801711019550" style="font-weight:700;text-decoration:underline">+880 1711-019550</a></p>
+    <button class="btn btn-emerald" id="modalClose">Got it — back to the page</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+var REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- marquees: duplicate for seamless loop ---------- */
+document.querySelectorAll('[data-marquee]').forEach(function(t){ t.innerHTML += t.innerHTML; });
+
+/* ---------- hero pointer parallax (desktop, fine pointer) ---------- */
+(function(){
+  var root=document.documentElement;
+  var fine=window.matchMedia("(pointer: fine)").matches;
+  if(!fine||REDUCED) return;
+  var tx=0,ty=0,cx=0,cy=0,raf=null;
+  function loop(){
+    cx+=(tx-cx)*0.06; cy+=(ty-cy)*0.06;
+    root.style.setProperty("--px",cx.toFixed(3));
+    root.style.setProperty("--py",cy.toFixed(3));
+    if(Math.abs(tx-cx)>0.001||Math.abs(ty-cy)>0.001){ raf=requestAnimationFrame(loop); } else { raf=null; }
+  }
+  window.addEventListener("pointermove",function(e){
+    tx=(e.clientX/window.innerWidth-0.5)*2;
+    ty=(e.clientY/window.innerHeight-0.5)*2;
+    if(!raf) raf=requestAnimationFrame(loop);
+  },{passive:true});
+})();
+
+/* ---------- drifting neural nodes inside the hero ---------- */
+(function(){
+  var hero=document.getElementById('hero');
+  var canvas=document.getElementById("nodes");
+  if(!hero||!canvas) return;
+  var ctx=canvas.getContext("2d");
+  var W=0,H=0,pts=[],running=true;
+  function resize(){
+    var dpr=Math.min(window.devicePixelRatio||1,2);
+    W=hero.clientWidth; H=hero.clientHeight;
+    canvas.width=W*dpr; canvas.height=H*dpr;
+    canvas.style.width=W+"px"; canvas.style.height=H+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    seed();
+    if(REDUCED) draw();
+  }
+  function seed(){
+    pts=[];
+    var n=W<700?14:26;
+    var cxp=W<700?W*0.72:W*0.76;
+    var cyp=W<700?H*0.22:H*0.44;
+    for(var i=0;i<n;i++){
+      pts.push({x:cxp+(Math.random()-0.5)*W*0.42, y:cyp+(Math.random()-0.5)*H*0.62,
+        vx:(Math.random()-0.5)*0.22, vy:(Math.random()-0.5)*0.22, r:1+Math.random()*1.8});
     }
-  </script>
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var i,j,p,q,dx,dy,d;
+    for(i=0;i<pts.length;i++) for(j=i+1;j<pts.length;j++){
+      p=pts[i]; q=pts[j]; dx=p.x-q.x; dy=p.y-q.y; d=Math.sqrt(dx*dx+dy*dy);
+      if(d<130){ ctx.strokeStyle="rgba(0,223,137,"+(0.14*(1-d/130)).toFixed(3)+")"; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke(); }
+    }
+    for(i=0;i<pts.length;i++){ p=pts[i]; ctx.fillStyle="rgba(0,223,137,.55)";
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.2832); ctx.fill(); }
+  }
+  function tick(){
+    if(!running) return;
+    for(var i=0;i<pts.length;i++){ var p=pts[i]; p.x+=p.vx; p.y+=p.vy;
+      if(p.x<-20||p.x>W+20) p.vx*=-1;
+      if(p.y<-20||p.y>H+20) p.vy*=-1; }
+    draw(); requestAnimationFrame(tick);
+  }
+  document.addEventListener("visibilitychange",function(){
+    running=!document.hidden;
+    if(running&&!REDUCED) requestAnimationFrame(tick);
+  });
+  window.addEventListener("resize",resize);
+  resize();
+  if(!REDUCED) requestAnimationFrame(tick);
+})();
+
+/* ---------- scroll reveals (staggered within each section) ---------- */
+var revealIO=null;
+function observeReveals(scope){
+  var els=(scope||document).querySelectorAll('.rv:not(.in)');
+  if(REDUCED||!('IntersectionObserver' in window)){
+    els.forEach(function(el){ el.classList.add('in'); });
+    return;
+  }
+  if(!revealIO){
+    revealIO=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add('in'); revealIO.unobserve(en.target); }
+      });
+    },{threshold:0.01,rootMargin:'0px 0px 100% 0px'});
+  }
+  /* stagger: delay by order among reveal siblings in the same parent */
+  var groups={};
+  els.forEach(function(el){
+    var key=el.parentNode?Array.prototype.indexOf.call(document.querySelectorAll('.rv'),el):0;
+    var sibs=el.parentNode?Array.prototype.filter.call(el.parentNode.children,function(c){return c.classList&&c.classList.contains('rv')}):[el];
+    var idx=sibs.indexOf(el);
+    el.style.transitionDelay=Math.min(idx,3)*40+'ms';
+    revealIO.observe(el);
+  });
+}
+
+/* ---------- roadmap path draw ---------- */
+(function(){
+  var road=document.getElementById('road');
+  if(!road) return;
+  if(REDUCED||!('IntersectionObserver' in window)){ road.classList.add('road-in'); return; }
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ road.classList.add('road-in'); io.disconnect(); } });
+  },{threshold:0.25});
+  io.observe(road);
+})();
+
+/* ---------- FAQ ---------- */
+document.querySelectorAll('.faq-item').forEach(function(item){
+  var q=item.querySelector('.faq-q');
+  q.addEventListener('click',function(){
+    var open=item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open');i.querySelector('.faq-q').setAttribute('aria-expanded','false')});
+    if(!open){item.classList.add('open');q.setAttribute('aria-expanded','true')}
+  });
+});
+
+/* ---------- estimator + first-view count-up ---------- */
+var team=document.getElementById('teamSize'),hrs=document.getElementById('hoursSaved'),rate=document.getElementById('hourRate');
+var counting=false;
+function fmt(n){return '$'+Math.round(n).toLocaleString('en-US')}
+function currentFigures(){
+  var t=+team.value,h=+hrs.value,r=+rate.value;
+  var monthlyHours=t*h*(52/12), saving=monthlyHours*r;
+  return {t:t,h:h,r:r,hours:monthlyHours,saving:saving,year:saving*12};
+}
+function renderFigures(f){
+  document.getElementById('estSaving').textContent=fmt(f.saving);
+  document.getElementById('estHours').textContent=Math.round(f.hours).toLocaleString('en-US')+' hrs';
+  document.getElementById('estYear').textContent=fmt(f.year);
+}
+function calc(){
+  var f=currentFigures();
+  document.getElementById('teamOut').textContent=f.t+' people';
+  document.getElementById('hoursOut').textContent=f.h+' hrs';
+  document.getElementById('rateOut').textContent='$'+f.r;
+  document.getElementById('estLine').textContent='Based on '+f.t+' people saving '+f.h+' hours a week each at $'+f.r+'/hr.';
+  if(!counting) renderFigures(f);
+}
+[team,hrs,rate].forEach(function(el){el.addEventListener('input',calc)});calc();
+(function(){
+  var panel=document.getElementById('estResult');
+  if(!panel) return;
+  if(REDUCED||!('IntersectionObserver' in window)) return;
+  var done=false;
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting||done) return;
+      done=true; io.disconnect();
+      var target=currentFigures(), start=null, dur=1000;
+      counting=true;
+      function step(ts){
+        if(!start) start=ts;
+        var p=Math.min((ts-start)/dur,1);
+        var e=1-Math.pow(1-p,3);
+        renderFigures({saving:target.saving*e,hours:target.hours*e,year:target.year*e});
+        if(p<1){ requestAnimationFrame(step); }
+        else { counting=false; renderFigures(target); }
+      }
+      requestAnimationFrame(step);
+    });
+  },{threshold:0.35});
+  io.observe(panel);
+})();
+
+/* ---------- mobile nav ---------- */
+var burger=document.getElementById('burger'),mnav=document.getElementById('mobileNav');
+burger.addEventListener('click',function(){var open=mnav.classList.toggle('open');burger.setAttribute('aria-expanded',open?'true':'false')});
+mnav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){mnav.classList.remove('open')})});
+
+/* ---------- modal + toast for simulated actions ---------- */
+var backdrop=document.getElementById('modalBackdrop'),mtitle=document.getElementById('modalTitle'),toast=document.getElementById('toast'),toastTimer;
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){toast.classList.remove('show')},3400)}
+document.querySelectorAll('[data-book]').forEach(function(el){el.addEventListener('click',function(){
+  var label=el.getAttribute('data-book'); mtitle.textContent=label;
+  var body=document.getElementById('modalBody');
+  if(label.indexOf('Zayan')>-1){ body.textContent='Deployment scoping with Zayan — one conversation to scope your own digital workforce: which functions, which specialists, and how GRO10X deploys and manages them for you. In the live site this opens the booking flow; nothing is submitted from this prototype.'; }
+  else { body.textContent='This is a design prototype — in the live site this opens the booking flow. Nothing is submitted from this page.'; }
+  backdrop.classList.add('open');
+})});
+
+/* ---------- workforce slider (user-driven only — no autoplay, no scroll trap) ---------- */
+(function(){
+  var viewport=document.getElementById('wfViewport'), track=document.getElementById('wfTrack');
+  if(!viewport||!track) return;
+  var slides=track.children, total=slides.length, idx=0;
+  var dotsEl=document.getElementById('wfDots'), prev=document.getElementById('wfPrev'), next=document.getElementById('wfNext');
+  var cur1=document.getElementById('wfCurrent');
+  var bar=document.getElementById('wfProgressBar');
+  var dots=[];
+  for(var i=0;i<total;i++){
+    (function(n){
+      var b=document.createElement('button'); b.className='wf-dot'; b.setAttribute('role','tab');
+      b.setAttribute('aria-label','Go to slide '+(n+1)+' of '+total);
+      b.innerHTML='<i></i>';
+      b.addEventListener('click',function(){ go(n); });
+      dotsEl.appendChild(b); dots.push(b);
+    })(i);
+  }
+  function go(n){
+    var target=Math.max(0,Math.min(total-1,n));
+    viewport.setAttribute('data-dir', target>=idx?'next':'prev');
+    idx=target;
+    track.style.transform='translateX('+(-idx*100)+'%)';
+    if(cur1) cur1.textContent=idx+1;
+    if(bar) bar.style.width=((idx+1)/total*100)+'%';
+    dots.forEach(function(d,k){ d.classList.toggle('active',k===idx); d.setAttribute('aria-selected',k===idx?'true':'false'); });
+    for(var k=0;k<total;k++){
+      slides[k].setAttribute('aria-hidden',k===idx?'false':'true');
+      slides[k].classList.remove('is-active');
+    }
+    /* restart entrance + shimmer on the incoming panel */
+    var active=slides[idx];
+    void active.offsetWidth;
+    active.classList.add('is-active');
+    prev.disabled=(idx===0); next.disabled=(idx===total-1);
+  }
+  prev.addEventListener('click',function(){ go(idx-1); });
+  next.addEventListener('click',function(){ go(idx+1); });
+  /* guided step-through: Next buttons walk 1→6 in order */
+  track.querySelectorAll('[data-step-next]').forEach(function(btn){
+    btn.addEventListener('click',function(){ go(idx+1); viewport.focus({preventScroll:true}); });
+  });
+  /* final step: release down the page to the next section */
+  track.querySelectorAll('[data-step-continue]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var dest=document.getElementById('showroom');
+      if(dest){ dest.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'start'}); }
+    });
+  });
+  viewport.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){ e.preventDefault(); go(idx+1); }
+    else if(e.key==='ArrowLeft'){ e.preventDefault(); go(idx-1); }
+    else if(e.key==='Home'){ e.preventDefault(); go(0); }
+    else if(e.key==='End'){ e.preventDefault(); go(total-1); }
+  });
+  var sx=null, sy=null;
+  viewport.addEventListener('touchstart',function(e){ sx=e.touches[0].clientX; sy=e.touches[0].clientY; },{passive:true});
+  viewport.addEventListener('touchend',function(e){
+    if(sx===null) return;
+    var dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>48 && Math.abs(dx)>Math.abs(dy)*1.4){ go(idx+(dx<0?1:-1)); }
+    sx=null; sy=null;
+  },{passive:true});
+  go(0);
+})();
+
+/* ---------- door destination cards ---------- */
+(function(){
+  var bd=document.getElementById('doorBackdrop'); if(!bd) return;
+  var title=document.getElementById('doorTitle'), body=document.getElementById('doorBody');
+  document.querySelectorAll('[data-door]').forEach(function(el){
+    el.addEventListener('click',function(){
+      title.textContent=el.getAttribute('data-door');
+      body.textContent=el.getAttribute('data-door-line');
+      bd.classList.add('open');
+    });
+  });
+  document.getElementById('doorClose').addEventListener('click',function(){ bd.classList.remove('open'); });
+  bd.addEventListener('click',function(e){ if(e.target===bd) bd.classList.remove('open'); });
+})();
+document.getElementById('modalClose').addEventListener('click',function(){backdrop.classList.remove('open')});
+backdrop.addEventListener('click',function(e){if(e.target===backdrop)backdrop.classList.remove('open')});
+document.querySelectorAll('[data-sim]').forEach(function(el){el.addEventListener('click',function(e){e.preventDefault();showToast(el.getAttribute('data-sim')+' — simulation in this prototype. The live version opens the real system.')})});
+
+/* ---------- start reveals ---------- */
+observeReveals(document);
+</script>
 </body>
 </html>
