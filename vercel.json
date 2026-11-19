@@ -472,6 +472,17 @@
       "dest": "/public/audio/$1"
     },
     {
+      "src": "/fonts/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      },
+      "dest": "/public/fonts/$1"
+    },
+    {
+      "src": "/favicon(.*)",
+      "dest": "/public/favicon$1"
+    },
+    {
       "src": "/images/(.*)",
       "dest": "/public/images/$1"
     },
